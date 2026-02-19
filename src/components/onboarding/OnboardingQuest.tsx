@@ -6,9 +6,31 @@ import { useRouter } from "next/navigation";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
 
+type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink";
+
+const MOOD_IMAGES: Record<Mood, string> = {
+  welcome: "/ttoni-welcome.png",
+  explain: "/ttoni-explain.png",
+  thinking: "/ttoni-thinking.png",
+  excited: "/ttoni-excited.png",
+  proud: "/ttoni-proud.png",
+  cheer: "/ttoni-cheer.png",
+  wink: "/ttoni-wink.png",
+};
+
+const MOOD_LABELS: Record<Mood, string> = {
+  welcome: "-- 반가운",
+  explain: "-- 설명하는",
+  thinking: "-- 진지한",
+  excited: "-- 신난",
+  proud: "-- 자랑스러운",
+  cheer: "-- 응원하는",
+  wink: "-- 장난스러운",
+};
+
 interface DialogueLine {
   text: string;
-  mood?: "happy" | "excited" | "thinking" | "proud";
+  mood?: Mood;
 }
 
 interface QuestAction {
@@ -41,14 +63,11 @@ const QUESTS: Quest[] = [
     badgeIcon: "V",
     xp: 100,
     intro: [
-      { text: "안녕! 나는 또니라고 해.", mood: "happy" },
-      { text: "너의 TON 스테이킹을 도와줄 가이드야." },
-      {
-        text: "시작하기 전에, 먼저 '디지털 금고'를 만들어야 해.",
-        mood: "thinking",
-      },
-      { text: "MetaMask라는 건데, 크롬에 설치하는 확장 프로그램이야." },
-      { text: "아래 버튼을 누르면 설치 페이지로 이동할 거야. 설치하고 돌아와!" },
+      { text: "안녕! 나는 또니라고 해.", mood: "welcome" },
+      { text: "너의 TON 스테이킹을 도와줄 가이드야.", mood: "welcome" },
+      { text: "시작하기 전에, 먼저 '디지털 금고'를 만들어야 해.", mood: "explain" },
+      { text: "MetaMask라는 건데, 크롬에 설치하는 확장 프로그램이야.", mood: "explain" },
+      { text: "아래 버튼을 누르면 설치 페이지로 이동할 거야. 설치하고 돌아와!", mood: "cheer" },
     ],
     action: {
       type: "link",
@@ -58,7 +77,7 @@ const QUESTS: Quest[] = [
     verify: "metamask-installed",
     success: [
       { text: "잘했어! 금고가 생겼네!", mood: "excited" },
-      { text: "벌써 첫 번째 퀘스트 클리어야. 이 조합 꽤 잘 맞는걸?", mood: "happy" },
+      { text: "벌써 첫 번째 퀘스트 클리어야. 이 조합 꽤 잘 맞는걸?", mood: "wink" },
     ],
   },
   {
@@ -69,15 +88,12 @@ const QUESTS: Quest[] = [
     badgeIcon: "K",
     xp: 150,
     intro: [
-      { text: "이제 금고의 '비밀 열쇠'를 만들 차례야." },
-      { text: "MetaMask를 열면 '새 지갑 만들기'가 보일 거야." },
-      {
-        text: "12개의 영어 단어가 나오는데... 이게 정말정말 중요해.",
-        mood: "thinking",
-      },
-      { text: "이 단어들이 네 금고의 유일한 열쇠거든." },
-      { text: "종이에 적어서 안전한 곳에 보관해. 사진은 절대 안 돼!" },
-      { text: "다 적었으면 아래 체크박스를 눌러줘." },
+      { text: "이제 금고의 '비밀 열쇠'를 만들 차례야.", mood: "explain" },
+      { text: "MetaMask를 열면 '새 지갑 만들기'가 보일 거야.", mood: "explain" },
+      { text: "12개의 영어 단어가 나오는데... 이게 정말정말 중요해.", mood: "thinking" },
+      { text: "이 단어들이 네 금고의 유일한 열쇠거든.", mood: "thinking" },
+      { text: "종이에 적어서 안전한 곳에 보관해. 사진은 절대 안 돼!", mood: "thinking" },
+      { text: "다 적었으면 아래 체크박스를 눌러줘.", mood: "cheer" },
     ],
     action: {
       type: "confirm",
@@ -86,11 +102,8 @@ const QUESTS: Quest[] = [
     },
     verify: "user-confirm",
     success: [
-      { text: "좋아, 믿을게!", mood: "happy" },
-      {
-        text: "열쇠를 잃어버리면 금고를 다시 열 수 없으니까 꼭 잘 보관해야 해.",
-        mood: "thinking",
-      },
+      { text: "좋아, 믿을게!", mood: "welcome" },
+      { text: "열쇠를 잃어버리면 금고를 다시 열 수 없으니까 꼭 잘 보관해야 해.", mood: "thinking" },
       { text: "두 번째 퀘스트도 클리어! 점점 실력이 느는걸?", mood: "excited" },
     ],
   },
@@ -103,15 +116,15 @@ const QUESTS: Quest[] = [
     xp: 200,
     intro: [
       { text: "이제 네 금고를 나한테 보여줄 차례야!", mood: "excited" },
-      { text: "아래 버튼을 누르면 MetaMask 팝업이 뜰 거야." },
-      { text: "'연결' 버튼만 눌러주면 돼. 간단하지?" },
+      { text: "아래 버튼을 누르면 MetaMask 팝업이 뜰 거야.", mood: "explain" },
+      { text: "'연결' 버튼만 눌러주면 돼. 간단하지?", mood: "wink" },
     ],
     action: { type: "connect", label: "MetaMask 연결하기" },
     verify: "metamask-connected",
     success: [
       { text: "연결 완료! 이제 네 지갑이 보여.", mood: "excited" },
-      { text: "이 주소가 앞으로 네 스테이킹 주소가 될 거야.", mood: "happy" },
-      { text: "세 번째 퀘스트 클리어! 우리 사이가 점점 가까워지는 느낌?", mood: "proud" },
+      { text: "이 주소가 앞으로 네 스테이킹 주소가 될 거야.", mood: "explain" },
+      { text: "세 번째 퀘스트 클리어! 우리 사이가 점점 가까워지는 느낌?", mood: "wink" },
     ],
   },
   {
@@ -122,13 +135,13 @@ const QUESTS: Quest[] = [
     badgeIcon: "U",
     xp: 300,
     intro: [
-      { text: "업비트에서 TON을 가져오려면 지갑 주소를 인증해야 해." },
-      { text: "업비트 앱을 열어봐. 같이 하자!", mood: "happy" },
-      { text: "[MY] -> [개인지갑 주소 관리] -> [주소 등록] 순서야." },
-      { text: "이더리움(ETH) 네트워크를 선택하고..." },
-      { text: "MetaMask 연결 버튼을 누르면 주소가 자동 입력돼." },
+      { text: "업비트에서 TON을 가져오려면 지갑 주소를 인증해야 해.", mood: "explain" },
+      { text: "업비트 앱을 열어봐. 같이 하자!", mood: "cheer" },
+      { text: "[MY] -> [개인지갑 주소 관리] -> [주소 등록] 순서야.", mood: "explain" },
+      { text: "이더리움(ETH) 네트워크를 선택하고...", mood: "explain" },
+      { text: "MetaMask 연결 버튼을 누르면 주소가 자동 입력돼.", mood: "explain" },
       { text: "마지막으로 카카오톡 인증까지 완료하면 끝!", mood: "thinking" },
-      { text: "다 했으면 아래에서 확인해줘." },
+      { text: "다 했으면 아래에서 확인해줘.", mood: "cheer" },
     ],
     action: {
       type: "confirm",
@@ -138,11 +151,8 @@ const QUESTS: Quest[] = [
     verify: "user-confirm",
     success: [
       { text: "대단해! 이게 제일 어려운 단계였는데!", mood: "excited" },
-      { text: "이제 업비트에서 이 주소로 바로 TON을 보낼 수 있어.", mood: "happy" },
-      {
-        text: "네 번째 퀘스트 클리어! 이 정도면 프로 아니야?",
-        mood: "proud",
-      },
+      { text: "이제 업비트에서 이 주소로 바로 TON을 보낼 수 있어.", mood: "welcome" },
+      { text: "네 번째 퀘스트 클리어! 이 정도면 프로 아니야?", mood: "proud" },
     ],
   },
   {
@@ -154,9 +164,9 @@ const QUESTS: Quest[] = [
     xp: 250,
     intro: [
       { text: "이제 진짜 TON을 가져와 볼까?", mood: "excited" },
-      { text: "업비트 앱에서: 출금 -> TON -> 네 MetaMask 주소 입력" },
+      { text: "업비트 앱에서: 출금 -> TON -> 네 MetaMask 주소 입력", mood: "explain" },
       { text: "처음엔 소액으로 테스트하는 게 좋아!", mood: "thinking" },
-      { text: "10 TON 정도면 충분해. 전송되면 아래에서 확인해줘." },
+      { text: "10 TON 정도면 충분해. 전송되면 아래에서 확인해줘.", mood: "cheer" },
     ],
     action: {
       type: "confirm",
@@ -166,10 +176,7 @@ const QUESTS: Quest[] = [
     verify: "user-confirm",
     success: [
       { text: "TON이 도착했어! 이제 스테이킹 준비 완료!", mood: "excited" },
-      {
-        text: "다섯 번째 퀘스트 클리어! 거의 다 왔어!",
-        mood: "proud",
-      },
+      { text: "다섯 번째 퀘스트 클리어! 거의 다 왔어!", mood: "proud" },
     ],
   },
   {
@@ -181,20 +188,17 @@ const QUESTS: Quest[] = [
     xp: 500,
     intro: [
       { text: "드디어 마지막 퀘스트야!", mood: "excited" },
-      { text: "여기까지 온 너, 정말 대단해.", mood: "happy" },
-      { text: "이제 대시보드로 이동해서 첫 스테이킹을 해볼까?" },
-      { text: "오퍼레이터를 선택하고, 원하는 만큼 TON을 스테이킹하면 돼!" },
+      { text: "여기까지 온 너, 정말 대단해.", mood: "proud" },
+      { text: "이제 대시보드로 이동해서 첫 스테이킹을 해볼까?", mood: "explain" },
+      { text: "오퍼레이터를 선택하고, 원하는 만큼 TON을 스테이킹하면 돼!", mood: "cheer" },
     ],
     action: { type: "navigate", label: "대시보드에서 스테이킹 시작", route: "/dashboard" },
     verify: "user-confirm",
     success: [
       { text: "모든 퀘스트를 클리어했어!", mood: "excited" },
-      {
-        text: "너... 혹시 천재야? 이렇게 빨리 끝낼 줄 몰랐어.",
-        mood: "proud",
-      },
-      { text: "이제부터 블록이 쌓일 때마다 시뇨리지 보상이 들어올 거야.", mood: "happy" },
-      { text: "앞으로도 잘 부탁해, 파트너!", mood: "happy" },
+      { text: "너... 혹시 천재야? 이렇게 빨리 끝낼 줄 몰랐어.", mood: "proud" },
+      { text: "이제부터 블록이 쌓일 때마다 시뇨리지 보상이 들어올 거야.", mood: "explain" },
+      { text: "앞으로도 잘 부탁해, 파트너!", mood: "wink" },
     ],
   },
 ];
@@ -352,13 +356,7 @@ function DialogueBox({
           <span className="text-accent-cyan font-semibold text-sm">Ttoni</span>
           {line.mood && (
             <span className="text-xs text-gray-500">
-              {line.mood === "happy"
-                ? "-- 기분 좋은"
-                : line.mood === "excited"
-                  ? "-- 신난"
-                  : line.mood === "thinking"
-                    ? "-- 진지한"
-                    : "-- 자랑스러운"}
+              {MOOD_LABELS[line.mood]}
             </span>
           )}
         </div>
@@ -382,27 +380,41 @@ function DialogueBox({
 
 // ─── Character Display ────────────────────────────────────────────────
 
-function TtoniCharacter({ mood }: { mood?: string }) {
-  const transform =
-    mood === "excited"
-      ? "scale-[1.03] -translate-y-1"
-      : mood === "thinking"
-        ? "rotate-[-2deg]"
-        : mood === "proud"
-          ? "scale-[1.05] -translate-y-2"
-          : "";
+function TtoniCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
+  // Badge phase uses proud, action/verifying phase uses cheer
+  const effectiveMood: Mood =
+    phase === "badge"
+      ? "proud"
+      : phase === "action" || phase === "verifying"
+        ? "cheer"
+        : mood || "welcome";
+
+  const imageSrc = MOOD_IMAGES[effectiveMood];
+  const [prevSrc, setPrevSrc] = useState(imageSrc);
+  const [transitioning, setTransitioning] = useState(false);
+
+  useEffect(() => {
+    if (imageSrc !== prevSrc) {
+      setTransitioning(true);
+      const timer = setTimeout(() => {
+        setPrevSrc(imageSrc);
+        setTransitioning(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [imageSrc, prevSrc]);
 
   return (
-    <div
-      className={`relative w-48 sm:w-56 lg:w-64 transition-transform duration-500 ${transform}`}
-    >
+    <div className="relative w-48 sm:w-56 lg:w-64">
       <div className="absolute inset-0 bg-accent-blue/15 rounded-3xl blur-2xl -z-10" />
       <Image
-        src="/ttoni.png"
+        src={transitioning ? prevSrc : imageSrc}
         alt="Ttoni"
         width={300}
         height={300}
-        className="rounded-2xl drop-shadow-xl"
+        className={`rounded-2xl drop-shadow-xl transition-opacity duration-200 ${
+          transitioning ? "opacity-0" : "opacity-100"
+        }`}
         priority
       />
     </div>
@@ -562,7 +574,7 @@ export default function OnboardingQuest() {
     return (
       <div className="min-h-screen bg-grid flex items-center justify-center px-4">
         <div className="max-w-lg mx-auto text-center animate-fade-in">
-          <TtoniCharacter mood="proud" />
+          <TtoniCharacter mood="proud" phase="badge" />
           <div className="mt-8">
             <h1 className="text-3xl font-bold text-gradient mb-4">
               All Quests Clear!
@@ -664,7 +676,7 @@ export default function OnboardingQuest() {
             {/* Character + Dialogue Area */}
             <div className="flex flex-col items-center gap-6">
               {/* Ttoni Character */}
-              <TtoniCharacter mood={currentLine?.mood} />
+              <TtoniCharacter mood={currentLine?.mood} phase={phase} />
 
               {/* Connected Address */}
               {connectedAddr && phase === "success" && quest.id === "connect-ttoni" && (
