@@ -1,0 +1,44 @@
+"use client";
+
+import React from "react";
+import { PrivyProvider as Provider } from "@privy-io/react-auth";
+import { sepolia, mainnet } from "viem/chains";
+
+const chain =
+  process.env.NEXT_PUBLIC_NETWORK === "sepolia" ? sepolia : mainnet;
+
+export default function PrivyProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+
+  if (!appId) {
+    // Privy 미설정 시 그냥 렌더링 (개발 편의)
+    return <>{children}</>;
+  }
+
+  return (
+    <Provider
+      appId={appId}
+      config={{
+        loginMethods: ["google", "email", "wallet"],
+        appearance: {
+          theme: "dark",
+          accentColor: "#e855b0",
+          logo: "/tokamak-logo.svg",
+        },
+        embeddedWallets: {
+          ethereum: {
+            createOnLogin: "users-without-wallets",
+          },
+        },
+        defaultChain: chain,
+        supportedChains: [chain],
+      }}
+    >
+      {children}
+    </Provider>
+  );
+}

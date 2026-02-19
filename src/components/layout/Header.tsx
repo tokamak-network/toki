@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ConnectButton from "./ConnectButton";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -41,9 +42,7 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          <button className="px-5 py-2 rounded-lg bg-gradient-to-r from-accent-pink/80 to-accent-purple/80 text-white text-sm font-medium hover:from-accent-pink hover:to-accent-purple transition-all">
-            Connect
-          </button>
+          <ConnectButton />
 
           {/* Mobile hamburger */}
           <button
