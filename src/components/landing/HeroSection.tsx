@@ -1,8 +1,9 @@
-"use client";
-
 import Image from "next/image";
+import HeroButtons from "./HeroButtons";
 
-export default function HeroSection() {
+export default function HeroSection({ apr }: { apr: number | null }) {
+  const displayApr = apr ? `~${apr.toFixed(0)}%` : "~20%+";
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
       {/* Background decorative elements */}
@@ -39,7 +40,7 @@ export default function HeroSection() {
           <div className="flex flex-wrap gap-6 justify-center lg:justify-start mb-10">
             <div className="text-center lg:text-left">
               <div className="text-2xl sm:text-3xl font-bold text-accent-amber font-mono-num">
-                ~35%
+                {displayApr}
               </div>
               <div className="text-sm text-gray-500">APR</div>
             </div>
@@ -53,21 +54,14 @@ export default function HeroSection() {
             <div className="w-px bg-gray-700" />
             <div className="text-center lg:text-left">
               <div className="text-2xl sm:text-3xl font-bold text-accent-blue font-mono-num">
-                0 ETH
+                TON Only
               </div>
-              <div className="text-sm text-gray-500">Gas Fee</div>
+              <div className="text-sm text-gray-500">No ETH needed</div>
             </div>
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <button className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform">
-              Start Staking
-            </button>
-            <button className="px-8 py-4 rounded-xl border border-gray-600 text-gray-300 font-semibold text-lg hover:border-accent-sky hover:text-accent-sky transition-colors">
-              Learn More
-            </button>
-          </div>
+          <HeroButtons />
         </div>
 
         {/* Right: Ttoni character */}

@@ -7,6 +7,7 @@ import WhyTtoni from "@/components/landing/WhyTtoni";
 import StakingPreview from "@/components/landing/StakingPreview";
 import FAQ from "@/components/landing/FAQ";
 import CTASection from "@/components/landing/CTASection";
+import { fetchStakingData } from "@/lib/staking";
 
 export const dynamic = "force-dynamic";
 
@@ -34,12 +35,20 @@ function StakingLoading() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  let apr: number | null = null;
+  try {
+    const data = await fetchStakingData();
+    apr = data.apr;
+  } catch {
+    // fallback
+  }
+
   return (
     <>
       <Header />
       <main>
-        <HeroSection />
+        <HeroSection apr={apr} />
         <div id="how-it-works">
           <HowItWorks />
         </div>
