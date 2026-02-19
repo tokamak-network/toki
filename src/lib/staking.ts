@@ -1,7 +1,7 @@
 import { formatUnits } from "viem";
 import { publicClient } from "./chain";
 import { seigManagerAbi, layer2RegistryAbi, candidateAbi } from "./abi";
-import { CONTRACTS } from "@/constants/contracts";
+import { CONTRACTS, MAX_OPERATORS_DISPLAY } from "@/constants/contracts";
 
 // APR calculation based on staking-community-version
 // Reference: src/utils/apy/calculateRoi.ts
@@ -78,10 +78,11 @@ export async function fetchStakingData(): Promise<StakingData> {
   const apr = calculateApr(totalStakedNum, totalSupplyNum);
   const apy = aprToApy(apr);
 
-  // Fetch operator list
+  // Fetch operator list (capped for performance)
   const operatorCount = Number(numLayer2s);
+  const fetchCount = Math.min(operatorCount, MAX_OPERATORS_DISPLAY);
   const operatorAddresses = await Promise.all(
-    Array.from({ length: operatorCount }, (_, i) =>
+    Array.from({ length: fetchCount }, (_, i) =>
       publicClient.readContract({
         address: registryAddress,
         abi: layer2RegistryAbi,
