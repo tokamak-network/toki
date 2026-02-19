@@ -1,14 +1,17 @@
-import { Metadata } from "next";
-import dynamic from "next/dynamic";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Dashboard - Ttoni",
-  description: "Manage your wallet and staking",
-};
+import dynamic from "next/dynamic";
 
 const DashboardContent = dynamic(
   () => import("@/components/dashboard/DashboardContent"),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-400">Loading dashboard...</div>
+      </div>
+    ),
+  }
 );
 
 export default function DashboardPage() {

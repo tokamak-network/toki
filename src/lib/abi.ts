@@ -29,6 +29,16 @@ export const seigManagerAbi = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
+      { name: "account", type: "address" },
+    ],
+    name: "stakeOf",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 export const layer2RegistryAbi = [
@@ -60,6 +70,114 @@ export const candidateAbi = [
     inputs: [],
     name: "memo",
     outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
+
+// TON token (approveAndCall for 1-tx staking)
+export const tonTokenAbi = [
+  {
+    inputs: [{ name: "account", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "approve",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+      { name: "data", type: "bytes" },
+    ],
+    name: "approveAndCall",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const;
+
+// WTON token
+export const wtonTokenAbi = [
+  {
+    inputs: [{ name: "account", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "approve",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+      { name: "data", type: "bytes" },
+    ],
+    name: "approveAndCall",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const;
+
+// DepositManager (deposit, withdraw)
+export const depositManagerAbi = [
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "deposit",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    name: "requestWithdrawal",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
+      { name: "receiveTON", type: "bool" },
+    ],
+    name: "processRequest",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
+      { name: "account", type: "address" },
+    ],
+    name: "numPendingRequests",
+    outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },

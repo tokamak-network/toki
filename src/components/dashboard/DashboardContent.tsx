@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from "react";
 import { formatUnits } from "viem";
 import { createPublicClient, http } from "viem";
 import { sepolia, mainnet } from "viem/chains";
+import StakingPanel from "./StakingPanel";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
 const chain = isTestnet ? sepolia : mainnet;
@@ -134,6 +135,11 @@ export default function DashboardContent() {
     }
   };
 
+  const getEthereumProvider = async () => {
+    if (!primaryWallet) throw new Error("No wallet connected");
+    return await primaryWallet.getEthereumProvider();
+  };
+
   return (
     <div className="min-h-screen bg-grid">
       {/* Header */}
@@ -242,6 +248,17 @@ export default function DashboardContent() {
             </a>
           </div>
         </div>
+
+        {/* Staking Panel */}
+        {primaryWallet && (
+          <div className="mb-6">
+            <StakingPanel
+              walletAddress={primaryWallet.address}
+              getEthereumProvider={getEthereumProvider}
+              onBalanceChange={fetchBalances}
+            />
+          </div>
+        )}
 
         {/* Connected Accounts */}
         <div className="card p-6 mb-6">
