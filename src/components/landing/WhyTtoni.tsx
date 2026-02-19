@@ -30,7 +30,7 @@ export default function WhyTtoni() {
             <div className="p-4 border-b border-white/5 text-gray-500 font-medium text-center">
               Traditional
             </div>
-            <div className="p-4 border-b border-white/5 font-medium text-center text-accent-purple">
+            <div className="p-4 border-b border-white/5 font-medium text-center text-accent-blue">
               Ttoni
             </div>
 

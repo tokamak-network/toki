@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className="border-t border-white/5 py-12 px-4">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-accent-pink to-accent-purple flex items-center justify-center text-white font-bold text-xs">
+          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-accent-blue to-accent-navy flex items-center justify-center text-white font-bold text-xs">
             T
           </div>
           <span className="text-sm text-gray-400">

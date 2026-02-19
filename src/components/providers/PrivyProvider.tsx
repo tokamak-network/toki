@@ -26,7 +26,7 @@ export default function PrivyProvider({
         loginMethods: ["google", "email", "wallet"],
         appearance: {
           theme: "dark",
-          accentColor: "#e855b0",
+          accentColor: "#4a90d9",
           logo: "/tokamak-logo.svg",
         },
         embeddedWallets: {

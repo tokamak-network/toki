@@ -1,7 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import ConnectButton from "./ConnectButton";
+import dynamic from "next/dynamic";
+
+const ConnectButton = dynamic(() => import("./ConnectButton"), {
+  ssr: false,
+  loading: () => (
+    <button
+      disabled
+      className="px-5 py-2 rounded-lg bg-white/10 text-gray-500 text-sm font-medium"
+    >
+      Connect
+    </button>
+  ),
+});
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -11,7 +23,7 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-pink to-accent-purple flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue to-accent-navy flex items-center justify-center text-white font-bold text-sm">
             T
           </div>
           <span className="text-lg font-bold">

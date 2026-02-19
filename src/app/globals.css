@@ -3,14 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0b1e;
+  --background: #0c1222;
   --foreground: #e2e8f0;
-  --card-bg: #111328;
-  --card-border: #1e2044;
-  --accent-pink: #ff6b9d;
-  --accent-purple: #c084fc;
+  --card-bg: #111a2e;
+  --card-border: #1c2d4a;
+  --accent-blue: #4a90d9;
+  --accent-navy: #2563eb;
+  --accent-amber: #f59e0b;
   --accent-cyan: #22d3ee;
-  --accent-gold: #fbbf24;
+  --accent-sky: #60a5fa;
 }
 
 body {
@@ -21,19 +22,19 @@ body {
 
 /* Gradient text */
 .text-gradient {
-  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple), var(--accent-cyan));
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan), var(--accent-amber));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 /* Glow effect */
-.glow-pink {
-  box-shadow: 0 0 20px rgba(255, 107, 157, 0.3), 0 0 60px rgba(255, 107, 157, 0.1);
+.glow-blue {
+  box-shadow: 0 0 20px rgba(74, 144, 217, 0.3), 0 0 60px rgba(74, 144, 217, 0.1);
 }
 
-.glow-purple {
-  box-shadow: 0 0 20px rgba(192, 132, 252, 0.3), 0 0 60px rgba(192, 132, 252, 0.1);
+.glow-amber {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3), 0 0 60px rgba(245, 158, 11, 0.1);
 }
 
 /* Card style */
@@ -46,8 +47,8 @@ body {
 /* Animated background grid */
 .bg-grid {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(74, 144, 217, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 144, 217, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 

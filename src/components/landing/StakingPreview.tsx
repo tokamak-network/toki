@@ -44,7 +44,7 @@ export default async function StakingPreview() {
             label="Current APR"
             value={`${data.apr.toFixed(1)}%`}
             subtext="Compound seigniorage"
-            color="text-accent-gold"
+            color="text-accent-amber"
           />
           <StatCard
             label="Total Staked"
@@ -56,13 +56,13 @@ export default async function StakingPreview() {
             label="Seig / Block"
             value={data.seigPerBlock}
             subtext="WTON per block (~12s)"
-            color="text-accent-purple"
+            color="text-accent-sky"
           />
           <StatCard
             label="Operators"
             value={String(data.operatorCount)}
             subtext="Auto-selected for you"
-            color="text-accent-pink"
+            color="text-accent-blue"
           />
         </div>
 
@@ -161,19 +161,19 @@ function SimulatorColumn({
     <div
       className={`p-6 rounded-xl ${
         highlighted
-          ? "bg-accent-purple/10 border border-accent-purple/30"
+          ? "bg-accent-blue/10 border border-accent-blue/30"
           : "bg-white/5"
       }`}
     >
       <div
-        className={`text-lg font-bold mb-4 ${highlighted ? "text-accent-purple" : "text-gray-300"}`}
+        className={`text-lg font-bold mb-4 ${highlighted ? "text-accent-sky" : "text-gray-300"}`}
       >
         {amount}
       </div>
       <div className="space-y-3 text-sm">
         <div>
           <span className="text-gray-500">Daily</span>
-          <div className="font-mono-num text-accent-gold">{daily} TON</div>
+          <div className="font-mono-num text-accent-amber">{daily} TON</div>
         </div>
         <div>
           <span className="text-gray-500">Monthly</span>
@@ -181,7 +181,7 @@ function SimulatorColumn({
         </div>
         <div>
           <span className="text-gray-500">Yearly</span>
-          <div className="font-mono-num text-accent-pink font-semibold">
+          <div className="font-mono-num text-accent-blue font-semibold">
             {yearly} TON
           </div>
         </div>

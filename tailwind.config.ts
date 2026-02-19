@@ -24,14 +24,19 @@ const config: Config = {
           900: "#1e3264",
         },
         accent: {
-          pink: "#ff6b9d",
-          purple: "#c084fc",
+          blue: "#4a90d9",
+          navy: "#2563eb",
+          amber: "#f59e0b",
           cyan: "#22d3ee",
-          gold: "#fbbf24",
+          sky: "#60a5fa",
+          // Keep old names mapped to new colors for gradual migration
+          pink: "#4a90d9",
+          purple: "#60a5fa",
+          gold: "#f59e0b",
         },
       },
       animation: {
-        "float": "float 3s ease-in-out infinite",
+        float: "float 3s ease-in-out infinite",
         "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "slide-up": "slideUp 0.5s ease-out",
         "fade-in": "fadeIn 0.8s ease-out",
