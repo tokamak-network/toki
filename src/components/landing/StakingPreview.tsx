@@ -1,44 +1,66 @@
-"use client";
+import { fetchStakingData } from "@/lib/staking";
 
-import { SEIG_PER_BLOCK, BLOCKS_PER_YEAR } from "@/constants/contracts";
+export default async function StakingPreview() {
+  let data;
+  try {
+    data = await fetchStakingData();
+  } catch {
+    // Fallback if RPC fails
+    data = null;
+  }
 
-const TOTAL_STAKED = 29_651_365; // approximate from on-chain
-const ANNUAL_SEIG = SEIG_PER_BLOCK * BLOCKS_PER_YEAR;
-const APR = ((ANNUAL_SEIG / TOTAL_STAKED) * 100).toFixed(1);
+  if (!data) {
+    return (
+      <section className="py-24 px-4">
+        <div className="max-w-5xl mx-auto text-center text-gray-500">
+          Failed to load on-chain data. Please refresh.
+        </div>
+      </section>
+    );
+  }
 
-export default function StakingPreview() {
+  const dailyReward = (amount: number) =>
+    ((amount * data.apr) / 100 / 365).toFixed(2);
+  const monthlyReward = (amount: number) =>
+    ((amount * data.apr) / 100 / 12).toFixed(1);
+  const yearlyReward = (amount: number) =>
+    ((amount * data.apr) / 100).toFixed(0);
+
   return (
     <section className="py-24 px-4">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">
           Live Staking Stats
         </h2>
-        <p className="text-gray-400 text-center mb-16 text-lg">
-          Real-time data from Tokamak Network
+        <p className="text-gray-400 text-center mb-4 text-lg">
+          Real-time data from Tokamak Network contracts
+        </p>
+        <p className="text-gray-600 text-center mb-16 text-xs">
+          SeigManager: {data.totalStaked} WTON staked across {data.operatorCount} operators
         </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             label="Current APR"
-            value={`${APR}%`}
+            value={`${data.apr.toFixed(1)}%`}
             subtext="Compound seigniorage"
             color="text-accent-gold"
           />
           <StatCard
             label="Total Staked"
-            value={`${(TOTAL_STAKED / 1_000_000).toFixed(1)}M`}
-            subtext="WTON across 10 operators"
+            value={`${(data.totalStakedRaw / 1_000_000).toFixed(1)}M`}
+            subtext={`${data.totalStaked} WTON`}
             color="text-accent-cyan"
           />
           <StatCard
             label="Seig / Block"
-            value={`${SEIG_PER_BLOCK}`}
+            value={data.seigPerBlock}
             subtext="WTON per block (~12s)"
             color="text-accent-purple"
           />
           <StatCard
             label="Operators"
-            value="10"
+            value={String(data.operatorCount)}
             subtext="Auto-selected for you"
             color="text-accent-pink"
           />
@@ -52,27 +74,50 @@ export default function StakingPreview() {
           <div className="grid sm:grid-cols-3 gap-8 text-center">
             <SimulatorColumn
               amount="100 TON"
-              daily="~0.10"
-              monthly="~2.9"
-              yearly="~34.7"
+              daily={`~${dailyReward(100)}`}
+              monthly={`~${monthlyReward(100)}`}
+              yearly={`~${yearlyReward(100)}`}
             />
             <SimulatorColumn
               amount="1,000 TON"
-              daily="~0.95"
-              monthly="~28.9"
-              yearly="~347"
+              daily={`~${dailyReward(1000)}`}
+              monthly={`~${monthlyReward(1000)}`}
+              yearly={`~${yearlyReward(1000)}`}
               highlighted
             />
             <SimulatorColumn
               amount="10,000 TON"
-              daily="~9.51"
-              monthly="~289"
-              yearly="~3,470"
+              daily={`~${dailyReward(10000)}`}
+              monthly={`~${monthlyReward(10000)}`}
+              yearly={`~${yearlyReward(10000)}`}
             />
           </div>
           <p className="text-xs text-gray-500 text-center mt-6">
-            * Estimates based on current APR. Actual returns may vary. Seigniorage compounds automatically.
+            * Based on current on-chain APR ({data.apr.toFixed(1)}%). Actual returns may vary. Seigniorage compounds automatically.
           </p>
+        </div>
+
+        {/* Operator list */}
+        <div className="card p-8 mt-8">
+          <h3 className="text-xl font-semibold mb-6 text-center">
+            Active Operators
+          </h3>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {data.operators.map((op) => (
+              <div
+                key={op.address}
+                className="flex items-center justify-between p-3 rounded-lg bg-white/5 text-sm"
+              >
+                <span className="text-gray-300 truncate">{op.name || op.address.slice(0, 10)}</span>
+                <span className="text-accent-cyan font-mono-num ml-2 shrink-0">
+                  {Number(op.totalStaked).toLocaleString("en-US", {
+                    maximumFractionDigits: 0,
+                  })}{" "}
+                  <span className="text-gray-500 text-xs">WTON</span>
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -120,7 +165,9 @@ function SimulatorColumn({
           : "bg-white/5"
       }`}
     >
-      <div className={`text-lg font-bold mb-4 ${highlighted ? "text-accent-purple" : "text-gray-300"}`}>
+      <div
+        className={`text-lg font-bold mb-4 ${highlighted ? "text-accent-purple" : "text-gray-300"}`}
+      >
         {amount}
       </div>
       <div className="space-y-3 text-sm">
@@ -134,7 +181,9 @@ function SimulatorColumn({
         </div>
         <div>
           <span className="text-gray-500">Yearly</span>
-          <div className="font-mono-num text-accent-pink font-semibold">{yearly} TON</div>
+          <div className="font-mono-num text-accent-pink font-semibold">
+            {yearly} TON
+          </div>
         </div>
       </div>
     </div>
