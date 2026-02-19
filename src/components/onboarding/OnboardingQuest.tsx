@@ -378,6 +378,130 @@ function DialogueBox({
   );
 }
 
+// ─── Mood Glow Colors ────────────────────────────────────────────────
+
+const MOOD_GLOW: Record<Mood, string> = {
+  welcome: "rgba(74, 144, 217, 0.35)",   // blue
+  explain: "rgba(96, 165, 250, 0.35)",   // sky
+  thinking: "rgba(99, 102, 241, 0.35)",  // indigo
+  excited: "rgba(245, 158, 11, 0.45)",   // amber/gold
+  proud: "rgba(34, 211, 238, 0.40)",     // cyan
+  cheer: "rgba(168, 85, 247, 0.35)",     // purple
+  wink: "rgba(236, 72, 153, 0.35)",      // pink
+};
+
+// ─── Sparkle Particles ───────────────────────────────────────────────
+
+function SparkleParticles({ trigger }: { trigger: number }) {
+  const [particles, setParticles] = useState<
+    { id: number; x: number; y: number; size: number; delay: number; color: string }[]
+  >([]);
+
+  useEffect(() => {
+    if (trigger === 0) return;
+    const colors = ["#22d3ee", "#f59e0b", "#60a5fa", "#a855f7", "#ec4899"];
+    const newParticles = Array.from({ length: 8 }, (_, i) => ({
+      id: Date.now() + i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 6 + Math.random() * 8,
+      delay: i * 0.15 + Math.random() * 0.3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    }));
+    setParticles(newParticles);
+    const timer = setTimeout(() => setParticles([]), 5000);
+    return () => clearTimeout(timer);
+  }, [trigger]);
+
+  if (particles.length === 0) return null;
+
+  return (
+    <div className="absolute -inset-10 pointer-events-none overflow-visible -z-10">
+      {particles.map((p) => {
+        // Place particles only in the outer ring (avoid center 20-80% area)
+        const edge = Math.random() > 0.5;
+        const x = edge
+          ? (Math.random() > 0.5 ? Math.random() * 15 : 85 + Math.random() * 15)
+          : p.x;
+        const y = !edge
+          ? (Math.random() > 0.5 ? Math.random() * 15 : 85 + Math.random() * 15)
+          : p.y;
+        return (
+          <div
+            key={p.id}
+            className="absolute animate-sparkle"
+            style={{
+              left: `${x}%`,
+              top: `${y}%`,
+              width: p.size,
+              height: p.size,
+              backgroundColor: p.color,
+              borderRadius: "50%",
+              animationDelay: `${p.delay}s`,
+              boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Confetti Effect ─────────────────────────────────────────────────
+
+function ConfettiEffect({ active }: { active: boolean }) {
+  const [pieces, setPieces] = useState<
+    { id: number; x: number; color: string; delay: number; rotate: number }[]
+  >([]);
+
+  useEffect(() => {
+    if (!active) {
+      setPieces([]);
+      return;
+    }
+    const colors = ["#22d3ee", "#f59e0b", "#60a5fa", "#a855f7", "#ec4899", "#4ade80"];
+    const newPieces = Array.from({ length: 24 }, (_, i) => ({
+      id: Date.now() + i,
+      x: 10 + Math.random() * 80,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      delay: i * 0.1 + Math.random() * 0.5,
+      rotate: Math.random() * 360,
+    }));
+    setPieces(newPieces);
+    const timer = setTimeout(() => setPieces([]), 6000);
+    return () => clearTimeout(timer);
+  }, [active]);
+
+  if (pieces.length === 0) return null;
+
+  return (
+    <div className="absolute -inset-12 pointer-events-none overflow-visible -z-10">
+      {pieces.map((p) => {
+        // Confetti falls in the outer ring area around the image
+        const x = Math.random() > 0.5
+          ? Math.random() * 20
+          : 80 + Math.random() * 20;
+        return (
+          <div
+            key={p.id}
+            className="absolute animate-confetti-fall"
+            style={{
+              left: `${x}%`,
+              top: "-8px",
+              width: "8px",
+              height: "8px",
+              backgroundColor: p.color,
+              borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+              animationDelay: `${p.delay}s`,
+              transform: `rotate(${p.rotate}deg)`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Character Display ────────────────────────────────────────────────
 
 function TtoniCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
@@ -392,9 +516,17 @@ function TtoniCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
   const imageSrc = MOOD_IMAGES[effectiveMood];
   const [prevSrc, setPrevSrc] = useState(imageSrc);
   const [transitioning, setTransitioning] = useState(false);
+  const [sparkleTrigger, setSparkleTrigger] = useState(0);
+  const prevMoodRef = useRef<Mood>(effectiveMood);
 
   useEffect(() => {
     if (imageSrc !== prevSrc) {
+      // Trigger sparkle particles on mood change
+      if (imageSrc !== MOOD_IMAGES[prevMoodRef.current]) {
+        setSparkleTrigger((n) => n + 1);
+      }
+      prevMoodRef.current = effectiveMood;
+      // Fade out → swap → fade in (same as original 200ms)
       setTransitioning(true);
       const timer = setTimeout(() => {
         setPrevSrc(imageSrc);
@@ -402,17 +534,37 @@ function TtoniCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [imageSrc, prevSrc]);
+  }, [imageSrc, prevSrc, effectiveMood]);
+
+  const glowColor = MOOD_GLOW[effectiveMood];
+  const isBadge = phase === "badge";
 
   return (
-    <div className="relative w-48 sm:w-56 lg:w-64">
-      <div className="absolute inset-0 bg-accent-blue/15 rounded-3xl blur-2xl -z-10" />
+    <div className="relative w-48 sm:w-56 lg:w-64 overflow-visible">
+      {/* Mood-based background glow */}
+      <div
+        className="absolute inset-0 rounded-3xl blur-3xl -z-10 animate-glow-pulse transition-colors duration-700"
+        style={{ backgroundColor: glowColor }}
+      />
+      {/* Secondary outer glow ring */}
+      <div
+        className="absolute -inset-4 rounded-[2rem] blur-2xl -z-20 opacity-20 transition-colors duration-700"
+        style={{ backgroundColor: glowColor }}
+      />
+
+      {/* Sparkle particles on mood change */}
+      <SparkleParticles trigger={sparkleTrigger} />
+
+      {/* Confetti on badge reveal */}
+      <ConfettiEffect active={isBadge} />
+
+      {/* Character image with original fade transition */}
       <Image
         src={transitioning ? prevSrc : imageSrc}
         alt="Ttoni"
         width={300}
         height={300}
-        className={`rounded-2xl drop-shadow-xl transition-opacity duration-200 ${
+        className={`relative z-10 rounded-2xl drop-shadow-xl transition-opacity duration-200 ${
           transitioning ? "opacity-0" : "opacity-100"
         }`}
         priority

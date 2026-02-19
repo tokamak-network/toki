@@ -34,9 +34,9 @@ export default function HeroButtons() {
       </div>
       <a
         href="/onboarding"
-        className="text-sm text-gray-500 hover:text-accent-cyan transition-colors text-center lg:text-left"
+        className="px-8 py-4 rounded-xl border border-accent-cyan/40 text-accent-cyan font-semibold text-lg hover:bg-accent-cyan/10 hover:border-accent-cyan/60 transition-colors text-center"
       >
-        MetaMask / TON Staking Guide
+        Staking Quest Guide
       </a>
     </div>
   );
