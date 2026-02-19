@@ -10,7 +10,8 @@ const steps = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
       </svg>
     ),
-    color: "accent-pink",
+    numberClass: "text-accent-pink",
+    iconWrapClass: "bg-accent-pink/10 text-accent-pink",
   },
   {
     number: "02",
@@ -21,7 +22,8 @@ const steps = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
       </svg>
     ),
-    color: "accent-purple",
+    numberClass: "text-accent-purple",
+    iconWrapClass: "bg-accent-purple/10 text-accent-purple",
   },
   {
     number: "03",
@@ -32,7 +34,8 @@ const steps = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
     ),
-    color: "accent-cyan",
+    numberClass: "text-accent-cyan",
+    iconWrapClass: "bg-accent-cyan/10 text-accent-cyan",
   },
 ];
 
@@ -54,10 +57,10 @@ export default function HowItWorks() {
               className="card p-8 hover:border-accent-purple/50 transition-colors group"
             >
               <div className="flex items-center gap-4 mb-6">
-                <span className={`text-${step.color} text-4xl font-bold opacity-30 group-hover:opacity-60 transition-opacity`}>
+                <span className={`${step.numberClass} text-4xl font-bold opacity-30 group-hover:opacity-60 transition-opacity`}>
                   {step.number}
                 </span>
-                <div className={`p-3 rounded-xl bg-${step.color}/10 text-${step.color}`}>
+                <div className={`p-3 rounded-xl ${step.iconWrapClass}`}>
                   {step.icon}
                 </div>
               </div>
