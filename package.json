@@ -9,8 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@metamask/delegation-toolkit": "^0.13.0",
     "@privy-io/react-auth": "^3.14.1",
     "next": "14.2.35",
+    "permissionless": "^0.2.57",
     "react": "^18",
     "react-dom": "^18",
     "viem": "^2.46.2"
