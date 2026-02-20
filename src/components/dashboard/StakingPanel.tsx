@@ -39,6 +39,8 @@ interface Operator {
   myStaked: string;
 }
 
+import type { PaymasterMode } from "@/hooks/useEip7702";
+
 interface StakingPanelProps {
   walletAddress: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,6 +48,7 @@ interface StakingPanelProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   smartAccountClient?: { sendTransaction: (...args: any[]) => Promise<`0x${string}`> } | null;
   onBalanceChange?: () => void;
+  paymasterMode?: PaymasterMode;
 }
 
 export default function StakingPanel({
@@ -53,6 +56,7 @@ export default function StakingPanel({
   getEthereumProvider,
   smartAccountClient,
   onBalanceChange,
+  paymasterMode = "none",
 }: StakingPanelProps) {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [selectedOp, setSelectedOp] = useState<string>("");
@@ -319,9 +323,14 @@ export default function StakingPanel({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold">{t.dashboard.staking}</h2>
-          {smartAccountClient && (
+          {smartAccountClient && paymasterMode === "sponsor" && (
             <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
               {t.dashboard.gaslessShort}
+            </span>
+          )}
+          {smartAccountClient && paymasterMode === "erc20" && (
+            <span className="px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400">
+              {t.dashboard.gasTon}
             </span>
           )}
         </div>
@@ -424,9 +433,11 @@ export default function StakingPanel({
         >
           {staking
             ? t.dashboard.stakingInProgress
-            : smartAccountClient
-              ? t.dashboard.stakeTonGasless
-              : t.dashboard.stakeTon}
+            : paymasterMode === "erc20"
+              ? t.dashboard.stakeTonGasTon
+              : paymasterMode === "sponsor"
+                ? t.dashboard.stakeTonGasless
+                : t.dashboard.stakeTon}
         </button>
         {myStakedOnSelected > 0 && (
           <button

@@ -114,6 +114,7 @@ const ko = {
     wallet: "지갑",
     gasless: "가스리스 (EIP-7702)",
     gaslessShort: "가스리스",
+    gasTon: "가스: TON",
     embedded: "임베디드",
     external: "외부",
     copy: "복사",
@@ -134,6 +135,7 @@ const ko = {
     balance: "잔액:",
     stakeTon: "TON 스테이킹",
     stakeTonGasless: "TON 스테이킹 (가스리스)",
+    stakeTonGasTon: "TON 스테이킹 (가스: TON)",
     stakingInProgress: "스테이킹 중...",
     unstakeAll: "전체 언스테이킹",
     requesting: "요청 중...",
@@ -141,6 +143,7 @@ const ko = {
     noStakedBalance: "이 오퍼레이터에 스테이킹된 잔액이 없습니다",
     txRejected: "사용자가 트랜잭션을 거부했습니다",
     myStakedPositions: "내 스테이킹 현황",
+    estimatedGas: "예상 가스비: ~{amount} TON",
   },
   onboarding: {
     allClear: "모든 퀘스트 클리어!",

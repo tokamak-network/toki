@@ -114,6 +114,7 @@ const en = {
     wallet: "Wallet",
     gasless: "Gasless (EIP-7702)",
     gaslessShort: "Gasless",
+    gasTon: "Gas: TON",
     embedded: "Embedded",
     external: "External",
     copy: "Copy",
@@ -134,6 +135,7 @@ const en = {
     balance: "Balance:",
     stakeTon: "Stake TON",
     stakeTonGasless: "Stake TON (Gasless)",
+    stakeTonGasTon: "Stake TON (Gas: TON)",
     stakingInProgress: "Staking...",
     unstakeAll: "Unstake All",
     requesting: "Requesting...",
@@ -141,6 +143,7 @@ const en = {
     noStakedBalance: "No staked balance on this operator",
     txRejected: "Transaction rejected by user",
     myStakedPositions: "My Staked Positions",
+    estimatedGas: "Est. gas: ~{amount} TON",
   },
   onboarding: {
     allClear: "All Quests Clear!",

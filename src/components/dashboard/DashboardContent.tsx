@@ -46,7 +46,7 @@ interface Balances {
 export default function DashboardContent() {
   const { ready, authenticated, user, logout, exportWallet } = usePrivy();
   const { wallets } = useWallets();
-  const { smartAccountClient, walletType, isGasless } = useEip7702();
+  const { smartAccountClient, walletType, paymasterMode } = useEip7702();
   const router = useRouter();
   const [balances, setBalances] = useState<Balances | null>(null);
   const [loading, setLoading] = useState(true);
@@ -183,13 +183,19 @@ export default function DashboardContent() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">{t.dashboard.wallet}</h2>
             <div className="flex items-center gap-2">
-              {smartAccountClient && isGasless && (
+              {smartAccountClient && paymasterMode === "sponsor" && (
                 <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
                   {t.dashboard.gasless}
                   {walletType === "external" ? " (MetaMask)" : walletType === "embedded" ? " (Embedded)" : ""}
                 </span>
               )}
-              {smartAccountClient && !isGasless && walletType === "external" && (
+              {smartAccountClient && paymasterMode === "erc20" && (
+                <span className="px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400">
+                  {t.dashboard.gasTon}
+                  {walletType === "embedded" ? " (Embedded)" : ""}
+                </span>
+              )}
+              {smartAccountClient && paymasterMode === "none" && walletType === "external" && (
                 <span className="px-2 py-0.5 rounded text-xs bg-yellow-500/20 text-yellow-400">
                   EIP-7702
                 </span>
@@ -277,6 +283,7 @@ export default function DashboardContent() {
               getEthereumProvider={getEthereumProvider}
               smartAccountClient={smartAccountClient}
               onBalanceChange={fetchBalances}
+              paymasterMode={paymasterMode}
             />
           </div>
         )}
