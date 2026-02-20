@@ -1,8 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import HeroButtons from "./HeroButtons";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 export default function HeroSection({ apr }: { apr: number | null }) {
   const displayApr = apr ? `~${apr.toFixed(0)}%` : "~20%+";
+  const { t } = useTranslation();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
@@ -17,23 +21,23 @@ export default function HeroSection({ apr }: { apr: number | null }) {
         {/* Left: Text content */}
         <div className="flex-1 text-center lg:text-left animate-fade-in">
           <div className="inline-block px-4 py-1.5 rounded-full border border-accent-blue/30 bg-accent-blue/10 text-accent-sky text-sm mb-6">
-            Tokamak Network Staking
+            {t.hero.badge}
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-            <span className="text-gradient">{"Hi, I'm Ttoni!"}</span>
+            <span className="text-gradient">{t.hero.title1}</span>
             <br />
             <span className="text-foreground">
-              TON Staking,
+              {t.hero.title2}
               <br />
-              Made Easy.
+              {t.hero.title3}
             </span>
           </h1>
 
           <p className="text-lg sm:text-xl text-gray-400 max-w-lg mb-8 leading-relaxed">
-            No MetaMask. No ETH gas.
+            {t.hero.subtitle1}
             <br />
-            Just connect & stake your TON.
+            {t.hero.subtitle2}
           </p>
 
           {/* Stats */}
@@ -42,21 +46,21 @@ export default function HeroSection({ apr }: { apr: number | null }) {
               <div className="text-2xl sm:text-3xl font-bold text-accent-amber font-mono-num">
                 {displayApr}
               </div>
-              <div className="text-sm text-gray-500">APR</div>
+              <div className="text-sm text-gray-500">{t.hero.apr}</div>
             </div>
             <div className="w-px bg-gray-700" />
             <div className="text-center lg:text-left">
               <div className="text-2xl sm:text-3xl font-bold text-accent-cyan font-mono-num">
-                3 Steps
+                {t.hero.steps}
               </div>
-              <div className="text-sm text-gray-500">to Stake</div>
+              <div className="text-sm text-gray-500">{t.hero.stepsDesc}</div>
             </div>
             <div className="w-px bg-gray-700" />
             <div className="text-center lg:text-left">
               <div className="text-2xl sm:text-3xl font-bold text-accent-blue font-mono-num">
-                TON Only
+                {t.hero.tonOnly}
               </div>
-              <div className="text-sm text-gray-500">No ETH needed</div>
+              <div className="text-sm text-gray-500">{t.hero.tonOnlyDesc}</div>
             </div>
           </div>
 

@@ -1,37 +1,41 @@
 "use client";
 
-const comparisons = [
-  { feature: "Wallet Setup", traditional: "Install MetaMask + seed phrase", ttoni: "Kakao/Google login" },
-  { feature: "Exchange Withdrawal", traditional: "Manual address copy + verify", ttoni: "Guided with copy button" },
-  { feature: "Gas Fees", traditional: "Need ETH separately", ttoni: "Paid in TON automatically" },
-  { feature: "WTON Wrapping", traditional: "Manual TON → WTON swap", ttoni: "Handled automatically" },
-  { feature: "Operator Selection", traditional: "Research 10 operators yourself", ttoni: "Auto-selected for optimal yield" },
-  { feature: "Steps to Stake", traditional: "8-15 steps", ttoni: "3 steps" },
-  { feature: "Seigniorage Tracking", traditional: "Check contract manually", ttoni: "Real-time dashboard" },
-];
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 export default function WhyTtoni() {
+  const { t } = useTranslation();
+
+  const comparisons = [
+    { feature: t.whyTtoni.walletSetup, traditional: t.whyTtoni.walletTraditional, ttoni: t.whyTtoni.walletTtoni },
+    { feature: t.whyTtoni.exchangeWithdrawal, traditional: t.whyTtoni.exchangeTraditional, ttoni: t.whyTtoni.exchangeTtoni },
+    { feature: t.whyTtoni.gasFees, traditional: t.whyTtoni.gasTraditional, ttoni: t.whyTtoni.gasTtoni },
+    { feature: t.whyTtoni.wrapping, traditional: t.whyTtoni.wrappingTraditional, ttoni: t.whyTtoni.wrappingTtoni },
+    { feature: t.whyTtoni.operatorSelection, traditional: t.whyTtoni.operatorTraditional, ttoni: t.whyTtoni.operatorTtoni },
+    { feature: t.whyTtoni.stepsToStake, traditional: t.whyTtoni.stepsTraditional, ttoni: t.whyTtoni.stepsTtoni },
+    { feature: t.whyTtoni.seigniorageTracking, traditional: t.whyTtoni.seigniorageTraditional, ttoni: t.whyTtoni.seigniorageTtoni },
+  ];
+
   return (
     <section className="py-24 px-4">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">
-          Why Ttoni?
+          {t.whyTtoni.title}
         </h2>
         <p className="text-gray-400 text-center mb-16 text-lg">
-          Traditional staking vs Ttoni
+          {t.whyTtoni.subtitle}
         </p>
 
         <div className="card overflow-hidden">
           <div className="grid grid-cols-3 gap-0 text-sm">
             {/* Header */}
             <div className="p-4 border-b border-white/5 text-gray-500 font-medium">
-              Feature
+              {t.whyTtoni.feature}
             </div>
             <div className="p-4 border-b border-white/5 text-gray-500 font-medium text-center">
-              Traditional
+              {t.whyTtoni.traditional}
             </div>
             <div className="p-4 border-b border-white/5 font-medium text-center text-accent-blue">
-              Ttoni
+              {t.whyTtoni.ttoni}
             </div>
 
             {/* Rows */}

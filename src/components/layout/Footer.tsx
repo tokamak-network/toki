@@ -1,4 +1,10 @@
+"use client";
+
+import { useTranslation } from "@/components/providers/LanguageProvider";
+
 export default function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="border-t border-white/5 py-12 px-4">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -7,7 +13,7 @@ export default function Footer() {
             T
           </div>
           <span className="text-sm text-gray-400">
-            Ttoni &mdash; Built on Tokamak Network
+            {t.footer.builtOn}
           </span>
         </div>
 
@@ -34,7 +40,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="hover:text-gray-300 transition-colors"
           >
-            Staking Dashboard
+            {t.footer.stakingDashboard}
           </a>
         </div>
       </div>

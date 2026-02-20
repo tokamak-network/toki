@@ -8,6 +8,7 @@ import {
   formatUnits,
   parseUnits,
   encodeAbiParameters,
+  encodeFunctionData,
   custom,
 } from "viem";
 import { sepolia, mainnet } from "viem/chains";
@@ -19,6 +20,7 @@ import {
   tonTokenAbi,
   depositManagerAbi,
 } from "@/lib/abi";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
 const chain = isTestnet ? sepolia : mainnet;
@@ -41,12 +43,15 @@ interface StakingPanelProps {
   walletAddress: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getEthereumProvider: () => Promise<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  smartAccountClient?: { sendTransaction: (...args: any[]) => Promise<`0x${string}`> } | null;
   onBalanceChange?: () => void;
 }
 
 export default function StakingPanel({
   walletAddress,
   getEthereumProvider,
+  smartAccountClient,
   onBalanceChange,
 }: StakingPanelProps) {
   const [operators, setOperators] = useState<Operator[]>([]);
@@ -58,6 +63,7 @@ export default function StakingPanel({
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tonBalance, setTonBalance] = useState<string>("0");
+  const { t } = useTranslation();
 
   const addr = walletAddress as `0x${string}`;
   const seigManagerAddr = CONTRACTS.SEIG_MANAGER_PROXY as `0x${string}`;
@@ -168,27 +174,43 @@ export default function StakingPanel({
     setTxHash(null);
 
     try {
-      const provider = await getEthereumProvider();
-      const walletClient = createWalletClient({
-        chain,
-        transport: custom(provider),
-        account: addr,
-      });
-
       // TON.approveAndCall(WTON, tonAmount, abi.encode(depositManager, layer2))
-      // This swaps TON→WTON and deposits in 1 tx
       const tonAmount = parseUnits(amount, 18);
-      const data = encodeAbiParameters(
+      const stakingData = encodeAbiParameters(
         [{ type: "address" }, { type: "address" }],
         [depositManagerAddr, selectedOp as `0x${string}`]
       );
 
-      const hash = await walletClient.writeContract({
-        address: tonAddr,
-        abi: tonTokenAbi,
-        functionName: "approveAndCall",
-        args: [wtonAddr, tonAmount, data],
-      });
+      let hash: `0x${string}`;
+
+      if (smartAccountClient) {
+        hash = await smartAccountClient.sendTransaction({
+          calls: [
+            {
+              to: tonAddr,
+              data: encodeFunctionData({
+                abi: tonTokenAbi,
+                functionName: "approveAndCall",
+                args: [wtonAddr, tonAmount, stakingData],
+              }),
+            },
+          ],
+        });
+      } else {
+        const provider = await getEthereumProvider();
+        const walletClient = createWalletClient({
+          chain,
+          transport: custom(provider),
+          account: addr,
+        });
+
+        hash = await walletClient.writeContract({
+          address: tonAddr,
+          abi: tonTokenAbi,
+          functionName: "approveAndCall",
+          args: [wtonAddr, tonAmount, stakingData],
+        });
+      }
 
       setTxHash(hash);
 
@@ -203,7 +225,7 @@ export default function StakingPanel({
       const errMsg = e instanceof Error ? e.message : String(e);
       console.error("Staking failed:", errMsg);
       if (errMsg.includes("User rejected")) {
-        setError("Transaction rejected by user");
+        setError(t.dashboard.txRejected);
       } else {
         setError(errMsg.slice(0, 200));
       }
@@ -215,7 +237,7 @@ export default function StakingPanel({
     if (!selectedOp) return;
     const selectedOperator = operators.find((o) => o.address === selectedOp);
     if (!selectedOperator || Number(selectedOperator.myStaked) <= 0) {
-      setError("No staked balance on this operator");
+      setError(t.dashboard.noStakedBalance);
       return;
     }
 
@@ -224,22 +246,38 @@ export default function StakingPanel({
     setTxHash(null);
 
     try {
-      const provider = await getEthereumProvider();
-      const walletClient = createWalletClient({
-        chain,
-        transport: custom(provider),
-        account: addr,
-      });
-
-      // requestWithdrawal with full staked amount (WTON 27 decimals)
       const wtonAmount = parseUnits(selectedOperator.myStaked, 27);
 
-      const hash = await walletClient.writeContract({
-        address: depositManagerAddr,
-        abi: depositManagerAbi,
-        functionName: "requestWithdrawal",
-        args: [selectedOp as `0x${string}`, wtonAmount],
-      });
+      let hash: `0x${string}`;
+
+      if (smartAccountClient) {
+        hash = await smartAccountClient.sendTransaction({
+          calls: [
+            {
+              to: depositManagerAddr,
+              data: encodeFunctionData({
+                abi: depositManagerAbi,
+                functionName: "requestWithdrawal",
+                args: [selectedOp as `0x${string}`, wtonAmount],
+              }),
+            },
+          ],
+        });
+      } else {
+        const provider = await getEthereumProvider();
+        const walletClient = createWalletClient({
+          chain,
+          transport: custom(provider),
+          account: addr,
+        });
+
+        hash = await walletClient.writeContract({
+          address: depositManagerAddr,
+          abi: depositManagerAbi,
+          functionName: "requestWithdrawal",
+          args: [selectedOp as `0x${string}`, wtonAmount],
+        });
+      }
 
       setTxHash(hash);
       await publicClient.waitForTransactionReceipt({ hash });
@@ -250,7 +288,7 @@ export default function StakingPanel({
       const errMsg = e instanceof Error ? e.message : String(e);
       console.error("Unstake failed:", errMsg);
       if (errMsg.includes("User rejected")) {
-        setError("Transaction rejected by user");
+        setError(t.dashboard.txRejected);
       } else {
         setError(errMsg.slice(0, 200));
       }
@@ -266,7 +304,7 @@ export default function StakingPanel({
   if (loading) {
     return (
       <div className="card p-6">
-        <h2 className="text-lg font-semibold mb-4">Staking</h2>
+        <h2 className="text-lg font-semibold mb-4">{t.dashboard.staking}</h2>
         <div className="animate-pulse space-y-3">
           <div className="h-10 bg-white/5 rounded-lg" />
           <div className="h-10 bg-white/5 rounded-lg" />
@@ -279,19 +317,26 @@ export default function StakingPanel({
   return (
     <div className="card p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold">Staking</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold">{t.dashboard.staking}</h2>
+          {smartAccountClient && (
+            <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
+              {t.dashboard.gaslessShort}
+            </span>
+          )}
+        </div>
         <button
           onClick={fetchOperators}
           className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
         >
-          Refresh
+          {t.dashboard.refresh}
         </button>
       </div>
 
       {/* Operator Selector */}
       <div className="mb-4">
         <label className="text-sm text-gray-400 mb-2 block">
-          Select Operator
+          {t.dashboard.selectOperator}
         </label>
         <div className="space-y-2">
           {operators.map((op) => (
@@ -315,7 +360,7 @@ export default function StakingPanel({
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-gray-400">
-                    Total:{" "}
+                    {t.dashboard.total}{" "}
                     {Number(op.totalStaked).toLocaleString("en-US", {
                       maximumFractionDigits: 0,
                     })}{" "}
@@ -323,7 +368,7 @@ export default function StakingPanel({
                   </div>
                   {Number(op.myStaked) > 0 && (
                     <div className="text-xs text-accent-cyan font-mono-num">
-                      My:{" "}
+                      {t.dashboard.my}{" "}
                       {Number(op.myStaked).toLocaleString("en-US", {
                         maximumFractionDigits: 2,
                       })}{" "}
@@ -340,7 +385,7 @@ export default function StakingPanel({
       {/* Stake Input */}
       <div className="mb-4">
         <label className="text-sm text-gray-400 mb-2 block">
-          Amount to Stake (TON)
+          {t.dashboard.amountToStake}
         </label>
         <div className="flex gap-2">
           <div className="flex-1 relative">
@@ -362,7 +407,7 @@ export default function StakingPanel({
           </div>
         </div>
         <div className="text-xs text-gray-500 mt-1">
-          Balance:{" "}
+          {t.dashboard.balance}{" "}
           {Number(tonBalance).toLocaleString("en-US", {
             maximumFractionDigits: 2,
           })}{" "}
@@ -377,7 +422,11 @@ export default function StakingPanel({
           disabled={staking || !amount || Number(amount) <= 0}
           className="flex-1 py-3 rounded-lg bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform"
         >
-          {staking ? "Staking..." : "Stake TON"}
+          {staking
+            ? t.dashboard.stakingInProgress
+            : smartAccountClient
+              ? t.dashboard.stakeTonGasless
+              : t.dashboard.stakeTon}
         </button>
         {myStakedOnSelected > 0 && (
           <button
@@ -385,7 +434,7 @@ export default function StakingPanel({
             disabled={unstaking}
             className="px-6 py-3 rounded-lg bg-white/10 text-gray-300 font-semibold text-sm disabled:opacity-40 hover:bg-white/15 transition-colors"
           >
-            {unstaking ? "Requesting..." : "Unstake All"}
+            {unstaking ? t.dashboard.requesting : t.dashboard.unstakeAll}
           </button>
         )}
       </div>
@@ -393,7 +442,7 @@ export default function StakingPanel({
       {/* Status Messages */}
       {txHash && (
         <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 mb-3">
-          <div className="text-sm text-green-400">Transaction submitted!</div>
+          <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
           <a
             href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${txHash}`}
             target="_blank"
@@ -413,7 +462,7 @@ export default function StakingPanel({
       {/* My Staking Summary */}
       {operators.some((o) => Number(o.myStaked) > 0) && (
         <div className="mt-4 pt-4 border-t border-white/5">
-          <h3 className="text-sm text-gray-400 mb-3">My Staked Positions</h3>
+          <h3 className="text-sm text-gray-400 mb-3">{t.dashboard.myStakedPositions}</h3>
           <div className="space-y-2">
             {operators
               .filter((o) => Number(o.myStaked) > 0)

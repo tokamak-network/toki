@@ -1,10 +1,12 @@
 "use client";
 
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 export default function ConnectButton() {
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { wallets } = useWallets();
+  const { t } = useTranslation();
 
   if (!ready) {
     return (
@@ -12,7 +14,7 @@ export default function ConnectButton() {
         disabled
         className="px-5 py-2 rounded-lg bg-white/10 text-gray-500 text-sm font-medium"
       >
-        Loading...
+        {t.header.loading}
       </button>
     );
   }
@@ -62,7 +64,7 @@ export default function ConnectButton() {
           onClick={logout}
           className="px-4 py-2 rounded-lg bg-white/10 text-gray-300 text-sm font-medium hover:bg-white/15 transition-colors"
         >
-          Logout
+          {t.header.logout}
         </button>
       </div>
     );
@@ -73,7 +75,7 @@ export default function ConnectButton() {
       onClick={login}
       className="px-5 py-2 rounded-lg bg-gradient-to-r from-accent-blue/80 to-accent-navy/80 text-white text-sm font-medium hover:from-accent-blue hover:to-accent-navy transition-all"
     >
-      Connect
+      {t.header.connect}
     </button>
   );
 }

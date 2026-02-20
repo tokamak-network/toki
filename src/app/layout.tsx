@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -36,7 +37,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-grid min-h-screen`}
       >
-        <PrivyClientProvider>{children}</PrivyClientProvider>
+        <LanguageProvider>
+          <PrivyClientProvider>{children}</PrivyClientProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

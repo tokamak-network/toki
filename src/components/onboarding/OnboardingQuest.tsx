@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/components/providers/LanguageProvider";
+import type { Dictionary } from "@/locales";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
 
@@ -16,16 +18,6 @@ const MOOD_IMAGES: Record<Mood, string> = {
   proud: "/ttoni-proud.png",
   cheer: "/ttoni-cheer.png",
   wink: "/ttoni-wink.png",
-};
-
-const MOOD_LABELS: Record<Mood, string> = {
-  welcome: "-- 반가운",
-  explain: "-- 설명하는",
-  thinking: "-- 진지한",
-  excited: "-- 신난",
-  proud: "-- 자랑스러운",
-  cheer: "-- 응원하는",
-  wink: "-- 장난스러운",
 };
 
 interface DialogueLine {
@@ -54,154 +46,153 @@ interface Quest {
   success: DialogueLine[];
 }
 
-const QUESTS: Quest[] = [
-  {
-    id: "install-metamask",
-    title: "금고 만들기",
-    subtitle: "MetaMask 설치",
-    badge: "금고 초보자",
-    badgeIcon: "V",
-    xp: 100,
-    intro: [
-      { text: "안녕! 나는 또니라고 해.", mood: "welcome" },
-      { text: "너의 TON 스테이킹을 도와줄 가이드야.", mood: "welcome" },
-      { text: "시작하기 전에, 먼저 '디지털 금고'를 만들어야 해.", mood: "explain" },
-      { text: "MetaMask라는 건데, 크롬에 설치하는 확장 프로그램이야.", mood: "explain" },
-      { text: "아래 버튼을 누르면 설치 페이지로 이동할 거야. 설치하고 돌아와!", mood: "cheer" },
-    ],
-    action: {
-      type: "link",
-      label: "MetaMask 설치하러 가기",
-      url: "https://metamask.io/download/",
+function buildQuests(t: Dictionary["onboarding"]): Quest[] {
+  return [
+    {
+      id: "install-metamask",
+      title: t.quest1Title,
+      subtitle: t.quest1Subtitle,
+      badge: t.quest1Badge,
+      badgeIcon: "V",
+      xp: 100,
+      intro: [
+        { text: t.quest1Intro1, mood: "welcome" },
+        { text: t.quest1Intro2, mood: "welcome" },
+        { text: t.quest1Intro3, mood: "explain" },
+        { text: t.quest1Intro4, mood: "explain" },
+        { text: t.quest1Intro5, mood: "cheer" },
+      ],
+      action: { type: "link", label: t.quest1Action, url: "https://metamask.io/download/" },
+      verify: "metamask-installed",
+      success: [
+        { text: t.quest1Success1, mood: "excited" },
+        { text: t.quest1Success2, mood: "wink" },
+      ],
     },
-    verify: "metamask-installed",
-    success: [
-      { text: "잘했어! 금고가 생겼네!", mood: "excited" },
-      { text: "벌써 첫 번째 퀘스트 클리어야. 이 조합 꽤 잘 맞는걸?", mood: "wink" },
-    ],
-  },
-  {
-    id: "create-wallet",
-    title: "열쇠 보관하기",
-    subtitle: "시드 구문 백업",
-    badge: "열쇠 지킴이",
-    badgeIcon: "K",
-    xp: 150,
-    intro: [
-      { text: "이제 금고의 '비밀 열쇠'를 만들 차례야.", mood: "explain" },
-      { text: "MetaMask를 열면 '새 지갑 만들기'가 보일 거야.", mood: "explain" },
-      { text: "12개의 영어 단어가 나오는데... 이게 정말정말 중요해.", mood: "thinking" },
-      { text: "이 단어들이 네 금고의 유일한 열쇠거든.", mood: "thinking" },
-      { text: "종이에 적어서 안전한 곳에 보관해. 사진은 절대 안 돼!", mood: "thinking" },
-      { text: "다 적었으면 아래 체크박스를 눌러줘.", mood: "cheer" },
-    ],
-    action: {
-      type: "confirm",
-      label: "완료 확인",
-      confirmText: "12개 단어를 종이에 적어서 안전하게 보관했어요",
+    {
+      id: "create-wallet",
+      title: t.quest2Title,
+      subtitle: t.quest2Subtitle,
+      badge: t.quest2Badge,
+      badgeIcon: "K",
+      xp: 150,
+      intro: [
+        { text: t.quest2Intro1, mood: "explain" },
+        { text: t.quest2Intro2, mood: "explain" },
+        { text: t.quest2Intro3, mood: "thinking" },
+        { text: t.quest2Intro4, mood: "thinking" },
+        { text: t.quest2Intro5, mood: "thinking" },
+        { text: t.quest2Intro6, mood: "cheer" },
+      ],
+      action: { type: "confirm", label: t.quest2ActionLabel, confirmText: t.quest2Confirm },
+      verify: "user-confirm",
+      success: [
+        { text: t.quest2Success1, mood: "welcome" },
+        { text: t.quest2Success2, mood: "thinking" },
+        { text: t.quest2Success3, mood: "excited" },
+      ],
     },
-    verify: "user-confirm",
-    success: [
-      { text: "좋아, 믿을게!", mood: "welcome" },
-      { text: "열쇠를 잃어버리면 금고를 다시 열 수 없으니까 꼭 잘 보관해야 해.", mood: "thinking" },
-      { text: "두 번째 퀘스트도 클리어! 점점 실력이 느는걸?", mood: "excited" },
-    ],
-  },
-  {
-    id: "connect-ttoni",
-    title: "또니와 연결",
-    subtitle: "지갑 연결하기",
-    badge: "또니의 친구",
-    badgeIcon: "F",
-    xp: 200,
-    intro: [
-      { text: "이제 네 금고를 나한테 보여줄 차례야!", mood: "excited" },
-      { text: "아래 버튼을 누르면 MetaMask 팝업이 뜰 거야.", mood: "explain" },
-      { text: "'연결' 버튼만 눌러주면 돼. 간단하지?", mood: "wink" },
-    ],
-    action: { type: "connect", label: "MetaMask 연결하기" },
-    verify: "metamask-connected",
-    success: [
-      { text: "연결 완료! 이제 네 지갑이 보여.", mood: "excited" },
-      { text: "이 주소가 앞으로 네 스테이킹 주소가 될 거야.", mood: "explain" },
-      { text: "세 번째 퀘스트 클리어! 우리 사이가 점점 가까워지는 느낌?", mood: "wink" },
-    ],
-  },
-  {
-    id: "verify-upbit",
-    title: "업비트 인증",
-    subtitle: "거래소 지갑 등록",
-    badge: "거래소 고수",
-    badgeIcon: "U",
-    xp: 300,
-    intro: [
-      { text: "업비트에서 TON을 가져오려면 지갑 주소를 인증해야 해.", mood: "explain" },
-      { text: "업비트 앱을 열어봐. 같이 하자!", mood: "cheer" },
-      { text: "[MY] -> [개인지갑 주소 관리] -> [주소 등록] 순서야.", mood: "explain" },
-      { text: "이더리움(ETH) 네트워크를 선택하고...", mood: "explain" },
-      { text: "MetaMask 연결 버튼을 누르면 주소가 자동 입력돼.", mood: "explain" },
-      { text: "마지막으로 카카오톡 인증까지 완료하면 끝!", mood: "thinking" },
-      { text: "다 했으면 아래에서 확인해줘.", mood: "cheer" },
-    ],
-    action: {
-      type: "confirm",
-      label: "완료 확인",
-      confirmText: "업비트에서 지갑 인증을 완료했어요",
+    {
+      id: "connect-ttoni",
+      title: t.quest3Title,
+      subtitle: t.quest3Subtitle,
+      badge: t.quest3Badge,
+      badgeIcon: "F",
+      xp: 200,
+      intro: [
+        { text: t.quest3Intro1, mood: "excited" },
+        { text: t.quest3Intro2, mood: "explain" },
+        { text: t.quest3Intro3, mood: "wink" },
+      ],
+      action: { type: "connect", label: t.quest3Action },
+      verify: "metamask-connected",
+      success: [
+        { text: t.quest3Success1, mood: "excited" },
+        { text: t.quest3Success2, mood: "explain" },
+        { text: t.quest3Success3, mood: "wink" },
+      ],
     },
-    verify: "user-confirm",
-    success: [
-      { text: "대단해! 이게 제일 어려운 단계였는데!", mood: "excited" },
-      { text: "이제 업비트에서 이 주소로 바로 TON을 보낼 수 있어.", mood: "welcome" },
-      { text: "네 번째 퀘스트 클리어! 이 정도면 프로 아니야?", mood: "proud" },
-    ],
-  },
-  {
-    id: "receive-ton",
-    title: "첫 TON 받기",
-    subtitle: "업비트에서 TON 출금",
-    badge: "TON 홀더",
-    badgeIcon: "T",
-    xp: 250,
-    intro: [
-      { text: "이제 진짜 TON을 가져와 볼까?", mood: "excited" },
-      { text: "업비트 앱에서: 출금 -> TON -> 네 MetaMask 주소 입력", mood: "explain" },
-      { text: "처음엔 소액으로 테스트하는 게 좋아!", mood: "thinking" },
-      { text: "10 TON 정도면 충분해. 전송되면 아래에서 확인해줘.", mood: "cheer" },
-    ],
-    action: {
-      type: "confirm",
-      label: "완료 확인",
-      confirmText: "업비트에서 TON 출금을 완료했어요",
+    {
+      id: "verify-upbit",
+      title: t.quest4Title,
+      subtitle: t.quest4Subtitle,
+      badge: t.quest4Badge,
+      badgeIcon: "U",
+      xp: 300,
+      intro: [
+        { text: t.quest4Intro1, mood: "explain" },
+        { text: t.quest4Intro2, mood: "cheer" },
+        { text: t.quest4Intro3, mood: "explain" },
+        { text: t.quest4Intro4, mood: "explain" },
+        { text: t.quest4Intro5, mood: "explain" },
+        { text: t.quest4Intro6, mood: "thinking" },
+        { text: t.quest4Intro7, mood: "cheer" },
+      ],
+      action: { type: "confirm", label: t.quest4ActionLabel, confirmText: t.quest4Confirm },
+      verify: "user-confirm",
+      success: [
+        { text: t.quest4Success1, mood: "excited" },
+        { text: t.quest4Success2, mood: "welcome" },
+        { text: t.quest4Success3, mood: "proud" },
+      ],
     },
-    verify: "user-confirm",
-    success: [
-      { text: "TON이 도착했어! 이제 스테이킹 준비 완료!", mood: "excited" },
-      { text: "다섯 번째 퀘스트 클리어! 거의 다 왔어!", mood: "proud" },
-    ],
-  },
-  {
-    id: "first-stake",
-    title: "첫 스테이킹",
-    subtitle: "스테이킹 시작하기",
-    badge: "스테이킹 히어로",
-    badgeIcon: "S",
-    xp: 500,
-    intro: [
-      { text: "드디어 마지막 퀘스트야!", mood: "excited" },
-      { text: "여기까지 온 너, 정말 대단해.", mood: "proud" },
-      { text: "이제 대시보드로 이동해서 첫 스테이킹을 해볼까?", mood: "explain" },
-      { text: "오퍼레이터를 선택하고, 원하는 만큼 TON을 스테이킹하면 돼!", mood: "cheer" },
-    ],
-    action: { type: "navigate", label: "대시보드에서 스테이킹 시작", route: "/dashboard" },
-    verify: "user-confirm",
-    success: [
-      { text: "모든 퀘스트를 클리어했어!", mood: "excited" },
-      { text: "너... 혹시 천재야? 이렇게 빨리 끝낼 줄 몰랐어.", mood: "proud" },
-      { text: "이제부터 블록이 쌓일 때마다 시뇨리지 보상이 들어올 거야.", mood: "explain" },
-      { text: "앞으로도 잘 부탁해, 파트너!", mood: "wink" },
-    ],
-  },
-];
+    {
+      id: "receive-ton",
+      title: t.quest5Title,
+      subtitle: t.quest5Subtitle,
+      badge: t.quest5Badge,
+      badgeIcon: "T",
+      xp: 250,
+      intro: [
+        { text: t.quest5Intro1, mood: "excited" },
+        { text: t.quest5Intro2, mood: "explain" },
+        { text: t.quest5Intro3, mood: "thinking" },
+        { text: t.quest5Intro4, mood: "cheer" },
+      ],
+      action: { type: "confirm", label: t.quest5ActionLabel, confirmText: t.quest5Confirm },
+      verify: "user-confirm",
+      success: [
+        { text: t.quest5Success1, mood: "excited" },
+        { text: t.quest5Success2, mood: "proud" },
+      ],
+    },
+    {
+      id: "first-stake",
+      title: t.quest6Title,
+      subtitle: t.quest6Subtitle,
+      badge: t.quest6Badge,
+      badgeIcon: "S",
+      xp: 500,
+      intro: [
+        { text: t.quest6Intro1, mood: "excited" },
+        { text: t.quest6Intro2, mood: "proud" },
+        { text: t.quest6Intro3, mood: "explain" },
+        { text: t.quest6Intro4, mood: "cheer" },
+      ],
+      action: { type: "navigate", label: t.quest6Action, route: "/dashboard" },
+      verify: "user-confirm",
+      success: [
+        { text: t.quest6Success1, mood: "excited" },
+        { text: t.quest6Success2, mood: "proud" },
+        { text: t.quest6Success3, mood: "explain" },
+        { text: t.quest6Success4, mood: "wink" },
+      ],
+    },
+  ];
+}
+
+function getMoodLabel(mood: Mood, t: Dictionary["onboarding"]): string {
+  const map: Record<Mood, string> = {
+    welcome: t.moodWelcome,
+    explain: t.moodExplain,
+    thinking: t.moodThinking,
+    excited: t.moodExcited,
+    proud: t.moodProud,
+    cheer: t.moodCheer,
+    wink: t.moodWink,
+  };
+  return map[mood];
+}
 
 // ─── Typing Effect Hook ───────────────────────────────────────────────
 
@@ -243,12 +234,13 @@ function ProgressBar({
   total: number;
   xp: number;
 }) {
+  const { t } = useTranslation();
   const pct = (current / total) * 100;
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-2">
         <span className="text-sm text-gray-400">
-          Quest {Math.min(current + 1, total)} / {total}
+          {t.onboarding.quest} {Math.min(current + 1, total)} / {total}
         </span>
         <span className="text-sm font-mono-num text-accent-amber">
           {xp} XP
@@ -339,12 +331,15 @@ function DialogueBox({
   line,
   onNext,
   isLast,
+  moodLabel,
 }: {
   line: DialogueLine;
   onNext: () => void;
   isLast: boolean;
+  moodLabel?: string;
 }) {
   const { displayed, done, skip } = useTypewriter(line.text, 35);
+  const { t } = useTranslation();
 
   return (
     <div
@@ -354,9 +349,9 @@ function DialogueBox({
       <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-accent-cyan font-semibold text-sm">Ttoni</span>
-          {line.mood && (
+          {line.mood && moodLabel && (
             <span className="text-xs text-gray-500">
-              {MOOD_LABELS[line.mood]}
+              {moodLabel}
             </span>
           )}
         </div>
@@ -369,7 +364,7 @@ function DialogueBox({
         {done && (
           <div className="text-right mt-2">
             <span className="text-xs text-gray-500">
-              {isLast ? "Click to continue" : "Click to next"}
+              {isLast ? t.onboarding.clickToContinue : t.onboarding.clickToNext}
             </span>
           </div>
         )}
@@ -381,13 +376,13 @@ function DialogueBox({
 // ─── Mood Glow Colors ────────────────────────────────────────────────
 
 const MOOD_GLOW: Record<Mood, string> = {
-  welcome: "rgba(74, 144, 217, 0.35)",   // blue
-  explain: "rgba(96, 165, 250, 0.35)",   // sky
-  thinking: "rgba(99, 102, 241, 0.35)",  // indigo
-  excited: "rgba(245, 158, 11, 0.45)",   // amber/gold
-  proud: "rgba(34, 211, 238, 0.40)",     // cyan
-  cheer: "rgba(168, 85, 247, 0.35)",     // purple
-  wink: "rgba(236, 72, 153, 0.35)",      // pink
+  welcome: "rgba(74, 144, 217, 0.35)",
+  explain: "rgba(96, 165, 250, 0.35)",
+  thinking: "rgba(99, 102, 241, 0.35)",
+  excited: "rgba(245, 158, 11, 0.45)",
+  proud: "rgba(34, 211, 238, 0.40)",
+  cheer: "rgba(168, 85, 247, 0.35)",
+  wink: "rgba(236, 72, 153, 0.35)",
 };
 
 // ─── Sparkle Particles ───────────────────────────────────────────────
@@ -418,7 +413,6 @@ function SparkleParticles({ trigger }: { trigger: number }) {
   return (
     <div className="absolute -inset-10 pointer-events-none overflow-visible -z-10">
       {particles.map((p) => {
-        // Place particles only in the outer ring (avoid center 20-80% area)
         const edge = Math.random() > 0.5;
         const x = edge
           ? (Math.random() > 0.5 ? Math.random() * 15 : 85 + Math.random() * 15)
@@ -477,7 +471,6 @@ function ConfettiEffect({ active }: { active: boolean }) {
   return (
     <div className="absolute -inset-12 pointer-events-none overflow-visible -z-10">
       {pieces.map((p) => {
-        // Confetti falls in the outer ring area around the image
         const x = Math.random() > 0.5
           ? Math.random() * 20
           : 80 + Math.random() * 20;
@@ -505,7 +498,6 @@ function ConfettiEffect({ active }: { active: boolean }) {
 // ─── Character Display ────────────────────────────────────────────────
 
 function TtoniCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
-  // Badge phase uses proud, action/verifying phase uses cheer
   const effectiveMood: Mood =
     phase === "badge"
       ? "proud"
@@ -521,12 +513,10 @@ function TtoniCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
 
   useEffect(() => {
     if (imageSrc !== prevSrc) {
-      // Trigger sparkle particles on mood change
       if (imageSrc !== MOOD_IMAGES[prevMoodRef.current]) {
         setSparkleTrigger((n) => n + 1);
       }
       prevMoodRef.current = effectiveMood;
-      // Fade out → swap → fade in (same as original 200ms)
       setTransitioning(true);
       const timer = setTimeout(() => {
         setPrevSrc(imageSrc);
@@ -541,24 +531,16 @@ function TtoniCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
 
   return (
     <div className="relative w-48 sm:w-56 lg:w-64 overflow-visible">
-      {/* Mood-based background glow */}
       <div
         className="absolute inset-0 rounded-3xl blur-3xl -z-10 animate-glow-pulse transition-colors duration-700"
         style={{ backgroundColor: glowColor }}
       />
-      {/* Secondary outer glow ring */}
       <div
         className="absolute -inset-4 rounded-[2rem] blur-2xl -z-20 opacity-20 transition-colors duration-700"
         style={{ backgroundColor: glowColor }}
       />
-
-      {/* Sparkle particles on mood change */}
       <SparkleParticles trigger={sparkleTrigger} />
-
-      {/* Confetti on badge reveal */}
       <ConfettiEffect active={isBadge} />
-
-      {/* Character image with original fade transition */}
       <Image
         src={transitioning ? prevSrc : imageSrc}
         alt="Ttoni"
@@ -579,6 +561,8 @@ type Phase = "intro" | "action" | "verifying" | "success" | "badge";
 
 export default function OnboardingQuest() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const QUESTS = buildQuests(t.onboarding);
   const [questIndex, setQuestIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("intro");
   const [dialogueIndex, setDialogueIndex] = useState(0);
@@ -623,9 +607,9 @@ export default function OnboardingQuest() {
   const quest = QUESTS[questIndex];
   const dialogues =
     phase === "intro" || phase === "action" || phase === "verifying"
-      ? quest.intro
-      : quest.success;
-  const currentLine = dialogues[dialogueIndex];
+      ? quest?.intro
+      : quest?.success;
+  const currentLine = dialogues?.[dialogueIndex];
   const isAllComplete = questIndex >= QUESTS.length;
 
   // Auto-scroll to quest area
@@ -634,6 +618,7 @@ export default function OnboardingQuest() {
   }, [phase, questIndex]);
 
   const handleNextDialogue = () => {
+    if (!dialogues) return;
     if (dialogueIndex < dialogues.length - 1) {
       setDialogueIndex(dialogueIndex + 1);
     } else if (phase === "intro") {
@@ -644,7 +629,7 @@ export default function OnboardingQuest() {
   };
 
   const handleAction = async () => {
-    if (!quest.action) return;
+    if (!quest?.action) return;
 
     if (quest.action.type === "link") {
       window.open(quest.action.url, "_blank");
@@ -654,7 +639,7 @@ export default function OnboardingQuest() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const ethereum = (window as any).ethereum;
         if (!ethereum) {
-          alert("MetaMask가 감지되지 않습니다. 먼저 설치해주세요!");
+          alert(t.onboarding.metamaskNotDetected);
           return;
         }
         const accounts = await ethereum.request({
@@ -665,7 +650,7 @@ export default function OnboardingQuest() {
           handleVerifySuccess();
         }
       } catch {
-        alert("MetaMask 연결이 취소되었습니다.");
+        alert(t.onboarding.metamaskCancelled);
       }
     } else if (quest.action.type === "confirm") {
       if (!confirmed) return;
@@ -676,15 +661,13 @@ export default function OnboardingQuest() {
   };
 
   const handleVerify = async () => {
-    if (quest.verify === "metamask-installed") {
+    if (quest?.verify === "metamask-installed") {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ethereum = (window as any).ethereum;
       if (ethereum) {
         handleVerifySuccess();
       } else {
-        alert(
-          "MetaMask가 아직 감지되지 않아요. 설치 후 이 페이지를 새로고침해주세요!"
-        );
+        alert(t.onboarding.metamaskNotYet);
       }
     }
   };
@@ -696,6 +679,7 @@ export default function OnboardingQuest() {
   };
 
   const handleBadgeDone = () => {
+    if (!quest) return;
     const newCompleted = new Set(completedQuests);
     newCompleted.add(quest.id);
     const newXp = totalXp + quest.xp;
@@ -708,7 +692,6 @@ export default function OnboardingQuest() {
     setDialogueIndex(0);
     saveProgress(newIndex, newXp, newCompleted);
 
-    // Navigate if last quest action was navigate
     if (quest.action?.type === "navigate" && quest.action.route) {
       router.push(quest.action.route);
     }
@@ -729,13 +712,13 @@ export default function OnboardingQuest() {
           <TtoniCharacter mood="proud" phase="badge" />
           <div className="mt-8">
             <h1 className="text-3xl font-bold text-gradient mb-4">
-              All Quests Clear!
+              {t.onboarding.allClear}
             </h1>
             <p className="text-gray-400 mb-2">
-              모든 퀘스트를 클리어했어요.
+              {t.onboarding.allClearDesc}
             </p>
             <p className="text-accent-amber font-mono-num text-xl mb-8">
-              Total {totalXp} XP
+              {t.onboarding.totalXp.replace("{xp}", String(totalXp))}
             </p>
             <div className="flex flex-wrap gap-3 justify-center mb-8">
               {QUESTS.map((q) => (
@@ -752,7 +735,7 @@ export default function OnboardingQuest() {
               onClick={() => router.push("/dashboard")}
               className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
             >
-              Dashboard
+              {t.onboarding.goToDashboard}
             </button>
           </div>
         </div>
@@ -790,7 +773,7 @@ export default function OnboardingQuest() {
           {/* Left: Quest List */}
           <div className="lg:w-64 shrink-0">
             <h3 className="text-sm text-gray-500 mb-3 font-semibold">
-              Quests
+              {t.onboarding.quests}
             </h3>
             <div className="space-y-2">
               {QUESTS.map((q, i) => (
@@ -817,7 +800,7 @@ export default function OnboardingQuest() {
             {/* Quest Title */}
             <div className="mb-6">
               <div className="text-xs text-accent-cyan mb-1">
-                Quest {questIndex + 1}
+                {t.onboarding.quest} {questIndex + 1}
               </div>
               <h2 className="text-2xl font-bold text-gray-100">
                 {quest.title}
@@ -833,7 +816,7 @@ export default function OnboardingQuest() {
               {/* Connected Address */}
               {connectedAddr && phase === "success" && quest.id === "connect-ttoni" && (
                 <div className="w-full p-3 rounded-lg bg-white/5 border border-accent-cyan/20 text-center">
-                  <div className="text-xs text-gray-500 mb-1">Your Address</div>
+                  <div className="text-xs text-gray-500 mb-1">{t.onboarding.yourAddress}</div>
                   <div className="font-mono text-sm text-accent-cyan break-all">
                     {connectedAddr}
                   </div>
@@ -849,8 +832,8 @@ export default function OnboardingQuest() {
                     className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold hover:scale-[1.02] transition-transform"
                   >
                     {questIndex < QUESTS.length - 1
-                      ? "Next Quest"
-                      : "Complete!"}
+                      ? t.onboarding.nextQuest
+                      : t.onboarding.complete}
                   </button>
                 </div>
               )}
@@ -862,6 +845,7 @@ export default function OnboardingQuest() {
                     line={currentLine}
                     onNext={handleNextDialogue}
                     isLast={dialogueIndex === dialogues.length - 1}
+                    moodLabel={currentLine.mood ? getMoodLabel(currentLine.mood, t.onboarding) : undefined}
                   />
                 </div>
               )}
@@ -869,7 +853,6 @@ export default function OnboardingQuest() {
               {/* Action Phase */}
               {phase === "action" && quest.action && (
                 <div className="w-full space-y-4">
-                  {/* Action-specific UI */}
                   {quest.action.type === "link" && (
                     <button
                       onClick={handleAction}
@@ -927,13 +910,13 @@ export default function OnboardingQuest() {
                 <div className="w-full space-y-4">
                   <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-center">
                     <p className="text-gray-400 text-sm mb-4">
-                      MetaMask 설치를 완료했으면 아래 버튼을 눌러주세요.
+                      {t.onboarding.metamaskInstallCheck}
                     </p>
                     <button
                       onClick={handleVerify}
                       className="px-8 py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold hover:scale-[1.02] transition-transform"
                     >
-                      설치 확인하기
+                      {t.onboarding.verifyInstall}
                     </button>
                   </div>
                 </div>

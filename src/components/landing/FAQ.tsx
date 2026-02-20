@@ -1,45 +1,29 @@
 "use client";
 
 import { useState } from "react";
-
-const faqs = [
-  {
-    q: "What is TON seigniorage staking?",
-    a: "Tokamak Network distributes 3.92 WTON per Ethereum block to stakers. By staking your TON through operators, you earn a share of this seigniorage. Currently the APR is ~35%, and rewards compound automatically.",
-  },
-  {
-    q: "Do I need ETH for gas fees?",
-    a: "No. Ttoni uses EIP-7702 and a custom Paymaster so all gas fees are paid in TON. A small amount of TON (typically 1-2 TON) is deducted from your balance to cover gas costs.",
-  },
-  {
-    q: "How do I transfer TON from Upbit?",
-    a: "After signing up, Ttoni gives you a personal wallet address. Register this address on Upbit (My > Personal Wallet Management), then withdraw your TON to it. We provide step-by-step guides for each exchange.",
-  },
-  {
-    q: "Is my TON safe?",
-    a: "Your TON is staked directly to Tokamak Network's L1 smart contracts (SeigManager, DepositManager) — the same contracts used by all existing stakers. Ttoni never holds custody of your funds.",
-  },
-  {
-    q: "How long does unstaking take?",
-    a: "Unstaking requires a 14-day waiting period (93,046 blocks), which is a Tokamak Network protocol requirement. After the waiting period, you can withdraw your TON back to your wallet.",
-  },
-  {
-    q: "What operator will my TON be staked to?",
-    a: "Ttoni automatically selects the optimal operator based on commission rates and activity. You can also manually choose from the 10 available operators if you prefer.",
-  },
-];
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const { t } = useTranslation();
+
+  const faqs = [
+    { q: t.faq.q1, a: t.faq.a1 },
+    { q: t.faq.q2, a: t.faq.a2 },
+    { q: t.faq.q3, a: t.faq.a3 },
+    { q: t.faq.q4, a: t.faq.a4 },
+    { q: t.faq.q5, a: t.faq.a5 },
+    { q: t.faq.q6, a: t.faq.a6 },
+  ];
 
   return (
     <section className="py-24 px-4">
       <div className="max-w-3xl mx-auto">
         <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">
-          FAQ
+          {t.faq.title}
         </h2>
         <p className="text-gray-400 text-center mb-16 text-lg">
-          Common questions about Ttoni
+          {t.faq.subtitle}
         </p>
 
         <div className="space-y-3">

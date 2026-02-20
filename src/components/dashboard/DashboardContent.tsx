@@ -7,6 +7,8 @@ import { formatUnits } from "viem";
 import { createPublicClient, http } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 import StakingPanel from "./StakingPanel";
+import { useEip7702 } from "@/hooks/useEip7702";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
 const chain = isTestnet ? sepolia : mainnet;
@@ -44,20 +46,25 @@ interface Balances {
 export default function DashboardContent() {
   const { ready, authenticated, user, logout, exportWallet } = usePrivy();
   const { wallets } = useWallets();
+  const { smartAccountClient, walletType } = useEip7702();
   const router = useRouter();
   const [balances, setBalances] = useState<Balances | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const { t } = useTranslation();
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
   const externalWallet = wallets.find((w) => w.walletClientType !== "privy");
   const primaryWallet = externalWallet || embeddedWallet;
 
+  // EIP-7702: EOA === Smart Account, so balance address is always the EOA
+  const balanceAddress = primaryWallet?.address;
+
   const fetchBalances = useCallback(async () => {
-    if (!primaryWallet?.address) return;
+    if (!balanceAddress) return;
     setLoading(true);
     try {
-      const addr = primaryWallet.address as `0x${string}`;
+      const addr = balanceAddress as `0x${string}`;
       const [ethBal, tonBal, wtonBal] = await Promise.all([
         client.getBalance({ address: addr }),
         client.readContract({
@@ -83,10 +90,10 @@ export default function DashboardContent() {
         }),
       });
     } catch {
-      setBalances({ eth: "—", ton: "—", wton: "—" });
+      setBalances({ eth: "\u2014", ton: "\u2014", wton: "\u2014" });
     }
     setLoading(false);
-  }, [primaryWallet?.address]);
+  }, [balanceAddress]);
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -95,21 +102,21 @@ export default function DashboardContent() {
   }, [ready, authenticated, router]);
 
   useEffect(() => {
-    if (primaryWallet?.address) {
+    if (balanceAddress) {
       fetchBalances();
     }
-  }, [primaryWallet?.address, fetchBalances]);
+  }, [balanceAddress, fetchBalances]);
 
   if (!ready || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-gray-400">{t.dashboard.loading}</div>
       </div>
     );
   }
 
-  const addr = primaryWallet?.address || "";
-  const shortAddr = addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "—";
+  const addr = balanceAddress || "";
+  const shortAddr = addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "\u2014";
 
   const googleAccount = user?.linkedAccounts?.find(
     (a) => a.type === "google_oauth"
@@ -155,7 +162,7 @@ export default function DashboardContent() {
             onClick={logout}
             className="px-4 py-2 rounded-lg bg-white/10 text-gray-300 text-sm hover:bg-white/15 transition-colors"
           >
-            Logout
+            {t.dashboard.logout}
           </button>
         </div>
       </header>
@@ -174,50 +181,58 @@ export default function DashboardContent() {
         {/* Wallet Card */}
         <div className="card p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Wallet</h2>
+            <h2 className="text-lg font-semibold">{t.dashboard.wallet}</h2>
             <div className="flex items-center gap-2">
+              {smartAccountClient && (
+                <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
+                  {t.dashboard.gasless}
+                  {walletType === "external" ? " (MetaMask)" : walletType === "embedded" ? " (Embedded)" : ""}
+                </span>
+              )}
               {embeddedWallet && (
                 <span className="px-2 py-0.5 rounded text-xs bg-accent-purple/20 text-accent-purple">
-                  Embedded
+                  {t.dashboard.embedded}
                 </span>
               )}
               {externalWallet && (
                 <span className="px-2 py-0.5 rounded text-xs bg-accent-cyan/20 text-accent-cyan">
-                  External
+                  {t.dashboard.external}
                 </span>
               )}
             </div>
           </div>
 
-          {/* Address */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 p-3 rounded-lg bg-white/5 font-mono text-sm text-gray-300 truncate">
-              {addr}
+          {/* Wallet Address */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 p-3 rounded-lg bg-white/5 font-mono text-sm text-gray-300 truncate">
+                {primaryWallet?.address || "\u2014"}
+              </div>
+              <button
+                onClick={copyAddress}
+                className="px-4 py-3 rounded-lg bg-white/10 text-sm hover:bg-white/15 transition-colors shrink-0"
+              >
+                {copied ? t.dashboard.copied : t.dashboard.copy}
+              </button>
             </div>
-            <button
-              onClick={copyAddress}
-              className="px-4 py-3 rounded-lg bg-white/10 text-sm hover:bg-white/15 transition-colors shrink-0"
-            >
-              {copied ? "Copied!" : "Copy"}
-            </button>
           </div>
 
           {/* Balances */}
-          <h3 className="text-sm text-gray-400 mb-3">Balances</h3>
+          <h3 className="text-sm text-gray-400 mb-3">{t.dashboard.balances}</h3>
           <div className="grid sm:grid-cols-3 gap-4 mb-6">
             <BalanceItem
               label="ETH"
-              value={loading ? "..." : balances?.eth || "—"}
+              value={loading ? "..." : balances?.eth || "\u2014"}
               color="text-gray-300"
             />
             <BalanceItem
               label="TON"
-              value={loading ? "..." : balances?.ton || "—"}
+              value={loading ? "..." : balances?.ton || "\u2014"}
               color="text-accent-cyan"
             />
             <BalanceItem
               label="WTON"
-              value={loading ? "..." : balances?.wton || "—"}
+              value={loading ? "..." : balances?.wton || "\u2014"}
               color="text-accent-gold"
             />
           </div>
@@ -229,14 +244,14 @@ export default function DashboardContent() {
                 onClick={handleExportWallet}
                 className="px-4 py-2 rounded-lg bg-white/10 text-sm text-gray-300 hover:bg-white/15 transition-colors"
               >
-                Export Private Key
+                {t.dashboard.exportPrivateKey}
               </button>
             )}
             <button
               onClick={fetchBalances}
               className="px-4 py-2 rounded-lg bg-white/10 text-sm text-gray-300 hover:bg-white/15 transition-colors"
             >
-              Refresh Balances
+              {t.dashboard.refreshBalances}
             </button>
             <a
               href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/address/${addr}`}
@@ -244,7 +259,7 @@ export default function DashboardContent() {
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-lg bg-white/10 text-sm text-gray-300 hover:bg-white/15 transition-colors"
             >
-              View on Etherscan
+              {t.dashboard.viewOnEtherscan}
             </a>
           </div>
         </div>
@@ -255,6 +270,7 @@ export default function DashboardContent() {
             <StakingPanel
               walletAddress={primaryWallet.address}
               getEthereumProvider={getEthereumProvider}
+              smartAccountClient={smartAccountClient}
               onBalanceChange={fetchBalances}
             />
           </div>
@@ -262,7 +278,7 @@ export default function DashboardContent() {
 
         {/* Connected Accounts */}
         <div className="card p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Connected Accounts</h2>
+          <h2 className="text-lg font-semibold mb-4">{t.dashboard.connectedAccounts}</h2>
           <div className="space-y-3">
             {user?.linkedAccounts?.map((account, i) => (
               <div
@@ -281,7 +297,7 @@ export default function DashboardContent() {
                   </div>
                 </div>
                 {"verifiedAt" in account ? (
-                  <span className="text-green-400 text-xs">Verified</span>
+                  <span className="text-green-400 text-xs">{t.dashboard.verified}</span>
                 ) : null}
               </div>
             ))}
@@ -292,7 +308,7 @@ export default function DashboardContent() {
         {wallets.length > 1 && (
           <div className="card p-6">
             <h2 className="text-lg font-semibold mb-4">
-              All Wallets ({wallets.length})
+              {t.dashboard.allWallets} ({wallets.length})
             </h2>
             <div className="space-y-3">
               {wallets.map((w) => (
@@ -305,7 +321,7 @@ export default function DashboardContent() {
                   </div>
                   <span className="text-gray-500 text-xs shrink-0">
                     {w.walletClientType === "privy"
-                      ? "Embedded"
+                      ? t.dashboard.embedded
                       : w.walletClientType}
                   </span>
                 </div>

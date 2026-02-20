@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const ConnectButton = dynamic(() => import("./ConnectButton"), {
   ssr: false,
@@ -15,8 +16,39 @@ const ConnectButton = dynamic(() => import("./ConnectButton"), {
   ),
 });
 
+function LanguageToggle() {
+  const { locale, setLocale } = useTranslation();
+
+  return (
+    <div className="flex items-center rounded-lg bg-white/5 border border-white/10 text-xs font-medium overflow-hidden">
+      <button
+        onClick={() => setLocale("en")}
+        className={`px-2.5 py-1.5 transition-colors ${
+          locale === "en"
+            ? "bg-accent-blue/20 text-accent-sky"
+            : "text-gray-500 hover:text-gray-300"
+        }`}
+      >
+        EN
+      </button>
+      <div className="w-px h-4 bg-white/10" />
+      <button
+        onClick={() => setLocale("ko")}
+        className={`px-2.5 py-1.5 transition-colors ${
+          locale === "ko"
+            ? "bg-accent-blue/20 text-accent-sky"
+            : "text-gray-500 hover:text-gray-300"
+        }`}
+      >
+        KO
+      </button>
+    </div>
+  );
+}
+
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-white/5">
@@ -34,13 +66,13 @@ export default function Header() {
         {/* Desktop Nav */}
         <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-400">
           <a href="#how-it-works" className="hover:text-foreground transition-colors">
-            How It Works
+            {t.header.howItWorks}
           </a>
           <a href="#why-ttoni" className="hover:text-foreground transition-colors">
-            Why Ttoni
+            {t.header.whyTtoni}
           </a>
           <a href="#stats" className="hover:text-foreground transition-colors">
-            Stats
+            {t.header.stats}
           </a>
           <a
             href="https://github.com/tokamak-network/ttoni"
@@ -48,12 +80,15 @@ export default function Header() {
             rel="noopener noreferrer"
             className="hover:text-foreground transition-colors"
           >
-            GitHub
+            {t.header.github}
           </a>
         </nav>
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          <div className="hidden sm:block">
+            <LanguageToggle />
+          </div>
           <ConnectButton />
 
           {/* Mobile hamburger */}
@@ -77,13 +112,13 @@ export default function Header() {
         <nav className="sm:hidden border-t border-white/5 bg-background/95 backdrop-blur-md animate-slide-up">
           <div className="px-4 py-4 space-y-3">
             <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              How It Works
+              {t.header.howItWorks}
             </a>
             <a href="#why-ttoni" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              Why Ttoni
+              {t.header.whyTtoni}
             </a>
             <a href="#stats" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              Stats
+              {t.header.stats}
             </a>
             <a
               href="https://github.com/tokamak-network/ttoni"
@@ -91,8 +126,11 @@ export default function Header() {
               rel="noopener noreferrer"
               className="block py-2 text-gray-400 hover:text-foreground"
             >
-              GitHub
+              {t.header.github}
             </a>
+            <div className="pt-2 border-t border-white/5">
+              <LanguageToggle />
+            </div>
           </div>
         </nav>
       )}
