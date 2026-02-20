@@ -13,6 +13,8 @@ const MAINNET_CONTRACTS = {
   SIMPLE_ACCOUNT_7702: "0xe6Cae83BdE06E4c305530e199D7217f42808555B",
   // MetaMask EIP-7702 Stateless DeleGator (audited by MetaMask, same on all chains)
   METAMASK_DELEGATOR: "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B",
+  // Custom TONPaymaster: pays gas in TON token (not yet deployed on mainnet)
+  TON_PAYMASTER: "",
 } as const;
 
 const SEPOLIA_CONTRACTS = {
@@ -26,6 +28,8 @@ const SEPOLIA_CONTRACTS = {
   SIMPLE_ACCOUNT_7702: "0xe6Cae83BdE06E4c305530e199D7217f42808555B",
   // MetaMask EIP-7702 Stateless DeleGator (audited by MetaMask, same on all chains)
   METAMASK_DELEGATOR: "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B",
+  // Custom TONPaymaster: pays gas in TON token
+  TON_PAYMASTER: "0x7534EB923e88eAeACd070B4d1F33dA58306b800c",
 } as const;
 
 export const CONTRACTS = isTestnet ? SEPOLIA_CONTRACTS : MAINNET_CONTRACTS;

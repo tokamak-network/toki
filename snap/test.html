@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>TON Paymaster Snap Test</title>
+  <style>
+    body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; padding: 20px; max-width: 800px; margin: 0 auto; }
+    h1 { color: #00d2ff; }
+    button { background: #00d2ff; color: #1a1a2e; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 4px; font-family: monospace; }
+    button:hover { background: #00a8cc; }
+    button:disabled { background: #444; color: #888; cursor: not-allowed; }
+    .step { margin: 12px 0; padding: 12px; border-left: 3px solid #444; }
+    .step.running { border-color: #ffa500; }
+    .step.done { border-color: #00ff88; }
+    .step.error { border-color: #ff4444; }
+    .label { font-weight: bold; margin-bottom: 4px; }
+    .status { color: #888; font-size: 14px; white-space: pre-wrap; word-break: break-all; }
+    .status.ok { color: #00ff88; }
+    .status.err { color: #ff4444; }
+    .status.warn { color: #ffa500; }
+    input { background: #2a2a4a; color: #e0e0e0; border: 1px solid #444; padding: 8px; width: 100%; box-sizing: border-box; font-family: monospace; margin: 4px 0; }
+    .section { margin: 20px 0; padding: 16px; background: #2a2a3e; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>TON Paymaster Snap Test</h1>
+  <p>EIP-7702 + ERC-4337 + TONPaymaster</p>
+
+  <div class="section">
+    <div class="label">Private Key (hex)</div>
+    <input type="password" id="pk" value="0x9f2d7bc1ad34409e37ed996688951bf3efc011c061f734958af39131543f4450">
+    <div class="label" style="margin-top:8px">Bundler URL</div>
+    <input type="text" id="bundler" value="https://api.pimlico.io/v2/11155111/rpc?apikey=pim_Mg76qYAcTqM3iKoiSR1EXq">
+  </div>
+
+  <button id="runAll" onclick="runAll()">Run All Steps</button>
+
+  <div id="steps">
+    <div class="step" id="s1"><div class="label">1. Install Snap</div><div class="status" id="s1s">Waiting...</div></div>
+    <div class="step" id="s2"><div class="label">2. Configure Bundler</div><div class="status" id="s2s">Waiting...</div></div>
+    <div class="step" id="s3"><div class="label">3. Register EOA Account</div><div class="status" id="s3s">Waiting...</div></div>
+    <div class="step" id="s4"><div class="label">4. Send Test UserOp (EIP-7702 + TONPaymaster)</div><div class="status" id="s4s">Waiting...</div></div>
+  </div>
+
+  <div class="section" style="margin-top:20px">
+    <div class="label">Manual Test: ton_sendUserOp</div>
+    <div style="margin:8px 0">
+      <div class="label">To Address</div>
+      <input type="text" id="testTo" placeholder="0x..." value="">
+      <div class="label">Data (hex, optional)</div>
+      <input type="text" id="testData" placeholder="0x" value="0x">
+      <div class="label">Value (hex, optional)</div>
+      <input type="text" id="testValue" placeholder="0x0" value="0x0">
+    </div>
+    <button onclick="manualSend()">Send UserOp</button>
+    <div class="status" id="manualStatus" style="margin-top:8px"></div>
+  </div>
+
+<script>
+const SNAP_ID = 'local:http://localhost:8080';
+
+function setStep(n, cls, msg) {
+  document.getElementById('s'+n).className = 'step ' + cls;
+  document.getElementById('s'+n+'s').className = 'status ' + (cls === 'done' ? 'ok' : cls === 'error' ? 'err' : 'warn');
+  document.getElementById('s'+n+'s').textContent = msg;
+}
+
+async function runAll() {
+  const btn = document.getElementById('runAll');
+  btn.disabled = true;
+  const pk = document.getElementById('pk').value;
+  const bundlerUrl = document.getElementById('bundler').value;
+
+  try {
+    // Step 1: Install Snap
+    setStep(1, 'running', 'Installing snap...');
+    const snapResult = await ethereum.request({
+      method: 'wallet_requestSnaps',
+      params: { [SNAP_ID]: {} }
+    });
+    setStep(1, 'done', 'Installed: ' + JSON.stringify(snapResult[SNAP_ID]?.version));
+
+    // Step 2: Configure Bundler
+    setStep(2, 'running', 'Setting bundler URL...');
+    const configResult = await ethereum.request({
+      method: 'wallet_invokeSnap',
+      params: {
+        snapId: SNAP_ID,
+        request: {
+          method: 'ton_setConfig',
+          params: { bundlerUrl }
+        }
+      }
+    });
+    setStep(2, 'done', 'Config: ' + JSON.stringify(configResult));
+
+    // Step 3: Register Account
+    setStep(3, 'running', 'Registering EOA as ERC-4337 account...');
+    const account = await ethereum.request({
+      method: 'wallet_invokeSnap',
+      params: {
+        snapId: SNAP_ID,
+        request: {
+          method: 'keyring_createAccount',
+          params: { options: { privateKey: pk } }
+        }
+      }
+    });
+    const addr = account?.address || account?.result?.address || JSON.stringify(account);
+    setStep(3, 'done', 'Account: ' + addr);
+
+    // Set the test To address to the account address
+    if (account?.address) {
+      document.getElementById('testTo').value = account.address;
+    }
+
+    // Step 4: Test UserOp (simple self-transfer of 0 ETH)
+    setStep(4, 'running', 'Building & submitting UserOp with EIP-7702 delegation...\nThis includes:\n- EIP-7702 authorization signing\n- TON approve for paymaster\n- Gas estimation via bundler\n- UserOp signing\n- Submission to Pimlico bundler');
+
+    const targetAddr = account?.address || '0x0000000000000000000000000000000000000000';
+    const userOpHash = await ethereum.request({
+      method: 'wallet_invokeSnap',
+      params: {
+        snapId: SNAP_ID,
+        request: {
+          method: 'ton_sendUserOp',
+          params: {
+            calls: [{
+              to: targetAddr,
+              data: '0x',
+              value: '0x0'
+            }]
+          }
+        }
+      }
+    });
+    setStep(4, 'done', 'UserOp Hash: ' + userOpHash + '\n\nCheck on: https://jiffyscan.xyz/userOpHash/' + userOpHash + '?network=sepolia');
+
+  } catch (err) {
+    // Find which step failed
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('s'+i);
+      if (el.className.includes('running')) {
+        setStep(i, 'error', 'Error: ' + (err.message || err.data?.message || JSON.stringify(err)));
+        break;
+      }
+    }
+    console.error(err);
+  }
+
+  btn.disabled = false;
+}
+
+async function manualSend() {
+  const statusEl = document.getElementById('manualStatus');
+  statusEl.className = 'status warn';
+  statusEl.textContent = 'Sending...';
+
+  try {
+    const to = document.getElementById('testTo').value;
+    const data = document.getElementById('testData').value;
+    const value = document.getElementById('testValue').value;
+
+    const result = await ethereum.request({
+      method: 'wallet_invokeSnap',
+      params: {
+        snapId: SNAP_ID,
+        request: {
+          method: 'ton_sendUserOp',
+          params: {
+            calls: [{ to, data, value }]
+          }
+        }
+      }
+    });
+
+    statusEl.className = 'status ok';
+    statusEl.textContent = 'UserOp Hash: ' + result + '\nhttps://jiffyscan.xyz/userOpHash/' + result + '?network=sepolia';
+  } catch (err) {
+    statusEl.className = 'status err';
+    statusEl.textContent = 'Error: ' + (err.message || JSON.stringify(err));
+    console.error(err);
+  }
+}
+</script>
+</body>
+</html>

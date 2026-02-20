@@ -1,0 +1,35 @@
+{
+  "name": "@tokamak/ton-paymaster-snap",
+  "version": "0.1.0",
+  "description": "MetaMask Snap enabling TON token gas payment via TONPaymaster (ERC-4337)",
+  "main": "dist/bundle.js",
+  "files": [
+    "dist/",
+    "images/",
+    "snap.manifest.json"
+  ],
+  "scripts": {
+    "build": "mm-snap build",
+    "start": "mm-snap watch",
+    "serve": "mm-snap serve",
+    "lint": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@ethereumjs/util": "^9.0.3",
+    "@metamask/keyring-api": "^13.0.0",
+    "@metamask/keyring-snap-sdk": "^1.1.0",
+    "@metamask/snaps-sdk": "^6.1.1",
+    "@metamask/utils": "^9.1.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@metamask/snaps-cli": "^6.2.1",
+    "@types/uuid": "^10.0.0",
+    "rimraf": "^3.0.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

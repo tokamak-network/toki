@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0",
+  "description": "Pay gas fees with TON token via TONPaymaster (ERC-4337)",
+  "proposedName": "TON Gas Payment",
+  "source": {
+    "shasum": "UCDBDM3l3/EbwxcTDQZ5fBLBH5CiA3EuXEl88TWeaMk=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "iconPath": "images/icon.svg",
+        "packageName": "@tokamak/ton-paymaster-snap",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "initialPermissions": {
+    "endowment:keyring": {
+      "allowedOrigins": [
+        "http://localhost:3000",
+        "https://ttoni.tokamak.network"
+      ]
+    },
+    "endowment:rpc": {
+      "dapps": true
+    },
+    "snap_manageAccounts": {},
+    "snap_manageState": {},
+    "endowment:ethereum-provider": {},
+    "endowment:network-access": {}
+  },
+  "platformVersion": "6.24.0",
+  "manifestVersion": "0.1"
+}

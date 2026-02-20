@@ -7,14 +7,16 @@ import {
   createPublicClient,
   http,
   type Address,
-  formatUnits,
+  type Hex,
+  encodeFunctionData,
+  erc20Abi,
+  maxUint256,
 } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 import { signAuthorization } from "viem/experimental";
 import { to7702SimpleSmartAccount } from "permissionless/accounts";
 import { createSmartAccountClient } from "permissionless";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
-import { prepareUserOperationForErc20Paymaster } from "permissionless/experimental/pimlico";
 import { CONTRACTS } from "@/constants/contracts";
 import type { SmartAccountClient } from "permissionless";
 
@@ -69,6 +71,22 @@ async function checkPaymasterSupport(provider: any, chainId: number): Promise<bo
   }
 }
 
+// Custom paymaster data provider for TONPaymaster
+// The paymaster doesn't require any special data — it reads price from on-chain storage
+function createTonPaymasterProvider(paymasterAddress: Address) {
+  const stubData = {
+    paymaster: paymasterAddress,
+    paymasterData: "0x" as Hex,
+    paymasterVerificationGasLimit: BigInt(150000),
+    paymasterPostOpGasLimit: BigInt(100000),
+  };
+
+  return {
+    getPaymasterStubData: async () => stubData,
+    getPaymasterData: async () => stubData,
+  };
+}
+
 export function useEip7702() {
   const { wallets } = useWallets();
   const [smartAccountClient, setSmartAccountClient] =
@@ -79,8 +97,6 @@ export function useEip7702() {
   const [isGasless, setIsGasless] = useState(false);
   const [paymasterMode, setPaymasterMode] = useState<PaymasterMode>("none");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pimlicoClientRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const authorizationRef = useRef<any>(null);
   const embeddedInitRef = useRef(false);
   const externalInitRef = useRef(false);
@@ -90,7 +106,7 @@ export function useEip7702() {
     (w) => w.walletClientType === "metamask"
   );
 
-  // ─── Path A: Privy Embedded Wallet (unchanged) ───
+  // ─── Path A: Privy Embedded Wallet ───
   useEffect(() => {
     if (!embeddedWallet || !pimlicoUrl || embeddedInitRef.current || metamaskWallet)
       return;
@@ -138,47 +154,33 @@ export function useEip7702() {
           },
         });
 
-        pimlicoClientRef.current = pimlicoClient;
-
-        // Try ERC-20 Paymaster (TON for gas) first, fallback to Verifying Paymaster (sponsor)
-        let useErc20Paymaster = false;
-        try {
-          const quotes = await pimlicoClient.getTokenQuotes({
-            chain,
-            tokens: [CONTRACTS.TON as Address],
-          });
-          useErc20Paymaster = quotes.length > 0;
-          console.log(
-            `TON ERC-20 Paymaster: ${useErc20Paymaster ? "supported" : "not supported"}`,
-            quotes
-          );
-        } catch (e) {
-          console.log("ERC-20 Paymaster check failed, using sponsor:", e);
-        }
+        // Determine paymaster mode:
+        // 1. Custom TONPaymaster (ERC-20 mode) — gas paid in TON
+        // 2. Fallback: Pimlico Verifying Paymaster (sponsor) — free gas
+        const tonPaymasterAddr = CONTRACTS.TON_PAYMASTER;
+        const useCustomPaymaster = !!tonPaymasterAddr;
 
         let client: AnySmartAccountClient;
 
-        if (useErc20Paymaster) {
-          // ERC-20 Paymaster: gas paid in TON
-          // paymasterContext.token triggers prepareUserOperationForErc20Paymaster
-          // to auto-inject approve + calculate exact cost
+        if (useCustomPaymaster) {
+          // Custom TONPaymaster: gas paid in TON
+          // Uses Pimlico bundler for UserOp submission, but our own paymaster for gas payment
+          const tonPaymaster = createTonPaymasterProvider(tonPaymasterAddr as Address);
+
           client = createSmartAccountClient({
             account: smartAccount,
             chain,
             bundlerTransport: http(pimlicoUrl!),
-            paymaster: pimlicoClient,
-            paymasterContext: {
-              token: CONTRACTS.TON as Address,
-            },
+            paymaster: tonPaymaster,
             userOperation: {
               estimateFeesPerGas: async () =>
                 (await pimlicoClient.getUserOperationGasPrice()).fast,
-              prepareUserOperation:
-                prepareUserOperationForErc20Paymaster(pimlicoClient),
             },
           }) as AnySmartAccountClient;
+
+          console.log("Using custom TONPaymaster:", tonPaymasterAddr);
         } else {
-          // Fallback: Verifying Paymaster (sponsor — free gas)
+          // Fallback: Pimlico Verifying Paymaster (sponsor — free gas)
           client = createSmartAccountClient({
             account: smartAccount,
             chain,
@@ -189,14 +191,16 @@ export function useEip7702() {
                 (await pimlicoClient.getUserOperationGasPrice()).fast,
             },
           }) as AnySmartAccountClient;
+
+          console.log("Using Pimlico Verifying Paymaster (sponsor)");
         }
 
         if (cancelled) return;
 
         setSmartAccountClient(client);
         setWalletType("embedded");
-        setIsGasless(!useErc20Paymaster);
-        setPaymasterMode(useErc20Paymaster ? "erc20" : "sponsor");
+        setIsGasless(!useCustomPaymaster);
+        setPaymasterMode(useCustomPaymaster ? "erc20" : "sponsor");
         setIsReady(true);
       } catch (e) {
         if (cancelled) return;
@@ -229,27 +233,52 @@ export function useEip7702() {
         const provider = await metamaskWallet!.getEthereumProvider();
 
         // Check if MetaMask supports paymasterService on this chain
-        const supportsPaymaster = pimlicoUrl
-          ? await checkPaymasterSupport(provider, chain.id)
-          : false;
+        const supportsPaymaster = await checkPaymasterSupport(provider, chain.id);
 
         console.log(
           `MetaMask paymasterService support: ${supportsPaymaster}`
         );
 
+        // Determine paymaster mode for MetaMask path
+        const useCustomPaymaster = !!CONTRACTS.TON_PAYMASTER;
+
+        // Build absolute URL for our ERC-7677 paymaster API
+        // MetaMask may not accept relative URLs
+        const paymasterApiUrl = typeof window !== "undefined"
+          ? `${window.location.origin}/api/paymaster`
+          : "/api/paymaster";
+
         // Build capabilities object
+        // Always include paymasterService when available — optional: true
+        // ensures MetaMask falls back to ETH if it can't use the paymaster.
+        // We do NOT gate on wallet_getCapabilities because MetaMask may not
+        // advertise paymasterService support yet still honor it via wallet_sendCalls.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const buildCapabilities = (withPaymaster: boolean): any => {
-          if (!withPaymaster || !pimlicoUrl) return {};
-          return {
-            paymasterService: {
-              url: pimlicoUrl,
-              ...(sponsorshipPolicyId
-                ? { context: { sponsorshipPolicyId } }
-                : {}),
-              optional: true, // EIP-5792 v2: wallet ignores if unsupported
-            },
-          };
+        const buildCapabilities = (): any => {
+          if (useCustomPaymaster) {
+            // Use our own ERC-7677 paymaster API (gas paid in TON)
+            return {
+              paymasterService: {
+                url: paymasterApiUrl,
+                optional: true, // Fallback to ETH if unsupported
+              },
+            };
+          }
+
+          if (pimlicoUrl) {
+            // Fallback: Pimlico sponsorship
+            return {
+              paymasterService: {
+                url: pimlicoUrl,
+                ...(sponsorshipPolicyId
+                  ? { context: { sponsorshipPolicyId } }
+                  : {}),
+                optional: true,
+              },
+            };
+          }
+
+          return {};
         };
 
         // Wrap MetaMask's wallet_sendCalls to match the unified sendTransaction interface
@@ -265,7 +294,7 @@ export function useEip7702() {
                 : {}),
             }));
 
-            const capabilities = buildCapabilities(!!pimlicoUrl);
+            const capabilities = buildCapabilities();
 
             // EIP-5792: wallet_sendCalls
             // MetaMask handles EIP-7702 delegation internally
@@ -313,7 +342,8 @@ export function useEip7702() {
 
         setSmartAccountClient(wrapper);
         setWalletType("external");
-        setIsGasless(supportsPaymaster);
+        setIsGasless(!useCustomPaymaster && supportsPaymaster);
+        setPaymasterMode(useCustomPaymaster ? "erc20" : supportsPaymaster ? "sponsor" : "none");
         setIsReady(true);
       } catch (e) {
         externalInitRef.current = false;
@@ -330,7 +360,7 @@ export function useEip7702() {
     };
   }, [metamaskWallet]);
 
-  // Wrapper that injects authorization for the first embedded transaction
+  // Wrapper that injects authorization and TON approve for custom paymaster
   const sendTransaction = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (args: any) => {
@@ -347,36 +377,27 @@ export function useEip7702() {
         authorizationRef.current = null;
       }
 
+      // For ERC-20 paymaster: prepend TON approve call to paymaster
+      // The paymaster's postOp calls transferFrom(sender, paymaster, gasCostInTON)
+      // So the smart account must approve the paymaster first
+      if (paymasterMode === "erc20" && CONTRACTS.TON_PAYMASTER && args.calls) {
+        const approveCall = {
+          to: CONTRACTS.TON as Address,
+          data: encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "approve",
+            args: [CONTRACTS.TON_PAYMASTER as Address, maxUint256],
+          }),
+        };
+        args = {
+          ...args,
+          calls: [approveCall, ...args.calls],
+        };
+      }
+
       return smartAccountClient.sendTransaction(args);
     },
-    [smartAccountClient, walletType]
-  );
-
-  // Estimate gas cost in TON for ERC-20 Paymaster mode
-  const estimateGasCostInTON = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async (userOperation: any): Promise<GasCostEstimate | null> => {
-      if (paymasterMode !== "erc20" || !pimlicoClientRef.current) return null;
-      try {
-        const result = await pimlicoClientRef.current.estimateErc20PaymasterCost({
-          entryPoint: {
-            address: CONTRACTS.ENTRY_POINT_V08 as Address,
-            version: "0.8",
-          },
-          userOperation,
-          token: CONTRACTS.TON as Address,
-        });
-        return {
-          costInToken: result.costInToken,
-          costInUsd: result.costInUsd,
-          costInTokenFormatted: formatUnits(result.costInToken, 18),
-        };
-      } catch (e) {
-        console.error("Failed to estimate ERC-20 gas cost:", e);
-        return null;
-      }
-    },
-    [paymasterMode]
+    [smartAccountClient, walletType, paymasterMode]
   );
 
   return {
@@ -388,6 +409,5 @@ export function useEip7702() {
     walletType,
     isGasless,
     paymasterMode,
-    estimateGasCostInTON,
   };
 }
