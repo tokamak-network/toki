@@ -34,3 +34,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# external contracts
+/plasma-evm-contracts/
+
+# claude-mem auto-generated
+**/CLAUDE.md
