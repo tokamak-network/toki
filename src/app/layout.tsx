@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import { AudioProvider } from "@/components/audio/AudioProvider";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -16,12 +17,12 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Ttoni - TON Staking Made Easy",
+  title: "Toki - TON Staking Made Easy",
   description:
     "Stake your TON with one click. Earn 35% APR seigniorage rewards. No MetaMask, no ETH gas fees, no complexity.",
   keywords: ["TON", "Tokamak Network", "Staking", "Seigniorage", "DeFi"],
   openGraph: {
-    title: "Ttoni - TON Staking Made Easy",
+    title: "Toki - TON Staking Made Easy",
     description: "Stake your TON with one click. Earn 35% APR.",
     type: "website",
   },
@@ -38,7 +39,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-grid min-h-screen`}
       >
         <LanguageProvider>
-          <PrivyClientProvider>{children}</PrivyClientProvider>
+          <AudioProvider>
+            <PrivyClientProvider>{children}</PrivyClientProvider>
+          </AudioProvider>
         </LanguageProvider>
       </body>
     </html>

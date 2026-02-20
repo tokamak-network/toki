@@ -16,8 +16,8 @@ export default function CTASection() {
 
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
             <Image
-              src="/ttoni.png"
-              alt="Ttoni"
+              src="/toki.png"
+              alt="Toki"
               width={160}
               height={160}
               className="w-32 md:w-40 shrink-0 rounded-xl"

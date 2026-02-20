@@ -59,7 +59,7 @@ export default function Header() {
             T
           </div>
           <span className="text-lg font-bold">
-            <span className="text-gradient">Ttoni</span>
+            <span className="text-gradient">Toki</span>
           </span>
         </a>
 
@@ -68,14 +68,14 @@ export default function Header() {
           <a href="#how-it-works" className="hover:text-foreground transition-colors">
             {t.header.howItWorks}
           </a>
-          <a href="#why-ttoni" className="hover:text-foreground transition-colors">
-            {t.header.whyTtoni}
+          <a href="#why-toki" className="hover:text-foreground transition-colors">
+            {t.header.whyToki}
           </a>
           <a href="#stats" className="hover:text-foreground transition-colors">
             {t.header.stats}
           </a>
           <a
-            href="https://github.com/tokamak-network/ttoni"
+            href="https://github.com/tokamak-network/toki"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-foreground transition-colors"
@@ -114,14 +114,14 @@ export default function Header() {
             <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
               {t.header.howItWorks}
             </a>
-            <a href="#why-ttoni" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              {t.header.whyTtoni}
+            <a href="#why-toki" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
+              {t.header.whyToki}
             </a>
             <a href="#stats" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
               {t.header.stats}
             </a>
             <a
-              href="https://github.com/tokamak-network/ttoni"
+              href="https://github.com/tokamak-network/toki"
               target="_blank"
               rel="noopener noreferrer"
               className="block py-2 text-gray-400 hover:text-foreground"

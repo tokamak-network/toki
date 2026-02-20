@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import HeroButtons from "./HeroButtons";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
@@ -68,17 +67,17 @@ export default function HeroSection({ apr }: { apr: number | null }) {
           <HeroButtons />
         </div>
 
-        {/* Right: Ttoni character */}
+        {/* Right: Toki promo video */}
         <div className="flex-1 flex justify-center animate-slide-up">
-          <div className="relative w-72 sm:w-80 lg:w-96 animate-float">
+          <div className="relative w-72 sm:w-80 lg:w-96">
             <div className="absolute inset-0 bg-accent-blue/20 rounded-3xl blur-2xl -z-10" />
-            <Image
-              src="/ttoni.png"
-              alt="Ttoni - Tokamak Network Staking Guide"
-              width={512}
-              height={512}
-              className="rounded-2xl drop-shadow-2xl"
-              priority
+            <video
+              src="/toki-promo.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="rounded-2xl drop-shadow-2xl w-full"
             />
           </div>
         </div>

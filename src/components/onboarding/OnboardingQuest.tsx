@@ -11,13 +11,13 @@ import type { Dictionary } from "@/locales";
 type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink";
 
 const MOOD_IMAGES: Record<Mood, string> = {
-  welcome: "/ttoni-welcome.png",
-  explain: "/ttoni-explain.png",
-  thinking: "/ttoni-thinking.png",
-  excited: "/ttoni-excited.png",
-  proud: "/ttoni-proud.png",
-  cheer: "/ttoni-cheer.png",
-  wink: "/ttoni-wink.png",
+  welcome: "/toki-welcome.png",
+  explain: "/toki-explain.png",
+  thinking: "/toki-thinking.png",
+  excited: "/toki-excited.png",
+  proud: "/toki-proud.png",
+  cheer: "/toki-cheer.png",
+  wink: "/toki-wink.png",
 };
 
 interface DialogueLine {
@@ -93,7 +93,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       ],
     },
     {
-      id: "connect-ttoni",
+      id: "connect-toki",
       title: t.quest3Title,
       subtitle: t.quest3Subtitle,
       badge: t.quest3Badge,
@@ -348,7 +348,7 @@ function DialogueBox({
     >
       <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-accent-cyan font-semibold text-sm">Ttoni</span>
+          <span className="text-accent-cyan font-semibold text-sm">Toki</span>
           {line.mood && moodLabel && (
             <span className="text-xs text-gray-500">
               {moodLabel}
@@ -497,7 +497,7 @@ function ConfettiEffect({ active }: { active: boolean }) {
 
 // ─── Character Display ────────────────────────────────────────────────
 
-function TtoniCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
+function TokiCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
   const effectiveMood: Mood =
     phase === "badge"
       ? "proud"
@@ -543,7 +543,7 @@ function TtoniCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
       <ConfettiEffect active={isBadge} />
       <Image
         src={transitioning ? prevSrc : imageSrc}
-        alt="Ttoni"
+        alt="Toki"
         width={300}
         height={300}
         className={`relative z-10 rounded-2xl drop-shadow-xl transition-opacity duration-200 ${
@@ -576,7 +576,7 @@ export default function OnboardingQuest() {
 
   // Load progress from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("ttoni-onboarding");
+    const saved = localStorage.getItem("toki-onboarding");
     if (saved) {
       try {
         const data = JSON.parse(saved);
@@ -593,7 +593,7 @@ export default function OnboardingQuest() {
   const saveProgress = useCallback(
     (qi: number, xp: number, completed: Set<string>) => {
       localStorage.setItem(
-        "ttoni-onboarding",
+        "toki-onboarding",
         JSON.stringify({
           questIndex: qi,
           totalXp: xp,
@@ -709,7 +709,7 @@ export default function OnboardingQuest() {
     return (
       <div className="min-h-screen bg-grid flex items-center justify-center px-4">
         <div className="max-w-lg mx-auto text-center animate-fade-in">
-          <TtoniCharacter mood="proud" phase="badge" />
+          <TokiCharacter mood="proud" phase="badge" />
           <div className="mt-8">
             <h1 className="text-3xl font-bold text-gradient mb-4">
               {t.onboarding.allClear}
@@ -754,7 +754,7 @@ export default function OnboardingQuest() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent-blue to-accent-navy flex items-center justify-center text-white font-bold text-xs">
               T
             </div>
-            <span className="text-base font-bold text-gradient">Ttoni</span>
+            <span className="text-base font-bold text-gradient">Toki</span>
           </a>
           <span className="text-sm font-mono-num text-accent-amber">
             {totalXp} XP
@@ -810,11 +810,11 @@ export default function OnboardingQuest() {
 
             {/* Character + Dialogue Area */}
             <div className="flex flex-col items-center gap-6">
-              {/* Ttoni Character */}
-              <TtoniCharacter mood={currentLine?.mood} phase={phase} />
+              {/* Toki Character */}
+              <TokiCharacter mood={currentLine?.mood} phase={phase} />
 
               {/* Connected Address */}
-              {connectedAddr && phase === "success" && quest.id === "connect-ttoni" && (
+              {connectedAddr && phase === "success" && quest.id === "connect-toki" && (
                 <div className="w-full p-3 rounded-lg bg-white/5 border border-accent-cyan/20 text-center">
                   <div className="text-xs text-gray-500 mb-1">{t.onboarding.yourAddress}</div>
                   <div className="font-mono text-sm text-accent-cyan break-all">

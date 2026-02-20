@@ -3,10 +3,11 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/landing/HeroSection";
 import HowItWorks from "@/components/landing/HowItWorks";
-import WhyTtoni from "@/components/landing/WhyTtoni";
+import WhyToki from "@/components/landing/WhyToki";
 import StakingPreview from "@/components/landing/StakingPreview";
 import FAQ from "@/components/landing/FAQ";
 import CTASection from "@/components/landing/CTASection";
+import FloatingPlayer from "@/components/audio/FloatingPlayer";
 import { fetchStakingData } from "@/lib/staking";
 
 export const dynamic = "force-dynamic";
@@ -52,8 +53,8 @@ export default async function Home() {
         <div id="how-it-works">
           <HowItWorks />
         </div>
-        <div id="why-ttoni">
-          <WhyTtoni />
+        <div id="why-toki">
+          <WhyToki />
         </div>
         <div id="stats">
           <Suspense fallback={<StakingLoading />}>
@@ -64,6 +65,7 @@ export default async function Home() {
         <CTASection />
       </main>
       <Footer />
+      <FloatingPlayer />
     </>
   );
 }

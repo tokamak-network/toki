@@ -25,7 +25,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
-    const saved = localStorage.getItem("ttoni-locale") as Locale | null;
+    const saved = localStorage.getItem("toki-locale") as Locale | null;
     if (saved && (saved === "en" || saved === "ko")) {
       setLocaleState(saved);
       document.documentElement.lang = saved;
@@ -34,7 +34,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
-    localStorage.setItem("ttoni-locale", newLocale);
+    localStorage.setItem("toki-locale", newLocale);
     document.documentElement.lang = newLocale;
   };
 

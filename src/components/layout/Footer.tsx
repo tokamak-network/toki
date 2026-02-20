@@ -27,7 +27,7 @@ export default function Footer() {
             Tokamak Network
           </a>
           <a
-            href="https://github.com/tokamak-network/ttoni"
+            href="https://github.com/tokamak-network/toki"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-gray-300 transition-colors"

@@ -46,7 +46,7 @@ interface Balances {
 export default function DashboardContent() {
   const { ready, authenticated, user, logout, exportWallet } = usePrivy();
   const { wallets } = useWallets();
-  const { smartAccountClient, walletType } = useEip7702();
+  const { smartAccountClient, walletType, isGasless } = useEip7702();
   const router = useRouter();
   const [balances, setBalances] = useState<Balances | null>(null);
   const [loading, setLoading] = useState(true);
@@ -156,7 +156,7 @@ export default function DashboardContent() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-pink to-accent-purple flex items-center justify-center text-white font-bold text-sm">
               T
             </div>
-            <span className="text-lg font-bold text-gradient">Ttoni</span>
+            <span className="text-lg font-bold text-gradient">Toki</span>
           </a>
           <button
             onClick={logout}
@@ -183,10 +183,15 @@ export default function DashboardContent() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">{t.dashboard.wallet}</h2>
             <div className="flex items-center gap-2">
-              {smartAccountClient && (
+              {smartAccountClient && isGasless && (
                 <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
                   {t.dashboard.gasless}
                   {walletType === "external" ? " (MetaMask)" : walletType === "embedded" ? " (Embedded)" : ""}
+                </span>
+              )}
+              {smartAccountClient && !isGasless && walletType === "external" && (
+                <span className="px-2 py-0.5 rounded text-xs bg-yellow-500/20 text-yellow-400">
+                  EIP-7702
                 </span>
               )}
               {embeddedWallet && (

@@ -1,6 +1,6 @@
 "use client";
 
-export default function TtoniCharacter({ className = "" }: { className?: string }) {
+export default function TokiCharacter({ className = "" }: { className?: string }) {
   return (
     <div className={`relative ${className}`}>
       <svg
