@@ -746,23 +746,14 @@ export default function OnboardingQuest() {
   // ─── Render: Quest in Progress ─────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-grid">
-      {/* Header */}
-      <header className="border-b border-white/5 backdrop-blur-md bg-background/80 sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent-blue to-accent-navy flex items-center justify-center text-white font-bold text-xs">
-              T
-            </div>
-            <span className="text-base font-bold text-gradient">Toki</span>
-          </a>
+    <div className="min-h-screen bg-grid pt-16">
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        {/* XP Display */}
+        <div className="flex justify-end mb-4">
           <span className="text-sm font-mono-num text-accent-amber">
             {totalXp} XP
           </span>
         </div>
-      </header>
-
-      <div className="max-w-5xl mx-auto px-4 py-8">
         <ProgressBar
           current={questIndex}
           total={QUESTS.length}

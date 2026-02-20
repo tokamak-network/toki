@@ -14,6 +14,7 @@ export default function PrivyClientProvider({
   const [Provider, setProvider] = useState<React.ComponentType<{
     children: ReactNode;
   }> | null>(PrivyProviderModule);
+  const [, setEthereumReady] = useState(!!globalThis.window?.ethereum);
 
   useEffect(() => {
     if (PrivyProviderModule) return;
@@ -21,6 +22,35 @@ export default function PrivyClientProvider({
       PrivyProviderModule = mod.default;
       setProvider(() => mod.default);
     });
+  }, []);
+
+  // Detect MetaMask injected after page load (e.g. freshly installed)
+  useEffect(() => {
+    if (window.ethereum) return;
+
+    const onEthereum = () => {
+      setEthereumReady(true);
+      // Force Privy to re-initialize with the new provider
+      if (PrivyProviderModule) {
+        setProvider(null);
+        requestAnimationFrame(() => setProvider(() => PrivyProviderModule));
+      }
+    };
+
+    window.addEventListener("ethereum#initialized", onEthereum);
+
+    // Polling fallback — some wallets don't fire the event
+    const interval = setInterval(() => {
+      if (window.ethereum) {
+        clearInterval(interval);
+        onEthereum();
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener("ethereum#initialized", onEthereum);
+      clearInterval(interval);
+    };
   }, []);
 
   if (Provider) {

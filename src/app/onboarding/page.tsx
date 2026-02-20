@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Header from "@/components/layout/Header";
 
 const OnboardingQuest = dynamic(
   () => import("@/components/onboarding/OnboardingQuest"),
@@ -15,5 +16,10 @@ const OnboardingQuest = dynamic(
 );
 
 export default function OnboardingPage() {
-  return <OnboardingQuest />;
+  return (
+    <>
+      <Header />
+      <OnboardingQuest />
+    </>
+  );
 }

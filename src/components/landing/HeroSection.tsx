@@ -54,55 +54,38 @@ export default function HeroSection({ apr }: { apr: number | null }) {
           </svg>
         )}</button>
 
-      {/* Overlay gradient for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/60 to-[var(--background)]/40" />
+      {/* Overlay: left side stronger for text readability, bottom for page transition */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)]/90 via-[var(--background)]/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-transparent to-transparent" />
 
-      {/* Content */}
-      <div className="relative z-10 max-w-4xl mx-auto text-center px-4 animate-fade-in">
-        <div className="inline-block px-4 py-1.5 rounded-full border border-accent-blue/30 bg-accent-blue/10 text-accent-sky text-sm mb-6 backdrop-blur-sm">
-          {t.hero.badge}
+      {/* Content — left bottom */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 animate-fade-in" style={{ marginTop: 500 }}>
+        <div className="max-w-lg">
+          {/* Stats */}
+          <div className="flex flex-wrap gap-4 mb-10">
+            <div className="px-4 py-3 rounded-xl bg-black/40 backdrop-blur-sm border border-white/10">
+              <div className="text-2xl sm:text-3xl font-bold text-accent-amber font-mono-num">
+                {displayApr}
+              </div>
+              <div className="text-sm text-gray-400">{t.hero.apr}</div>
+            </div>
+            <div className="px-4 py-3 rounded-xl bg-black/40 backdrop-blur-sm border border-white/10">
+              <div className="text-2xl sm:text-3xl font-bold text-accent-cyan font-mono-num">
+                {t.hero.steps}
+              </div>
+              <div className="text-sm text-gray-400">{t.hero.stepsDesc}</div>
+            </div>
+            <div className="px-4 py-3 rounded-xl bg-black/40 backdrop-blur-sm border border-white/10">
+              <div className="text-2xl sm:text-3xl font-bold text-accent-blue font-mono-num">
+                {t.hero.tonOnly}
+              </div>
+              <div className="text-sm text-gray-400">{t.hero.tonOnlyDesc}</div>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <HeroButtons />
         </div>
-
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-          <span className="text-gradient">{t.hero.title1}</span>
-          <br />
-          <span className="text-foreground">
-            {t.hero.title2}
-            <br />
-            {t.hero.title3}
-          </span>
-        </h1>
-
-        <p className="text-lg sm:text-xl text-gray-300 max-w-lg mx-auto mb-10 leading-relaxed">
-          {t.hero.subtitle1}
-          <br />
-          {t.hero.subtitle2}
-        </p>
-
-        {/* Stats */}
-        <div className="flex flex-wrap gap-6 justify-center mb-10">
-          <div className="px-4 py-3 rounded-xl bg-black/30 backdrop-blur-sm border border-white/10">
-            <div className="text-2xl sm:text-3xl font-bold text-accent-amber font-mono-num">
-              {displayApr}
-            </div>
-            <div className="text-sm text-gray-400">{t.hero.apr}</div>
-          </div>
-          <div className="px-4 py-3 rounded-xl bg-black/30 backdrop-blur-sm border border-white/10">
-            <div className="text-2xl sm:text-3xl font-bold text-accent-cyan font-mono-num">
-              {t.hero.steps}
-            </div>
-            <div className="text-sm text-gray-400">{t.hero.stepsDesc}</div>
-          </div>
-          <div className="px-4 py-3 rounded-xl bg-black/30 backdrop-blur-sm border border-white/10">
-            <div className="text-2xl sm:text-3xl font-bold text-accent-blue font-mono-num">
-              {t.hero.tonOnly}
-            </div>
-            <div className="text-sm text-gray-400">{t.hero.tonOnlyDesc}</div>
-          </div>
-        </div>
-
-        {/* CTA Buttons */}
-        <HeroButtons />
       </div>
     </section>
   );
