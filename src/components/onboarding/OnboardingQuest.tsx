@@ -225,92 +225,6 @@ function useTypewriter(text: string, speed = 40) {
 
 // ─── Sub Components ───────────────────────────────────────────────────
 
-function ProgressBar({
-  current,
-  total,
-  xp,
-}: {
-  current: number;
-  total: number;
-  xp: number;
-}) {
-  const { t } = useTranslation();
-  const pct = (current / total) * 100;
-  return (
-    <div className="mb-8">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm text-gray-400">
-          {t.onboarding.quest} {Math.min(current + 1, total)} / {total}
-        </span>
-        <span className="text-sm font-mono-num text-accent-amber">
-          {xp} XP
-        </span>
-      </div>
-      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-accent-blue to-accent-cyan rounded-full transition-all duration-700"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function QuestCard({
-  quest,
-  index,
-  status,
-  isCurrent,
-  onClick,
-}: {
-  quest: Quest;
-  index: number;
-  status: "locked" | "current" | "completed";
-  isCurrent: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={status === "locked"}
-      className={`w-full text-left p-4 rounded-xl transition-all ${
-        status === "completed"
-          ? "bg-accent-blue/10 border border-accent-blue/30"
-          : isCurrent
-            ? "bg-white/10 border border-accent-cyan/40 scale-[1.02]"
-            : "bg-white/5 border border-transparent opacity-50"
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-            status === "completed"
-              ? "bg-accent-blue text-white"
-              : isCurrent
-                ? "bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/40"
-                : "bg-white/10 text-gray-500"
-          }`}
-        >
-          {status === "completed" ? quest.badgeIcon : index + 1}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div
-            className={`text-sm font-semibold ${status === "completed" ? "text-accent-sky" : isCurrent ? "text-gray-200" : "text-gray-500"}`}
-          >
-            {quest.title}
-          </div>
-          <div className="text-xs text-gray-500 truncate">{quest.subtitle}</div>
-        </div>
-        {status === "completed" && (
-          <div className="text-xs text-accent-amber font-mono-num shrink-0">
-            +{quest.xp} XP
-          </div>
-        )}
-      </div>
-    </button>
-  );
-}
-
 function BadgeReveal({ quest }: { quest: Quest }) {
   return (
     <div className="flex flex-col items-center py-6 animate-fade-in">
@@ -343,28 +257,29 @@ function DialogueBox({
 
   return (
     <div
-      className="cursor-pointer select-none"
+      className="cursor-pointer select-none w-full"
       onClick={() => (done ? onNext() : skip())}
     >
-      <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-5">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-accent-cyan font-semibold text-sm">Toki</span>
+      <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
+        {/* Name plate */}
+        <div className="inline-flex items-center gap-2 mb-3 px-4 py-1.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/30">
+          <span className="text-accent-cyan font-bold text-sm tracking-wide">Toki</span>
           {line.mood && moodLabel && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-accent-cyan/60">
               {moodLabel}
             </span>
           )}
         </div>
-        <p className="text-gray-200 text-base leading-relaxed min-h-[2.5rem]">
+        <p className="text-gray-100 text-base sm:text-lg leading-relaxed min-h-[3rem]">
           {displayed}
           {!done && (
-            <span className="inline-block w-0.5 h-4 bg-accent-cyan ml-0.5 animate-pulse align-middle" />
+            <span className="inline-block w-0.5 h-5 bg-accent-cyan ml-0.5 animate-pulse align-middle" />
           )}
         </p>
         {done && (
-          <div className="text-right mt-2">
-            <span className="text-xs text-gray-500">
-              {isLast ? t.onboarding.clickToContinue : t.onboarding.clickToNext}
+          <div className="text-right mt-3">
+            <span className="text-xs text-gray-500 animate-pulse">
+              {isLast ? t.onboarding.clickToContinue : t.onboarding.clickToNext} ▼
             </span>
           </div>
         )}
@@ -495,7 +410,18 @@ function ConfettiEffect({ active }: { active: boolean }) {
   );
 }
 
-// ─── Character Display ────────────────────────────────────────────────
+// ─── Background Image per Quest ───────────────────────────────────────
+
+const QUEST_BACKGROUNDS: Record<string, string> = {
+  "install-metamask": "/vn-bg-default.png",
+  "create-wallet": "/vn-bg-default.png",
+  "connect-toki": "/vn-bg-default.png",
+  "verify-upbit": "/vn-bg-default.png",
+  "receive-ton": "/vn-bg-default.png",
+  "first-stake": "/vn-bg-default.png",
+};
+
+// ─── Character Display (Visual Novel Style) ──────────────────────────
 
 function TokiCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
   const effectiveMood: Mood =
@@ -530,27 +456,29 @@ function TokiCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
   const isBadge = phase === "badge";
 
   return (
-    <div className="relative w-48 sm:w-56 lg:w-64 overflow-visible">
-      <div
-        className="absolute inset-0 rounded-3xl blur-3xl -z-10 animate-glow-pulse transition-colors duration-700"
-        style={{ backgroundColor: glowColor }}
-      />
-      <div
-        className="absolute -inset-4 rounded-[2rem] blur-2xl -z-20 opacity-20 transition-colors duration-700"
-        style={{ backgroundColor: glowColor }}
-      />
-      <SparkleParticles trigger={sparkleTrigger} />
-      <ConfettiEffect active={isBadge} />
-      <Image
-        src={transitioning ? prevSrc : imageSrc}
-        alt="Toki"
-        width={300}
-        height={300}
-        className={`relative z-10 rounded-2xl drop-shadow-xl transition-opacity duration-200 ${
-          transitioning ? "opacity-0" : "opacity-100"
-        }`}
-        priority
-      />
+    <div className="absolute bottom-44 sm:bottom-52 left-1/2 -translate-x-1/2 z-10">
+      <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] overflow-visible">
+        <div
+          className="absolute inset-0 rounded-3xl blur-3xl -z-10 animate-glow-pulse transition-colors duration-700"
+          style={{ backgroundColor: glowColor }}
+        />
+        <div
+          className="absolute -inset-4 rounded-[2rem] blur-2xl -z-20 opacity-20 transition-colors duration-700"
+          style={{ backgroundColor: glowColor }}
+        />
+        <SparkleParticles trigger={sparkleTrigger} />
+        <ConfettiEffect active={isBadge} />
+        <Image
+          src={transitioning ? prevSrc : imageSrc}
+          alt="Toki"
+          width={512}
+          height={512}
+          className={`relative z-10 drop-shadow-2xl transition-opacity duration-200 w-full h-auto ${
+            transitioning ? "opacity-0" : "opacity-100"
+          }`}
+          priority
+        />
+      </div>
     </div>
   );
 }
@@ -697,223 +625,202 @@ export default function OnboardingQuest() {
     }
   };
 
-  const handleQuestCardClick = (index: number) => {
-    if (index <= questIndex) {
-      // Can review completed quests but not change progress
-    }
-  };
-
   // ─── Render: All Complete ──────────────────────────────────────────
 
   if (isAllComplete) {
     return (
-      <div className="min-h-screen bg-grid flex items-center justify-center px-4">
-        <div className="max-w-lg mx-auto text-center animate-fade-in">
-          <TokiCharacter mood="proud" phase="badge" />
-          <div className="mt-8">
-            <h1 className="text-3xl font-bold text-gradient mb-4">
-              {t.onboarding.allClear}
-            </h1>
-            <p className="text-gray-400 mb-2">
-              {t.onboarding.allClearDesc}
-            </p>
-            <p className="text-accent-amber font-mono-num text-xl mb-8">
-              {t.onboarding.totalXp.replace("{xp}", String(totalXp))}
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center mb-8">
-              {QUESTS.map((q) => (
-                <div
-                  key={q.id}
-                  className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent-blue to-accent-cyan flex items-center justify-center text-lg font-bold text-white"
-                  title={q.badge}
-                >
-                  {q.badgeIcon}
-                </div>
-              ))}
+      <div className="fixed inset-0 overflow-hidden">
+        {/* Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url('/vn-bg-default.png')` }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
+
+        {/* Character */}
+        <TokiCharacter mood="proud" phase="badge" />
+
+        {/* Bottom Panel */}
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-8 sm:px-8">
+            <div className="max-w-2xl mx-auto text-center animate-fade-in">
+              <h1 className="text-3xl font-bold text-gradient mb-3">
+                {t.onboarding.allClear}
+              </h1>
+              <p className="text-gray-400 mb-2">
+                {t.onboarding.allClearDesc}
+              </p>
+              <p className="text-accent-amber font-mono-num text-xl mb-6">
+                {t.onboarding.totalXp.replace("{xp}", String(totalXp))}
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center mb-6">
+                {QUESTS.map((q) => (
+                  <div
+                    key={q.id}
+                    className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue to-accent-cyan flex items-center justify-center text-lg font-bold text-white"
+                    title={q.badge}
+                  >
+                    {q.badgeIcon}
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
+              >
+                {t.onboarding.goToDashboard}
+              </button>
             </div>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
-            >
-              {t.onboarding.goToDashboard}
-            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // ─── Render: Quest in Progress ─────────────────────────────────────
+  // ─── Render: Visual Novel Layout ────────────────────────────────────
+
+  const bgImage = QUEST_BACKGROUNDS[quest?.id] || "/vn-bg-default.png";
 
   return (
-    <div className="min-h-screen bg-grid pt-16">
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* XP Display */}
-        <div className="flex justify-end mb-4">
-          <span className="text-sm font-mono-num text-accent-amber">
-            {totalXp} XP
-          </span>
-        </div>
-        <ProgressBar
-          current={questIndex}
-          total={QUESTS.length}
-          xp={totalXp}
-        />
+    <div className="fixed inset-0 overflow-hidden" ref={questAreaRef}>
+      {/* ── Layer 0: Background Image (fixed per quest) ── */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700"
+        style={{ backgroundImage: `url('${bgImage}')` }}
+      />
+      {/* Subtle vignette overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left: Quest List */}
-          <div className="lg:w-64 shrink-0">
-            <h3 className="text-sm text-gray-500 mb-3 font-semibold">
-              {t.onboarding.quests}
-            </h3>
-            <div className="space-y-2">
+      {/* ── Layer 1: Top HUD (quest progress + XP) ── */}
+      <div className="absolute top-0 left-0 right-0 z-30 pt-16">
+        <div className="px-4 sm:px-6 max-w-3xl mx-auto">
+          {/* Quest step dots + XP */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
               {QUESTS.map((q, i) => (
-                <QuestCard
+                <div
                   key={q.id}
-                  quest={q}
-                  index={i}
-                  status={
+                  className={`transition-all duration-300 rounded-full ${
                     completedQuests.has(q.id)
-                      ? "completed"
+                      ? "w-8 h-2 bg-accent-cyan"
                       : i === questIndex
-                        ? "current"
-                        : "locked"
-                  }
-                  isCurrent={i === questIndex}
-                  onClick={() => handleQuestCardClick(i)}
+                        ? "w-8 h-2 bg-accent-cyan/60 animate-pulse"
+                        : "w-2 h-2 bg-white/20"
+                  }`}
                 />
               ))}
             </div>
+            <span className="text-sm font-mono-num text-accent-amber drop-shadow-lg">
+              {totalXp} XP
+            </span>
           </div>
+          {/* Quest title overlay */}
+          <div className="mt-2">
+            <span className="text-xs text-accent-cyan/80 drop-shadow">
+              {t.onboarding.quest} {questIndex + 1} / {QUESTS.length}
+            </span>
+            <h2 className="text-lg sm:text-xl font-bold text-white drop-shadow-lg">
+              {quest.title}
+            </h2>
+          </div>
+        </div>
+      </div>
 
-          {/* Right: Quest Content */}
-          <div className="flex-1" ref={questAreaRef}>
-            {/* Quest Title */}
-            <div className="mb-6">
-              <div className="text-xs text-accent-cyan mb-1">
-                {t.onboarding.quest} {questIndex + 1}
+      {/* ── Layer 2: Character (center-bottom, above dialogue) ── */}
+      <TokiCharacter mood={currentLine?.mood} phase={phase} />
+
+      {/* ── Layer 3: Bottom dialogue / action panel ── */}
+      <div className="absolute bottom-0 left-0 right-0 z-20">
+        <div className="max-w-3xl mx-auto">
+
+          {/* Connected Address (shown during connect quest success) */}
+          {connectedAddr && phase === "success" && quest.id === "connect-toki" && (
+            <div className="mx-4 mb-2 p-3 rounded-lg bg-black/50 backdrop-blur border border-accent-cyan/20 text-center">
+              <div className="text-xs text-gray-400 mb-1">{t.onboarding.yourAddress}</div>
+              <div className="font-mono text-sm text-accent-cyan break-all">
+                {connectedAddr}
               </div>
-              <h2 className="text-2xl font-bold text-gray-100">
-                {quest.title}
-              </h2>
-              <p className="text-sm text-gray-500">{quest.subtitle}</p>
             </div>
+          )}
 
-            {/* Character + Dialogue Area */}
-            <div className="flex flex-col items-center gap-6">
-              {/* Toki Character */}
-              <TokiCharacter mood={currentLine?.mood} phase={phase} />
+          {/* Badge Reveal */}
+          {phase === "badge" && (
+            <div className="px-4 mb-2">
+              <BadgeReveal quest={quest} />
+              <button
+                onClick={handleBadgeDone}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold hover:scale-[1.02] transition-transform"
+              >
+                {questIndex < QUESTS.length - 1
+                  ? t.onboarding.nextQuest
+                  : t.onboarding.complete}
+              </button>
+            </div>
+          )}
 
-              {/* Connected Address */}
-              {connectedAddr && phase === "success" && quest.id === "connect-toki" && (
-                <div className="w-full p-3 rounded-lg bg-white/5 border border-accent-cyan/20 text-center">
-                  <div className="text-xs text-gray-500 mb-1">{t.onboarding.yourAddress}</div>
-                  <div className="font-mono text-sm text-accent-cyan break-all">
-                    {connectedAddr}
-                  </div>
-                </div>
-              )}
+          {/* Dialogue (intro / success phases) */}
+          {(phase === "intro" || phase === "success") && currentLine && (
+            <DialogueBox
+              line={currentLine}
+              onNext={handleNextDialogue}
+              isLast={dialogueIndex === dialogues.length - 1}
+              moodLabel={currentLine.mood ? getMoodLabel(currentLine.mood, t.onboarding) : undefined}
+            />
+          )}
 
-              {/* Badge Reveal */}
-              {phase === "badge" && (
-                <div className="w-full">
-                  <BadgeReveal quest={quest} />
+          {/* Action Phase */}
+          {phase === "action" && quest.action && (
+            <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
+              <div className="space-y-4">
+                {(quest.action.type === "link" || quest.action.type === "connect" || quest.action.type === "navigate") && (
                   <button
-                    onClick={handleBadgeDone}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold hover:scale-[1.02] transition-transform"
+                    onClick={handleAction}
+                    className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg hover:scale-[1.02] transition-transform"
                   >
-                    {questIndex < QUESTS.length - 1
-                      ? t.onboarding.nextQuest
-                      : t.onboarding.complete}
+                    {quest.action.label}
                   </button>
-                </div>
-              )}
+                )}
 
-              {/* Dialogue */}
-              {(phase === "intro" || phase === "success") && currentLine && (
-                <div className="w-full">
-                  <DialogueBox
-                    line={currentLine}
-                    onNext={handleNextDialogue}
-                    isLast={dialogueIndex === dialogues.length - 1}
-                    moodLabel={currentLine.mood ? getMoodLabel(currentLine.mood, t.onboarding) : undefined}
-                  />
-                </div>
-              )}
-
-              {/* Action Phase */}
-              {phase === "action" && quest.action && (
-                <div className="w-full space-y-4">
-                  {quest.action.type === "link" && (
+                {quest.action.type === "confirm" && (
+                  <>
+                    <label className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={confirmed}
+                        onChange={(e) => setConfirmed(e.target.checked)}
+                        className="mt-0.5 w-5 h-5 rounded accent-accent-cyan"
+                      />
+                      <span className="text-gray-300 text-sm">
+                        {quest.action.confirmText}
+                      </span>
+                    </label>
                     <button
                       onClick={handleAction}
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg hover:scale-[1.02] transition-transform"
+                      disabled={!confirmed}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform"
                     >
                       {quest.action.label}
                     </button>
-                  )}
-
-                  {quest.action.type === "connect" && (
-                    <button
-                      onClick={handleAction}
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg hover:scale-[1.02] transition-transform"
-                    >
-                      {quest.action.label}
-                    </button>
-                  )}
-
-                  {quest.action.type === "confirm" && (
-                    <div className="space-y-3">
-                      <label className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={confirmed}
-                          onChange={(e) => setConfirmed(e.target.checked)}
-                          className="mt-0.5 w-5 h-5 rounded accent-accent-cyan"
-                        />
-                        <span className="text-gray-300 text-sm">
-                          {quest.action.confirmText}
-                        </span>
-                      </label>
-                      <button
-                        onClick={handleAction}
-                        disabled={!confirmed}
-                        className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform"
-                      >
-                        {quest.action.label}
-                      </button>
-                    </div>
-                  )}
-
-                  {quest.action.type === "navigate" && (
-                    <button
-                      onClick={handleAction}
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg hover:scale-[1.02] transition-transform"
-                    >
-                      {quest.action.label}
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Verifying Phase (MetaMask install check) */}
-              {phase === "verifying" && (
-                <div className="w-full space-y-4">
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-center">
-                    <p className="text-gray-400 text-sm mb-4">
-                      {t.onboarding.metamaskInstallCheck}
-                    </p>
-                    <button
-                      onClick={handleVerify}
-                      className="px-8 py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold hover:scale-[1.02] transition-transform"
-                    >
-                      {t.onboarding.verifyInstall}
-                    </button>
-                  </div>
-                </div>
-              )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Verifying Phase */}
+          {phase === "verifying" && (
+            <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
+              <p className="text-gray-400 text-sm mb-4 text-center">
+                {t.onboarding.metamaskInstallCheck}
+              </p>
+              <button
+                onClick={handleVerify}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold hover:scale-[1.02] transition-transform"
+              >
+                {t.onboarding.verifyInstall}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
