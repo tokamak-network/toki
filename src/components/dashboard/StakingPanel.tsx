@@ -39,7 +39,10 @@ interface Operator {
   myStaked: string;
 }
 
-import type { PaymasterMode } from "@/hooks/useEip7702";
+import type { PaymasterMode, StakingMode } from "@/hooks/useEip7702";
+import type { useSessionKey } from "@/hooks/useSessionKey";
+
+type SessionKeyReturn = ReturnType<typeof useSessionKey>;
 
 interface StakingPanelProps {
   walletAddress: string;
@@ -49,6 +52,8 @@ interface StakingPanelProps {
   smartAccountClient?: { sendTransaction: (...args: any[]) => Promise<`0x${string}`> } | null;
   onBalanceChange?: () => void;
   paymasterMode?: PaymasterMode;
+  isMetaMask?: boolean;
+  sessionKey?: SessionKeyReturn;
 }
 
 export default function StakingPanel({
@@ -57,6 +62,8 @@ export default function StakingPanel({
   smartAccountClient,
   onBalanceChange,
   paymasterMode = "none",
+  isMetaMask = false,
+  sessionKey,
 }: StakingPanelProps) {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [selectedOp, setSelectedOp] = useState<string>("");
@@ -67,6 +74,7 @@ export default function StakingPanel({
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tonBalance, setTonBalance] = useState<string>("0");
+  const [stakingMode, setStakingMode] = useState<StakingMode>("direct");
   const { t } = useTranslation();
 
   const addr = walletAddress as `0x${string}`;
@@ -187,7 +195,13 @@ export default function StakingPanel({
 
       let hash: `0x${string}`;
 
-      if (smartAccountClient) {
+      if (stakingMode === "delegation" && sessionKey?.delegationReady) {
+        // Delegation mode: use session key for gasless staking
+        hash = await sessionKey.stakeWithDelegation(
+          selectedOp as `0x${string}`,
+          amount,
+        );
+      } else if (smartAccountClient) {
         hash = await smartAccountClient.sendTransaction({
           calls: [
             {
@@ -342,6 +356,154 @@ export default function StakingPanel({
         </button>
       </div>
 
+      {/* Staking Mode Selector (MetaMask only) */}
+      {isMetaMask && sessionKey && (
+        <div className="mb-5">
+          <label className="text-sm text-gray-400 mb-2 block">
+            {t.dashboard.stakingModeLabel}
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setStakingMode("direct")}
+              className={`p-3 rounded-lg text-left transition-colors border ${
+                stakingMode === "direct"
+                  ? "bg-accent-blue/10 border-accent-blue/40"
+                  : "bg-white/5 border-transparent hover:bg-white/10"
+              }`}
+            >
+              <div className="text-sm font-medium text-gray-200">
+                {t.dashboard.directMode}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {t.dashboard.directModeDesc}
+              </div>
+            </button>
+            <button
+              onClick={() => setStakingMode("delegation")}
+              className={`p-3 rounded-lg text-left transition-colors border ${
+                stakingMode === "delegation"
+                  ? "bg-green-500/10 border-green-500/40"
+                  : "bg-white/5 border-transparent hover:bg-white/10"
+              }`}
+            >
+              <div className="text-sm font-medium text-gray-200">
+                {t.dashboard.delegationMode}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {t.dashboard.delegationModeDesc}
+              </div>
+            </button>
+          </div>
+
+          {/* Delegation Status & Actions */}
+          {stakingMode === "delegation" && (
+            <div className="mt-3 space-y-2">
+              {/* Step 1: Smart Account Upgrade */}
+              <div className={`p-3 rounded-lg border ${
+                sessionKey.isSmartAccount
+                  ? "bg-green-500/5 border-green-500/20"
+                  : "bg-white/5 border-white/10"
+              }`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    sessionKey.isSmartAccount
+                      ? "bg-green-500/20 text-green-400"
+                      : "bg-white/10 text-gray-400"
+                  }`}>
+                    {sessionKey.isSmartAccount ? "\u2713" : "1"}
+                  </div>
+                  <span className="text-sm text-gray-300">
+                    {t.dashboard.stepUpgrade}
+                  </span>
+                </div>
+                {!sessionKey.isSmartAccount && (
+                  <div className="ml-7">
+                    <p className="text-xs text-yellow-500/80 mb-2">
+                      {t.dashboard.upgradeNote}
+                    </p>
+                    <button
+                      onClick={sessionKey.upgradeToSmartAccount}
+                      disabled={sessionKey.isUpgrading}
+                      className="w-full py-2 rounded-lg bg-yellow-600/80 text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-yellow-600 transition-colors"
+                    >
+                      {sessionKey.isUpgrading
+                        ? t.dashboard.upgrading
+                        : t.dashboard.upgradeSmartAccount}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Step 2: Delegation Signature */}
+              <div className={`p-3 rounded-lg border ${
+                sessionKey.delegationReady
+                  ? "bg-green-500/5 border-green-500/20"
+                  : sessionKey.isSmartAccount
+                    ? "bg-white/5 border-white/10"
+                    : "bg-white/3 border-white/5 opacity-50"
+              }`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    sessionKey.delegationReady
+                      ? "bg-green-500/20 text-green-400"
+                      : "bg-white/10 text-gray-400"
+                  }`}>
+                    {sessionKey.delegationReady ? "\u2713" : "2"}
+                  </div>
+                  <span className="text-sm text-gray-300">
+                    {t.dashboard.stepDelegation}
+                  </span>
+                </div>
+                {sessionKey.delegationReady ? (
+                  <div className="ml-7 flex items-center justify-between">
+                    <div>
+                      <span className="text-xs text-green-400">
+                        {t.dashboard.delegationActive}
+                      </span>
+                      {sessionKey.expiry && (
+                        <span className="text-xs text-gray-500 ml-2">
+                          ({t.dashboard.delegationExpires}: {new Date(sessionKey.expiry * 1000).toLocaleDateString()})
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={sessionKey.revokeSessionKey}
+                      className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      {t.dashboard.revokeSessionKey}
+                    </button>
+                  </div>
+                ) : sessionKey.isSmartAccount ? (
+                  <div className="ml-7">
+                    <p className="text-xs text-gray-400 mb-2">
+                      {t.dashboard.sessionKeyInfo}
+                    </p>
+                    <button
+                      onClick={sessionKey.requestDelegation}
+                      disabled={sessionKey.isRequesting}
+                      className="w-full py-2 rounded-lg bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform"
+                    >
+                      {sessionKey.isRequesting
+                        ? t.dashboard.signingDelegation
+                        : t.dashboard.signDelegation}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="ml-7 text-xs text-gray-500">
+                    {t.dashboard.completeStep1First}
+                  </p>
+                )}
+                {sessionKey.error && (
+                  <div className="ml-7 text-xs text-red-400 mt-2">
+                    {sessionKey.error}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Operator Selector */}
       <div className="mb-4">
         <label className="text-sm text-gray-400 mb-2 block">
@@ -428,16 +590,29 @@ export default function StakingPanel({
       <div className="flex gap-3 mb-4">
         <button
           onClick={handleStake}
-          disabled={staking || !amount || Number(amount) <= 0}
-          className="flex-1 py-3 rounded-lg bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform"
+          disabled={
+            staking ||
+            !amount ||
+            Number(amount) <= 0 ||
+            (stakingMode === "delegation" && !sessionKey?.delegationReady)
+          }
+          className={`flex-1 py-3 rounded-lg text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform ${
+            stakingMode === "delegation"
+              ? "bg-gradient-to-r from-green-600 to-green-700"
+              : "bg-gradient-to-r from-accent-blue to-accent-navy"
+          }`}
         >
           {staking
             ? t.dashboard.stakingInProgress
-            : paymasterMode === "erc20"
-              ? t.dashboard.stakeTonGasTon
-              : paymasterMode === "sponsor"
-                ? t.dashboard.stakeTonGasless
-                : t.dashboard.stakeTon}
+            : stakingMode === "delegation"
+              ? sessionKey?.delegationReady
+                ? t.dashboard.stakeTonDelegation
+                : t.dashboard.delegationRequired
+              : paymasterMode === "erc20"
+                ? t.dashboard.stakeTonGasTon
+                : paymasterMode === "sponsor"
+                  ? t.dashboard.stakeTonGasless
+                  : t.dashboard.stakeTon}
         </button>
         {myStakedOnSelected > 0 && (
           <button

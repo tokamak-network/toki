@@ -3,7 +3,7 @@
   "description": "Pay gas fees with TON token via TONPaymaster (ERC-4337)",
   "proposedName": "TON Gas Payment",
   "source": {
-    "shasum": "UCDBDM3l3/EbwxcTDQZ5fBLBH5CiA3EuXEl88TWeaMk=",
+    "shasum": "hfzGbg3XjBg3CgPWBjIyWd7B5a4JND05jchlypFAIyo=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

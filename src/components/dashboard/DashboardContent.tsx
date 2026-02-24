@@ -8,6 +8,7 @@ import { createPublicClient, http } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 import StakingPanel from "./StakingPanel";
 import { useEip7702 } from "@/hooks/useEip7702";
+import { useSessionKey } from "@/hooks/useSessionKey";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
@@ -46,7 +47,7 @@ interface Balances {
 export default function DashboardContent() {
   const { ready, authenticated, user, logout, exportWallet } = usePrivy();
   const { wallets } = useWallets();
-  const { smartAccountClient, walletType, paymasterMode } = useEip7702();
+  const { smartAccountClient, walletType, paymasterMode, isMetaMask } = useEip7702();
   const router = useRouter();
   const [balances, setBalances] = useState<Balances | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,6 +102,16 @@ export default function DashboardContent() {
     }
   }, [ready, authenticated, router]);
 
+  const getEthereumProvider = useCallback(async () => {
+    if (!primaryWallet) throw new Error("No wallet connected");
+    return await primaryWallet.getEthereumProvider();
+  }, [primaryWallet]);
+
+  const sessionKey = useSessionKey(
+    primaryWallet ? getEthereumProvider : null,
+    (primaryWallet?.address as `0x${string}`) || null,
+  );
+
   useEffect(() => {
     if (balanceAddress) {
       fetchBalances();
@@ -140,11 +151,6 @@ export default function DashboardContent() {
     if (embeddedWallet) {
       await exportWallet({ address: embeddedWallet.address });
     }
-  };
-
-  const getEthereumProvider = async () => {
-    if (!primaryWallet) throw new Error("No wallet connected");
-    return await primaryWallet.getEthereumProvider();
   };
 
   return (
@@ -284,6 +290,8 @@ export default function DashboardContent() {
               smartAccountClient={smartAccountClient}
               onBalanceChange={fetchBalances}
               paymasterMode={paymasterMode}
+              isMetaMask={isMetaMask}
+              sessionKey={sessionKey}
             />
           </div>
         )}
