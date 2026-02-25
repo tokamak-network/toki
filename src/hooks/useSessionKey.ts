@@ -7,9 +7,7 @@ import {
 } from "viem/accounts";
 import {
   createPublicClient,
-  createWalletClient,
   http,
-  custom,
   type Address,
   type Hex,
   encodeFunctionData,
@@ -27,7 +25,6 @@ import {
   getDeleGatorEnvironment,
 } from "@metamask/delegation-toolkit";
 import { encodeDelegations } from "@metamask/delegation-toolkit/utils";
-import { signDelegationActions } from "@metamask/delegation-toolkit/actions";
 import { erc7710BundlerActions } from "@metamask/delegation-toolkit/experimental";
 import { CONTRACTS } from "@/constants/contracts";
 import { tonTokenAbi } from "@/lib/abi";
@@ -255,16 +252,52 @@ export function useSessionKey(
         },
       });
 
-      // Sign delegation via MetaMask (EIP-712 signTypedData)
-      const walletClient = createWalletClient({
-        chain,
-        transport: custom(provider),
-        account: userAddress,
-      }).extend(signDelegationActions());
+      // Sign delegation via raw eth_signTypedData_v4 on MetaMask provider
+      // MetaMask blocks delegation signing through the toolkit's abstraction layer,
+      // so we construct the EIP-712 typed data manually and call the provider directly.
+      const typedData = {
+        types: {
+          EIP712Domain: [
+            { name: "name", type: "string" },
+            { name: "version", type: "string" },
+            { name: "chainId", type: "uint256" },
+            { name: "verifyingContract", type: "address" },
+          ],
+          Caveat: [
+            { name: "enforcer", type: "address" },
+            { name: "terms", type: "bytes" },
+          ],
+          Delegation: [
+            { name: "delegate", type: "address" },
+            { name: "delegator", type: "address" },
+            { name: "authority", type: "bytes32" },
+            { name: "caveats", type: "Caveat[]" },
+            { name: "salt", type: "uint256" },
+          ],
+        },
+        primaryType: "Delegation" as const,
+        domain: {
+          name: "DelegationManager",
+          version: "1",
+          chainId: chain.id,
+          verifyingContract: environment.DelegationManager,
+        },
+        message: {
+          delegate: delegation.delegate,
+          delegator: delegation.delegator,
+          authority: delegation.authority,
+          caveats: delegation.caveats.map((c: { enforcer: Hex; terms: Hex }) => ({
+            enforcer: c.enforcer,
+            terms: c.terms,
+          })),
+          salt: delegation.salt === "0x" ? "0" : BigInt(delegation.salt).toString(),
+        },
+      };
 
-      const signature = await walletClient.signDelegation({
-        delegation,
-        delegationManager: environment.DelegationManager,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const signature = await (provider as any).request({
+        method: "eth_signTypedData_v4",
+        params: [userAddress, JSON.stringify(typedData)],
       });
 
       const signedDelegation = { ...delegation, signature };

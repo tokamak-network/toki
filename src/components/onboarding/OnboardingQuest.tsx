@@ -260,9 +260,9 @@ function DialogueBox({
       className="cursor-pointer select-none w-full"
       onClick={() => (done ? onNext() : skip())}
     >
-      <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
+      <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6 h-[160px] sm:h-[176px] flex flex-col">
         {/* Name plate */}
-        <div className="inline-flex items-center gap-2 mb-3 px-4 py-1.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/30">
+        <div className="inline-flex items-center gap-2 mb-3 px-4 py-1.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/30 self-start">
           <span className="text-accent-cyan font-bold text-sm tracking-wide">Toki</span>
           {line.mood && moodLabel && (
             <span className="text-xs text-accent-cyan/60">
@@ -270,14 +270,14 @@ function DialogueBox({
             </span>
           )}
         </div>
-        <p className="text-gray-100 text-base sm:text-lg leading-relaxed min-h-[3rem]">
+        <p className="text-gray-100 text-base sm:text-lg leading-relaxed flex-1">
           {displayed}
           {!done && (
             <span className="inline-block w-0.5 h-5 bg-accent-cyan ml-0.5 animate-pulse align-middle" />
           )}
         </p>
         {done && (
-          <div className="text-right mt-3">
+          <div className="text-right">
             <span className="text-xs text-gray-500 animate-pulse">
               {isLast ? t.onboarding.clickToContinue : t.onboarding.clickToNext} ▼
             </span>
@@ -300,125 +300,15 @@ const MOOD_GLOW: Record<Mood, string> = {
   wink: "rgba(236, 72, 153, 0.35)",
 };
 
-// ─── Sparkle Particles ───────────────────────────────────────────────
-
-function SparkleParticles({ trigger }: { trigger: number }) {
-  const [particles, setParticles] = useState<
-    { id: number; x: number; y: number; size: number; delay: number; color: string }[]
-  >([]);
-
-  useEffect(() => {
-    if (trigger === 0) return;
-    const colors = ["#22d3ee", "#f59e0b", "#60a5fa", "#a855f7", "#ec4899"];
-    const newParticles = Array.from({ length: 8 }, (_, i) => ({
-      id: Date.now() + i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: 6 + Math.random() * 8,
-      delay: i * 0.15 + Math.random() * 0.3,
-      color: colors[Math.floor(Math.random() * colors.length)],
-    }));
-    setParticles(newParticles);
-    const timer = setTimeout(() => setParticles([]), 5000);
-    return () => clearTimeout(timer);
-  }, [trigger]);
-
-  if (particles.length === 0) return null;
-
-  return (
-    <div className="absolute -inset-10 pointer-events-none overflow-visible -z-10">
-      {particles.map((p) => {
-        const edge = Math.random() > 0.5;
-        const x = edge
-          ? (Math.random() > 0.5 ? Math.random() * 15 : 85 + Math.random() * 15)
-          : p.x;
-        const y = !edge
-          ? (Math.random() > 0.5 ? Math.random() * 15 : 85 + Math.random() * 15)
-          : p.y;
-        return (
-          <div
-            key={p.id}
-            className="absolute animate-sparkle"
-            style={{
-              left: `${x}%`,
-              top: `${y}%`,
-              width: p.size,
-              height: p.size,
-              backgroundColor: p.color,
-              borderRadius: "50%",
-              animationDelay: `${p.delay}s`,
-              boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── Confetti Effect ─────────────────────────────────────────────────
-
-function ConfettiEffect({ active }: { active: boolean }) {
-  const [pieces, setPieces] = useState<
-    { id: number; x: number; color: string; delay: number; rotate: number }[]
-  >([]);
-
-  useEffect(() => {
-    if (!active) {
-      setPieces([]);
-      return;
-    }
-    const colors = ["#22d3ee", "#f59e0b", "#60a5fa", "#a855f7", "#ec4899", "#4ade80"];
-    const newPieces = Array.from({ length: 24 }, (_, i) => ({
-      id: Date.now() + i,
-      x: 10 + Math.random() * 80,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      delay: i * 0.1 + Math.random() * 0.5,
-      rotate: Math.random() * 360,
-    }));
-    setPieces(newPieces);
-    const timer = setTimeout(() => setPieces([]), 6000);
-    return () => clearTimeout(timer);
-  }, [active]);
-
-  if (pieces.length === 0) return null;
-
-  return (
-    <div className="absolute -inset-12 pointer-events-none overflow-visible -z-10">
-      {pieces.map((p) => {
-        const x = Math.random() > 0.5
-          ? Math.random() * 20
-          : 80 + Math.random() * 20;
-        return (
-          <div
-            key={p.id}
-            className="absolute animate-confetti-fall"
-            style={{
-              left: `${x}%`,
-              top: "-8px",
-              width: "8px",
-              height: "8px",
-              backgroundColor: p.color,
-              borderRadius: Math.random() > 0.5 ? "50%" : "2px",
-              animationDelay: `${p.delay}s`,
-              transform: `rotate(${p.rotate}deg)`,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
 // ─── Background Image per Quest ───────────────────────────────────────
 
 const QUEST_BACKGROUNDS: Record<string, string> = {
-  "install-metamask": "/vn-bg-default.png",
-  "create-wallet": "/vn-bg-default.png",
-  "connect-toki": "/vn-bg-default.png",
-  "verify-upbit": "/vn-bg-default.png",
-  "receive-ton": "/vn-bg-default.png",
-  "first-stake": "/vn-bg-default.png",
+  "install-metamask": "/backgrounds/1.png",
+  "create-wallet": "/backgrounds/2.png",
+  "connect-toki": "/backgrounds/3.png",
+  "verify-upbit": "/backgrounds/4.png",
+  "receive-ton": "/backgrounds/5.png",
+  "first-stake": "/backgrounds/6.png",
 };
 
 // ─── Character Display (Visual Novel Style) ──────────────────────────
@@ -434,15 +324,9 @@ function TokiCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
   const imageSrc = MOOD_IMAGES[effectiveMood];
   const [prevSrc, setPrevSrc] = useState(imageSrc);
   const [transitioning, setTransitioning] = useState(false);
-  const [sparkleTrigger, setSparkleTrigger] = useState(0);
-  const prevMoodRef = useRef<Mood>(effectiveMood);
 
   useEffect(() => {
     if (imageSrc !== prevSrc) {
-      if (imageSrc !== MOOD_IMAGES[prevMoodRef.current]) {
-        setSparkleTrigger((n) => n + 1);
-      }
-      prevMoodRef.current = effectiveMood;
       setTransitioning(true);
       const timer = setTimeout(() => {
         setPrevSrc(imageSrc);
@@ -450,24 +334,17 @@ function TokiCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [imageSrc, prevSrc, effectiveMood]);
+  }, [imageSrc, prevSrc]);
 
   const glowColor = MOOD_GLOW[effectiveMood];
-  const isBadge = phase === "badge";
 
   return (
-    <div className="absolute bottom-44 sm:bottom-52 left-1/2 -translate-x-1/2 z-10">
+    <div className="flex justify-center z-10">
       <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] overflow-visible">
         <div
-          className="absolute inset-0 rounded-3xl blur-3xl -z-10 animate-glow-pulse transition-colors duration-700"
+          className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 animate-glow-pulse transition-colors duration-700 opacity-40"
           style={{ backgroundColor: glowColor }}
         />
-        <div
-          className="absolute -inset-4 rounded-[2rem] blur-2xl -z-20 opacity-20 transition-colors duration-700"
-          style={{ backgroundColor: glowColor }}
-        />
-        <SparkleParticles trigger={sparkleTrigger} />
-        <ConfettiEffect active={isBadge} />
         <Image
           src={transitioning ? prevSrc : imageSrc}
           alt="Toki"
@@ -726,12 +603,11 @@ export default function OnboardingQuest() {
         </div>
       </div>
 
-      {/* ── Layer 2: Character (center-bottom, above dialogue) ── */}
-      <TokiCharacter mood={currentLine?.mood} phase={phase} />
-
-      {/* ── Layer 3: Bottom dialogue / action panel ── */}
+      {/* ── Layer 2+3: Character + dialogue panel (stacked, anchored to bottom) ── */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <div className="max-w-3xl mx-auto">
+          {/* Character sits directly above the panel */}
+          <TokiCharacter mood={currentLine?.mood} phase={phase} />
 
           {/* Connected Address (shown during connect quest success) */}
           {connectedAddr && phase === "success" && quest.id === "connect-toki" && (
