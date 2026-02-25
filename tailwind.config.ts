@@ -45,6 +45,8 @@ const config: Config = {
         "sparkle": "sparkle 3.5s ease-in-out forwards",
         "confetti-fall": "confettiFall 5s ease-in-out forwards",
         "glow-pulse": "glowPulse 4s ease-in-out infinite",
+        "cinematic-exit": "cinematicExit 0.8s ease-in forwards",
+        "character-entrance": "characterEntrance 0.7s ease-out forwards",
       },
       keyframes: {
         float: {
@@ -82,6 +84,15 @@ const config: Config = {
         glowPulse: {
           "0%, 100%": { opacity: "0.4", transform: "scale(1)" },
           "50%": { opacity: "0.7", transform: "scale(1.05)" },
+        },
+        cinematicExit: {
+          "0%": { transform: "translateY(0)", opacity: "1" },
+          "100%": { transform: "translateY(100%)", opacity: "0" },
+        },
+        characterEntrance: {
+          "0%": { transform: "translateY(100px)", opacity: "0" },
+          "40%": { transform: "translateY(-8px)", opacity: "1" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
         },
       },
     },

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { Dictionary } from "@/locales";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import IntroCinematic from "./IntroCinematic";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
 
@@ -396,9 +397,12 @@ export default function OnboardingQuest() {
   );
   const [subStepIndex, setSubStepIndex] = useState(0);
   const [subStepConfirmed, setSubStepConfirmed] = useState(false);
+  const [showCinematic, setShowCinematic] = useState(false);
+  const [cinematicComplete, setCinematicComplete] = useState(false);
+  const [cinematicJustFinished, setCinematicJustFinished] = useState(false);
   const questAreaRef = useRef<HTMLDivElement>(null);
 
-  // Load progress from localStorage (with migration)
+  // Load progress from localStorage (with migration) + cinematic check
   useEffect(() => {
     const saved = localStorage.getItem("toki-onboarding");
     if (saved) {
@@ -418,6 +422,16 @@ export default function OnboardingQuest() {
         // ignore
       }
     }
+
+    // Show intro cinematic on first visit
+    // TODO: Re-enable localStorage check when done developing intro
+    // const introSeen = localStorage.getItem("toki-intro-seen");
+    // if (!introSeen) {
+    //   setShowCinematic(true);
+    // } else {
+    //   setCinematicComplete(true);
+    // }
+    setShowCinematic(true);
   }, []);
 
   // Save progress
@@ -535,6 +549,14 @@ export default function OnboardingQuest() {
     setSubStepConfirmed(false);
   };
 
+  const handleCinematicComplete = useCallback(() => {
+    setShowCinematic(false);
+    setCinematicComplete(true);
+    setCinematicJustFinished(true);
+    // TODO: Re-enable when done developing intro
+    // localStorage.setItem("toki-intro-seen", "1");
+  }, []);
+
   const handleBadgeDone = () => {
     if (!quest) return;
     const newCompleted = new Set(completedQuests);
@@ -620,7 +642,9 @@ export default function OnboardingQuest() {
       {/* ── Character + Bottom Panel ── */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <div className="max-w-3xl mx-auto">
-          <TokiCharacter mood={currentLine?.mood} phase={phase} />
+          <div className={cinematicJustFinished ? "animate-character-entrance" : ""}>
+            <TokiCharacter mood={currentLine?.mood} phase={phase} />
+          </div>
 
           {/* Wallet Address (Quest 1 success) */}
           {embeddedWallet && phase === "success" && quest.id === "create-wallet" && (
@@ -807,6 +831,9 @@ export default function OnboardingQuest() {
           )}
         </div>
       </div>
+
+      {/* Intro Cinematic Overlay */}
+      {showCinematic && <IntroCinematic onComplete={handleCinematicComplete} />}
     </div>
   );
 }

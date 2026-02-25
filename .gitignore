@@ -35,8 +35,20 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# external contracts
+# external contracts & SDKs
 /plasma-evm-contracts/
+/tokamak-dapp-sdk/
 
-# claude-mem auto-generated
+# foundry build artifacts & cache
+paymaster/out/
+paymaster/cache/
+
+# metamask snap
+snap/dist/
+snap/node_modules/
+
+# claude tooling
 **/CLAUDE.md
+.omc/
+.claude/
+.playwright-mcp/
