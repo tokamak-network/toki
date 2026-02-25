@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useWallets } from "@privy-io/react-auth";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { toViemAccount } from "@privy-io/react-auth";
 import {
   createPublicClient,
@@ -157,6 +157,7 @@ async function setupDelegationToolkit(
 }
 
 export function useEip7702() {
+  const { user } = usePrivy();
   const { wallets } = useWallets();
   const [smartAccountClient, setSmartAccountClient] =
     useState<SmartAccountWrapper | null>(null);
@@ -168,10 +169,17 @@ export function useEip7702() {
   const embeddedInitRef = useRef(false);
   const externalInitRef = useRef(false);
 
-  const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
-  const metamaskWallet = wallets.find(
-    (w) => w.walletClientType === "metamask"
+  // Check if user explicitly linked an external wallet in their Privy account.
+  // MetaMask injects into useWallets() even when user logged in via Google/email,
+  // so only use it if it was actually linked.
+  const hasLinkedExternalWallet = user?.linkedAccounts?.some(
+    (a) => a.type === "wallet"
   );
+
+  const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
+  const metamaskWallet = hasLinkedExternalWallet
+    ? wallets.find((w) => w.walletClientType === "metamask")
+    : null;
 
   // ─── Path A: Privy Embedded Wallet ───
   useEffect(() => {

@@ -1,3 +1,10 @@
+// BigInt JSON serialization polyfill — prevents "Do not know how to serialize a BigInt"
+// when viem/bundler clients internally call JSON.stringify on paymaster data
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import PrivyClientProvider from "@/components/providers/PrivyClientProvider";

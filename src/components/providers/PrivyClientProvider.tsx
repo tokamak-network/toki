@@ -1,5 +1,12 @@
 "use client";
 
+// BigInt JSON serialization polyfill — must run client-side before Privy's
+// SignRequestScreen calls JSON.stringify on authorization data containing BigInt
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 import { useEffect, useState, type ReactNode } from "react";
 
 // Lazy load PrivyProvider to avoid SSR "React is not defined" from @privy-io/react-auth

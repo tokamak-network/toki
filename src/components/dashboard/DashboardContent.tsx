@@ -56,7 +56,14 @@ export default function DashboardContent() {
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
   const externalWallet = wallets.find((w) => w.walletClientType !== "privy");
-  const primaryWallet = externalWallet || embeddedWallet;
+
+  // Check if user explicitly linked an external wallet (e.g. MetaMask).
+  // MetaMask injects into useWallets() even after logout/re-login with Privy,
+  // so we only use it if the user actually linked it in their account.
+  const hasLinkedExternalWallet = user?.linkedAccounts?.some(
+    (a) => a.type === "wallet"
+  );
+  const primaryWallet = (hasLinkedExternalWallet && externalWallet) || embeddedWallet;
 
   // EIP-7702: EOA === Smart Account, so balance address is always the EOA
   const balanceAddress = primaryWallet?.address;
