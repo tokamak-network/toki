@@ -142,6 +142,8 @@ const ko = {
     txSubmitted: "트랜잭션이 제출되었습니다!",
     noStakedBalance: "이 오퍼레이터에 스테이킹된 잔액이 없습니다",
     txRejected: "사용자가 트랜잭션을 거부했습니다",
+    insufficientTonForGas: "TON 잔액이 부족합니다. 스테이킹 금액과 가스비를 합산한 TON이 필요합니다.",
+    paymasterValidationFailed: "가스비 검증에 실패했습니다. TON 잔액을 확인 후 다시 시도해주세요.",
     myStakedPositions: "내 스테이킹 현황",
     estimatedGas: "예상 가스비: ~{amount} TON",
     // Delegation / Session Key
@@ -268,6 +270,17 @@ const ko = {
     moodProud: "-- 자랑스러운",
     moodCheer: "-- 응원하는",
     moodWink: "-- 장난스러운",
+    // Intro cinematic
+    introTerminal1: "> 토카막 네트워크에 연결 중...",
+    introTerminal2: "> 프로토콜: 이더리움 레이어-2",
+    introTerminal3: "> 상태: 운영 중",
+    introTerminal4: "> 총 예치 가치: 증가 중",
+    introTerminal5: "> 검증자: 활성",
+    introTerminal6: ">",
+    introTerminal7: "> 가이드 모듈 로딩 중...",
+    introTerminal8: "> toki v1.0 초기화 중...",
+    introTerminal9: "> 준비 완료.",
+    introTerminalSkip: "아무 곳이나 클릭하여 건너뛰기",
   },
 } as const;
 

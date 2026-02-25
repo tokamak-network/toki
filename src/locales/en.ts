@@ -142,6 +142,8 @@ const en = {
     txSubmitted: "Transaction submitted!",
     noStakedBalance: "No staked balance on this operator",
     txRejected: "Transaction rejected by user",
+    insufficientTonForGas: "Insufficient TON balance. You need enough TON to cover both the staking amount and gas fee.",
+    paymasterValidationFailed: "Gas payment validation failed. Please check your TON balance and try again.",
     myStakedPositions: "My Staked Positions",
     estimatedGas: "Est. gas: ~{amount} TON",
     // Delegation / Session Key
@@ -268,6 +270,17 @@ const en = {
     moodProud: "-- proud",
     moodCheer: "-- cheering",
     moodWink: "-- playful",
+    // Intro cinematic
+    introTerminal1: "> connecting to tokamak network...",
+    introTerminal2: "> protocol: layer-2 on ethereum",
+    introTerminal3: "> status: operational",
+    introTerminal4: "> total value locked: growing",
+    introTerminal5: "> validators: active",
+    introTerminal6: ">",
+    introTerminal7: "> loading guide module...",
+    introTerminal8: "> initializing toki v1.0...",
+    introTerminal9: "> ready.",
+    introTerminalSkip: "Click anywhere to skip",
   },
 } as const;
 

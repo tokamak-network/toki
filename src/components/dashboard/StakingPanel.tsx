@@ -244,6 +244,10 @@ export default function StakingPanel({
       console.error("Staking failed:", errMsg);
       if (errMsg.includes("User rejected")) {
         setError(t.dashboard.txRejected);
+      } else if (errMsg.includes("insufficient TON") || errMsg.includes("insufficient funds")) {
+        setError(t.dashboard.insufficientTonForGas);
+      } else if (errMsg.includes("validatePaymasterUserOp") || errMsg.includes("Paymaster")) {
+        setError(t.dashboard.paymasterValidationFailed);
       } else {
         setError(errMsg.slice(0, 200));
       }
@@ -307,6 +311,10 @@ export default function StakingPanel({
       console.error("Unstake failed:", errMsg);
       if (errMsg.includes("User rejected")) {
         setError(t.dashboard.txRejected);
+      } else if (errMsg.includes("insufficient TON") || errMsg.includes("insufficient funds")) {
+        setError(t.dashboard.insufficientTonForGas);
+      } else if (errMsg.includes("validatePaymasterUserOp") || errMsg.includes("Paymaster")) {
+        setError(t.dashboard.paymasterValidationFailed);
       } else {
         setError(errMsg.slice(0, 200));
       }

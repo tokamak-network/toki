@@ -14,7 +14,7 @@ import {
   maxUint256,
 } from "viem";
 import { sepolia, mainnet } from "viem/chains";
-import { createBundlerClient } from "viem/account-abstraction";
+import { createBundlerClient, toSimple7702SmartAccount } from "viem/account-abstraction";
 import {
   toMetaMaskSmartAccount,
   Implementation,
@@ -69,12 +69,11 @@ function createTonPaymasterProvider(paymasterAddress: Address) {
 }
 
 // Ensures EOA is delegated to MetaMask DeleGator (EIP-7702).
-// - Privy: returns SignedAuthorization to include in UserOp (fully gasless)
-// - MetaMask: sends a Type 4 tx via MetaMask to set delegation, returns null
+// MetaMask: sends a Type 4 tx via MetaMask to set delegation, returns null
 type EnsureDelegationFn = () => Promise<SignedAuthorization | null>;
 
-// Shared setup: creates MetaMask Smart Account + BundlerClient + wrapper
-// Used by both Privy embedded and MetaMask external paths
+// Creates MetaMask DeleGator Smart Account + BundlerClient + wrapper
+// Used by MetaMask external wallet path only
 async function setupDelegationToolkit(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signer: any,
@@ -88,12 +87,11 @@ async function setupDelegationToolkit(
     address: signerAddress,
   });
 
-  // Patch: Stateless7702 doesn't use factory deployment — it uses EIP-7702 authorization.
-  // The delegation-toolkit sets factoryData=undefined when address is provided directly,
-  // causing getFactoryArgs to throw. Override to return empty factory args.
+  // Patch: Stateless7702 uses EIP-7702 authorization, not factory deployment.
+  // Signal to the bundler (Pimlico) with factory=0x7702 convention.
   smartAccount.getFactoryArgs = async () => ({
-    factory: undefined,
-    factoryData: undefined,
+    factory: "0x7702" as Address,
+    factoryData: "0x" as Hex,
   });
 
   const tonPaymasterAddr = CONTRACTS.TON_PAYMASTER;
@@ -196,39 +194,86 @@ export function useEip7702() {
           wallet: embeddedWallet!,
         });
 
-        // Privy accounts support signAuthorization natively —
-        // returns signed authorization to include in UserOp (fully gasless)
-        const ensureDelegation: EnsureDelegationFn = async () => {
-          const nonce = await publicClient.getTransactionCount({
-            address: localAccount.address,
-            blockTag: "pending",
-          });
-          return localAccount.signAuthorization!({
-            contractAddress: CONTRACTS.METAMASK_DELEGATOR as Address,
-            chainId: chain.id,
-            nonce,
-          });
-        };
+        // Use viem's Simple7702Account — standard ECDSA validation,
+        // compatible with Privy's embedded wallet signer.
+        // (MetaMask DeleGator uses custom EIP-712 domain that Privy can't sign)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const smartAccount = await toSimple7702SmartAccount({
+          client: publicClient,
+          owner: localAccount as any,
+        });
 
-        const { wrapper, useCustomPaymaster } = await setupDelegationToolkit(
-          { account: localAccount },
-          localAccount.address,
-          ensureDelegation,
-        );
+        // Use TONPaymaster (EntryPoint v0.8) for gas payment in TON token
+        const tonPaymasterAddr = CONTRACTS.TON_PAYMASTER;
+        const useCustomPaymaster = !!tonPaymasterAddr;
+
+        const tonPaymaster = useCustomPaymaster
+          ? createTonPaymasterProvider(tonPaymasterAddr as Address)
+          : undefined;
+
+        const bundlerClient = createBundlerClient({
+          client: publicClient,
+          transport: http(pimlicoUrl!),
+          ...(tonPaymaster ? { paymaster: tonPaymaster } : { paymaster: true }),
+        });
+
+        const wrapper: SmartAccountWrapper = {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          sendTransaction: async (args: any) => {
+            let calls = args.calls || [];
+
+            // For ERC-20 paymaster: prepend TON approve call so postOp can collect fee
+            if (useCustomPaymaster) {
+              const approveCall = {
+                to: CONTRACTS.TON as Address,
+                data: encodeFunctionData({
+                  abi: erc20Abi,
+                  functionName: "approve",
+                  args: [tonPaymasterAddr as Address, maxUint256],
+                }),
+              };
+              calls = [approveCall, ...calls];
+            }
+
+            // Include EIP-7702 authorization if account not yet delegated
+            const deployed = await smartAccount.isDeployed();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const userOpParams: any = {
+              account: smartAccount,
+              calls,
+            };
+
+            if (!deployed) {
+              console.log("[EIP-7702] Account not delegated, signing authorization...");
+              const nonce = await publicClient.getTransactionCount({
+                address: localAccount.address,
+                blockTag: "pending",
+              });
+              const authorization = await localAccount.signAuthorization!({
+                contractAddress: smartAccount.authorization!.address,
+                chainId: chain.id,
+                nonce,
+              });
+              userOpParams.authorization = authorization;
+            }
+
+            const userOpHash = await bundlerClient.sendUserOperation(userOpParams);
+            const receipt = await bundlerClient.waitForUserOperationReceipt({
+              hash: userOpHash,
+            });
+            return receipt.receipt.transactionHash;
+          },
+        };
 
         if (cancelled) return;
 
         setSmartAccountClient(wrapper);
         setWalletType("embedded");
-        setIsGasless(!useCustomPaymaster);
-        setPaymasterMode(useCustomPaymaster ? "erc20" : "none");
+        setIsGasless(true);
+        setPaymasterMode(useCustomPaymaster ? "erc20" : "sponsor");
         setIsReady(true);
 
-        console.log(
-          useCustomPaymaster
-            ? `[Embedded] Using TONPaymaster via delegation-toolkit`
-            : "[Embedded] No paymaster configured"
-        );
+        console.log(`[Embedded] Simple7702Account ready (${useCustomPaymaster ? "TONPaymaster ERC-20" : "Pimlico sponsored"})`);
       } catch (e) {
         if (cancelled) return;
         embeddedInitRef.current = false;
