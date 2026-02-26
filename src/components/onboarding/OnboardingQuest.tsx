@@ -119,11 +119,11 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       ],
     },
     {
-      id: "verify-upbit",
+      id: "verify-exchange",
       title: t.quest3Title,
       subtitle: t.quest3Subtitle,
       badge: t.quest3Badge,
-      badgeIcon: "U",
+      badgeIcon: "E",
       xp: 300,
       intro: [
         { text: t.quest3Intro1, mood: "explain" },
@@ -313,12 +313,33 @@ const MOOD_GLOW: Record<Mood, string> = {
   wink: "rgba(236, 72, 153, 0.35)",
 };
 
+// ─── Exchange Guide Links ─────────────────────────────────────────────
+
+const EXCHANGE_GUIDES = [
+  {
+    key: "upbit" as const,
+    url: "https://support.upbit.com/hc/ko/articles/6713306957977-%EA%B0%9C%EC%9D%B8%EC%A7%80%EA%B0%91%EC%A3%BC%EC%86%8C-%EB%93%B1%EB%A1%9D-%EB%B0%A9%EB%B2%95",
+  },
+  {
+    key: "bithumb" as const,
+    url: "https://support.bithumb.com/hc/ko/articles/51144300935577-100%EB%A7%8C%EC%9B%90-%EB%AF%B8%EB%A7%8C-%EC%B6%9C%EA%B8%88-%EA%B0%80%EC%83%81%EC%9E%90%EC%82%B0-%EC%A3%BC%EC%86%8C-%EB%93%B1%EB%A1%9D-%EA%B0%80%EC%9D%B4%EB%93%9C",
+  },
+  {
+    key: "coinone" as const,
+    url: "https://support.coinone.co.kr/support/solutions/articles/31000163221-%EA%B0%80%EC%83%81%EC%9E%90%EC%82%B0-%EC%A3%BC%EC%86%8C%EB%A1%9D-%EB%93%B1%EB%A1%9D-%EB%B0%A9%EB%B2%95-%EC%9B%B9-%EC%95%B1%EC%97%90%EC%84%9C-%EC%9D%B8%EC%A6%9D%ED%95%98%EA%B8%B0-",
+  },
+  {
+    key: "korbit" as const,
+    url: "https://www.korbit.co.kr/faq/list/?category=6gTj8LJTQpSXvmFTie9hhs&article=7dWVcdas0GTuwWgLc1hPpV",
+  },
+];
+
 // ─── Background Image per Quest ───────────────────────────────────────
 
 const QUEST_BACKGROUNDS: Record<string, string> = {
   "create-wallet": "/backgrounds/1.png",
   "bridge-metamask": "/backgrounds/2.png",
-  "verify-upbit": "/backgrounds/4.png",
+  "verify-exchange": "/backgrounds/4.png",
   "receive-ton": "/backgrounds/5.png",
   "first-stake": "/backgrounds/6.png",
 };
@@ -377,7 +398,7 @@ function TokiCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
 type Phase = "intro" | "action" | "verifying" | "success" | "badge";
 
 // Old quest IDs for localStorage migration
-const OLD_QUEST_IDS = ["install-metamask", "connect-toki"];
+const OLD_QUEST_IDS = ["install-metamask", "connect-toki", "verify-upbit"];
 
 export default function OnboardingQuest() {
   const router = useRouter();
@@ -397,6 +418,7 @@ export default function OnboardingQuest() {
   );
   const [subStepIndex, setSubStepIndex] = useState(0);
   const [subStepConfirmed, setSubStepConfirmed] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const [showCinematic, setShowCinematic] = useState(false);
   const [cinematicComplete, setCinematicComplete] = useState(false);
   const [cinematicJustFinished, setCinematicJustFinished] = useState(false);
@@ -688,12 +710,23 @@ export default function OnboardingQuest() {
               <div className="space-y-4">
 
                 {quest.action.type === "privy-login" && (
-                  <button
-                    onClick={handleAction}
-                    className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg hover:scale-[1.02] transition-transform"
-                  >
-                    {quest.action.label}
-                  </button>
+                  <>
+                    {quest.id === "create-wallet" && (
+                      <button
+                        onClick={() => setShowVideo(true)}
+                        className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <span>▶</span>
+                        <span>{t.onboarding.quest1VideoPrompt}</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={handleAction}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg hover:scale-[1.02] transition-transform"
+                    >
+                      {quest.action.label}
+                    </button>
+                  </>
                 )}
 
                 {(quest.action.type === "link" || quest.action.type === "navigate") && (
@@ -707,6 +740,36 @@ export default function OnboardingQuest() {
 
                 {quest.action.type === "confirm" && (
                   <>
+                    {/* Exchange guide links for Quest 3 */}
+                    {quest.id === "verify-exchange" && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+                          {t.onboarding.quest3ExchangeGuide}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {EXCHANGE_GUIDES.map((ex) => {
+                            const labelMap: Record<string, string> = {
+                              upbit: t.onboarding.quest3UpbitGuide,
+                              bithumb: t.onboarding.quest3BithumbGuide,
+                              coinone: t.onboarding.quest3CoinoneGuide,
+                              korbit: t.onboarding.quest3KorbitGuide,
+                            };
+                            return (
+                              <a
+                                key={ex.key}
+                                href={ex.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-white/5 border border-white/10 text-accent-cyan text-sm font-medium hover:bg-white/10 hover:border-accent-cyan/30 transition-colors"
+                              >
+                                <span>&#x2197;</span>
+                                {labelMap[ex.key]}
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                     <label className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
                       <input
                         type="checkbox"
@@ -831,6 +894,32 @@ export default function OnboardingQuest() {
           )}
         </div>
       </div>
+
+      {/* YouTube Video Modal */}
+      {showVideo && (
+        <div
+          className="fixed inset-0 z-40 bg-black/90 flex flex-col items-center justify-center p-4"
+          onClick={() => setShowVideo(false)}
+        >
+          <button
+            onClick={() => setShowVideo(false)}
+            className="mb-4 px-5 py-2.5 rounded-full bg-white/15 text-white text-sm font-medium flex items-center gap-2 hover:bg-white/25 transition-colors"
+          >
+            ✕ {t.onboarding.closeVideo}
+          </button>
+          <div
+            className="w-full max-w-3xl aspect-video"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <iframe
+              src="https://www.youtube.com/embed/UURB7Tc7D4M?start=129&autoplay=1"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              className="w-full h-full rounded-xl"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Intro Cinematic Overlay */}
       {showCinematic && <IntroCinematic onComplete={handleCinematicComplete} />}
