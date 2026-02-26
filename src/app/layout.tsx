@@ -7,10 +7,13 @@
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import dynamic from "next/dynamic";
 import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { AudioProvider } from "@/components/audio/AudioProvider";
 import "./globals.css";
+
+const TokiChat = dynamic(() => import("@/components/chat/TokiChat"), { ssr: false });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -47,7 +50,10 @@ export default function RootLayout({
       >
         <LanguageProvider>
           <AudioProvider>
-            <PrivyClientProvider>{children}</PrivyClientProvider>
+            <PrivyClientProvider>
+              {children}
+              <TokiChat />
+            </PrivyClientProvider>
           </AudioProvider>
         </LanguageProvider>
       </body>
