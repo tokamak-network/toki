@@ -1,0 +1,74 @@
+[
+  {
+    "id": "service-1",
+    "icon": "\uD83D\uDD17",
+    "nameKo": "\uC11C\uBE44\uC2A4 1",
+    "nameEn": "Service 1",
+    "descKo": "\uC124\uBA85 placeholder",
+    "descEn": "Description placeholder",
+    "url": "https://example.com",
+    "categories": ["earn"],
+    "comingSoon": false,
+    "order": 0
+  },
+  {
+    "id": "service-2",
+    "icon": "\uD83D\uDD17",
+    "nameKo": "\uC11C\uBE44\uC2A4 2",
+    "nameEn": "Service 2",
+    "descKo": "\uC124\uBA85 placeholder",
+    "descEn": "Description placeholder",
+    "url": "https://example.com",
+    "categories": ["earn", "build"],
+    "comingSoon": false,
+    "order": 1
+  },
+  {
+    "id": "service-3",
+    "icon": "\uD83D\uDD17",
+    "nameKo": "\uC11C\uBE44\uC2A4 3",
+    "nameEn": "Service 3",
+    "descKo": "\uC124\uBA85 placeholder",
+    "descEn": "Description placeholder",
+    "url": "https://example.com",
+    "categories": ["play"],
+    "comingSoon": false,
+    "order": 2
+  },
+  {
+    "id": "service-4",
+    "icon": "\uD83D\uDD17",
+    "nameKo": "\uC11C\uBE44\uC2A4 4",
+    "nameEn": "Service 4",
+    "descKo": "\uC124\uBA85 placeholder",
+    "descEn": "Description placeholder",
+    "url": "https://example.com",
+    "categories": ["build"],
+    "comingSoon": false,
+    "order": 3
+  },
+  {
+    "id": "service-5",
+    "icon": "\uD83D\uDD17",
+    "nameKo": "\uC11C\uBE44\uC2A4 5",
+    "nameEn": "Service 5",
+    "descKo": "\uC124\uBA85 placeholder",
+    "descEn": "Description placeholder",
+    "url": "https://example.com",
+    "categories": ["vote"],
+    "comingSoon": false,
+    "order": 4
+  },
+  {
+    "id": "service-6",
+    "icon": "\uD83D\uDD17",
+    "nameKo": "\uC11C\uBE44\uC2A4 6",
+    "nameEn": "Service 6",
+    "descKo": "\uC124\uBA85 placeholder",
+    "descEn": "Description placeholder",
+    "url": "https://example.com",
+    "categories": ["vote", "earn"],
+    "comingSoon": true,
+    "order": 5
+  }
+]
