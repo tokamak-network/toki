@@ -72,17 +72,52 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Features
+
+### Onboarding Quest System
+
+A visual novel-style guided tutorial (`/onboarding`) that walks new users through 5 quests:
+
+1. **Create Wallet** — Privy social login (Kakao/Google) creates an embedded wallet
+2. **Bridge to MetaMask** — Export private key and import into MetaMask for exchange verification
+3. **Upbit Verification** — Register wallet address on Upbit (Travel Rule compliance)
+4. **Receive First TON** — Withdraw TON from Upbit to wallet
+5. **First Gasless Stake** — Stake TON without ETH gas fees
+
+Each quest features Toki, an anime-style guide character with mood-based expressions, dialogue sequences, and XP progression.
+
+### Intro Cinematic
+
+A terminal-style boot sequence plays before Quest 1:
+- Retro terminal typing effect on a cafe laptop scene
+- Camera pans up to reveal the Toki character
+- Click-to-skip supported at any phase
+
+### Gasless Staking (EIP-7702)
+
+- **TON Paymaster**: Gas fees paid in TON, no ETH needed
+- **Session Key Delegation**: Sign once, stake gaslessly for 7 days via MetaMask Delegation Toolkit
+- **Auto WTON Wrapping**: TON -> WTON conversion handled automatically
+
+### i18n
+
+Bilingual support (Korean/English) via custom `LanguageProvider` with locale files in `src/locales/`.
+
 ## Project Structure
 
 ```
 src/
   app/              # Next.js App Router pages
   components/
-    landing/        # Landing page components
+    landing/        # Landing page (hero, how-it-works, FAQ, stats)
     layout/         # Header, Footer
+    onboarding/     # Visual novel quest system + intro cinematic
+    dashboard/      # Staking panel + wallet management
+    providers/      # Privy, language, Web3 providers
     ui/             # Reusable UI components
   constants/        # Contract addresses, ABIs
-  hooks/            # React hooks
+  hooks/            # useEip7702, useSessionKey
+  locales/          # en.ts, ko.ts (i18n strings)
   lib/              # Utilities
 ```
 

@@ -27,7 +27,7 @@ export default function PrivyProvider({
         appearance: {
           theme: "dark",
           accentColor: "#4a90d9",
-          logo: "/tokamak-logo.svg",
+          logo: "/toki-logo.png",
         },
         embeddedWallets: {
           ethereum: {
