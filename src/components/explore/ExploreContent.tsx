@@ -70,6 +70,16 @@ const CATEGORIES: InterestCategory[] = [
   { id: "vote", icon: "\uD83D\uDDF3", nameKey: "catVoteName", descKey: "catVoteDesc" },
 ];
 
+const CATEGORY_ICON: Record<string, string> = Object.fromEntries(
+  CATEGORIES.map((c) => [c.id, c.icon])
+);
+
+function resolveIcon(service: EcosystemService): string {
+  if (service.icon && service.icon !== "\uD83D\uDD17") return service.icon;
+  const cat = service.categories[0];
+  return (cat && CATEGORY_ICON[cat]) || "\uD83D\uDD17";
+}
+
 function buildGreetingLines(t: Dictionary["explore"]): DialogueLine[] {
   return [
     { text: t.greeting1, mood: "welcome" },
@@ -284,11 +294,12 @@ function CategoryPicker({
 function ServiceCard({ service, t, locale }: { service: EcosystemService; t: Dictionary["explore"]; locale: string }) {
   const name = locale === "ko" ? service.nameKo : service.nameEn;
   const desc = locale === "ko" ? service.descKo : service.descEn;
+  const icon = resolveIcon(service);
 
   if (service.comingSoon) {
     return (
       <div className="p-6 rounded-xl bg-white/5 border border-white/10 opacity-60">
-        <div className="text-3xl mb-3">{service.icon}</div>
+        <div className="text-3xl mb-3">{icon}</div>
         <h3 className="text-lg font-semibold text-gray-300 mb-1">{name}</h3>
         <p className="text-sm text-gray-500 mb-4">{desc}</p>
         <span className="inline-block px-3 py-1.5 rounded-lg bg-white/5 text-xs text-gray-500 font-medium">
@@ -305,7 +316,7 @@ function ServiceCard({ service, t, locale }: { service: EcosystemService; t: Dic
       rel="noopener noreferrer"
       className="block group p-6 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-accent-cyan/30 transition-all"
     >
-      <div className="text-3xl mb-3">{service.icon}</div>
+      <div className="text-3xl mb-3">{icon}</div>
       <h3 className="text-lg font-semibold text-gray-200 mb-1 group-hover:text-accent-cyan transition-colors">
         {name}
       </h3>

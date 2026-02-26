@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const ConnectButton = dynamic(() => import("./ConnectButton"), {
@@ -55,9 +56,13 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue to-accent-navy flex items-center justify-center text-white font-bold text-sm">
-            T
-          </div>
+          <Image
+            src="/toki-icon.png"
+            alt="Toki"
+            width={32}
+            height={32}
+            className="w-8 h-8 rounded-lg"
+          />
           <span className="text-lg font-bold">
             <span className="text-gradient">Toki</span>
           </span>
@@ -68,11 +73,8 @@ export default function Header() {
           <a href="#how-it-works" className="hover:text-foreground transition-colors">
             {t.header.howItWorks}
           </a>
-          <a href="#why-toki" className="hover:text-foreground transition-colors">
-            {t.header.whyToki}
-          </a>
-          <a href="#stats" className="hover:text-foreground transition-colors">
-            {t.header.stats}
+          <a href="/explore" className="hover:text-foreground transition-colors">
+            {t.header.explore}
           </a>
           <a
             href="https://github.com/tokamak-network/toki"
@@ -114,11 +116,8 @@ export default function Header() {
             <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
               {t.header.howItWorks}
             </a>
-            <a href="#why-toki" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              {t.header.whyToki}
-            </a>
-            <a href="#stats" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              {t.header.stats}
+            <a href="/explore" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
+              {t.header.explore}
             </a>
             <a
               href="https://github.com/tokamak-network/toki"
