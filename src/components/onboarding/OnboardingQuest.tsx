@@ -632,12 +632,20 @@ export default function OnboardingQuest() {
                   </div>
                 ))}
               </div>
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
-              >
-                {t.onboarding.goToDashboard}
-              </button>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => router.push("/dashboard")}
+                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
+                >
+                  {t.onboarding.goToDashboard}
+                </button>
+                <button
+                  onClick={() => router.push("/explore")}
+                  className="px-8 py-4 rounded-xl bg-white/10 border border-white/20 text-white font-semibold text-lg hover:bg-white/15 hover:scale-105 transition-all"
+                >
+                  {t.onboarding.exploreEcosystem}
+                </button>
+              </div>
             </div>
           </div>
         </div>

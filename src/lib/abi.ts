@@ -162,6 +162,13 @@ export const depositManagerAbi = [
     type: "function",
   },
   {
+    inputs: [{ name: "layer2", type: "address" }],
+    name: "requestWithdrawalAll",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       { name: "layer2", type: "address" },
       { name: "receiveTON", type: "bool" },
@@ -174,9 +181,72 @@ export const depositManagerAbi = [
   {
     inputs: [
       { name: "layer2", type: "address" },
+      { name: "n", type: "uint256" },
+      { name: "receiveTON", type: "bool" },
+    ],
+    name: "processRequests",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
       { name: "account", type: "address" },
     ],
     name: "numPendingRequests",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
+      { name: "account", type: "address" },
+    ],
+    name: "numRequests",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
+      { name: "account", type: "address" },
+    ],
+    name: "pendingUnstaked",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
+      { name: "account", type: "address" },
+    ],
+    name: "withdrawalRequestIndex",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "layer2", type: "address" },
+      { name: "account", type: "address" },
+      { name: "index", type: "uint256" },
+    ],
+    name: "withdrawalRequest",
+    outputs: [
+      { name: "withdrawableBlockNumber", type: "uint128" },
+      { name: "amount", type: "uint128" },
+      { name: "processed", type: "bool" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "globalWithdrawalDelay",
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",

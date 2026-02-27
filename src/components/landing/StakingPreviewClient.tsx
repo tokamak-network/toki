@@ -52,7 +52,7 @@ export default function StakingPreviewClient({ data }: StakingPreviewClientProps
           <StatCard
             label={t.stakingPreview.totalStaked}
             value={`${(data.totalStakedRaw / 1_000_000).toFixed(1)}M`}
-            subtext={`${data.totalStaked} WTON`}
+            subtext={`${data.totalStaked} TON`}
             color="text-accent-cyan"
           />
           <StatCard
@@ -119,7 +119,7 @@ export default function StakingPreviewClient({ data }: StakingPreviewClientProps
                   {Number(op.totalStaked).toLocaleString("en-US", {
                     maximumFractionDigits: 0,
                   })}{" "}
-                  <span className="text-gray-500 text-xs">WTON</span>
+                  <span className="text-gray-500 text-xs">TON</span>
                 </span>
               </div>
             ))}

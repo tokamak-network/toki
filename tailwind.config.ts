@@ -47,6 +47,8 @@ const config: Config = {
         "glow-pulse": "glowPulse 4s ease-in-out infinite",
         "cinematic-exit": "cinematicExit 0.8s ease-in forwards",
         "character-entrance": "characterEntrance 0.7s ease-out forwards",
+        "coin-drop": "coinDrop 2s ease-in forwards",
+        "card-shuffle": "cardShuffle 0.5s ease-in-out",
       },
       keyframes: {
         float: {
@@ -93,6 +95,18 @@ const config: Config = {
           "0%": { transform: "translateY(100px)", opacity: "0" },
           "40%": { transform: "translateY(-8px)", opacity: "1" },
           "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        coinDrop: {
+          "0%": { transform: "translateY(-20px) rotate(0deg)", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { transform: "translateY(300px) rotate(720deg)", opacity: "0" },
+        },
+        cardShuffle: {
+          "0%": { transform: "translateX(0) scale(1)" },
+          "25%": { transform: "translateX(10px) scale(0.95)" },
+          "75%": { transform: "translateX(-10px) scale(0.95)" },
+          "100%": { transform: "translateX(0) scale(1)" },
         },
       },
     },

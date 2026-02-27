@@ -2,11 +2,13 @@
 
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { formatUnits } from "viem";
 import { createPublicClient, http } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 import StakingPanel from "./StakingPanel";
+import StakingPanelBeginner from "./StakingPanelBeginner";
+import UnstakingPanel from "./UnstakingPanel";
 import { useEip7702 } from "@/hooks/useEip7702";
 import { useSessionKey } from "@/hooks/useSessionKey";
 import { useTranslation } from "@/components/providers/LanguageProvider";
@@ -52,6 +54,15 @@ export default function DashboardContent() {
   const [balances, setBalances] = useState<Balances | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+  const [stakingUiMode, setStakingUiMode] = useState<"beginner" | "expert">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("toki-staking-mode") as "beginner" | "expert") || "beginner";
+    }
+    return "beginner";
+  });
+  const [stakingTab, setStakingTab] = useState<"staking" | "unstaking">("staking");
   const { t } = useTranslation();
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
@@ -125,6 +136,19 @@ export default function DashboardContent() {
     }
   }, [balanceAddress, fetchBalances]);
 
+  // Close account menu on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false);
+      }
+    }
+    if (accountMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [accountMenuOpen]);
+
   if (!ready || !authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -171,12 +195,63 @@ export default function DashboardContent() {
             </div>
             <span className="text-lg font-bold text-gradient">Toki</span>
           </a>
-          <button
-            onClick={logout}
-            className="px-4 py-2 rounded-lg bg-white/10 text-gray-300 text-sm hover:bg-white/15 transition-colors"
-          >
-            {t.dashboard.logout}
-          </button>
+          <div className="relative" ref={accountMenuRef}>
+            <button
+              onClick={() => setAccountMenuOpen((prev) => !prev)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-gray-300 text-sm hover:bg-white/15 transition-colors"
+            >
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-accent-blue to-accent-cyan flex items-center justify-center text-white text-xs font-bold">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden sm:inline">{t.dashboard.account}</span>
+              <svg
+                className={`w-3 h-3 transition-transform ${accountMenuOpen ? "rotate-180" : ""}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {accountMenuOpen && (
+              <div className="absolute right-0 mt-2 w-56 rounded-xl bg-[#1a2340] border border-white/10 shadow-xl shadow-black/40 overflow-hidden z-50">
+                {/* User info */}
+                <div className="px-4 py-3 border-b border-white/5">
+                  <div className="text-sm font-medium text-gray-200 truncate">{displayName}</div>
+                  <div className="text-xs text-gray-500 font-mono truncate">{shortAddr}</div>
+                </div>
+
+                {/* Menu items */}
+                <div className="py-1">
+                  {embeddedWallet && (
+                    <button
+                      onClick={() => {
+                        setAccountMenuOpen(false);
+                        handleExportWallet();
+                      }}
+                      className="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:bg-white/5 transition-colors flex items-center gap-3"
+                    >
+                      <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                      </svg>
+                      {t.dashboard.exportPrivateKey}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setAccountMenuOpen(false);
+                      logout();
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-white/5 transition-colors flex items-center gap-3"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3-3l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    {t.dashboard.logout}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -200,12 +275,6 @@ export default function DashboardContent() {
                 <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
                   {t.dashboard.gasless}
                   {walletType === "external" ? " (MetaMask)" : walletType === "embedded" ? " (Embedded)" : ""}
-                </span>
-              )}
-              {smartAccountClient && paymasterMode === "erc20" && (
-                <span className="px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400">
-                  {t.dashboard.gasTon}
-                  {walletType === "embedded" ? " (Embedded)" : ""}
                 </span>
               )}
               {smartAccountClient && paymasterMode === "none" && walletType === "external" && (
@@ -255,7 +324,7 @@ export default function DashboardContent() {
               color="text-accent-cyan"
             />
             <BalanceItem
-              label="WTON"
+              label="TON (staked)"
               value={loading ? "..." : balances?.wton || "\u2014"}
               color="text-accent-gold"
             />
@@ -263,14 +332,6 @@ export default function DashboardContent() {
 
           {/* Actions */}
           <div className="flex flex-wrap gap-3">
-            {embeddedWallet && (
-              <button
-                onClick={handleExportWallet}
-                className="px-4 py-2 rounded-lg bg-white/10 text-sm text-gray-300 hover:bg-white/15 transition-colors"
-              >
-                {t.dashboard.exportPrivateKey}
-              </button>
-            )}
             <button
               onClick={fetchBalances}
               className="px-4 py-2 rounded-lg bg-white/10 text-sm text-gray-300 hover:bg-white/15 transition-colors"
@@ -288,18 +349,96 @@ export default function DashboardContent() {
           </div>
         </div>
 
-        {/* Staking Panel */}
+        {/* Staking / Unstaking Tabs + Panel */}
         {primaryWallet && (
           <div className="mb-6">
-            <StakingPanel
-              walletAddress={primaryWallet.address}
-              getEthereumProvider={getEthereumProvider}
-              smartAccountClient={smartAccountClient}
-              onBalanceChange={fetchBalances}
-              paymasterMode={paymasterMode}
-              isMetaMask={isMetaMask}
-              sessionKey={sessionKey}
-            />
+            {/* Staking / Unstaking Tab */}
+            <div className="flex items-center gap-1 mb-4 p-1 rounded-xl bg-white/5 w-fit">
+              <button
+                onClick={() => setStakingTab("staking")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  stakingTab === "staking"
+                    ? "bg-accent-blue/20 text-accent-cyan"
+                    : "text-gray-500 hover:text-gray-300"
+                }`}
+              >
+                {t.dashboard.stakingTab}
+              </button>
+              <button
+                onClick={() => setStakingTab("unstaking")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  stakingTab === "unstaking"
+                    ? "bg-accent-blue/20 text-accent-cyan"
+                    : "text-gray-500 hover:text-gray-300"
+                }`}
+              >
+                {t.dashboard.unstakingTab}
+              </button>
+            </div>
+
+            {stakingTab === "staking" ? (
+              <>
+                {/* Beginner / Expert Mode Toggle */}
+                <div className="flex items-center gap-1 mb-4 p-1 rounded-xl bg-white/5 w-fit">
+                  <button
+                    onClick={() => {
+                      setStakingUiMode("beginner");
+                      localStorage.setItem("toki-staking-mode", "beginner");
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      stakingUiMode === "beginner"
+                        ? "bg-accent-blue/20 text-accent-cyan"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}
+                  >
+                    {t.dashboard.beginnerMode}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setStakingUiMode("expert");
+                      localStorage.setItem("toki-staking-mode", "expert");
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      stakingUiMode === "expert"
+                        ? "bg-accent-blue/20 text-accent-cyan"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}
+                  >
+                    {t.dashboard.expertMode}
+                  </button>
+                </div>
+
+                {stakingUiMode === "beginner" ? (
+                  <StakingPanelBeginner
+                    walletAddress={primaryWallet.address}
+                    getEthereumProvider={getEthereumProvider}
+                    smartAccountClient={smartAccountClient}
+                    onBalanceChange={fetchBalances}
+                    paymasterMode={paymasterMode}
+                    isMetaMask={isMetaMask}
+                    sessionKey={sessionKey}
+                  />
+                ) : (
+                  <StakingPanel
+                    walletAddress={primaryWallet.address}
+                    getEthereumProvider={getEthereumProvider}
+                    smartAccountClient={smartAccountClient}
+                    onBalanceChange={fetchBalances}
+                    paymasterMode={paymasterMode}
+                    isMetaMask={isMetaMask}
+                    sessionKey={sessionKey}
+                  />
+                )}
+              </>
+            ) : (
+              <UnstakingPanel
+                walletAddress={primaryWallet.address}
+                getEthereumProvider={getEthereumProvider}
+                smartAccountClient={smartAccountClient}
+                onBalanceChange={fetchBalances}
+                paymasterMode={paymasterMode}
+              />
+            )}
           </div>
         )}
 
@@ -328,6 +467,22 @@ export default function DashboardContent() {
                 ) : null}
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Ecosystem Banner */}
+        <div className="card p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">{t.dashboard.exploreTitle}</h2>
+              <p className="text-sm text-gray-500">{t.dashboard.exploreDesc}</p>
+            </div>
+            <a
+              href="/explore"
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-accent-blue/20 to-accent-cyan/20 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:from-accent-blue/30 hover:to-accent-cyan/30 transition-all shrink-0"
+            >
+              {t.dashboard.exploreButton} →
+            </a>
           </div>
         </div>
 
