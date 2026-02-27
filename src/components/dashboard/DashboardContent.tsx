@@ -9,6 +9,7 @@ import { sepolia, mainnet } from "viem/chains";
 import StakingPanel from "./StakingPanel";
 import StakingPanelBeginner from "./StakingPanelBeginner";
 import UnstakingPanel from "./UnstakingPanel";
+import AchievementPanel from "./AchievementPanel";
 import { useEip7702 } from "@/hooks/useEip7702";
 import { useSessionKey } from "@/hooks/useSessionKey";
 import { useTranslation } from "@/components/providers/LanguageProvider";
@@ -348,6 +349,9 @@ export default function DashboardContent() {
             </a>
           </div>
         </div>
+
+        {/* Achievement Panel */}
+        <AchievementPanel />
 
         {/* Staking / Unstaking Tabs + Panel */}
         {primaryWallet && (

@@ -7,6 +7,7 @@ import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { Dictionary } from "@/locales";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import IntroCinematic from "./IntroCinematic";
+import { useAchievement } from "@/components/providers/AchievementProvider";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
 
@@ -407,6 +408,7 @@ export default function OnboardingQuest() {
   const { wallets } = useWallets();
   const embeddedWallet = wallets.find(w => w.walletClientType === "privy");
 
+  const { trackActivity } = useAchievement();
   const QUESTS = buildQuests(t.onboarding);
   const [questIndex, setQuestIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("intro");
@@ -592,6 +594,9 @@ export default function OnboardingQuest() {
     setPhase("intro");
     setDialogueIndex(0);
     saveProgress(newIndex, newXp, newCompleted);
+
+    // Track achievement
+    trackActivity("quest-complete", { questId: quest.id, xp: quest.xp });
 
     if (quest.action?.type === "navigate" && quest.action.route) {
       router.push(quest.action.route);

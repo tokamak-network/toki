@@ -83,6 +83,40 @@ const ko = {
     titleEnd: "을 받을 준비가 되셨나요?",
     subtitle: "거래소에 방치된 TON을 일하게 하세요. 토키가 도와드립니다.",
     button: "지금 스테이킹 시작",
+    dialogue: "자, 이제 시작해볼까? 나와 함께라면 스테이킹은 쉬워!",
+    choiceStart: "토키와 시작하기",
+    choiceLook: "조금 더 둘러볼게",
+  },
+  bridge: {
+    toWhyToki: "그런데 왜 토키여야 할까? 비교해볼래?",
+    toStats: "실제 데이터를 볼까?",
+    toFaq: "궁금한 거 있어? 뭐든 물어봐!",
+    toCta: "어때, 준비됐어?",
+  },
+  howItWorksVn: {
+    step1Dialogue: "반가워! 먼저 지갑을 만들어볼까? 카카오나 구글로 로그인하면 끝이야!",
+    step2Dialogue: "다음은 거래소에서 TON을 보내면 돼. 주소 복사 한 번이면 OK!",
+    step3Dialogue: "마지막! 버튼 하나만 누르면 스테이킹 완료! 래핑? 가스비? 내가 다 처리할게~",
+  },
+  whyTokiVs: {
+    oldWay: "기존 방식",
+    tokiWay: "토키",
+    vs: "VS",
+    totalWin: "토키 완승!",
+    resultMessage: "복잡한 건 내가 다 처리할게. 넌 편하게 즐기기만 하면 돼!",
+  },
+  statsCard: {
+    reportTitle: "토키의 스테이킹 성적표",
+    reportSubtitle: "실시간 온체인 데이터 리포트",
+    grade: "등급",
+    gradeValue: "S+",
+    tokiComment: "성적이 꽤 좋지? 블록마다 보상이 쌓이고 있어!",
+  },
+  faqChat: {
+    title: "토키에게 물어봐!",
+    subtitle: "궁금한 걸 골라봐. 내가 답해줄게!",
+    typing: "토키가 답변 중...",
+    placeholder: "질문을 선택하세요",
   },
   stakingPreview: {
     title: "실시간 스테이킹 통계",
@@ -373,6 +407,32 @@ const ko = {
     showAll: "전체 보기",
     fullListIntro: "여기 전부 모아봤어! 천천히 둘러봐.",
     filterAll: "전체",
+  },
+  achievements: {
+    panelTitle: "업적",
+    level: "레벨",
+    score: "점수",
+    xp: "XP",
+    nextLevel: "다음 레벨까지",
+    allUnlocked: "모든 업적 달성!",
+    locked: "잠김",
+    progress: "진행 중",
+    // Category tabs
+    catAll: "전체",
+    catOnboarding: "온보딩",
+    catStaking: "스테이킹",
+    catExplore: "탐험",
+    catSocial: "소셜",
+    catSpecial: "스페셜",
+    // Level names
+    level1: "초보자",
+    level2: "탐험가",
+    level3: "스테이커",
+    level4: "전문가",
+    level5: "마스터",
+    // Toast
+    toastTitle: "업적 달성!",
+    toastXp: "+{points} XP",
   },
 } as const;
 

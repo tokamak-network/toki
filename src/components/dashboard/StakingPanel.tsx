@@ -21,6 +21,7 @@ import {
   depositManagerAbi,
 } from "@/lib/abi";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useAchievement } from "@/components/providers/AchievementProvider";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
 const chain = isTestnet ? sepolia : mainnet;
@@ -78,6 +79,7 @@ export default function StakingPanel({
   const selectedOpRef = useRef(selectedOp);
   selectedOpRef.current = selectedOp;
   const { t } = useTranslation();
+  const { trackActivity } = useAchievement();
 
   const addr = walletAddress as `0x${string}`;
   const seigManagerAddr = CONTRACTS.SEIG_MANAGER_PROXY as `0x${string}`;
@@ -238,6 +240,14 @@ export default function StakingPanel({
       // Wait for confirmation
       await publicClient.waitForTransactionReceipt({ hash });
 
+      // Track achievement
+      trackActivity("stake", {
+        amount: Number(amount),
+        operator: selectedOp,
+        paymasterMode,
+        stakingMode,
+      });
+
       // Refresh data
       setAmount("");
       fetchOperators();
@@ -306,6 +316,9 @@ export default function StakingPanel({
 
       setTxHash(hash);
       await publicClient.waitForTransactionReceipt({ hash });
+
+      // Track achievement
+      trackActivity("unstake", { amount: Number(selectedOperator.myStaked) });
 
       fetchOperators();
       onBalanceChange?.();

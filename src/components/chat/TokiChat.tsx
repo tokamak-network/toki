@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useAchievement } from "@/components/providers/AchievementProvider";
 import {
   type Mood,
   type DialogueNode,
@@ -246,6 +247,7 @@ function ChatWindow({
   locale: string;
 }) {
   const router = useRouter();
+  const { trackActivity } = useAchievement();
   const [currentNodeId, setCurrentNodeId] = useState("root");
   const [typingDone, setTypingDone] = useState(false);
   const [key, setKey] = useState(0); // force re-render on node change
@@ -260,6 +262,7 @@ function ChatWindow({
     setTypingDone(false);
     setKey((k) => k + 1);
     setCurrentNodeId(nodeId);
+    trackActivity("chat-dialogue", { nodeId });
   };
 
   const handleChoiceSelect = (nextId: string) => {
@@ -275,6 +278,7 @@ function ChatWindow({
   };
 
   const handleFreeText = (input: string) => {
+    trackActivity("chat-freetext");
     const matched = matchKeyword(input);
     if (matched) {
       handleChoiceSelect(matched);
@@ -341,6 +345,14 @@ function ChatWindow({
 export default function TokiChat() {
   const [open, setOpen] = useState(false);
   const { locale } = useTranslation();
+  const { trackActivity } = useAchievement();
+
+  const handleOpen = () => {
+    if (!open) {
+      trackActivity("chat-open");
+    }
+    setOpen(!open);
+  };
 
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3">
@@ -348,7 +360,7 @@ export default function TokiChat() {
         <ChatWindow onClose={() => setOpen(false)} locale={locale} />
       )}
       <ChatBubble
-        onClick={() => setOpen(!open)}
+        onClick={handleOpen}
         hasNewMessage={!open}
       />
     </div>

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useAchievement } from "@/components/providers/AchievementProvider";
 import type { Dictionary } from "@/locales";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -291,7 +292,7 @@ function CategoryPicker({
 
 // ─── Service Card ────────────────────────────────────────────────────
 
-function ServiceCard({ service, t, locale }: { service: EcosystemService; t: Dictionary["explore"]; locale: string }) {
+function ServiceCard({ service, t, locale, onServiceClick }: { service: EcosystemService; t: Dictionary["explore"]; locale: string; onServiceClick?: (serviceId: string) => void }) {
   const name = locale === "ko" ? service.nameKo : service.nameEn;
   const desc = locale === "ko" ? service.descKo : service.descEn;
   const icon = resolveIcon(service);
@@ -314,6 +315,7 @@ function ServiceCard({ service, t, locale }: { service: EcosystemService; t: Dic
       href={service.url}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => onServiceClick?.(service.id)}
       className="block group p-6 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-accent-cyan/30 transition-all"
     >
       <div className="text-3xl mb-3">{icon}</div>
@@ -336,12 +338,14 @@ function RecommendedCards({
   locale,
   onTryAnother,
   onShowAll,
+  onServiceClick,
 }: {
   services: EcosystemService[];
   t: Dictionary["explore"];
   locale: string;
   onTryAnother: () => void;
   onShowAll: () => void;
+  onServiceClick?: (serviceId: string) => void;
 }) {
   return (
     <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
@@ -352,7 +356,7 @@ function RecommendedCards({
             className="animate-slide-up-fade"
             style={{ animationDelay: `${i * 120}ms`, animationFillMode: "both" }}
           >
-            <ServiceCard service={service} t={t} locale={locale} />
+            <ServiceCard service={service} t={t} locale={locale} onServiceClick={onServiceClick} />
           </div>
         ))}
       </div>
@@ -376,7 +380,7 @@ function RecommendedCards({
 
 // ─── Full Service Grid ───────────────────────────────────────────────
 
-function FullServiceGrid({ t, services, locale }: { t: Dictionary["explore"]; services: EcosystemService[]; locale: string }) {
+function FullServiceGrid({ t, services, locale, onServiceClick }: { t: Dictionary["explore"]; services: EcosystemService[]; locale: string; onServiceClick?: (serviceId: string) => void }) {
   const [activeFilter, setActiveFilter] = useState<string>("all");
 
   const filters = [
@@ -423,7 +427,7 @@ function FullServiceGrid({ t, services, locale }: { t: Dictionary["explore"]; se
               className="animate-fade-in"
               style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}
             >
-              <ServiceCard service={service} t={t} locale={locale} />
+              <ServiceCard service={service} t={t} locale={locale} onServiceClick={onServiceClick} />
             </div>
           ))}
         </div>
@@ -446,6 +450,7 @@ function FullServiceGrid({ t, services, locale }: { t: Dictionary["explore"]; se
 
 export default function ExploreContent() {
   const { t, locale } = useTranslation();
+  const { trackActivity } = useAchievement();
   const et = t.explore;
 
   const [phase, setPhase] = useState<ExplorePhase>("greeting");
@@ -454,6 +459,12 @@ export default function ExploreContent() {
   const [reactionDialogueIndex, setReactionDialogueIndex] = useState(0);
   const [reactionDone, setReactionDone] = useState(false);
   const [allServices, setAllServices] = useState<EcosystemService[]>([]);
+
+  // Track explore page visit on mount
+  useEffect(() => {
+    trackActivity("explore-visit");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/services")
@@ -488,6 +499,7 @@ export default function ExploreContent() {
     setReactionDialogueIndex(0);
     setReactionDone(false);
     setPhase("recommended");
+    trackActivity("category-view", { categoryId });
   };
 
   const handleShowAll = () => {
@@ -509,9 +521,13 @@ export default function ExploreContent() {
     setPhase("choosing");
   };
 
+  const handleServiceClick = useCallback((serviceId: string) => {
+    trackActivity("service-click", { serviceId });
+  }, [trackActivity]);
+
   // ── Phase: fullList ──
   if (phase === "fullList") {
-    return <FullServiceGrid t={et} services={allServices} locale={locale} />;
+    return <FullServiceGrid t={et} services={allServices} locale={locale} onServiceClick={handleServiceClick} />;
   }
 
   // ── Visual Novel Phases (greeting, choosing, recommended) ──
@@ -572,6 +588,7 @@ export default function ExploreContent() {
               locale={locale}
               onTryAnother={handleTryAnother}
               onShowAll={handleShowAll}
+              onServiceClick={handleServiceClick}
             />
           )}
         </div>

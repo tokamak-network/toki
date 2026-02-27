@@ -10,10 +10,12 @@ import localFont from "next/font/local";
 import dynamic from "next/dynamic";
 import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import { AchievementProvider } from "@/components/providers/AchievementProvider";
 import { AudioProvider } from "@/components/audio/AudioProvider";
 import "./globals.css";
 
 const TokiChat = dynamic(() => import("@/components/chat/TokiChat"), { ssr: false });
+const AchievementToast = dynamic(() => import("@/components/achievements/AchievementToast"), { ssr: false });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -49,12 +51,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-grid min-h-screen`}
       >
         <LanguageProvider>
-          <AudioProvider>
-            <PrivyClientProvider>
-              {children}
-              <TokiChat />
-            </PrivyClientProvider>
-          </AudioProvider>
+          <AchievementProvider>
+            <AudioProvider>
+              <PrivyClientProvider>
+                {children}
+                <TokiChat />
+                <AchievementToast />
+              </PrivyClientProvider>
+            </AudioProvider>
+          </AchievementProvider>
         </LanguageProvider>
       </body>
     </html>

@@ -83,6 +83,40 @@ const en = {
     titleEnd: "on your TON?",
     subtitle: "Stop letting your TON sit idle on exchanges. Let Toki put it to work.",
     button: "Start Staking Now",
+    dialogue: "Ready to begin? Staking is easy with me by your side!",
+    choiceStart: "Start with Toki",
+    choiceLook: "Let me look around more",
+  },
+  bridge: {
+    toWhyToki: "But why Toki? Let me show you!",
+    toStats: "Want to see the real data?",
+    toFaq: "Got questions? Ask me anything!",
+    toCta: "So, are you ready?",
+  },
+  howItWorksVn: {
+    step1Dialogue: "Hey! Let's start by creating a wallet. Just login with Google or Kakao — done!",
+    step2Dialogue: "Next, send TON from your exchange. Just one copy-paste of the address!",
+    step3Dialogue: "Last step! One button and you're staking! Wrapping? Gas? I'll handle it all~",
+  },
+  whyTokiVs: {
+    oldWay: "Old Way",
+    tokiWay: "Toki",
+    vs: "VS",
+    totalWin: "Toki wins!",
+    resultMessage: "I'll handle all the complicated stuff. You just sit back and enjoy!",
+  },
+  statsCard: {
+    reportTitle: "Toki's Staking Report Card",
+    reportSubtitle: "Real-time on-chain data report",
+    grade: "Grade",
+    gradeValue: "S+",
+    tokiComment: "Pretty good scores, right? Rewards are stacking up every block!",
+  },
+  faqChat: {
+    title: "Ask Toki!",
+    subtitle: "Pick a question. I'll answer!",
+    typing: "Toki is typing...",
+    placeholder: "Select a question",
   },
   stakingPreview: {
     title: "Live Staking Stats",
@@ -373,6 +407,32 @@ const en = {
     showAll: "Show me everything",
     fullListIntro: "Here's everything — take your time!",
     filterAll: "All",
+  },
+  achievements: {
+    panelTitle: "Achievements",
+    level: "Level",
+    score: "Score",
+    xp: "XP",
+    nextLevel: "Next level",
+    allUnlocked: "All achievements unlocked!",
+    locked: "Locked",
+    progress: "In Progress",
+    // Category tabs
+    catAll: "All",
+    catOnboarding: "Onboarding",
+    catStaking: "Staking",
+    catExplore: "Explore",
+    catSocial: "Social",
+    catSpecial: "Special",
+    // Level names
+    level1: "Beginner",
+    level2: "Explorer",
+    level3: "Staker",
+    level4: "Expert",
+    level5: "Master",
+    // Toast
+    toastTitle: "Achievement Unlocked!",
+    toastXp: "+{points} XP",
   },
 } as const;
 
