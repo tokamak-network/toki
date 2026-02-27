@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { StakingData } from "@/lib/staking";
 
@@ -7,8 +9,67 @@ interface StakingPreviewClientProps {
   data: StakingData | null;
 }
 
+function AnimatedGauge({ value, max, color, delay = 0 }: { value: number; max: number; color: string; delay?: number }) {
+  const [width, setWidth] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setWidth(Math.min((value / max) * 100, 100)), delay);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [value, max, delay]);
+
+  return (
+    <div ref={ref} className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
+      <div
+        className={`h-full rounded-full ${color} transition-all duration-1000 ease-out`}
+        style={{ width: `${width}%` }}
+      />
+    </div>
+  );
+}
+
+function StatRow({ label, value, subtext, gauge, gaugeMax, color, delay }: {
+  label: string;
+  value: string;
+  subtext: string;
+  gauge: number;
+  gaugeMax: number;
+  color: string;
+  delay: number;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-400">{label}</span>
+        <span className={`text-lg font-bold font-mono-num ${color}`}>{value}</span>
+      </div>
+      <AnimatedGauge value={gauge} max={gaugeMax} color={color.replace("text-", "bg-")} delay={delay} />
+      <div className="text-xs text-gray-500">{subtext}</div>
+    </div>
+  );
+}
+
 export default function StakingPreviewClient({ data }: StakingPreviewClientProps) {
   const { t } = useTranslation();
+  const [showCard, setShowCard] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setShowCard(true); },
+      { threshold: 0.2 }
+    );
+    if (cardRef.current) observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   if (!data) {
     return (
@@ -20,180 +81,116 @@ export default function StakingPreviewClient({ data }: StakingPreviewClientProps
     );
   }
 
-  const dailyReward = (amount: number) =>
-    ((amount * data.apr) / 100 / 365).toFixed(2);
-  const monthlyReward = (amount: number) =>
-    ((amount * data.apr) / 100 / 12).toFixed(1);
-  const yearlyReward = (amount: number) =>
-    ((amount * data.apr) / 100).toFixed(0);
-
   return (
     <section className="py-24 px-4">
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">
-          {t.stakingPreview.title}
-        </h2>
-        <p className="text-gray-400 text-center mb-4 text-lg">
-          {t.stakingPreview.subtitle}
-        </p>
-        <p className="text-gray-600 text-center mb-16 text-xs">
-          {t.stakingPreview.seigManagerInfo
-            .replace("{totalStaked}", data.totalStaked)
-            .replace("{operatorCount}", String(data.operatorCount))}
-        </p>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            label={t.stakingPreview.currentApr}
-            value={`${data.apr.toFixed(1)}%`}
-            subtext={t.stakingPreview.compoundSeigniorage}
-            color="text-accent-amber"
-          />
-          <StatCard
-            label={t.stakingPreview.totalStaked}
-            value={`${(data.totalStakedRaw / 1_000_000).toFixed(1)}M`}
-            subtext={`${data.totalStaked} TON`}
-            color="text-accent-cyan"
-          />
-          <StatCard
-            label={t.stakingPreview.seigPerBlock}
-            value={data.seigPerBlock}
-            subtext={t.stakingPreview.wtonPerBlock}
-            color="text-accent-sky"
-          />
-          <StatCard
-            label={t.stakingPreview.operators}
-            value={String(data.operatorCount)}
-            subtext={t.stakingPreview.autoSelected}
-            color="text-accent-blue"
-          />
-        </div>
-
-        {/* Earnings simulator */}
-        <div className="card p-8 mt-12">
-          <h3 className="text-xl font-semibold mb-6 text-center">
-            {t.stakingPreview.earningsSimulator}
-          </h3>
-          <div className="grid sm:grid-cols-3 gap-8 text-center">
-            <SimulatorColumn
-              amount="100 TON"
-              daily={`~${dailyReward(100)}`}
-              monthly={`~${monthlyReward(100)}`}
-              yearly={`~${yearlyReward(100)}`}
-              labels={t.stakingPreview}
-            />
-            <SimulatorColumn
-              amount="1,000 TON"
-              daily={`~${dailyReward(1000)}`}
-              monthly={`~${monthlyReward(1000)}`}
-              yearly={`~${yearlyReward(1000)}`}
-              highlighted
-              labels={t.stakingPreview}
-            />
-            <SimulatorColumn
-              amount="10,000 TON"
-              daily={`~${dailyReward(10000)}`}
-              monthly={`~${monthlyReward(10000)}`}
-              yearly={`~${yearlyReward(10000)}`}
-              labels={t.stakingPreview}
-            />
-          </div>
-          <p className="text-xs text-gray-500 text-center mt-6">
-            {t.stakingPreview.disclaimer.replace("{apr}", data.apr.toFixed(1))}
-          </p>
-        </div>
-
-        {/* Operator list */}
-        <div className="card p-8 mt-8">
-          <h3 className="text-xl font-semibold mb-6 text-center">
-            {t.stakingPreview.activeOperators}
-          </h3>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {data.operators.map((op) => (
+        {/* RPG Report Card */}
+        <div
+          ref={cardRef}
+          className={`
+            relative rounded-2xl border border-amber-400/30
+            bg-gradient-to-br from-amber-500/5 via-[var(--background)] to-blue-500/5
+            backdrop-blur-sm overflow-hidden
+            transition-all duration-700
+            ${showCard ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
+          `}
+        >
+          {/* Radial burst lines */}
+          <div className="absolute inset-0 overflow-hidden opacity-30">
+            {[...Array(16)].map((_, i) => (
               <div
-                key={op.address}
-                className="flex items-center justify-between p-3 rounded-lg bg-white/5 text-sm"
-              >
-                <span className="text-gray-300 truncate">{op.name || op.address.slice(0, 10)}</span>
-                <span className="text-accent-cyan font-mono-num ml-2 shrink-0">
-                  {Number(op.totalStaked).toLocaleString("en-US", {
-                    maximumFractionDigits: 0,
-                  })}{" "}
-                  <span className="text-gray-500 text-xs">TON</span>
-                </span>
-              </div>
+                key={i}
+                className="absolute top-0 right-0 h-[200%] w-px bg-gradient-to-b from-amber-400/20 to-transparent origin-top"
+                style={{ transform: `translate(-50%, -10%) rotate(${i * 22.5}deg)` }}
+              />
             ))}
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
-function StatCard({
-  label,
-  value,
-  subtext,
-  color,
-}: {
-  label: string;
-  value: string;
-  subtext: string;
-  color: string;
-}) {
-  return (
-    <div className="card p-6 text-center">
-      <div className="text-sm text-gray-400 mb-2">{label}</div>
-      <div className={`text-3xl font-bold font-mono-num ${color}`}>{value}</div>
-      <div className="text-xs text-gray-500 mt-2">{subtext}</div>
-    </div>
-  );
-}
+          {/* Header */}
+          <div className="relative border-b border-white/10 px-6 py-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300">
+                {t.statsCard.reportTitle}
+              </h2>
+              <p className="text-sm text-gray-400 mt-1">{t.statsCard.reportSubtitle}</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500">{t.statsCard.grade}</div>
+              <div className="text-3xl font-black text-amber-400 animate-pulse">{t.statsCard.gradeValue}</div>
+            </div>
+          </div>
 
-function SimulatorColumn({
-  amount,
-  daily,
-  monthly,
-  yearly,
-  highlighted = false,
-  labels,
-}: {
-  amount: string;
-  daily: string;
-  monthly: string;
-  yearly: string;
-  highlighted?: boolean;
-  labels: { daily: string; monthly: string; yearly: string };
-}) {
-  return (
-    <div
-      className={`p-6 rounded-xl ${
-        highlighted
-          ? "bg-accent-blue/10 border border-accent-blue/30"
-          : "bg-white/5"
-      }`}
-    >
-      <div
-        className={`text-lg font-bold mb-4 ${highlighted ? "text-accent-sky" : "text-gray-300"}`}
-      >
-        {amount}
-      </div>
-      <div className="space-y-3 text-sm">
-        <div>
-          <span className="text-gray-500">{labels.daily}</span>
-          <div className="font-mono-num text-accent-amber">{daily} TON</div>
-        </div>
-        <div>
-          <span className="text-gray-500">{labels.monthly}</span>
-          <div className="font-mono-num text-accent-cyan">{monthly} TON</div>
-        </div>
-        <div>
-          <span className="text-gray-500">{labels.yearly}</span>
-          <div className="font-mono-num text-accent-blue font-semibold">
-            {yearly} TON
+          <div className="relative p-6 md:p-8">
+            <div className="flex flex-col md:flex-row gap-8">
+              {/* Left: Toki + comment */}
+              <div className={`
+                shrink-0 flex flex-col items-center gap-4
+                transition-all duration-500 delay-300
+                ${showCard ? "opacity-100 scale-100" : "opacity-0 scale-75"}
+              `}>
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full bg-amber-400/10 blur-2xl" />
+                  <Image
+                    src="/toki-proud.png"
+                    alt="Toki proud"
+                    width={140}
+                    height={140}
+                    className="relative z-10 drop-shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+                  />
+                </div>
+                {/* Speech bubble */}
+                <div className="relative bg-black/40 backdrop-blur-sm rounded-xl border border-white/10 p-3 max-w-[200px]">
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-black/40 border-l border-t border-white/10 rotate-45" />
+                  <p className="text-xs text-gray-300 text-center leading-relaxed">
+                    {t.statsCard.tokiComment}
+                  </p>
+                </div>
+              </div>
+
+              {/* Right: Stats as gauge bars */}
+              <div className="flex-1 space-y-5">
+                <StatRow
+                  label={t.stakingPreview.currentApr}
+                  value={`${data.apr.toFixed(1)}%`}
+                  subtext={t.stakingPreview.compoundSeigniorage}
+                  gauge={data.apr}
+                  gaugeMax={50}
+                  color="text-accent-amber"
+                  delay={200}
+                />
+                <StatRow
+                  label={t.stakingPreview.totalStaked}
+                  value={`${(data.totalStakedRaw / 1_000_000).toFixed(1)}M TON`}
+                  subtext={data.totalStaked + " TON"}
+                  gauge={data.totalStakedRaw / 1_000_000}
+                  gaugeMax={50}
+                  color="text-accent-cyan"
+                  delay={400}
+                />
+                <StatRow
+                  label={t.stakingPreview.seigPerBlock}
+                  value={data.seigPerBlock}
+                  subtext={t.stakingPreview.wtonPerBlock}
+                  gauge={parseFloat(data.seigPerBlock)}
+                  gaugeMax={5}
+                  color="text-accent-sky"
+                  delay={600}
+                />
+                <StatRow
+                  label={t.stakingPreview.operators}
+                  value={String(data.operatorCount)}
+                  subtext={t.stakingPreview.autoSelected}
+                  gauge={data.operatorCount}
+                  gaugeMax={20}
+                  color="text-accent-blue"
+                  delay={800}
+                />
+              </div>
+            </div>
           </div>
         </div>
+
       </div>
-    </div>
+    </section>
   );
 }

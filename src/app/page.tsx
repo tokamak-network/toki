@@ -5,8 +5,9 @@ import HeroSection from "@/components/landing/HeroSection";
 import HowItWorks from "@/components/landing/HowItWorks";
 import WhyToki from "@/components/landing/WhyToki";
 import StakingPreview from "@/components/landing/StakingPreview";
-import FAQ from "@/components/landing/FAQ";
+
 import CTASection from "@/components/landing/CTASection";
+import TokiBridge from "@/components/landing/TokiBridge";
 import FloatingPlayer from "@/components/audio/FloatingPlayer";
 import { fetchStakingData } from "@/lib/staking";
 
@@ -53,6 +54,11 @@ export default async function Home() {
         <div id="how-it-works">
           <HowItWorks />
         </div>
+        <TokiBridge
+          sprite="/toki-wink.png"
+          bridgeKey="toWhyToki"
+          direction="right"
+        />
         <div id="why-toki">
           <WhyToki />
         </div>
@@ -61,7 +67,6 @@ export default async function Home() {
             <StakingPreview />
           </Suspense>
         </div>
-        <FAQ />
         <CTASection />
       </main>
       <Footer />
