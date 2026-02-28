@@ -1,84 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTranslation } from "@/components/providers/LanguageProvider";
-
-const steps = [
-  {
-    sprite: "/toki-welcome.png",
-    mood: "welcome",
-    color: "from-blue-500/20 to-cyan-500/20",
-    accent: "border-cyan-400/40",
-    number: "01",
-    entrance: "animate-slide-left",
-    glow: "animate-glow-cyan",
-    glowColor: "bg-cyan-400/10",
-  },
-  {
-    sprite: "/toki-explain.png",
-    mood: "explain",
-    color: "from-sky-500/20 to-blue-500/20",
-    accent: "border-blue-400/40",
-    number: "02",
-    entrance: "animate-slide-right",
-    glow: "animate-glow-blue",
-    glowColor: "bg-blue-400/10",
-  },
-  {
-    sprite: "/toki-cheer.png",
-    mood: "cheer",
-    color: "from-amber-500/20 to-yellow-500/20",
-    accent: "border-amber-400/40",
-    number: "03",
-    entrance: "animate-drop-in",
-    glow: "animate-glow-amber",
-    glowColor: "bg-amber-400/10",
-  },
-];
-
-function TypingText({
-  text,
-  active,
-  onDone,
-}: {
-  text: string;
-  active: boolean;
-  onDone?: () => void;
-}) {
-  const [displayed, setDisplayed] = useState("");
-  const [done, setDone] = useState(false);
-
-  useEffect(() => {
-    if (!active) {
-      setDisplayed("");
-      setDone(false);
-      return;
-    }
-    setDisplayed("");
-    setDone(false);
-    let i = 0;
-    const id = setInterval(() => {
-      i++;
-      setDisplayed(text.slice(0, i));
-      if (i >= text.length) {
-        clearInterval(id);
-        setDone(true);
-        onDone?.();
-      }
-    }, 30);
-    return () => clearInterval(id);
-  }, [text, active, onDone]);
-
-  return (
-    <span>
-      {displayed}
-      {!done && active && (
-        <span className="inline-block w-0.5 h-5 bg-white/80 ml-0.5 animate-pulse" />
-      )}
-    </span>
-  );
-}
 
 function useInView(threshold = 0.2) {
   const ref = useRef<HTMLDivElement>(null);
@@ -103,195 +28,324 @@ function useInView(threshold = 0.2) {
   return { ref, visible };
 }
 
-// Sparkle positions around the character
-const SPARKLE_POSITIONS = [
-  { x: -10, y: -15, delay: 0 },
-  { x: 25, y: -20, delay: 100 },
-  { x: 40, y: 5, delay: 200 },
-  { x: -15, y: 20, delay: 150 },
-  { x: 30, y: 30, delay: 50 },
+const steps = [
+  {
+    bg: "/bg-step1.jpg",
+    character: "/toki-step1.png",
+    accentColor: "text-cyan-400",
+    accentBorder: "border-cyan-400/40",
+    accentGlow: "shadow-cyan-400/20",
+    accentBg: "bg-cyan-400",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+      </svg>
+    ),
+  },
+  {
+    bg: "/bg-step2.jpg",
+    character: "/toki-step2.png",
+    accentColor: "text-blue-400",
+    accentBorder: "border-blue-400/40",
+    accentGlow: "shadow-blue-400/20",
+    accentBg: "bg-blue-400",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+      </svg>
+    ),
+  },
+  {
+    bg: "/bg-step3.jpg",
+    character: "/toki-step3.png",
+    accentColor: "text-amber-400",
+    accentBorder: "border-amber-400/40",
+    accentGlow: "shadow-amber-400/20",
+    accentBg: "bg-amber-400",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+      </svg>
+    ),
+  },
 ];
+
+function ArrowConnector({ accentColor }: { accentColor: string }) {
+  return (
+    <div className="hidden md:flex items-center justify-center shrink-0 w-8">
+      <svg viewBox="0 0 24 24" fill="none" className={`w-5 h-5 ${accentColor} opacity-40`}>
+        <path d="M8.25 4.5l7.5 7.5-7.5 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+}
 
 function StepCard({
   step,
   index,
-  dialogue,
-  title,
+  heading,
+  highlight,
+  bullets,
+  cta,
+  isExpanded,
+  onToggle,
+  visible,
 }: {
   step: (typeof steps)[0];
   index: number;
-  dialogue: string;
-  title: string;
+  heading: string;
+  highlight: string;
+  bullets: string[];
+  cta?: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  visible: boolean;
 }) {
-  const { ref, visible } = useInView(0.2);
-  const isEven = index % 2 === 0;
-  const [entered, setEntered] = useState(false);
-  const [reacting, setReacting] = useState(false);
-  const [showSparkles, setShowSparkles] = useState(false);
-
-  // Trigger entered state after entrance animation completes
-  useEffect(() => {
-    if (!visible) return;
-    const timer = setTimeout(() => setEntered(true), 800);
-    return () => clearTimeout(timer);
-  }, [visible]);
-
-  const handleTypingDone = useCallback(() => {
-    setReacting(true);
-    setShowSparkles(true);
-    // Remove reaction class after animation
-    setTimeout(() => setReacting(false), 500);
-    setTimeout(() => setShowSparkles(false), 800);
-  }, []);
-
   return (
     <div
-      ref={ref}
+      onClick={onToggle}
       className={`
-        relative rounded-2xl border ${step.accent} bg-gradient-to-br ${step.color}
-        backdrop-blur-sm overflow-hidden
-        transition-all duration-700 ease-out
-        ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
+        relative rounded-2xl overflow-hidden cursor-pointer
+        border transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
+        ${isExpanded
+          ? `${step.accentBorder} shadow-lg ${step.accentGlow} md:flex-[3]`
+          : "border-white/10 hover:border-white/20 md:flex-1"
+        }
+        ${visible
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 translate-y-6"
+        }
       `}
+      style={{ transitionDelay: visible ? `${index * 100}ms` : "0ms" }}
     >
-      {/* Step number badge */}
-      <div className="absolute top-4 left-4 text-5xl font-bold text-white/10 select-none">
-        {step.number}
+      {/* Background image (visible when expanded) */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-500 ${isExpanded ? "opacity-100" : "opacity-0"}`}
+      >
+        <Image src={step.bg} alt="" fill className="object-cover" />
+        <div className="absolute inset-0 bg-black/60" />
       </div>
 
+      {/* Default dark bg when collapsed */}
       <div
-        className={`flex flex-col ${isEven ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-6 p-6 md:p-8`}
-      >
-        {/* Toki sprite with dynamic animations */}
-        <div className="relative shrink-0 w-32 h-32 md:w-40 md:h-40">
-          {/* Glow background */}
-          <div
-            className={`
-              absolute inset-[-20%] rounded-full blur-2xl transition-opacity duration-500
-              ${step.glowColor}
-              ${visible ? `opacity-100 ${step.glow}` : "opacity-0"}
-            `}
-          />
+        className={`absolute inset-0 transition-opacity duration-500 ${isExpanded ? "opacity-0" : "opacity-100"} bg-white/[0.03]`}
+      />
 
-          {/* Character container: entrance → float → reaction */}
-          <div
-            className={`
-              relative z-10 w-full h-full
-              ${visible ? step.entrance : "opacity-0"}
-              ${entered ? "animate-float" : ""}
-              ${reacting ? "animate-reaction" : ""}
-            `}
-          >
-            <Image
-              src={step.sprite}
-              alt={step.mood}
-              width={160}
-              height={160}
-              className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-            />
-
-            {/* Sparkle particles on typing complete */}
-            {showSparkles &&
-              SPARKLE_POSITIONS.map((pos, i) => (
-                <div
-                  key={i}
-                  className="absolute animate-sparkle"
-                  style={{
-                    top: `calc(50% + ${pos.y}px)`,
-                    left: `calc(50% + ${pos.x}px)`,
-                    animationDelay: `${pos.delay}ms`,
-                  }}
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    className="text-yellow-300"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z"
-                    />
-                  </svg>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* Dialogue box */}
-        <div className="flex-1 min-w-0">
-          <div className="text-xs text-white/40 mb-2 uppercase tracking-wider font-medium">
-            Step {step.number} — {title}
-          </div>
-
-          {/* VN-style dialogue box */}
-          <div className="relative bg-black/40 backdrop-blur-sm rounded-xl border border-white/10 p-5">
-            {/* Name tag */}
-            <div className="absolute -top-3 left-4 px-3 py-0.5 bg-accent-blue rounded-full text-xs font-bold text-white">
-              Toki
+      {/* Content */}
+      <div className="relative z-10 h-full">
+        {/* Collapsed state */}
+        <div
+          className={`
+            transition-all duration-500
+            ${isExpanded ? "opacity-0 h-0 overflow-hidden" : "opacity-100"}
+          `}
+        >
+          <div className="p-6 md:p-8 flex flex-col items-center text-center gap-4 min-h-[220px] md:min-h-[280px] justify-center">
+            {/* Icon */}
+            <div className={`${step.accentColor} transition-colors`}>
+              {step.icon}
             </div>
 
-            <p className="text-white/90 text-base md:text-lg leading-relaxed mt-1">
-              <TypingText
-                text={dialogue}
-                active={visible}
-                onDone={handleTypingDone}
+            {/* Step number */}
+            <div className={`text-xs font-bold tracking-[0.2em] ${step.accentColor} uppercase`}>
+              Step {String(index + 1).padStart(2, "0")}
+            </div>
+
+            {/* Title */}
+            <div>
+              <h3 className="text-lg md:text-xl font-black uppercase leading-tight tracking-tight text-white/90">
+                {heading}
+              </h3>
+              <h3 className={`text-lg md:text-xl font-black uppercase leading-tight tracking-tight ${step.accentColor}`}>
+                {highlight}
+              </h3>
+            </div>
+
+            {/* Expand hint */}
+            <div className="text-xs text-white/30 mt-2">
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mx-auto">
+                <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Expanded state */}
+        <div
+          className={`
+            transition-all duration-500
+            ${isExpanded ? "opacity-100" : "opacity-0 h-0 overflow-hidden"}
+          `}
+        >
+          <div className="p-6 md:p-8 flex flex-col md:flex-row gap-4 md:gap-8 min-h-[320px] md:min-h-[400px]">
+            {/* Character image */}
+            <div className="relative w-40 h-48 md:w-56 md:h-72 shrink-0 mx-auto md:mx-0">
+              <Image
+                src={step.character}
+                alt={`Step ${index + 1}`}
+                fill
+                className="object-contain object-bottom drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
               />
-            </p>
+            </div>
+
+            {/* Text content */}
+            <div className="flex-1 flex flex-col justify-center min-w-0">
+              {/* Step label */}
+              <div className={`text-xs font-bold tracking-[0.2em] ${step.accentColor} uppercase mb-3`}>
+                Step {String(index + 1).padStart(2, "0")}
+              </div>
+
+              {/* Heading */}
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase leading-[1.1] tracking-tight mb-4">
+                {heading}<br />
+                <span className={step.accentColor}>{highlight}</span>
+              </h3>
+
+              {/* Bullets */}
+              <div className="space-y-2 mb-4">
+                {bullets.map((bullet, i) => (
+                  <p
+                    key={i}
+                    className={`
+                      text-sm md:text-base text-gray-200 font-medium
+                      transition-all duration-400 ease-out
+                      ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-3"}
+                    `}
+                    style={{ transitionDelay: isExpanded ? `${300 + i * 100}ms` : "0ms" }}
+                  >
+                    <span className={`${step.accentColor} mr-2`}>&bull;</span>
+                    {bullet}
+                  </p>
+                ))}
+              </div>
+
+              {/* CTA (last step) */}
+              {cta && (
+                <div className="mt-2">
+                  <Link
+                    href="/dashboard"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+                  >
+                    {cta}
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                    </svg>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Close hint */}
+            <button
+              className="absolute top-4 right-4 text-white/30 hover:text-white/60 transition-colors"
+              onClick={(e) => { e.stopPropagation(); onToggle(); }}
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Bottom accent line */}
+      <div
+        className={`
+          absolute bottom-0 left-0 right-0 h-[2px] transition-all duration-500
+          ${isExpanded ? `${step.accentBg} opacity-60` : "bg-white/5 opacity-100"}
+        `}
+      />
     </div>
   );
 }
 
 export default function HowItWorks() {
   const { t } = useTranslation();
+  const { ref, visible } = useInView(0.1);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-  const dialogues = [
-    t.howItWorksVn.step1Dialogue,
-    t.howItWorksVn.step2Dialogue,
-    t.howItWorksVn.step3Dialogue,
-  ];
-
-  const titles = [
-    t.howItWorks.step1Title,
-    t.howItWorks.step2Title,
-    t.howItWorks.step3Title,
+  const stepData = [
+    {
+      heading: t.howItWorks.step1Heading,
+      highlight: t.howItWorks.step1Highlight,
+      bullets: [t.howItWorks.step1Bullet1, t.howItWorks.step1Bullet2, t.howItWorks.step1Bullet3],
+    },
+    {
+      heading: t.howItWorks.step2Heading,
+      highlight: t.howItWorks.step2Highlight,
+      bullets: [t.howItWorks.step2Bullet1, t.howItWorks.step2Bullet2, t.howItWorks.step2Bullet3],
+    },
+    {
+      heading: t.howItWorks.step3Heading,
+      highlight: t.howItWorks.step3Highlight,
+      bullets: [t.howItWorks.step3Bullet1, t.howItWorks.step3Bullet2, t.howItWorks.step3Bullet3],
+      cta: t.howItWorks.step3Cta,
+    },
   ];
 
   return (
-    <section className="py-24 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">
-          {t.howItWorks.title}
-        </h2>
-        <p className="text-gray-400 text-center mb-16 text-lg">
-          {t.howItWorks.subtitle}
-        </p>
+    <section ref={ref} className="py-24 px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Title */}
+        <div
+          className={`text-center mb-16 transition-all duration-700 ease-out ${
+            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}
+        >
+          <h2 className="text-5xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight leading-[1.1] mb-6">
+            {t.howItWorks.title}{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-amber-400">
+              {t.howItWorks.titleHighlight}
+            </span>
+          </h2>
+          <p className="text-gray-400 text-lg sm:text-xl">
+            {t.howItWorks.subtitle}
+          </p>
+        </div>
 
-        <div className="space-y-8">
+        {/* Interactive cards - desktop: row, mobile: stack */}
+        <div className="flex flex-col md:flex-row gap-4 md:gap-3 items-stretch">
           {steps.map((step, i) => (
-            <StepCard
-              key={step.number}
-              step={step}
-              index={i}
-              dialogue={dialogues[i]}
-              title={titles[i]}
-            />
+            <div key={i} className="contents">
+              <StepCard
+                step={step}
+                index={i}
+                heading={stepData[i].heading}
+                highlight={stepData[i].highlight}
+                bullets={stepData[i].bullets}
+                cta={stepData[i].cta}
+                isExpanded={expandedIndex === i}
+                onToggle={() => setExpandedIndex(expandedIndex === i ? null : i)}
+                visible={visible}
+              />
+              {i < steps.length - 1 && <ArrowConnector accentColor={step.accentColor} />}
+            </div>
           ))}
         </div>
 
-        {/* Connection line */}
-        <div className="hidden md:flex justify-center mt-8 gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-accent-cyan" />
-            <div className="w-24 h-px bg-gradient-to-r from-accent-cyan to-accent-blue" />
-            <div className="w-2 h-2 rounded-full bg-accent-blue" />
-            <div className="w-24 h-px bg-gradient-to-r from-accent-blue to-accent-amber" />
-            <div className="w-2 h-2 rounded-full bg-accent-amber" />
-          </div>
+        {/* CTA below cards */}
+        <div
+          className={`
+            text-center mt-12 transition-all duration-700 delay-500 ease-out
+            ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+          `}
+        >
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_30px_rgba(6,182,212,0.2)]"
+          >
+            {t.howItWorks.step3Cta}
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+            </svg>
+          </Link>
         </div>
+      </div>
+
+      {/* Separator */}
+      <div className="max-w-4xl mx-auto mt-24">
+        <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       </div>
     </section>
   );
