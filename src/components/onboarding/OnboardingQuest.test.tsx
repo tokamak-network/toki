@@ -28,12 +28,12 @@ describe("OnboardingQuest Regression Test", () => {
     vi.clearAllMocks();
   });
 
-  it("OnboardingQuest가 에러 없이 렌더링되어야 한다 (Hook 안정성 검증)", () => {
+  it("should render OnboardingQuest without error (Hook stability validation)", () => {
     render(<OnboardingQuest />);
     expect(screen.getAllByText(/Toki/i).length).toBeGreaterThan(0);
   });
 
-  it("로그인 상태 변화 감지 로직이 에러를 유발하지 않아야 한다 (useEffect 의존성 검증)", async () => {
+  it("should not cause error when detecting login state changes (useEffect dependency validation)", async () => {
     const { rerender } = render(<OnboardingQuest />);
 
     vi.spyOn(privyAuth, 'usePrivy').mockReturnValue({
