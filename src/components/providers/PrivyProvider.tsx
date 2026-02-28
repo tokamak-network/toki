@@ -14,7 +14,7 @@ export default function PrivyProvider({
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
   if (!appId) {
-    // Privy 미설정 시 그냥 렌더링 (개발 편의)
+    // Just render if Privy is not configured (dev convenience)
     return <>{children}</>;
   }
 
