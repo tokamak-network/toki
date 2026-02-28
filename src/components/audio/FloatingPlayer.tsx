@@ -1,7 +1,7 @@
 "use client";
 
-import { useAudio } from "./AudioProvider";
 import { useEffect, useRef } from "react";
+import { useAudio } from "./AudioProvider";
 
 export default function FloatingPlayer() {
   const { isPlaying, toggle, analyserNode } = useAudio();
@@ -106,13 +106,37 @@ export default function FloatingPlayer() {
       >
         {isPlaying ? (
           // Pause icon
-          <svg width="16" height="16" viewBox="0 0 16 16" className="text-accent-cyan">
-            <rect x="3" y="2" width="4" height="12" rx="1" fill="currentColor" />
-            <rect x="9" y="2" width="4" height="12" rx="1" fill="currentColor" />
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            className="text-accent-cyan"
+          >
+            <rect
+              x="3"
+              y="2"
+              width="4"
+              height="12"
+              rx="1"
+              fill="currentColor"
+            />
+            <rect
+              x="9"
+              y="2"
+              width="4"
+              height="12"
+              rx="1"
+              fill="currentColor"
+            />
           </svg>
         ) : (
           // Play icon
-          <svg width="16" height="16" viewBox="0 0 16 16" className="text-gray-400 group-hover:text-white transition-colors ml-0.5">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            className="text-gray-400 group-hover:text-white transition-colors ml-0.5"
+          >
             <path d="M4 2.5L13 8L4 13.5V2.5Z" fill="currentColor" />
           </svg>
         )}
@@ -121,7 +145,9 @@ export default function FloatingPlayer() {
       {/* Label */}
       <span
         className={`absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-medium tracking-wider uppercase whitespace-nowrap transition-opacity ${
-          isPlaying ? "text-accent-cyan/70 opacity-100" : "text-gray-500 opacity-0 group-hover:opacity-100"
+          isPlaying
+            ? "text-accent-cyan/70 opacity-100"
+            : "text-gray-500 opacity-0 group-hover:opacity-100"
         }`}
       >
         BGM

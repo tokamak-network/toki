@@ -2,18 +2,17 @@
 
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback, useRef } from "react";
-import { formatUnits } from "viem";
-import { createPublicClient, http } from "viem";
-import { sepolia, mainnet } from "viem/chains";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPublicClient, formatUnits, http } from "viem";
+import { mainnet, sepolia } from "viem/chains";
+import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useEip7702 } from "@/hooks/useEip7702";
+import { useSessionKey } from "@/hooks/useSessionKey";
+import AchievementPanel from "./AchievementPanel";
 import StakingPanel from "./StakingPanel";
 import StakingPanelBeginner from "./StakingPanelBeginner";
 import VNStakingPanel from "./VNStakingPanel";
 import UnstakingPanel from "./UnstakingPanel";
-import AchievementPanel from "./AchievementPanel";
-import { useEip7702 } from "@/hooks/useEip7702";
-import { useSessionKey } from "@/hooks/useSessionKey";
-import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
 const chain = isTestnet ? sepolia : mainnet;
@@ -51,20 +50,29 @@ interface Balances {
 export default function DashboardContent() {
   const { ready, authenticated, user, logout, exportWallet } = usePrivy();
   const { wallets } = useWallets();
-  const { smartAccountClient, walletType, paymasterMode, isMetaMask } = useEip7702();
+  const { smartAccountClient, walletType, paymasterMode, isMetaMask } =
+    useEip7702();
   const router = useRouter();
   const [balances, setBalances] = useState<Balances | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
-  const [stakingUiMode, setStakingUiMode] = useState<"beginner" | "expert">(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("toki-staking-mode") as "beginner" | "expert") || "beginner";
-    }
-    return "beginner";
-  });
-  const [stakingTab, setStakingTab] = useState<"staking" | "unstaking">("staking");
+  const [stakingUiMode, setStakingUiMode] = useState<"beginner" | "expert">(
+    () => {
+      if (typeof window !== "undefined") {
+        return (
+          (localStorage.getItem("toki-staking-mode") as
+            | "beginner"
+            | "expert") || "beginner"
+        );
+      }
+      return "beginner";
+    },
+  );
+  const [stakingTab, setStakingTab] = useState<"staking" | "unstaking">(
+    "staking",
+  );
   const [isFirstStake, setIsFirstStake] = useState(() => {
     if (typeof window !== "undefined") {
       return !localStorage.getItem("toki-first-stake-done");
@@ -80,9 +88,10 @@ export default function DashboardContent() {
   // MetaMask injects into useWallets() even after logout/re-login with Privy,
   // so we only use it if the user actually linked it in their account.
   const hasLinkedExternalWallet = user?.linkedAccounts?.some(
-    (a) => a.type === "wallet"
+    (a) => a.type === "wallet",
   );
-  const primaryWallet = (hasLinkedExternalWallet && externalWallet) || embeddedWallet;
+  const primaryWallet =
+    (hasLinkedExternalWallet && externalWallet) || embeddedWallet;
 
   // EIP-7702: EOA === Smart Account, so balance address is always the EOA
   const balanceAddress = primaryWallet?.address;
@@ -147,13 +156,17 @@ export default function DashboardContent() {
   // Close account menu on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(e.target as Node)
+      ) {
         setAccountMenuOpen(false);
       }
     }
     if (accountMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [accountMenuOpen]);
 
@@ -169,11 +182,9 @@ export default function DashboardContent() {
   const shortAddr = addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "\u2014";
 
   const googleAccount = user?.linkedAccounts?.find(
-    (a) => a.type === "google_oauth"
+    (a) => a.type === "google_oauth",
   );
-  const emailAccount = user?.linkedAccounts?.find(
-    (a) => a.type === "email"
-  );
+  const emailAccount = user?.linkedAccounts?.find((a) => a.type === "email");
   const displayName =
     (googleAccount as { name?: string })?.name ||
     (emailAccount as { address?: string })?.address ||
@@ -214,9 +225,16 @@ export default function DashboardContent() {
               <span className="hidden sm:inline">{t.dashboard.account}</span>
               <svg
                 className={`w-3 h-3 transition-transform ${accountMenuOpen ? "rotate-180" : ""}`}
-                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
 
@@ -224,8 +242,12 @@ export default function DashboardContent() {
               <div className="absolute right-0 mt-2 w-56 rounded-xl bg-[#1a2340] border border-white/10 shadow-xl shadow-black/40 overflow-hidden z-50">
                 {/* User info */}
                 <div className="px-4 py-3 border-b border-white/5">
-                  <div className="text-sm font-medium text-gray-200 truncate">{displayName}</div>
-                  <div className="text-xs text-gray-500 font-mono truncate">{shortAddr}</div>
+                  <div className="text-sm font-medium text-gray-200 truncate">
+                    {displayName}
+                  </div>
+                  <div className="text-xs text-gray-500 font-mono truncate">
+                    {shortAddr}
+                  </div>
                 </div>
 
                 {/* Menu items */}
@@ -238,8 +260,18 @@ export default function DashboardContent() {
                       }}
                       className="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:bg-white/5 transition-colors flex items-center gap-3"
                     >
-                      <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                      <svg
+                        className="w-4 h-4 text-gray-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"
+                        />
                       </svg>
                       {t.dashboard.exportPrivateKey}
                     </button>
@@ -251,8 +283,18 @@ export default function DashboardContent() {
                     }}
                     className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-white/5 transition-colors flex items-center gap-3"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3-3l3-3m0 0l-3-3m3 3H9" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3-3l3-3m0 0l-3-3m3 3H9"
+                      />
                     </svg>
                     {t.dashboard.logout}
                   </button>
@@ -266,9 +308,7 @@ export default function DashboardContent() {
       <main className="max-w-4xl mx-auto px-4 py-12">
         {/* Profile */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-1">
-            {displayName}
-          </h1>
+          <h1 className="text-2xl font-bold mb-1">{displayName}</h1>
           <p className="text-gray-500 text-sm">
             {isTestnet ? "Sepolia Testnet" : "Ethereum Mainnet"}
           </p>
@@ -282,14 +322,20 @@ export default function DashboardContent() {
               {smartAccountClient && paymasterMode === "sponsor" && (
                 <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
                   {t.dashboard.gasless}
-                  {walletType === "external" ? " (MetaMask)" : walletType === "embedded" ? " (Embedded)" : ""}
+                  {walletType === "external"
+                    ? " (MetaMask)"
+                    : walletType === "embedded"
+                      ? " (Embedded)"
+                      : ""}
                 </span>
               )}
-              {smartAccountClient && paymasterMode === "none" && walletType === "external" && (
-                <span className="px-2 py-0.5 rounded text-xs bg-yellow-500/20 text-yellow-400">
-                  EIP-7702
-                </span>
-              )}
+              {smartAccountClient &&
+                paymasterMode === "none" &&
+                walletType === "external" && (
+                  <span className="px-2 py-0.5 rounded text-xs bg-yellow-500/20 text-yellow-400">
+                    EIP-7702
+                  </span>
+                )}
               {embeddedWallet && (
                 <span className="px-2 py-0.5 rounded text-xs bg-accent-purple/20 text-accent-purple">
                   {t.dashboard.embedded}
@@ -367,21 +413,19 @@ export default function DashboardContent() {
             <div className="flex items-center gap-1 mb-4 p-1 rounded-xl bg-white/5 w-fit">
               <button
                 onClick={() => setStakingTab("staking")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  stakingTab === "staking"
-                    ? "bg-accent-blue/20 text-accent-cyan"
-                    : "text-gray-500 hover:text-gray-300"
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${stakingTab === "staking"
+                  ? "bg-accent-blue/20 text-accent-cyan"
+                  : "text-gray-500 hover:text-gray-300"
+                  }`}
               >
                 {t.dashboard.stakingTab}
               </button>
               <button
                 onClick={() => setStakingTab("unstaking")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  stakingTab === "unstaking"
-                    ? "bg-accent-blue/20 text-accent-cyan"
-                    : "text-gray-500 hover:text-gray-300"
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${stakingTab === "unstaking"
+                  ? "bg-accent-blue/20 text-accent-cyan"
+                  : "text-gray-500 hover:text-gray-300"
+                  }`}
               >
                 {t.dashboard.unstakingTab}
               </button>
@@ -396,11 +440,10 @@ export default function DashboardContent() {
                       setStakingUiMode("beginner");
                       localStorage.setItem("toki-staking-mode", "beginner");
                     }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      stakingUiMode === "beginner"
-                        ? "bg-accent-blue/20 text-accent-cyan"
-                        : "text-gray-500 hover:text-gray-300"
-                    }`}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${stakingUiMode === "beginner"
+                      ? "bg-accent-blue/20 text-accent-cyan"
+                      : "text-gray-500 hover:text-gray-300"
+                      }`}
                   >
                     {t.dashboard.beginnerMode}
                   </button>
@@ -409,11 +452,10 @@ export default function DashboardContent() {
                       setStakingUiMode("expert");
                       localStorage.setItem("toki-staking-mode", "expert");
                     }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      stakingUiMode === "expert"
-                        ? "bg-accent-blue/20 text-accent-cyan"
-                        : "text-gray-500 hover:text-gray-300"
-                    }`}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${stakingUiMode === "expert"
+                      ? "bg-accent-blue/20 text-accent-cyan"
+                      : "text-gray-500 hover:text-gray-300"
+                      }`}
                   >
                     {t.dashboard.expertMode}
                   </button>
@@ -468,7 +510,9 @@ export default function DashboardContent() {
 
         {/* Connected Accounts */}
         <div className="card p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">{t.dashboard.connectedAccounts}</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            {t.dashboard.connectedAccounts}
+          </h2>
           <div className="space-y-3">
             {user?.linkedAccounts?.map((account, i) => (
               <div
@@ -487,7 +531,9 @@ export default function DashboardContent() {
                   </div>
                 </div>
                 {"verifiedAt" in account ? (
-                  <span className="text-green-400 text-xs">{t.dashboard.verified}</span>
+                  <span className="text-green-400 text-xs">
+                    {t.dashboard.verified}
+                  </span>
                 ) : null}
               </div>
             ))}
@@ -498,7 +544,9 @@ export default function DashboardContent() {
         <div className="card p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold">{t.dashboard.exploreTitle}</h2>
+              <h2 className="text-lg font-semibold">
+                {t.dashboard.exploreTitle}
+              </h2>
               <p className="text-sm text-gray-500">{t.dashboard.exploreDesc}</p>
             </div>
             <a

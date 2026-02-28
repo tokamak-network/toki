@@ -19,7 +19,7 @@ function useInView(threshold = 0.2) {
           observer.disconnect();
         }
       },
-      { threshold }
+      { threshold },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -333,9 +333,8 @@ export default function HowItWorks() {
       <div className="max-w-6xl mx-auto">
         {/* Title */}
         <div
-          className={`text-center mb-16 transition-all duration-700 ease-out ${
-            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-          }`}
+          className={`text-center mb-16 transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}
         >
           <h2 className="text-5xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight leading-[1.1] mb-6">
             {t.howItWorks.title}{" "}

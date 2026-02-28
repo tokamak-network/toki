@@ -12,7 +12,7 @@ const ExploreContent = dynamic(
         <div className="text-gray-400">Loading...</div>
       </div>
     ),
-  }
+  },
 );
 
 export default function ExplorePage() {

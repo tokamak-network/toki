@@ -2,12 +2,12 @@
 
 import {
   createContext,
-  useContext,
-  useState,
-  useEffect,
   type ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
-import { dictionaries, type Locale, type Dictionary } from "@/locales";
+import { type Dictionary, dictionaries, type Locale } from "@/locales";
 
 interface LanguageContextType {
   locale: Locale;

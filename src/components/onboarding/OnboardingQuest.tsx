@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAchievement } from "@/components/providers/AchievementProvider";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { Dictionary } from "@/locales";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
 import IntroCinematic from "./IntroCinematic";
-import { useAchievement } from "@/components/providers/AchievementProvider";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
 
-type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink";
+type Mood =
+  | "welcome"
+  | "explain"
+  | "thinking"
+  | "excited"
+  | "proud"
+  | "cheer"
+  | "wink";
 
 const MOOD_IMAGES: Record<Mood, string> = {
   welcome: "/toki-welcome.png",
@@ -109,12 +116,20 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
         },
         {
           instruction: t.installMetamaskInstruction,
-          action: { type: "link", label: t.installMetamaskButton, url: "https://metamask.io/download/" },
+          action: {
+            type: "link",
+            label: t.installMetamaskButton,
+            url: "https://metamask.io/download/",
+          },
           verify: "metamask-installed",
         },
         {
           instruction: t.importKeyInstruction,
-          action: { type: "confirm", label: t.quest3ActionLabel, confirmText: t.importKeyConfirm },
+          action: {
+            type: "confirm",
+            label: t.quest3ActionLabel,
+            confirmText: t.importKeyConfirm,
+          },
           verify: t.importKeyConfirm,
         },
       ],
@@ -135,7 +150,11 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
         { text: t.quest3Intro6, mood: "thinking" },
         { text: t.quest3Intro7, mood: "cheer" },
       ],
-      action: { type: "confirm", label: t.quest3ActionLabel, confirmText: t.quest3Confirm },
+      action: {
+        type: "confirm",
+        label: t.quest3ActionLabel,
+        confirmText: t.quest3Confirm,
+      },
       verify: "user-confirm",
       success: [
         { text: t.quest3Success1, mood: "excited" },
@@ -156,7 +175,11 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
         { text: t.quest4Intro3, mood: "thinking" },
         { text: t.quest4Intro4, mood: "cheer" },
       ],
-      action: { type: "confirm", label: t.quest4ActionLabel, confirmText: t.quest4Confirm },
+      action: {
+        type: "confirm",
+        label: t.quest4ActionLabel,
+        confirmText: t.quest4Confirm,
+      },
       verify: "user-confirm",
       success: [
         { text: t.quest4Success1, mood: "excited" },
@@ -273,15 +296,17 @@ function DialogueBox({
         {/* Name plate + progress */}
         <div className="flex items-center justify-between mb-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/30">
-            <span className="text-accent-cyan font-bold text-sm tracking-wide">Toki</span>
+            <span className="text-accent-cyan font-bold text-sm tracking-wide">
+              Toki
+            </span>
             {line.mood && moodLabel && (
-              <span className="text-xs text-accent-cyan/60">
-                {moodLabel}
-              </span>
+              <span className="text-xs text-accent-cyan/60">{moodLabel}</span>
             )}
           </div>
           {questProgress && (
-            <span className="text-xs text-gray-500 tabular-nums">{questProgress}</span>
+            <span className="text-xs text-gray-500 tabular-nums">
+              {questProgress}
+            </span>
           )}
         </div>
         <p className="text-gray-100 text-base sm:text-lg leading-relaxed flex-1">
@@ -293,7 +318,8 @@ function DialogueBox({
         {done && (
           <div className="text-right">
             <span className="text-xs text-gray-500 animate-pulse">
-              {isLast ? t.onboarding.clickToContinue : t.onboarding.clickToNext} ▼
+              {isLast ? t.onboarding.clickToContinue : t.onboarding.clickToNext}{" "}
+              ▼
             </span>
           </div>
         )}
@@ -406,7 +432,7 @@ export default function OnboardingQuest() {
   const { t } = useTranslation();
   const { ready, authenticated, login, exportWallet } = usePrivy();
   const { wallets } = useWallets();
-  const embeddedWallet = wallets.find(w => w.walletClientType === "privy");
+  const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
 
   const { trackActivity } = useAchievement();
   const QUESTS = buildQuests(t.onboarding);
@@ -416,13 +442,13 @@ export default function OnboardingQuest() {
   const [confirmed, setConfirmed] = useState(false);
   const [totalXp, setTotalXp] = useState(0);
   const [completedQuests, setCompletedQuests] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [subStepIndex, setSubStepIndex] = useState(0);
   const [subStepConfirmed, setSubStepConfirmed] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [showCinematic, setShowCinematic] = useState(false);
-  const [cinematicComplete, setCinematicComplete] = useState(false);
+  const [_cinematicComplete, setCinematicComplete] = useState(false);
   const [cinematicJustFinished, setCinematicJustFinished] = useState(false);
   const questAreaRef = useRef<HTMLDivElement>(null);
 
@@ -434,7 +460,9 @@ export default function OnboardingQuest() {
         const data = JSON.parse(saved);
         const completed: string[] = data.completed || [];
         // Migrate: if old quest IDs detected, reset progress
-        const hasOldIds = completed.some((id: string) => OLD_QUEST_IDS.includes(id));
+        const hasOldIds = completed.some((id: string) =>
+          OLD_QUEST_IDS.includes(id),
+        );
         if (hasOldIds) {
           localStorage.removeItem("toki-onboarding");
           return;
@@ -467,10 +495,10 @@ export default function OnboardingQuest() {
           questIndex: qi,
           totalXp: xp,
           completed: Array.from(completed),
-        })
+        }),
       );
     },
-    []
+    [],
   );
 
   const quest = QUESTS[questIndex];
@@ -483,8 +511,19 @@ export default function OnboardingQuest() {
 
   // Auto-scroll to quest area
   useEffect(() => {
-    questAreaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [phase, questIndex]);
+    questAreaRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, []);
+
+  const handleVerifySuccess = useCallback(() => {
+    setPhase("success");
+    setDialogueIndex(0);
+    setConfirmed(false);
+    setSubStepIndex(0);
+    setSubStepConfirmed(false);
+  }, []);
 
   // Auto-detect Privy authentication for Quest 1
   useEffect(() => {
@@ -494,7 +533,13 @@ export default function OnboardingQuest() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, embeddedWallet, phase, quest?.action?.type]);
+  }, [
+    authenticated,
+    embeddedWallet,
+    phase,
+    quest?.action?.type,
+    handleVerifySuccess,
+  ]);
 
   const handleNextDialogue = () => {
     if (!dialogues) return;
@@ -565,14 +610,6 @@ export default function OnboardingQuest() {
     }
   };
 
-  const handleVerifySuccess = () => {
-    setPhase("success");
-    setDialogueIndex(0);
-    setConfirmed(false);
-    setSubStepIndex(0);
-    setSubStepConfirmed(false);
-  };
-
   const handleCinematicComplete = useCallback(() => {
     setShowCinematic(false);
     setCinematicComplete(true);
@@ -620,9 +657,7 @@ export default function OnboardingQuest() {
               <h1 className="text-3xl font-bold text-gradient mb-3">
                 {t.onboarding.allClear}
               </h1>
-              <p className="text-gray-400 mb-2">
-                {t.onboarding.allClearDesc}
-              </p>
+              <p className="text-gray-400 mb-2">{t.onboarding.allClearDesc}</p>
               <p className="text-accent-amber font-mono-num text-xl mb-6">
                 {t.onboarding.totalXp.replace("{xp}", String(totalXp))}
               </p>
@@ -662,7 +697,7 @@ export default function OnboardingQuest() {
 
   const bgImage = QUEST_BACKGROUNDS[quest?.id] || "/vn-bg-default.png";
   const isSubStepQuest = quest?.action?.type === "substeps" && quest.substeps;
-  const currentSubStep = isSubStepQuest ? quest.substeps![subStepIndex] : null;
+  const currentSubStep = isSubStepQuest ? quest.substeps?.[subStepIndex] : null;
 
   return (
     <div className="fixed inset-0 overflow-hidden" ref={questAreaRef}>
@@ -677,19 +712,27 @@ export default function OnboardingQuest() {
       {/* ── Character + Bottom Panel ── */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <div className="max-w-3xl mx-auto">
-          <div className={cinematicJustFinished ? "animate-character-entrance" : ""}>
+          <div
+            className={
+              cinematicJustFinished ? "animate-character-entrance" : ""
+            }
+          >
             <TokiCharacter mood={currentLine?.mood} phase={phase} />
           </div>
 
           {/* Wallet Address (Quest 1 success) */}
-          {embeddedWallet && phase === "success" && quest.id === "create-wallet" && (
-            <div className="mx-4 mb-2 p-3 rounded-lg bg-black/50 backdrop-blur border border-accent-cyan/20 text-center">
-              <div className="text-xs text-gray-400 mb-1">{t.onboarding.yourAddress}</div>
-              <div className="font-mono text-sm text-accent-cyan break-all">
-                {embeddedWallet.address}
+          {embeddedWallet &&
+            phase === "success" &&
+            quest.id === "create-wallet" && (
+              <div className="mx-4 mb-2 p-3 rounded-lg bg-black/50 backdrop-blur border border-accent-cyan/20 text-center">
+                <div className="text-xs text-gray-400 mb-1">
+                  {t.onboarding.yourAddress}
+                </div>
+                <div className="font-mono text-sm text-accent-cyan break-all">
+                  {embeddedWallet.address}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Badge Reveal */}
           {phase === "badge" && (
@@ -712,7 +755,11 @@ export default function OnboardingQuest() {
               line={currentLine}
               onNext={handleNextDialogue}
               isLast={dialogueIndex === dialogues.length - 1}
-              moodLabel={currentLine.mood ? getMoodLabel(currentLine.mood, t.onboarding) : undefined}
+              moodLabel={
+                currentLine.mood
+                  ? getMoodLabel(currentLine.mood, t.onboarding)
+                  : undefined
+              }
               questProgress={`${questIndex + 1} / ${QUESTS.length}`}
             />
           )}
@@ -721,7 +768,6 @@ export default function OnboardingQuest() {
           {phase === "action" && quest.action && (
             <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
               <div className="space-y-4">
-
                 {quest.action.type === "privy-login" && (
                   <>
                     {quest.id === "create-wallet" && (
@@ -742,7 +788,8 @@ export default function OnboardingQuest() {
                   </>
                 )}
 
-                {(quest.action.type === "link" || quest.action.type === "navigate") && (
+                {(quest.action.type === "link" ||
+                  quest.action.type === "navigate") && (
                   <button
                     onClick={handleAction}
                     className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg hover:scale-[1.02] transition-transform"
@@ -808,7 +855,7 @@ export default function OnboardingQuest() {
                 {isSubStepQuest && currentSubStep && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
-                      {quest.substeps!.map((_, i) => (
+                      {quest.substeps?.map((_, i) => (
                         <div
                           key={i}
                           className={`h-1.5 flex-1 rounded-full transition-all ${
@@ -824,14 +871,15 @@ export default function OnboardingQuest() {
                     <div className="text-xs text-accent-cyan/80 mb-1">
                       {t.onboarding.substepLabel
                         .replace("{current}", String(subStepIndex + 1))
-                        .replace("{total}", String(quest.substeps!.length))}
+                        .replace("{total}", String(quest.substeps?.length))}
                     </div>
 
                     <p className="text-gray-300 text-sm leading-relaxed">
                       {currentSubStep.instruction}
                     </p>
 
-                    {(currentSubStep.action.type === "privy-login" || currentSubStep.action.type === "link") && (
+                    {(currentSubStep.action.type === "privy-login" ||
+                      currentSubStep.action.type === "link") && (
                       <button
                         onClick={() => handleSubStepAction(currentSubStep)}
                         className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue/80 to-accent-navy/80 text-white font-semibold hover:scale-[1.02] transition-transform"
@@ -840,19 +888,22 @@ export default function OnboardingQuest() {
                       </button>
                     )}
 
-                    {currentSubStep.verify && currentSubStep.verify !== "metamask-installed" && (
-                      <label className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={subStepConfirmed}
-                          onChange={(e) => setSubStepConfirmed(e.target.checked)}
-                          className="mt-0.5 w-5 h-5 rounded accent-accent-cyan"
-                        />
-                        <span className="text-gray-300 text-sm">
-                          {currentSubStep.verify}
-                        </span>
-                      </label>
-                    )}
+                    {currentSubStep.verify &&
+                      currentSubStep.verify !== "metamask-installed" && (
+                        <label className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={subStepConfirmed}
+                            onChange={(e) =>
+                              setSubStepConfirmed(e.target.checked)
+                            }
+                            className="mt-0.5 w-5 h-5 rounded accent-accent-cyan"
+                          />
+                          <span className="text-gray-300 text-sm">
+                            {currentSubStep.verify}
+                          </span>
+                        </label>
+                      )}
 
                     {currentSubStep.verify === "metamask-installed" && (
                       <div className="space-y-3">
@@ -881,7 +932,7 @@ export default function OnboardingQuest() {
                       disabled={!subStepConfirmed}
                       className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform"
                     >
-                      {subStepIndex < quest.substeps!.length - 1
+                      {subStepIndex < quest.substeps?.length - 1
                         ? t.onboarding.clickToNext
                         : t.onboarding.complete}
                     </button>

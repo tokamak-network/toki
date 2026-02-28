@@ -6,16 +6,21 @@
 };
 
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import dynamic from "next/dynamic";
-import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
-import { LanguageProvider } from "@/components/providers/LanguageProvider";
-import { AchievementProvider } from "@/components/providers/AchievementProvider";
+import localFont from "next/font/local";
 import { AudioProvider } from "@/components/audio/AudioProvider";
+import { AchievementProvider } from "@/components/providers/AchievementProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
 import "./globals.css";
 
-const TokiChat = dynamic(() => import("@/components/chat/TokiChat"), { ssr: false });
-const AchievementToast = dynamic(() => import("@/components/achievements/AchievementToast"), { ssr: false });
+const TokiChat = dynamic(() => import("@/components/chat/TokiChat"), {
+  ssr: false,
+});
+const AchievementToast = dynamic(
+  () => import("@/components/achievements/AchievementToast"),
+  { ssr: false },
+);
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

@@ -3,7 +3,14 @@
 import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
-type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink";
+type Mood =
+  | "welcome"
+  | "explain"
+  | "thinking"
+  | "excited"
+  | "proud"
+  | "cheer"
+  | "wink";
 
 const MOOD_IMAGES: Record<Mood, string> = {
   welcome: "/toki-welcome.png",
@@ -15,7 +22,13 @@ const MOOD_IMAGES: Record<Mood, string> = {
   wink: "/toki-wink.png",
 };
 
-export type CoachState = "idle" | "idle_no_balance" | "staking" | "success" | "error" | "earnings";
+export type CoachState =
+  | "idle"
+  | "idle_no_balance"
+  | "staking"
+  | "success"
+  | "error"
+  | "earnings";
 
 interface TokiCoachProps {
   state: CoachState;
@@ -58,7 +71,10 @@ export default function TokiCoach({ state, earningsAmount }: TokiCoachProps) {
       case "error":
         return t.dashboard.coachError;
       case "earnings":
-        return t.dashboard.coachEarnings.replace("{amount}", earningsAmount || "0");
+        return t.dashboard.coachEarnings.replace(
+          "{amount}",
+          earningsAmount || "0",
+        );
       default:
         return t.dashboard.coachIdleWithBalance;
     }

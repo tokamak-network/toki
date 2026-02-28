@@ -7,9 +7,7 @@
     "descKo": "설명 placeholder",
     "descEn": "Description placeholder",
     "url": "https://www.ethrpg.app/",
-    "categories": [
-      "play"
-    ],
+    "categories": ["play"],
     "comingSoon": false,
     "order": 0
   },
@@ -21,9 +19,7 @@
     "descKo": "설명 placeholder",
     "descEn": "Description placeholder",
     "url": "https://agentic-ethereum.com/",
-    "categories": [
-      "build"
-    ],
+    "categories": ["build"],
     "comingSoon": false,
     "order": 1
   },
@@ -35,9 +31,7 @@
     "descKo": "설명 placeholder",
     "descEn": "Description placeholder",
     "url": "https://tokamon.io/",
-    "categories": [
-      "play"
-    ],
+    "categories": ["play"],
     "comingSoon": false,
     "order": 2
   },
@@ -49,9 +43,7 @@
     "descKo": "설명 placeholder",
     "descEn": "Description placeholder",
     "url": "https://sigil-voting.vercel.app/",
-    "categories": [
-      "vote"
-    ],
+    "categories": ["vote"],
     "comingSoon": false,
     "order": 3
   },
@@ -63,9 +55,7 @@
     "descKo": "설명 placeholder",
     "descEn": "Description placeholder",
     "url": "https://example.com",
-    "categories": [
-      "vote"
-    ],
+    "categories": ["vote"],
     "comingSoon": false,
     "order": 4
   },
@@ -77,10 +67,7 @@
     "descKo": "설명 placeholder",
     "descEn": "Description placeholder",
     "url": "https://example.com",
-    "categories": [
-      "vote",
-      "earn"
-    ],
+    "categories": ["vote", "earn"],
     "comingSoon": true,
     "order": 5
   }

@@ -1,10 +1,9 @@
 import {
   Address,
+  ecsign,
   isValidPrivate,
   toChecksumAddress,
-  ecsign,
 } from "@ethereumjs/util";
-import { keccak256 } from "ethereum-cryptography/keccak";
 import type {
   Keyring,
   KeyringAccount,
@@ -14,26 +13,26 @@ import type {
 import { EthAccountType, EthMethod, KeyringEvent } from "@metamask/keyring-api";
 import { emitSnapKeyringEvent } from "@metamask/keyring-snap-sdk";
 import type { Json } from "@metamask/utils";
+import { keccak256 } from "ethereum-cryptography/keccak";
 import { v4 as uuid } from "uuid";
-
-import {
-  CONTRACTS,
-  DUMMY_SIGNATURE,
-  MAX_UINT256,
-  PAYMASTER_POST_OP_GAS_LIMIT,
-  PAYMASTER_VERIFICATION_GAS_LIMIT,
-  SELECTORS,
-  SEPOLIA_CHAIN_ID,
-  EIP_7702_MAGIC,
-} from "./constants";
-import type { SnapConfig, SnapState, Wallet } from "./state";
-import { saveState } from "./state";
 import type { Eip7702Auth } from "./bundler";
 import {
   estimateUserOperationGas,
   getUserOperationGasPrice,
   sendUserOperation,
 } from "./bundler";
+import {
+  CONTRACTS,
+  DUMMY_SIGNATURE,
+  EIP_7702_MAGIC,
+  MAX_UINT256,
+  PAYMASTER_POST_OP_GAS_LIMIT,
+  PAYMASTER_VERIFICATION_GAS_LIMIT,
+  SELECTORS,
+  SEPOLIA_CHAIN_ID,
+} from "./constants";
+import type { SnapConfig, SnapState } from "./state";
+import { saveState } from "./state";
 
 // ─── Utility Helpers ───
 
@@ -45,7 +44,7 @@ function hexStr(bytes: Uint8Array): string {
 
 function hexToUint8(hex: string): Uint8Array {
   const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
-  const padded = clean.length % 2 ? "0" + clean : clean;
+  const padded = clean.length % 2 ? `0${clean}` : clean;
   const bytes = new Uint8Array(padded.length / 2);
   for (let i = 0; i < bytes.length; i++) {
     bytes[i] = parseInt(padded.slice(i * 2, i * 2 + 2), 16);
@@ -70,7 +69,7 @@ function encodeUint256(value: string): string {
 function bigIntToMinBytes(n: bigint): Uint8Array {
   if (n === 0n) return new Uint8Array(0);
   const hex = n.toString(16);
-  const padded = hex.length % 2 ? "0" + hex : hex;
+  const padded = hex.length % 2 ? `0${hex}` : hex;
   const bytes = new Uint8Array(padded.length / 2);
   for (let i = 0; i < bytes.length; i++) {
     bytes[i] = parseInt(padded.slice(i * 2, i * 2 + 2), 16);
@@ -132,7 +131,7 @@ function rlpEncodeList(items: Uint8Array[]): Uint8Array {
  * Encode ERC-20 approve(address spender, uint256 amount)
  */
 function encodeApprove(spender: string, amount: string): string {
-  return "0x" + SELECTORS.APPROVE + encodeAddress(spender) + encodeUint256(amount);
+  return `0x${SELECTORS.APPROVE}${encodeAddress(spender)}${encodeUint256(amount)}`;
 }
 
 /**
@@ -143,10 +142,10 @@ function encodeExecute(to: string, value: string, data: string): string {
   const val = encodeUint256(value);
   const offset = encodeUint256("0x60"); // 3 * 32 = 96
   const cleanData = data.startsWith("0x") ? data.slice(2) : data;
-  const dataLen = encodeUint256("0x" + (cleanData.length / 2).toString(16));
+  const dataLen = encodeUint256(`0x${(cleanData.length / 2).toString(16)}`);
   const paddedData =
     cleanData + "0".repeat((64 - (cleanData.length % 64)) % 64);
-  return "0x" + SELECTORS.EXECUTE + dest + val + offset + dataLen + paddedData;
+  return `0x${SELECTORS.EXECUTE}${dest}${val}${offset}${dataLen}${paddedData}`;
 }
 
 /**
@@ -154,7 +153,7 @@ function encodeExecute(to: string, value: string, data: string): string {
  * Selector: 0x34fcd5be
  */
 function encodeExecuteBatch(
-  calls: Array<{ target: string; value: string; data: string }>
+  calls: Array<{ target: string; value: string; data: string }>,
 ): string {
   const count = calls.length;
 
@@ -164,7 +163,7 @@ function encodeExecuteBatch(
   encoded += encodeUint256("0x20"); // offset to array = 32
 
   // Array length
-  encoded += encodeUint256("0x" + count.toString(16));
+  encoded += encodeUint256(`0x${count.toString(16)}`);
 
   // Each Call is a dynamic tuple, so we need offsets first
   // Calculate offsets for each Call struct
@@ -174,12 +173,12 @@ function encodeExecuteBatch(
     const cleanData = call.data.startsWith("0x")
       ? call.data.slice(2)
       : call.data;
-    const dataWords = Math.ceil(cleanData.length / 64) || 0;
+    const _dataWords = Math.ceil(cleanData.length / 64) || 0;
     const tupleEncoded =
       encodeAddress(call.target) +
       encodeUint256(call.value) +
       encodeUint256("0x60") + // offset to bytes = 96 (3 * 32)
-      encodeUint256("0x" + (cleanData.length / 2).toString(16)) +
+      encodeUint256(`0x${(cleanData.length / 2).toString(16)}`) +
       (cleanData || "") +
       "0".repeat((64 - (cleanData.length % 64)) % 64);
     callEncodings.push(tupleEncoded);
@@ -188,7 +187,7 @@ function encodeExecuteBatch(
   // Offsets for each Call (relative to array data start)
   let currentOffset = count * 32; // past the offset array
   for (const enc of callEncodings) {
-    encoded += encodeUint256("0x" + currentOffset.toString(16));
+    encoded += encodeUint256(`0x${currentOffset.toString(16)}`);
     currentOffset += enc.length / 2; // each hex char = 0.5 byte
   }
 
@@ -197,7 +196,7 @@ function encodeExecuteBatch(
     encoded += enc;
   }
 
-  return "0x" + encoded;
+  return `0x${encoded}`;
 }
 
 // ─── EIP-7702 Authorization Signing ───
@@ -210,7 +209,7 @@ function signEip7702Authorization(
   chainId: bigint,
   delegationAddress: string,
   nonce: bigint,
-  privateKeyHex: string
+  privateKeyHex: string,
 ): Eip7702Auth {
   // RLP encode [chainId, address, nonce]
   const chainIdBytes = bigIntToMinBytes(chainId);
@@ -235,12 +234,12 @@ function signEip7702Authorization(
   const yParity = Number(sig.v) - 27;
 
   return {
-    chainId: "0x" + chainId.toString(16),
+    chainId: `0x${chainId.toString(16)}`,
     address: delegationAddress,
-    nonce: "0x" + nonce.toString(16),
-    yParity: "0x" + yParity.toString(16),
-    r: "0x" + hexStr(sig.r),
-    s: "0x" + hexStr(sig.s),
+    nonce: `0x${nonce.toString(16)}`,
+    yParity: `0x${yParity.toString(16)}`,
+    r: `0x${hexStr(sig.r)}`,
+    s: `0x${hexStr(sig.s)}`,
   };
 }
 
@@ -257,21 +256,15 @@ function signEip7702Authorization(
 function computeUserOpHash(
   userOp: Record<string, string>,
   entryPoint: string,
-  chainId: bigint
+  chainId: bigint,
 ): string {
   // Pack gas limits: verificationGasLimit (16 bytes) || callGasLimit (16 bytes)
-  const verificationGasLimit = padHex(
-    userOp.verificationGasLimit ?? "0x0",
-    16
-  );
+  const verificationGasLimit = padHex(userOp.verificationGasLimit ?? "0x0", 16);
   const callGasLimit = padHex(userOp.callGasLimit ?? "0x0", 16);
   const accountGasLimits = verificationGasLimit + callGasLimit;
 
   // Pack gas fees: maxPriorityFeePerGas (16 bytes) || maxFeePerGas (16 bytes)
-  const maxPriorityFeePerGas = padHex(
-    userOp.maxPriorityFeePerGas ?? "0x0",
-    16
-  );
+  const maxPriorityFeePerGas = padHex(userOp.maxPriorityFeePerGas ?? "0x0", 16);
   const maxFeePerGas = padHex(userOp.maxFeePerGas ?? "0x0", 16);
   const gasFees = maxPriorityFeePerGas + maxFeePerGas;
 
@@ -281,15 +274,12 @@ function computeUserOpHash(
     const pm = userOp.paymaster.startsWith("0x")
       ? userOp.paymaster.slice(2)
       : userOp.paymaster;
-    const pmVerGas = padHex(
-      userOp.paymasterVerificationGasLimit ?? "0x0",
-      16
-    );
+    const pmVerGas = padHex(userOp.paymasterVerificationGasLimit ?? "0x0", 16);
     const pmPostGas = padHex(userOp.paymasterPostOpGasLimit ?? "0x0", 16);
     const pmData = (userOp.paymasterData ?? "0x").startsWith("0x")
       ? (userOp.paymasterData ?? "0x").slice(2)
       : (userOp.paymasterData ?? "");
-    paymasterAndData = "0x" + pm.toLowerCase() + pmVerGas + pmPostGas + pmData;
+    paymasterAndData = `0x${pm.toLowerCase()}${pmVerGas}${pmPostGas}${pmData}`;
   }
 
   // Compute initCode
@@ -301,7 +291,7 @@ function computeUserOpHash(
     const factoryData = (userOp.factoryData ?? "0x").startsWith("0x")
       ? (userOp.factoryData ?? "0x").slice(2)
       : (userOp.factoryData ?? "");
-    initCode = "0x" + factory + factoryData;
+    initCode = `0x${factory}${factoryData}`;
   }
 
   // Hash dynamic fields
@@ -321,16 +311,16 @@ function computeUserOpHash(
     gasFees.padStart(64, "0") +
     hexStr(paymasterAndDataHash).padStart(64, "0");
 
-  const packHash = keccak256(hexToUint8("0x" + packData));
+  const packHash = keccak256(hexToUint8(`0x${packData}`));
 
   // abi.encode(packHash, entryPoint, chainId)
   const outerData =
     hexStr(packHash).padStart(64, "0") +
     encodeAddress(entryPoint) +
-    encodeUint256("0x" + chainId.toString(16));
+    encodeUint256(`0x${chainId.toString(16)}`);
 
-  const finalHash = keccak256(hexToUint8("0x" + outerData));
-  return "0x" + hexStr(finalHash);
+  const finalHash = keccak256(hexToUint8(`0x${outerData}`));
+  return `0x${hexStr(finalHash)}`;
 }
 
 // ─── Call Type ───
@@ -378,18 +368,18 @@ export class TonPaymasterKeyring implements Keyring {
    * No factory call, no new address.
    */
   async createAccount(
-    options: Record<string, Json> = {}
+    options: Record<string, Json> = {},
   ): Promise<KeyringAccount> {
     const privateKey = options.privateKey as string | undefined;
     if (!privateKey) {
       throw new Error(
-        "Private key is required. Export from MetaMask: Account Details > Show Private Key"
+        "Private key is required. Export from MetaMask: Account Details > Show Private Key",
       );
     }
 
     if (privateKey.includes(" ")) {
       throw new Error(
-        "Mnemonic phrases are not supported. Please export your hex private key (0x...)"
+        "Mnemonic phrases are not supported. Please export your hex private key (0x...)",
       );
     }
 
@@ -429,17 +419,18 @@ export class TonPaymasterKeyring implements Keyring {
     return account;
   }
 
-  async filterAccountChains(
-    _id: string,
-    chains: string[]
-  ): Promise<string[]> {
+  async filterAccountChains(_id: string, chains: string[]): Promise<string[]> {
     return chains.filter((c) => c.startsWith("eip155:"));
   }
 
   async updateAccount(account: KeyringAccount): Promise<void> {
     const wallet = this.#state.wallets[account.id];
     if (!wallet) throw new Error(`Account '${account.id}' not found`);
-    const updated = { ...wallet.account, ...account, address: wallet.account.address };
+    const updated = {
+      ...wallet.account,
+      ...account,
+      address: wallet.account.address,
+    };
     await this.#emitEvent(KeyringEvent.AccountUpdated, { account: updated });
     wallet.account = updated;
     await this.#saveState();
@@ -451,11 +442,13 @@ export class TonPaymasterKeyring implements Keyring {
     await this.#saveState();
   }
 
-  async submitRequest(request: KeyringRequest): Promise<SubmitRequestResponse> {
+  async submitRequest(
+    _request: KeyringRequest,
+  ): Promise<SubmitRequestResponse> {
     // For now, return unsupported — actual transactions go through ton_sendUserOp
     throw new Error(
       "Use ton_sendUserOp via wallet_invokeSnap for transactions. " +
-      "MetaMask's built-in UserOp flow does not support EIP-7702."
+        "MetaMask's built-in UserOp flow does not support EIP-7702.",
     );
   }
 
@@ -477,7 +470,9 @@ export class TonPaymasterKeyring implements Keyring {
     // Find the first registered wallet
     const wallets = Object.values(this.#state.wallets);
     if (wallets.length === 0) {
-      throw new Error("No account registered. Call keyring_createAccount first.");
+      throw new Error(
+        "No account registered. Call keyring_createAccount first.",
+      );
     }
     const wallet = wallets[0]!;
     const sender = wallet.account.address;
@@ -505,7 +500,7 @@ export class TonPaymasterKeyring implements Keyring {
           "latest",
         ],
       })) as string;
-      nonce = "0x" + BigInt(nonceResult).toString(16);
+      nonce = `0x${BigInt(nonceResult).toString(16)}`;
     }
 
     // 3. Build callData: prepend TON approve for paymaster + user calls
@@ -522,9 +517,9 @@ export class TonPaymasterKeyring implements Keyring {
     let callData: string;
     if (allCalls.length === 1) {
       callData = encodeExecute(
-        allCalls[0]!.target,
-        allCalls[0]!.value,
-        allCalls[0]!.data
+        allCalls[0]?.target,
+        allCalls[0]?.value,
+        allCalls[0]?.data,
       );
     } else {
       callData = encodeExecuteBatch(allCalls);
@@ -543,7 +538,7 @@ export class TonPaymasterKeyring implements Keyring {
         BigInt(SEPOLIA_CHAIN_ID),
         CONTRACTS.SIMPLE_7702_ACCOUNT,
         BigInt(eoaNonce),
-        wallet.privateKey
+        wallet.privateKey,
       );
     }
 
@@ -571,7 +566,7 @@ export class TonPaymasterKeyring implements Keyring {
       bundlerUrl,
       userOp,
       CONTRACTS.ENTRY_POINT_V08,
-      eip7702Auth
+      eip7702Auth,
     );
 
     // Update gas values
@@ -590,22 +585,21 @@ export class TonPaymasterKeyring implements Keyring {
     const userOpHash = computeUserOpHash(
       userOp,
       CONTRACTS.ENTRY_POINT_V08,
-      BigInt(SEPOLIA_CHAIN_ID)
+      BigInt(SEPOLIA_CHAIN_ID),
     );
 
     const pkBytes = hexToUint8(wallet.privateKey);
     const hashBytes = hexToUint8(userOpHash);
     const sig = ecsign(hashBytes, pkBytes);
     const v = Number(sig.v) < 27 ? Number(sig.v) + 27 : Number(sig.v);
-    userOp.signature =
-      "0x" + hexStr(sig.r) + hexStr(sig.s) + v.toString(16).padStart(2, "0");
+    userOp.signature = `0x${hexStr(sig.r)}${hexStr(sig.s)}${v.toString(16).padStart(2, "0")}`;
 
     // 9. Submit to bundler
     const opHash = await sendUserOperation(
       bundlerUrl,
       userOp,
       CONTRACTS.ENTRY_POINT_V08,
-      eip7702Auth
+      eip7702Auth,
     );
 
     // 10. Mark as delegated
@@ -623,14 +617,14 @@ export class TonPaymasterKeyring implements Keyring {
     privateKey: string;
     address: string;
   } {
-    const clean = privateKey.startsWith("0x") ? privateKey.slice(2) : privateKey;
+    const clean = privateKey.startsWith("0x")
+      ? privateKey.slice(2)
+      : privateKey;
     const bytes = hexToUint8(clean);
     if (!isValidPrivate(bytes)) {
       throw new Error("Invalid private key");
     }
-    const address = toChecksumAddress(
-      Address.fromPrivateKey(bytes).toString()
-    );
+    const address = toChecksumAddress(Address.fromPrivateKey(bytes).toString());
     return { privateKey: clean, address };
   }
 
@@ -640,7 +634,7 @@ export class TonPaymasterKeyring implements Keyring {
 
   async #emitEvent(
     event: KeyringEvent,
-    data: Record<string, Json>
+    data: Record<string, Json>,
   ): Promise<void> {
     await emitSnapKeyringEvent(snap, event, data);
   }

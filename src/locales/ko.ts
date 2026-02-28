@@ -111,9 +111,11 @@ const ko = {
     toCta: "어때, 준비됐어?",
   },
   howItWorksVn: {
-    step1Dialogue: "반가워! 먼저 지갑을 만들어볼까? 카카오나 구글로 로그인하면 끝이야!",
+    step1Dialogue:
+      "반가워! 먼저 지갑을 만들어볼까? 카카오나 구글로 로그인하면 끝이야!",
     step2Dialogue: "다음은 거래소에서 TON을 보내면 돼. 주소 복사 한 번이면 OK!",
-    step3Dialogue: "마지막! 버튼 하나만 누르면 스테이킹 완료! 래핑? 가스비? 내가 다 처리할게~",
+    step3Dialogue:
+      "마지막! 버튼 하나만 누르면 스테이킹 완료! 래핑? 가스비? 내가 다 처리할게~",
   },
   whyTokiVs: {
     oldWay: "기존 방식",
@@ -138,7 +140,8 @@ const ko = {
   stakingPreview: {
     title: "실시간 스테이킹 통계",
     subtitle: "토카막 네트워크 컨트랙트의 실시간 데이터",
-    seigManagerInfo: "SeigManager: {operatorCount}개 오퍼레이터에 {totalStaked} TON 스테이킹",
+    seigManagerInfo:
+      "SeigManager: {operatorCount}개 오퍼레이터에 {totalStaked} TON 스테이킹",
     currentApr: "현재 연이율",
     compoundSeigniorage: "복리 시뇨리지",
     totalStaked: "총 스테이킹",
@@ -150,7 +153,8 @@ const ko = {
     daily: "일간",
     monthly: "월간",
     yearly: "연간",
-    disclaimer: "* 현재 온체인 연이율({apr}%) 기준. 실제 수익은 달라질 수 있습니다. 시뇨리지는 자동 복리됩니다.",
+    disclaimer:
+      "* 현재 온체인 연이율({apr}%) 기준. 실제 수익은 달라질 수 있습니다. 시뇨리지는 자동 복리됩니다.",
     activeOperators: "활성 오퍼레이터",
     failedToLoad: "온체인 데이터를 불러오지 못했습니다. 새로고침해 주세요.",
   },
@@ -192,8 +196,10 @@ const ko = {
     txSubmitted: "트랜잭션이 제출되었습니다!",
     noStakedBalance: "이 오퍼레이터에 스테이킹된 잔액이 없습니다",
     txRejected: "사용자가 트랜잭션을 거부했습니다",
-    insufficientTonForGas: "TON 잔액이 부족합니다. 스테이킹 금액과 가스비를 합산한 TON이 필요합니다.",
-    paymasterValidationFailed: "가스비 검증에 실패했습니다. TON 잔액을 확인 후 다시 시도해주세요.",
+    insufficientTonForGas:
+      "TON 잔액이 부족합니다. 스테이킹 금액과 가스비를 합산한 TON이 필요합니다.",
+    paymasterValidationFailed:
+      "가스비 검증에 실패했습니다. TON 잔액을 확인 후 다시 시도해주세요.",
     myStakedPositions: "내 스테이킹 현황",
     estimatedGas: "예상 가스비: ~{amount} TON",
     // Delegation / Session Key
@@ -209,9 +215,12 @@ const ko = {
     revokeSessionKey: "세션 키 취소",
     stakeTonDelegation: "TON 스테이킹 (Delegation 가스리스)",
     delegationRequired: "먼저 Delegation 서명이 필요합니다",
-    sessionKeyInfo: "세션 키를 사용하면 1회 서명 후 7일간 가스리스 스테이킹이 가능합니다.",
-    metamaskDelegationUnsupported: "MetaMask는 외부 dApp에서의 delegation 서명을 지원하지 않습니다. 가스리스 스테이킹은 Privy 임베디드 지갑으로 연결해주세요.",
-    firstTxNote: "최초 사용 시 스마트 계정 업그레이드에 소량의 ETH가 필요합니다.",
+    sessionKeyInfo:
+      "세션 키를 사용하면 1회 서명 후 7일간 가스리스 스테이킹이 가능합니다.",
+    metamaskDelegationUnsupported:
+      "MetaMask는 외부 dApp에서의 delegation 서명을 지원하지 않습니다. 가스리스 스테이킹은 Privy 임베디드 지갑으로 연결해주세요.",
+    firstTxNote:
+      "최초 사용 시 스마트 계정 업그레이드에 소량의 ETH가 필요합니다.",
     stepUpgrade: "스마트 계정 업그레이드 (1회)",
     stepDelegation: "Delegation 서명 (무료)",
     upgradeNote: "소량의 ETH가 필요합니다 (1회만).",
@@ -285,15 +294,19 @@ const ko = {
     metamaskCancelled: "MetaMask 연결이 취소되었습니다.",
     metamaskInstallCheck: "MetaMask 설치를 완료했으면 아래 버튼을 눌러주세요.",
     verifyInstall: "설치 확인하기",
-    metamaskNotYet: "MetaMask가 아직 감지되지 않아요. 설치 후 이 페이지를 새로고침해주세요!",
+    metamaskNotYet:
+      "MetaMask가 아직 감지되지 않아요. 설치 후 이 페이지를 새로고침해주세요!",
     privyNotReady: "로그인 서비스를 준비하고 있어요. 잠시만 기다려주세요!",
     substepLabel: "단계 {current}/{total}",
-    exportKeyInstruction: "아래 버튼을 누르면 비밀키를 볼 수 있어. 복사해서 안전하게 보관해!",
+    exportKeyInstruction:
+      "아래 버튼을 누르면 비밀키를 볼 수 있어. 복사해서 안전하게 보관해!",
     exportKeyButton: "비밀키 내보내기",
     exportKeyConfirm: "비밀키를 안전하게 복사했어요",
-    installMetamaskInstruction: "이제 MetaMask를 설치할 차례야. 크롬 확장 프로그램이야.",
+    installMetamaskInstruction:
+      "이제 MetaMask를 설치할 차례야. 크롬 확장 프로그램이야.",
     installMetamaskButton: "MetaMask 설치하기",
-    importKeyInstruction: "MetaMask를 열어서 '계정 가져오기' -> 비밀키 붙여넣기",
+    importKeyInstruction:
+      "MetaMask를 열어서 '계정 가져오기' -> 비밀키 붙여넣기",
     importKeyConfirm: "MetaMask에 키를 가져왔어요",
     // Quest 1: Create Wallet (Privy login)
     quest1Title: "지갑 만들기",
@@ -312,10 +325,13 @@ const ko = {
     quest2Subtitle: "비밀키 내보내기 & 가져오기",
     quest2Badge: "브릿지 빌더",
     quest2Intro1: "잠깐! 아까 만든 지갑에는 '비밀키'라는 게 있어.",
-    quest2Intro2: "비밀키는 지갑의 진짜 열쇠야. 이걸 가진 사람이 지갑의 주인이지.",
-    quest2Intro3: "지금은 토키가 안전하게 보관하고 있지만, 거래소에서 인증하려면 MetaMask라는 앱이 필요해.",
+    quest2Intro2:
+      "비밀키는 지갑의 진짜 열쇠야. 이걸 가진 사람이 지갑의 주인이지.",
+    quest2Intro3:
+      "지금은 토키가 안전하게 보관하고 있지만, 거래소에서 인증하려면 MetaMask라는 앱이 필요해.",
     quest2Intro4: "업비트 같은 거래소는 MetaMask로만 지갑 인증이 가능하거든!",
-    quest2Intro5: "그래서 비밀키를 MetaMask에 복사해 넣을 거야. 같은 지갑을 두 곳에서 쓰는 셈이지.",
+    quest2Intro5:
+      "그래서 비밀키를 MetaMask에 복사해 넣을 거야. 같은 지갑을 두 곳에서 쓰는 셈이지.",
     quest2Intro6: "걱정 마, 3단계로 쉽게 할 수 있어!",
     quest2Action: "시작하기",
     quest2Success1: "완벽해! MetaMask 연결 성공!",
@@ -330,7 +346,8 @@ const ko = {
     quest3Intro3: "개인지갑 주소를 등록하고, MetaMask로 인증하면 돼.",
     quest3Intro4: "이더리움(ETH) 네트워크를 선택하는 걸 잊지 마!",
     quest3Intro5: "아래에서 사용하는 거래소의 가이드를 확인해봐.",
-    quest3Intro6: "각 거래소마다 방법이 조금씩 달라서, 공식 가이드를 참고하는 게 좋아.",
+    quest3Intro6:
+      "각 거래소마다 방법이 조금씩 달라서, 공식 가이드를 참고하는 게 좋아.",
     quest3Intro7: "다 했으면 아래에서 확인해줘.",
     quest3Confirm: "거래소에서 지갑 인증을 완료했어요",
     quest3ActionLabel: "완료 확인",

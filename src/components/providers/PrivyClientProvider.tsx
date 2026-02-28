@@ -7,7 +7,7 @@
   return this.toString();
 };
 
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 // Lazy load PrivyProvider to avoid SSR "React is not defined" from @privy-io/react-auth
 let PrivyProviderModule: React.ComponentType<{ children: ReactNode }> | null =

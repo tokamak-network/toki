@@ -2,12 +2,12 @@
 
 import {
   createContext,
-  useContext,
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
   type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
 
 interface AudioContextType {
@@ -64,7 +64,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
 
     if (audio.paused) {
-      audio.play().then(() => setIsPlaying(true)).catch(() => {});
+      audio
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {});
     } else {
       audio.pause();
       setIsPlaying(false);

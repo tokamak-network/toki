@@ -1,24 +1,26 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { toViemAccount } from "@privy-io/react-auth";
 import {
-  createPublicClient,
-  http,
+  Implementation,
+  toMetaMaskSmartAccount,
+} from "@metamask/delegation-toolkit";
+import { toViemAccount, usePrivy, useWallets } from "@privy-io/react-auth";
+import { useEffect, useRef, useState } from "react";
+import {
   type Address,
-  type Hex,
-  type SignedAuthorization,
+  createPublicClient,
   encodeFunctionData,
   erc20Abi,
+  type Hex,
+  http,
   maxUint256,
+  type SignedAuthorization,
 } from "viem";
-import { sepolia, mainnet } from "viem/chains";
-import { createBundlerClient, toSimple7702SmartAccount } from "viem/account-abstraction";
 import {
-  toMetaMaskSmartAccount,
-  Implementation,
-} from "@metamask/delegation-toolkit";
+  createBundlerClient,
+  toSimple7702SmartAccount,
+} from "viem/account-abstraction";
+import { mainnet, sepolia } from "viem/chains";
 import { CONTRACTS } from "@/constants/contracts";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
@@ -74,7 +76,7 @@ type EnsureDelegationFn = () => Promise<SignedAuthorization | null>;
 
 // Creates MetaMask DeleGator Smart Account + BundlerClient + wrapper
 // Used by MetaMask external wallet path only
-async function setupDelegationToolkit(
+async function _setupDelegationToolkit(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signer: any,
   signerAddress: Address,
@@ -133,7 +135,9 @@ async function setupDelegationToolkit(
       };
 
       if (!deployed) {
-        console.log("[EIP-7702] Account not delegated, setting up delegation...");
+        console.log(
+          "[EIP-7702] Account not delegated, setting up delegation...",
+        );
         const authorization = await ensureDelegation();
         if (authorization) {
           // Privy path: include signed authorization in UserOp
@@ -171,7 +175,7 @@ export function useEip7702() {
   // MetaMask injects into useWallets() even when user logged in via Google/email,
   // so only use it if it was actually linked.
   const hasLinkedExternalWallet = user?.linkedAccounts?.some(
-    (a) => a.type === "wallet"
+    (a) => a.type === "wallet",
   );
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
@@ -181,7 +185,12 @@ export function useEip7702() {
 
   // ─── Path A: Privy Embedded Wallet ───
   useEffect(() => {
-    if (!embeddedWallet || !pimlicoUrl || embeddedInitRef.current || metamaskWallet)
+    if (
+      !embeddedWallet ||
+      !pimlicoUrl ||
+      embeddedInitRef.current ||
+      metamaskWallet
+    )
       return;
 
     let cancelled = false;
@@ -244,20 +253,23 @@ export function useEip7702() {
             };
 
             if (!deployed) {
-              console.log("[EIP-7702] Account not delegated, signing authorization...");
+              console.log(
+                "[EIP-7702] Account not delegated, signing authorization...",
+              );
               const nonce = await publicClient.getTransactionCount({
                 address: localAccount.address,
                 blockTag: "pending",
               });
-              const authorization = await localAccount.signAuthorization!({
-                contractAddress: smartAccount.authorization!.address,
+              const authorization = await localAccount.signAuthorization?.({
+                contractAddress: smartAccount.authorization?.address,
                 chainId: chain.id,
                 nonce,
               });
               userOpParams.authorization = authorization;
             }
 
-            const userOpHash = await bundlerClient.sendUserOperation(userOpParams);
+            const userOpHash =
+              await bundlerClient.sendUserOperation(userOpParams);
             const receipt = await bundlerClient.waitForUserOperationReceipt({
               hash: userOpHash,
             });
@@ -273,7 +285,9 @@ export function useEip7702() {
         setPaymasterMode(useCustomPaymaster ? "erc20" : "sponsor");
         setIsReady(true);
 
-        console.log(`[Embedded] Simple7702Account ready (${useCustomPaymaster ? "TONPaymaster ERC-20" : "Pimlico sponsored"})`);
+        console.log(
+          `[Embedded] Simple7702Account ready (${useCustomPaymaster ? "TONPaymaster ERC-20" : "Pimlico sponsored"})`,
+        );
       } catch (e) {
         if (cancelled) return;
         embeddedInitRef.current = false;
@@ -305,8 +319,8 @@ export function useEip7702() {
       try {
         externalInitRef.current = true;
 
-        const provider = await metamaskWallet!.getEthereumProvider();
-        const address = metamaskWallet!.address as Address;
+        const provider = await metamaskWallet?.getEthereumProvider();
+        const address = metamaskWallet?.address as Address;
         const chainHex = `0x${chain.id.toString(16)}`;
 
         // Check if MetaMask supports paymasterService on this chain
@@ -317,9 +331,14 @@ export function useEip7702() {
             method: "wallet_getCapabilities",
             params: [address],
           });
-          console.log("[MetaMask] wallet_getCapabilities:", JSON.stringify(capabilities, null, 2));
+          console.log(
+            "[MetaMask] wallet_getCapabilities:",
+            JSON.stringify(capabilities, null, 2),
+          );
 
-          const chainCaps = capabilities?.[chainHex] || capabilities?.[`0x${chain.id.toString(16).toUpperCase()}`];
+          const chainCaps =
+            capabilities?.[chainHex] ||
+            capabilities?.[`0x${chain.id.toString(16).toUpperCase()}`];
           if (chainCaps?.paymasterService?.supported) {
             hasPaymasterSupport = true;
           }
@@ -335,7 +354,7 @@ export function useEip7702() {
         console.log(
           hasPaymasterSupport
             ? `[MetaMask] paymasterService supported! Using ${paymasterUrl}`
-            : "[MetaMask] paymasterService not supported on this chain. Gas paid in ETH."
+            : "[MetaMask] paymasterService not supported on this chain. Gas paid in ETH.",
         );
 
         const wrapper: SmartAccountWrapper = {
@@ -347,7 +366,7 @@ export function useEip7702() {
                 to: c.to,
                 data: c.data || "0x",
                 value: c.value ? `0x${BigInt(c.value).toString(16)}` : "0x0",
-              })
+              }),
             );
 
             // If using paymaster, prepend TON approve for gas payment
@@ -382,7 +401,10 @@ export function useEip7702() {
               };
             }
 
-            console.log("[MetaMask] wallet_sendCalls params:", JSON.stringify(sendCallsParams, null, 2));
+            console.log(
+              "[MetaMask] wallet_sendCalls params:",
+              JSON.stringify(sendCallsParams, null, 2),
+            );
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const callResult = await (provider as any).request({
@@ -390,7 +412,11 @@ export function useEip7702() {
               params: [sendCallsParams],
             });
 
-            console.log("[MetaMask] wallet_sendCalls result:", callResult, typeof callResult);
+            console.log(
+              "[MetaMask] wallet_sendCalls result:",
+              callResult,
+              typeof callResult,
+            );
 
             // v2 may return an object { id: "0x..." } or just a string
             const batchId: string =
@@ -424,7 +450,9 @@ export function useEip7702() {
               if (status.status === "CONFIRMED" || status.status === 200) break;
               // v2: 400+ means failure
               if (typeof status.status === "number" && status.status >= 400) {
-                throw new Error(`Transaction failed with status ${status.status}`);
+                throw new Error(
+                  `Transaction failed with status ${status.status}`,
+                );
               }
             }
 

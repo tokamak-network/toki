@@ -42,7 +42,7 @@ const config: Config = {
         "fade-in": "fadeIn 0.8s ease-out",
         "bounce-in": "bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "slide-up-fade": "slideUpFade 0.5s ease-out",
-        "sparkle": "sparkle 3.5s ease-in-out forwards",
+        sparkle: "sparkle 3.5s ease-in-out forwards",
         "confetti-fall": "confettiFall 5s ease-in-out forwards",
         "glow-pulse": "glowPulse 4s ease-in-out infinite",
         "cinematic-exit": "cinematicExit 0.8s ease-in forwards",
@@ -80,8 +80,14 @@ const config: Config = {
         },
         confettiFall: {
           "0%": { transform: "translateY(0) rotate(0deg)", opacity: "1" },
-          "70%": { transform: "translateY(100px) rotate(360deg)", opacity: "0.5" },
-          "100%": { transform: "translateY(200px) rotate(540deg)", opacity: "0" },
+          "70%": {
+            transform: "translateY(100px) rotate(360deg)",
+            opacity: "0.5",
+          },
+          "100%": {
+            transform: "translateY(200px) rotate(540deg)",
+            opacity: "0",
+          },
         },
         glowPulse: {
           "0%, 100%": { opacity: "0.4", transform: "scale(1)" },
@@ -100,7 +106,10 @@ const config: Config = {
           "0%": { transform: "translateY(-20px) rotate(0deg)", opacity: "0" },
           "10%": { opacity: "1" },
           "90%": { opacity: "1" },
-          "100%": { transform: "translateY(300px) rotate(720deg)", opacity: "0" },
+          "100%": {
+            transform: "translateY(300px) rotate(720deg)",
+            opacity: "0",
+          },
         },
         cardShuffle: {
           "0%": { transform: "translateX(0) scale(1)" },

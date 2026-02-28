@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useEffect, useState } from "react";
 import { useAchievement } from "@/components/providers/AchievementProvider";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { Achievement } from "@/lib/achievements";
 
 const TOAST_DURATION = 4000;
