@@ -8,6 +8,7 @@ import { createPublicClient, http } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 import StakingPanel from "./StakingPanel";
 import StakingPanelBeginner from "./StakingPanelBeginner";
+import VNStakingPanel from "./VNStakingPanel";
 import UnstakingPanel from "./UnstakingPanel";
 import AchievementPanel from "./AchievementPanel";
 import { useEip7702 } from "@/hooks/useEip7702";
@@ -64,6 +65,12 @@ export default function DashboardContent() {
     return "beginner";
   });
   const [stakingTab, setStakingTab] = useState<"staking" | "unstaking">("staking");
+  const [isFirstStake, setIsFirstStake] = useState(() => {
+    if (typeof window !== "undefined") {
+      return !localStorage.getItem("toki-first-stake-done");
+    }
+    return true;
+  });
   const { t } = useTranslation();
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
@@ -413,15 +420,28 @@ export default function DashboardContent() {
                 </div>
 
                 {stakingUiMode === "beginner" ? (
-                  <StakingPanelBeginner
-                    walletAddress={primaryWallet.address}
-                    getEthereumProvider={getEthereumProvider}
-                    smartAccountClient={smartAccountClient}
-                    onBalanceChange={fetchBalances}
-                    paymasterMode={paymasterMode}
-                    isMetaMask={isMetaMask}
-                    sessionKey={sessionKey}
-                  />
+                  isFirstStake ? (
+                    <VNStakingPanel
+                      walletAddress={primaryWallet.address}
+                      getEthereumProvider={getEthereumProvider}
+                      smartAccountClient={smartAccountClient}
+                      onBalanceChange={fetchBalances}
+                      paymasterMode={paymasterMode}
+                      isMetaMask={isMetaMask}
+                      sessionKey={sessionKey}
+                      onFirstStakeComplete={() => setIsFirstStake(false)}
+                    />
+                  ) : (
+                    <StakingPanelBeginner
+                      walletAddress={primaryWallet.address}
+                      getEthereumProvider={getEthereumProvider}
+                      smartAccountClient={smartAccountClient}
+                      onBalanceChange={fetchBalances}
+                      paymasterMode={paymasterMode}
+                      isMetaMask={isMetaMask}
+                      sessionKey={sessionKey}
+                    />
+                  )
                 ) : (
                   <StakingPanel
                     walletAddress={primaryWallet.address}

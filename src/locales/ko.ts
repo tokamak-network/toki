@@ -451,6 +451,17 @@ const ko = {
     toastTitle: "업적 달성!",
     toastXp: "+{points} XP",
   },
+  vnStaking: {
+    welcome: "TON 스테이킹을 도와줄게! 먼저 오퍼레이터를 골라볼까?",
+    operatorExplain: "이 오퍼레이터는 총 {amount} TON이 스테이킹 되어있어. 많이 스테이킹 된 곳일수록 안정적이지!",
+    tokiPick: "내가 제일 좋은 곳을 골랐어! 가장 많은 TON이 스테이킹 된 오퍼레이터야.",
+    amountEntry: "얼마나 스테이킹할지 입력해봐! {balance} TON 있어!",
+    progress: "스테이킹 진행 중... 잠깐만 기다려!",
+    success: "축하해! 이제 블록마다 보상이 쌓일 거야!",
+    error: "음... 뭔가 잘못됐어. 다시 해볼까?",
+    complete: "첫 스테이킹 성공! 대시보드에서 언제든 확인할 수 있어.",
+    tokiPickButton: "토키가 골라줄게!",
+  },
 } as const;
 
 export default ko;

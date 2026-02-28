@@ -451,6 +451,17 @@ const en = {
     toastTitle: "Achievement Unlocked!",
     toastXp: "+{points} XP",
   },
+  vnStaking: {
+    welcome: "Let me help you stake your TON! First, let's pick an operator.",
+    operatorExplain: "This operator has {amount} TON staked. More staked means more stable!",
+    tokiPick: "I picked the best one for you! This operator has the highest total staked.",
+    amountEntry: "Enter how much you want to stake. You have {balance} TON!",
+    progress: "Staking in progress... hang tight!",
+    success: "Congrats! Rewards will stack up with every block!",
+    error: "Hmm... something went wrong. Want to try again?",
+    complete: "First stake done! You can check your rewards on the dashboard anytime.",
+    tokiPickButton: "Toki's Pick!",
+  },
 } as const;
 
 export default en;
