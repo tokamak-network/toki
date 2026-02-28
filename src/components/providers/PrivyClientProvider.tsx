@@ -64,6 +64,6 @@ export default function PrivyClientProvider({
     return <Provider>{children}</Provider>;
   }
 
-  // Privy 로드 전에도 children 렌더 (레이아웃/페이지가 보임)
+  // Render children even before Privy loads (layout/page remains visible)
   return <>{children}</>;
 }

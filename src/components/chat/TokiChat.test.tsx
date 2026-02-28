@@ -17,8 +17,8 @@ describe("TokiChat Regression Test", () => {
     const tokiNames = screen.getAllByText("Toki");
     expect(tokiNames.length).toBeGreaterThan(0);
     
-    // Check if part of the text appears (ko locale default)
-    expect(await screen.findByText(/안녕! 나는 토키야/i)).toBeInTheDocument();
+    // Check if part of the text appears
+    expect(await screen.findByText(/Hey! I'm Toki/i)).toBeInTheDocument();
   });
 
   it("should show choice buttons after typing is complete (handleTypingComplete validation)", async () => {
@@ -34,7 +34,7 @@ describe("TokiChat Regression Test", () => {
     });
 
     // Check if one of the choice buttons appears
-    expect(screen.getByText(/스테이킹이 뭐야/i)).toBeInTheDocument();
+    expect(screen.getByText(/What is staking/i)).toBeInTheDocument();
     
     vi.useRealTimers();
   });
@@ -50,7 +50,7 @@ describe("TokiChat Regression Test", () => {
       vi.advanceTimersByTime(5000);
     });
     
-    const choice = screen.getByText(/수익률 알려줘/i);
+    const choice = screen.getByText(/Tell me about APR/i);
     fireEvent.click(choice);
 
     // Wait for dialogue typing time after node change
@@ -59,7 +59,7 @@ describe("TokiChat Regression Test", () => {
     });
 
     // Verify new text appears without Hook error after node change
-    expect(screen.getByText(/현재 시뇨리지 APR은/i)).toBeInTheDocument();
+    expect(screen.getByText(/Current seigniorage APR is/i)).toBeInTheDocument();
     
     vi.useRealTimers();
   });
