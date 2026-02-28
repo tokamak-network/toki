@@ -28,6 +28,25 @@ function useInView(threshold = 0.2) {
   return { ref, visible };
 }
 
+// Mini character assets for "perched on card" effect
+const miniCharacters: ({ src: string; position: string } | null)[] = [
+  // Step 1: Lying down, peeking — top-right
+  {
+    src: "/toki-mini-step1.png",
+    position: "right-[-10px] top-[-55px] md:top-[-65px] w-[120px] h-[100px] md:w-[140px] md:h-[116px]",
+  },
+  // Step 2: Sitting on edge — bottom-left, bar aligned with card border
+  {
+    src: "/toki-mini-step2.png",
+    position: "left-[5px] md:left-[13px] bottom-[-20px] md:bottom-[-24px] w-[90px] h-[108px] md:w-[105px] md:h-[126px]",
+  },
+  // Step 3: Victory celebration, jumping — centered on card top
+  {
+    src: "/toki-mini-step3.png",
+    position: "left-1/2 -translate-x-1/2 top-[-78px] md:top-[-92px] w-[80px] h-[120px] md:w-[95px] md:h-[142px]",
+  },
+];
+
 const steps = [
   {
     bg: "/bg-step1.jpg",
@@ -103,159 +122,184 @@ function StepCard({
 }) {
   return (
     <div
-      onClick={onToggle}
       className={`
-        relative rounded-2xl overflow-hidden cursor-pointer
-        border transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
-        ${isExpanded
-          ? `${step.accentBorder} shadow-lg ${step.accentGlow} md:flex-[3]`
-          : "border-white/10 hover:border-white/20 md:flex-1"
-        }
-        ${visible
-          ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-6"
-        }
+        relative min-w-0 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
+        ${isExpanded ? "md:flex-[3]" : "md:flex-1"}
+        ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
       `}
       style={{ transitionDelay: visible ? `${index * 100}ms` : "0ms" }}
     >
-      {/* Background image (visible when expanded) */}
-      <div
-        className={`absolute inset-0 transition-opacity duration-500 ${isExpanded ? "opacity-100" : "opacity-0"}`}
-      >
-        <Image src={step.bg} alt="" fill className="object-cover" />
-        <div className="absolute inset-0 bg-black/60" />
-      </div>
-
-      {/* Default dark bg when collapsed */}
-      <div
-        className={`absolute inset-0 transition-opacity duration-500 ${isExpanded ? "opacity-0" : "opacity-100"} bg-white/[0.03]`}
-      />
-
-      {/* Content */}
-      <div className="relative z-10 h-full">
-        {/* Collapsed state */}
+      {/* Mini character perched on card (only when collapsed and asset exists) */}
+      {miniCharacters[index] && (
         <div
           className={`
+            absolute z-20 pointer-events-none
             transition-all duration-500
-            ${isExpanded ? "opacity-0 h-0 overflow-hidden" : "opacity-100"}
+            ${isExpanded ? "opacity-0 scale-75" : "opacity-100 scale-100"}
+            ${miniCharacters[index]!.position}
           `}
         >
-          <div className="p-6 md:p-8 flex flex-col items-center text-center gap-4 min-h-[220px] md:min-h-[280px] justify-center">
-            {/* Icon */}
-            <div className={`${step.accentColor} transition-colors`}>
-              {step.icon}
-            </div>
+          <Image
+            src={miniCharacters[index]!.src}
+            alt=""
+            fill
+            className="object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+          />
+        </div>
+      )}
 
-            {/* Step number */}
-            <div className={`text-xs font-bold tracking-[0.2em] ${step.accentColor} uppercase`}>
-              Step {String(index + 1).padStart(2, "0")}
-            </div>
-
-            {/* Title */}
-            <div>
-              <h3 className="text-lg md:text-xl font-black uppercase leading-tight tracking-tight text-white/90">
-                {heading}
-              </h3>
-              <h3 className={`text-lg md:text-xl font-black uppercase leading-tight tracking-tight ${step.accentColor}`}>
-                {highlight}
-              </h3>
-            </div>
-
-            {/* Expand hint */}
-            <div className="text-xs text-white/30 mt-2">
-              <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mx-auto">
-                <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-              </svg>
-            </div>
-          </div>
+      {/* Card body */}
+      <div
+        onClick={onToggle}
+        className={`
+          group relative rounded-2xl overflow-hidden cursor-pointer
+          border transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
+          ${isExpanded
+            ? `${step.accentBorder} shadow-lg ${step.accentGlow}`
+            : "border-white/10 hover:border-white/20"
+          }
+        `}
+      >
+        {/* Background image (visible when expanded) */}
+        <div
+          className={`absolute inset-0 transition-opacity duration-500 ${isExpanded ? "opacity-100" : "opacity-0"}`}
+        >
+          <Image src={step.bg} alt="" fill className="object-cover" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
 
-        {/* Expanded state */}
+        {/* Default dark bg when collapsed */}
         <div
-          className={`
-            transition-all duration-500
-            ${isExpanded ? "opacity-100" : "opacity-0 h-0 overflow-hidden"}
-          `}
-        >
-          <div className="p-6 md:p-8 flex flex-col md:flex-row gap-4 md:gap-8 min-h-[320px] md:min-h-[400px]">
-            {/* Character image */}
-            <div className="relative w-40 h-48 md:w-56 md:h-72 shrink-0 mx-auto md:mx-0">
-              <Image
-                src={step.character}
-                alt={`Step ${index + 1}`}
-                fill
-                className="object-contain object-bottom drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
-              />
-            </div>
+          className={`absolute inset-0 transition-opacity duration-500 ${isExpanded ? "opacity-0" : "opacity-100"} bg-white/[0.03]`}
+        />
 
-            {/* Text content */}
-            <div className="flex-1 flex flex-col justify-center min-w-0">
-              {/* Step label */}
-              <div className={`text-xs font-bold tracking-[0.2em] ${step.accentColor} uppercase mb-3`}>
+        {/* Content */}
+        <div className="relative z-10 h-full">
+          {/* Collapsed state */}
+          <div
+            className={`
+              transition-all duration-500
+              ${isExpanded ? "opacity-0 h-0 overflow-hidden" : "opacity-100"}
+            `}
+          >
+            <div className="p-6 md:p-8 flex flex-col items-center text-center gap-4 min-h-[220px] md:min-h-[280px] justify-center">
+              {/* Icon */}
+              <div className={`${step.accentColor} transition-colors`}>
+                {step.icon}
+              </div>
+
+              {/* Step number */}
+              <div className={`text-xs font-bold tracking-[0.2em] ${step.accentColor} uppercase`}>
                 Step {String(index + 1).padStart(2, "0")}
               </div>
 
-              {/* Heading */}
-              <h3 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase leading-[1.1] tracking-tight mb-4">
-                {heading}<br />
-                <span className={step.accentColor}>{highlight}</span>
-              </h3>
-
-              {/* Bullets */}
-              <div className="space-y-2 mb-4">
-                {bullets.map((bullet, i) => (
-                  <p
-                    key={i}
-                    className={`
-                      text-sm md:text-base text-gray-200 font-medium
-                      transition-all duration-400 ease-out
-                      ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-3"}
-                    `}
-                    style={{ transitionDelay: isExpanded ? `${300 + i * 100}ms` : "0ms" }}
-                  >
-                    <span className={`${step.accentColor} mr-2`}>&bull;</span>
-                    {bullet}
-                  </p>
-                ))}
+              {/* Title */}
+              <div>
+                <h3 className="text-lg md:text-xl font-black uppercase leading-tight tracking-tight text-white/90">
+                  {heading}
+                </h3>
+                <h3 className={`text-lg md:text-xl font-black uppercase leading-tight tracking-tight ${step.accentColor}`}>
+                  {highlight}
+                </h3>
               </div>
 
-              {/* CTA (last step) */}
-              {cta && (
-                <div className="mt-2">
-                  <Link
-                    href="/dashboard"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(245,158,11,0.3)]"
-                  >
-                    {cta}
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
-                    </svg>
-                  </Link>
-                </div>
-              )}
+              {/* Expand hint */}
+              <div className={`flex items-center gap-1.5 mt-2 text-xs font-medium ${step.accentColor} opacity-40 group-hover:opacity-100 transition-opacity`}>
+                <span>Details</span>
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 animate-bounce">
+                  <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+                </svg>
+              </div>
             </div>
+          </div>
 
-            {/* Close hint */}
-            <button
-              className="absolute top-4 right-4 text-white/30 hover:text-white/60 transition-colors"
-              onClick={(e) => { e.stopPropagation(); onToggle(); }}
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-              </svg>
-            </button>
+          {/* Expanded state */}
+          <div
+            className={`
+              transition-all duration-500
+              ${isExpanded ? "opacity-100" : "opacity-0 h-0 overflow-hidden"}
+            `}
+          >
+            <div className="p-6 md:p-8 flex flex-col md:flex-row gap-4 md:gap-8 min-h-[320px] md:min-h-[400px]">
+              {/* Character image */}
+              <div className="relative w-40 h-48 md:w-56 md:h-72 shrink-0 mx-auto md:mx-0">
+                <Image
+                  src={step.character}
+                  alt={`Step ${index + 1}`}
+                  fill
+                  className="object-contain object-bottom drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                />
+              </div>
+
+              {/* Text content */}
+              <div className="flex-1 flex flex-col justify-center min-w-0">
+                {/* Step label */}
+                <div className={`text-xs font-bold tracking-[0.2em] ${step.accentColor} uppercase mb-3`}>
+                  Step {String(index + 1).padStart(2, "0")}
+                </div>
+
+                {/* Heading */}
+                <h3 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase leading-[1.1] tracking-tight mb-4">
+                  {heading}<br />
+                  <span className={step.accentColor}>{highlight}</span>
+                </h3>
+
+                {/* Bullets */}
+                <div className="space-y-2 mb-4">
+                  {bullets.map((bullet, i) => (
+                    <p
+                      key={i}
+                      className={`
+                        text-sm md:text-base text-gray-200 font-medium
+                        transition-all duration-400 ease-out
+                        ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-3"}
+                      `}
+                      style={{ transitionDelay: isExpanded ? `${300 + i * 100}ms` : "0ms" }}
+                    >
+                      <span className={`${step.accentColor} mr-2`}>&bull;</span>
+                      {bullet}
+                    </p>
+                  ))}
+                </div>
+
+                {/* CTA (last step) */}
+                {cta && (
+                  <div className="mt-2">
+                    <Link
+                      href="/dashboard"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+                    >
+                      {cta}
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                      </svg>
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Close hint */}
+              <button
+                className="absolute top-4 right-4 text-white/30 hover:text-white/60 transition-colors"
+                onClick={(e) => { e.stopPropagation(); onToggle(); }}
+              >
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                  <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom accent line */}
-      <div
-        className={`
-          absolute bottom-0 left-0 right-0 h-[2px] transition-all duration-500
-          ${isExpanded ? `${step.accentBg} opacity-60` : "bg-white/5 opacity-100"}
-        `}
-      />
+        {/* Bottom accent line */}
+        <div
+          className={`
+            absolute bottom-0 left-0 right-0 h-[2px] transition-all duration-500
+            ${isExpanded ? `${step.accentBg} opacity-60` : "bg-white/5 opacity-100"}
+          `}
+        />
+      </div>
     </div>
   );
 }
@@ -305,10 +349,11 @@ export default function HowItWorks() {
         </div>
 
         {/* Interactive cards - desktop: row, mobile: stack */}
-        <div className="flex flex-col md:flex-row gap-4 md:gap-3 items-stretch">
-          {steps.map((step, i) => (
-            <div key={i} className="contents">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-3 items-stretch pt-20">
+          {steps.flatMap((step, i) => {
+            const card = (
               <StepCard
+                key={`card-${i}`}
                 step={step}
                 index={i}
                 heading={stepData[i].heading}
@@ -319,9 +364,12 @@ export default function HowItWorks() {
                 onToggle={() => setExpandedIndex(expandedIndex === i ? null : i)}
                 visible={visible}
               />
-              {i < steps.length - 1 && <ArrowConnector accentColor={step.accentColor} />}
-            </div>
-          ))}
+            );
+            if (i < steps.length - 1) {
+              return [card, <ArrowConnector key={`arrow-${i}`} accentColor={step.accentColor} />];
+            }
+            return [card];
+          })}
         </div>
 
         {/* CTA below cards */}
