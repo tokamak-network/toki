@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface EcosystemService {
   id: string;
@@ -34,7 +34,9 @@ export default function AdminServicesPage() {
   const [services, setServices] = useState<EcosystemService[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [editingService, setEditingService] = useState<EcosystemService | null>(null);
+  const [editingService, setEditingService] = useState<EcosystemService | null>(
+    null,
+  );
   const [dirty, setDirty] = useState(false);
 
   const fetchServices = useCallback(async () => {
@@ -99,7 +101,9 @@ export default function AdminServicesPage() {
 
   const handleDelete = (id: string) => {
     if (!confirm("Delete this service?")) return;
-    setServices((prev) => prev.filter((s) => s.id !== id).map((s, i) => ({ ...s, order: i })));
+    setServices((prev) =>
+      prev.filter((s) => s.id !== id).map((s, i) => ({ ...s, order: i })),
+    );
     setDirty(true);
   };
 
@@ -129,7 +133,9 @@ export default function AdminServicesPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold">Ecosystem Services Admin</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage services shown on /explore</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Manage services shown on /explore
+            </p>
           </div>
           <div className="flex gap-3">
             <button
@@ -174,10 +180,15 @@ export default function AdminServicesPage() {
             </thead>
             <tbody>
               {services.map((service, i) => (
-                <tr key={service.id} className="border-b border-white/5 hover:bg-white/5">
+                <tr
+                  key={service.id}
+                  className="border-b border-white/5 hover:bg-white/5"
+                >
                   <td className="px-4 py-3 text-gray-500">{i + 1}</td>
                   <td className="px-4 py-3 text-xl">{service.icon}</td>
-                  <td className="px-4 py-3 font-medium">{service.nameKo || service.nameEn}</td>
+                  <td className="px-4 py-3 font-medium">
+                    {service.nameKo || service.nameEn}
+                  </td>
                   <td className="px-4 py-3">
                     <a
                       href={service.url}
@@ -202,9 +213,13 @@ export default function AdminServicesPage() {
                   </td>
                   <td className="px-4 py-3">
                     {service.comingSoon ? (
-                      <span className="text-yellow-500 text-xs font-medium">Coming Soon</span>
+                      <span className="text-yellow-500 text-xs font-medium">
+                        Coming Soon
+                      </span>
                     ) : (
-                      <span className="text-green-500 text-xs font-medium">Active</span>
+                      <span className="text-green-500 text-xs font-medium">
+                        Active
+                      </span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -245,7 +260,10 @@ export default function AdminServicesPage() {
               ))}
               {services.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                  <td
+                    colSpan={7}
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
                     No services. Click &quot;+ Add Service&quot; to create one.
                   </td>
                 </tr>
@@ -280,7 +298,10 @@ function EditModal({
 }) {
   const [form, setForm] = useState<EcosystemService>(service);
 
-  const update = <K extends keyof EcosystemService>(key: K, value: EcosystemService[K]) => {
+  const update = <K extends keyof EcosystemService>(
+    key: K,
+    value: EcosystemService[K],
+  ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -343,7 +364,9 @@ function EditModal({
 
         {/* Desc KO */}
         <label className="block mb-4">
-          <span className="text-sm text-gray-400 mb-1 block">Description (KO)</span>
+          <span className="text-sm text-gray-400 mb-1 block">
+            Description (KO)
+          </span>
           <textarea
             value={form.descKo}
             onChange={(e) => update("descKo", e.target.value)}
@@ -354,7 +377,9 @@ function EditModal({
 
         {/* Desc EN */}
         <label className="block mb-4">
-          <span className="text-sm text-gray-400 mb-1 block">Description (EN)</span>
+          <span className="text-sm text-gray-400 mb-1 block">
+            Description (EN)
+          </span>
           <textarea
             value={form.descEn}
             onChange={(e) => update("descEn", e.target.value)}

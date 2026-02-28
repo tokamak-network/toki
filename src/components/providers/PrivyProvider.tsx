@@ -1,11 +1,10 @@
 "use client";
 
-import React from "react";
 import { PrivyProvider as Provider } from "@privy-io/react-auth";
-import { sepolia, mainnet } from "viem/chains";
+import type React from "react";
+import { mainnet, sepolia } from "viem/chains";
 
-const chain =
-  process.env.NEXT_PUBLIC_NETWORK === "sepolia" ? sepolia : mainnet;
+const chain = process.env.NEXT_PUBLIC_NETWORK === "sepolia" ? sepolia : mainnet;
 
 export default function PrivyProvider({
   children,
@@ -15,7 +14,7 @@ export default function PrivyProvider({
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
   if (!appId) {
-    // Privy 미설정 시 그냥 렌더링 (개발 편의)
+    // Just render if Privy is not configured (dev convenience)
     return <>{children}</>;
   }
 

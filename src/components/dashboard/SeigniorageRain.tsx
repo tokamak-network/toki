@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "@/components/providers/LanguageProvider";
-import { SEIG_PER_BLOCK, BLOCKS_PER_YEAR } from "@/constants/contracts";
+import { BLOCKS_PER_YEAR, SEIG_PER_BLOCK } from "@/constants/contracts";
 
 interface Coin {
   id: number;
@@ -26,7 +26,10 @@ interface SeigniorageRainProps {
   totalStaked: number;
 }
 
-export default function SeigniorageRain({ inputAmount, totalStaked }: SeigniorageRainProps) {
+export default function SeigniorageRain({
+  inputAmount,
+  totalStaked,
+}: SeigniorageRainProps) {
   const { t } = useTranslation();
   const [coins, setCoins] = useState<Coin[]>([]);
   const [period, setPeriod] = useState<Period>("1y");
@@ -40,9 +43,8 @@ export default function SeigniorageRain({ inputAmount, totalStaked }: Seigniorag
   // User stakes inputNum TON (= inputNum WTON after wrapping)
   // Their share = inputNum / (totalStaked + inputNum)
   const effectiveTotal = totalStaked + inputNum;
-  const seigPerBlockForUser = effectiveTotal > 0
-    ? SEIG_PER_BLOCK * (inputNum / effectiveTotal)
-    : 0;
+  const seigPerBlockForUser =
+    effectiveTotal > 0 ? SEIG_PER_BLOCK * (inputNum / effectiveTotal) : 0;
 
   // Estimated earnings for the selected period
   const estimatedEarnings = useMemo(() => {
@@ -148,10 +150,17 @@ export default function SeigniorageRain({ inputAmount, totalStaked }: Seigniorag
         {hasInput ? (
           <>
             <div className="text-2xl font-mono-num font-bold text-accent-amber text-center">
-              +{estimatedEarnings.toLocaleString("en-US", { maximumFractionDigits: 2 })} TON
+              +
+              {estimatedEarnings.toLocaleString("en-US", {
+                maximumFractionDigits: 2,
+              })}{" "}
+              TON
             </div>
             <div className="text-xs text-gray-500 mt-2 text-center">
-              {t.dashboard.seignioragePerBlock.replace("{amount}", seigPerBlockForUser.toFixed(6))}
+              {t.dashboard.seignioragePerBlock.replace(
+                "{amount}",
+                seigPerBlockForUser.toFixed(6),
+              )}
             </div>
             <div className="text-[10px] text-gray-600 mt-1 text-center">
               {t.dashboard.earningsNote}

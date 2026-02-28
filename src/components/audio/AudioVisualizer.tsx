@@ -1,7 +1,7 @@
 "use client";
 
-import { useAudio } from "./AudioProvider";
 import { useEffect, useRef } from "react";
+import { useAudio } from "./AudioProvider";
 
 export default function AudioVisualizer() {
   const { isPlaying, analyserNode } = useAudio();

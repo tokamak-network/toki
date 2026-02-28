@@ -1,6 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 
 const DATA_PATH = path.join(process.cwd(), "public/data/services.json");
 
@@ -19,9 +19,6 @@ export async function PUT(request: Request) {
     fs.writeFileSync(DATA_PATH, JSON.stringify(body, null, 2), "utf-8");
     return NextResponse.json({ ok: true });
   } catch (e) {
-    return NextResponse.json(
-      { error: String(e) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

@@ -1,17 +1,16 @@
 import {
-  MethodNotSupportedError,
   handleKeyringRequest,
+  MethodNotSupportedError,
 } from "@metamask/keyring-snap-sdk";
 import type {
   Json,
   OnKeyringRequestHandler,
   OnRpcRequestHandler,
 } from "@metamask/snaps-sdk";
-
+import type { Call } from "./keyring";
+import { TonPaymasterKeyring } from "./keyring";
 import type { SnapConfig } from "./state";
 import { getState } from "./state";
-import { TonPaymasterKeyring } from "./keyring";
-import type { Call } from "./keyring";
 
 let keyring: TonPaymasterKeyring;
 
@@ -52,7 +51,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         throw new Error("Missing config params");
       }
       return (await kr.setConfig(
-        request.params as unknown as Partial<SnapConfig>
+        request.params as unknown as Partial<SnapConfig>,
       )) as unknown as Json;
     }
 
@@ -67,11 +66,15 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
     case "ton_sendUserOp": {
       if (!request.params) {
-        throw new Error("Missing params. Expected: { calls: [{to, value?, data?}] }");
+        throw new Error(
+          "Missing params. Expected: { calls: [{to, value?, data?}] }",
+        );
       }
       const params = request.params as unknown as { calls: Call[] };
       if (!params.calls || !Array.isArray(params.calls)) {
-        throw new Error("Expected params.calls to be an array of {to, value?, data?}");
+        throw new Error(
+          "Expected params.calls to be an array of {to, value?, data?}",
+        );
       }
       const userOpHash = await kr.sendUserOp(params.calls);
       return userOpHash as unknown as Json;

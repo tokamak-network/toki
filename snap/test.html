@@ -60,12 +60,12 @@
 const SNAP_ID = 'local:http://localhost:8080';
 
 function setStep(n, cls, msg) {
-  document.getElementById('s'+n).className = 'step ' + cls;
-  document.getElementById('s'+n+'s').className = 'status ' + (cls === 'done' ? 'ok' : cls === 'error' ? 'err' : 'warn');
-  document.getElementById('s'+n+'s').textContent = msg;
+  document.getElementById(`s${n}`).className = `step ${cls}`;
+  document.getElementById(`s${n}s`).className = `status ${cls === 'done' ? 'ok' : cls === 'error' ? 'err' : 'warn'}`;
+  document.getElementById(`s${n}s`).textContent = msg;
 }
 
-async function runAll() {
+async function _runAll() {
   const btn = document.getElementById('runAll');
   btn.disabled = true;
   const pk = document.getElementById('pk').value;
@@ -78,7 +78,7 @@ async function runAll() {
       method: 'wallet_requestSnaps',
       params: { [SNAP_ID]: {} }
     });
-    setStep(1, 'done', 'Installed: ' + JSON.stringify(snapResult[SNAP_ID]?.version));
+    setStep(1, 'done', `Installed: ${JSON.stringify(snapResult[SNAP_ID]?.version)}`);
 
     // Step 2: Configure Bundler
     setStep(2, 'running', 'Setting bundler URL...');
@@ -92,7 +92,7 @@ async function runAll() {
         }
       }
     });
-    setStep(2, 'done', 'Config: ' + JSON.stringify(configResult));
+    setStep(2, 'done', `Config: ${JSON.stringify(configResult)}`);
 
     // Step 3: Register Account
     setStep(3, 'running', 'Registering EOA as ERC-4337 account...');
@@ -107,7 +107,7 @@ async function runAll() {
       }
     });
     const addr = account?.address || account?.result?.address || JSON.stringify(account);
-    setStep(3, 'done', 'Account: ' + addr);
+    setStep(3, 'done', `Account: ${addr}`);
 
     // Set the test To address to the account address
     if (account?.address) {
@@ -134,14 +134,14 @@ async function runAll() {
         }
       }
     });
-    setStep(4, 'done', 'UserOp Hash: ' + userOpHash + '\n\nCheck on: https://jiffyscan.xyz/userOpHash/' + userOpHash + '?network=sepolia');
+    setStep(4, 'done', `UserOp Hash: ${userOpHash}\n\nCheck on: https://jiffyscan.xyz/userOpHash/${userOpHash}?network=sepolia`);
 
   } catch (err) {
     // Find which step failed
     for (let i = 1; i <= 4; i++) {
-      const el = document.getElementById('s'+i);
+      const el = document.getElementById(`s${i}`);
       if (el.className.includes('running')) {
-        setStep(i, 'error', 'Error: ' + (err.message || err.data?.message || JSON.stringify(err)));
+        setStep(i, 'error', `Error: ${err.message || err.data?.message || JSON.stringify(err)}`);
         break;
       }
     }
@@ -151,7 +151,7 @@ async function runAll() {
   btn.disabled = false;
 }
 
-async function manualSend() {
+async function _manualSend() {
   const statusEl = document.getElementById('manualStatus');
   statusEl.className = 'status warn';
   statusEl.textContent = 'Sending...';
@@ -175,10 +175,10 @@ async function manualSend() {
     });
 
     statusEl.className = 'status ok';
-    statusEl.textContent = 'UserOp Hash: ' + result + '\nhttps://jiffyscan.xyz/userOpHash/' + result + '?network=sepolia';
+    statusEl.textContent = `UserOp Hash: ${result}\nhttps://jiffyscan.xyz/userOpHash/${result}?network=sepolia`;
   } catch (err) {
     statusEl.className = 'status err';
-    statusEl.textContent = 'Error: ' + (err.message || JSON.stringify(err));
+    statusEl.textContent = `Error: ${err.message || JSON.stringify(err)}`;
     console.error(err);
   }
 }

@@ -7,7 +7,7 @@
   return this.toString();
 };
 
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 // Lazy load PrivyProvider to avoid SSR "React is not defined" from @privy-io/react-auth
 let PrivyProviderModule: React.ComponentType<{ children: ReactNode }> | null =
@@ -64,6 +64,6 @@ export default function PrivyClientProvider({
     return <Provider>{children}</Provider>;
   }
 
-  // Privy 로드 전에도 children 렌더 (레이아웃/페이지가 보임)
+  // Render children even before Privy loads (layout/page remains visible)
   return <>{children}</>;
 }

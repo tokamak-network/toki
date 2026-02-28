@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAchievement } from "@/components/providers/AchievementProvider";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 import {
-  type Mood,
   type DialogueNode,
   getNode,
+  type Mood,
   matchKeyword,
 } from "@/lib/toki-dialogue";
 
@@ -72,7 +72,13 @@ function useTypewriter(text: string, speed = 30) {
 
 // ─── Chat Bubble (Floating Button) ───────────────────────────────────
 
-function ChatBubble({ onClick, hasNewMessage }: { onClick: () => void; hasNewMessage: boolean }) {
+function ChatBubble({
+  onClick,
+  hasNewMessage,
+}: {
+  onClick: () => void;
+  hasNewMessage: boolean;
+}) {
   return (
     <button
       onClick={onClick}
@@ -149,7 +155,9 @@ function DialogueDisplay({
       onClick={() => !done && skip()}
     >
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="text-accent-cyan font-bold text-xs tracking-wide">Toki</span>
+        <span className="text-accent-cyan font-bold text-xs tracking-wide">
+          Toki
+        </span>
       </div>
       <p className="text-gray-100 text-sm leading-relaxed">
         {displayed}
@@ -252,6 +260,10 @@ function ChatWindow({
   const [typingDone, setTypingDone] = useState(false);
   const [key, setKey] = useState(0); // force re-render on node change
 
+  const handleTypingComplete = useCallback(() => {
+    setTypingDone(true);
+  }, []);
+
   const node = getNode(currentNodeId);
   if (!node) return null;
 
@@ -287,16 +299,18 @@ function ChatWindow({
     }
   };
 
-  const handleTypingComplete = useCallback(() => {
-    setTypingDone(true);
-  }, []);
-
   return (
     <div className="w-80 sm:w-96 rounded-2xl overflow-hidden border border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/50 animate-slide-up-fade flex flex-col max-h-[520px]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
         <div className="flex items-center gap-2">
-          <Image src="/toki-icon.png" alt="Toki" width={24} height={24} className="rounded-full" />
+          <Image
+            src="/toki-icon.png"
+            alt="Toki"
+            width={24}
+            height={24}
+            className="rounded-full"
+          />
           <span className="text-sm font-semibold text-gradient">Toki</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400">
             online
@@ -306,8 +320,18 @@ function ChatWindow({
           onClick={onClose}
           className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-colors"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="w-4 h-4"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18 18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -319,7 +343,11 @@ function ChatWindow({
 
       {/* Dialogue */}
       <div className="border-t border-white/5 bg-black/30 flex-1 overflow-y-auto">
-        <DialogueDisplay key={key} text={text} onComplete={handleTypingComplete} />
+        <DialogueDisplay
+          key={key}
+          text={text}
+          onComplete={handleTypingComplete}
+        />
 
         {/* Choices */}
         {!isNavNode && (
@@ -333,7 +361,11 @@ function ChatWindow({
 
         {/* Free text input — show when choices are visible */}
         {!isNavNode && (
-          <TextInput locale={locale} onSubmit={handleFreeText} visible={typingDone} />
+          <TextInput
+            locale={locale}
+            onSubmit={handleFreeText}
+            visible={typingDone}
+          />
         )}
       </div>
     </div>
@@ -356,13 +388,8 @@ export default function TokiChat() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3">
-      {open && (
-        <ChatWindow onClose={() => setOpen(false)} locale={locale} />
-      )}
-      <ChatBubble
-        onClick={handleOpen}
-        hasNewMessage={!open}
-      />
+      {open && <ChatWindow onClose={() => setOpen(false)} locale={locale} />}
+      <ChatBubble onClick={handleOpen} hasNewMessage={!open} />
     </div>
   );
 }

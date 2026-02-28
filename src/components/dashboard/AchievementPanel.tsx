@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 import {
   ACHIEVEMENTS,
-  getNextLevelProgress,
   type AchievementCategory,
+  getNextLevelProgress,
 } from "@/lib/achievements";
 import type { Dictionary } from "@/locales";
 
@@ -27,7 +27,11 @@ function getLevelName(level: number, t: Dictionary["achievements"]): string {
 
 type TabKey = "all" | AchievementCategory;
 
-const TABS: { key: TabKey; labelKey: keyof Dictionary["achievements"]; icon: string }[] = [
+const TABS: {
+  key: TabKey;
+  labelKey: keyof Dictionary["achievements"];
+  icon: string;
+}[] = [
   { key: "all", labelKey: "catAll", icon: "" },
   { key: "onboarding", labelKey: "catOnboarding", icon: "" },
   { key: "staking", labelKey: "catStaking", icon: "" },

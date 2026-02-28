@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { useState } from "react";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const ConnectButton = dynamic(() => import("./ConnectButton"), {
@@ -70,10 +70,16 @@ export default function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-400">
-          <a href="#how-it-works" className="hover:text-foreground transition-colors">
+          <a
+            href="#how-it-works"
+            className="hover:text-foreground transition-colors"
+          >
             {t.header.howItWorks}
           </a>
-          <a href="/explore" className="hover:text-foreground transition-colors">
+          <a
+            href="/explore"
+            className="hover:text-foreground transition-colors"
+          >
             {t.header.explore}
           </a>
           <a
@@ -98,11 +104,25 @@ export default function Header() {
             onClick={() => setMobileOpen(!mobileOpen)}
             className="sm:hidden p-2 text-gray-400 hover:text-foreground"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="w-5 h-5"
+            >
               {mobileOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18 18 6M6 6l12 12"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                />
               )}
             </svg>
           </button>
@@ -113,10 +133,18 @@ export default function Header() {
       {mobileOpen && (
         <nav className="sm:hidden border-t border-white/5 bg-background/95 backdrop-blur-md animate-slide-up">
           <div className="px-4 py-4 space-y-3">
-            <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
+            <a
+              href="#how-it-works"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-gray-400 hover:text-foreground"
+            >
               {t.header.howItWorks}
             </a>
-            <a href="/explore" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
+            <a
+              href="/explore"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-gray-400 hover:text-foreground"
+            >
               {t.header.explore}
             </a>
             <a

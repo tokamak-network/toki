@@ -25,11 +25,13 @@ export default function CTASection() {
 
             <div className="flex-1 text-center md:text-left">
               <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-                {t.cta.title} <span className="text-accent-amber">{t.cta.titleHighlight}</span> {t.cta.titleEnd}
+                {t.cta.title}{" "}
+                <span className="text-accent-amber">
+                  {t.cta.titleHighlight}
+                </span>{" "}
+                {t.cta.titleEnd}
               </h2>
-              <p className="text-gray-400 mb-6">
-                {t.cta.subtitle}
-              </p>
+              <p className="text-gray-400 mb-6">{t.cta.subtitle}</p>
               <button className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform">
                 {t.cta.button}
               </button>

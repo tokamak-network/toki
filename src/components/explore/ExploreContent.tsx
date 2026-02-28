@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useCallback, useEffect, useState } from "react";
 import { useAchievement } from "@/components/providers/AchievementProvider";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { Dictionary } from "@/locales";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
-type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink";
+type Mood =
+  | "welcome"
+  | "explain"
+  | "thinking"
+  | "excited"
+  | "proud"
+  | "cheer"
+  | "wink";
 type ExplorePhase = "greeting" | "choosing" | "recommended" | "fullList";
 
 interface DialogueLine {
@@ -65,14 +72,34 @@ const MOOD_GLOW: Record<Mood, string> = {
 };
 
 const CATEGORIES: InterestCategory[] = [
-  { id: "earn", icon: "\uD83D\uDCB0", nameKey: "catEarnName", descKey: "catEarnDesc" },
-  { id: "play", icon: "\uD83C\uDFAE", nameKey: "catPlayName", descKey: "catPlayDesc" },
-  { id: "build", icon: "\uD83D\uDEE0", nameKey: "catBuildName", descKey: "catBuildDesc" },
-  { id: "vote", icon: "\uD83D\uDDF3", nameKey: "catVoteName", descKey: "catVoteDesc" },
+  {
+    id: "earn",
+    icon: "\uD83D\uDCB0",
+    nameKey: "catEarnName",
+    descKey: "catEarnDesc",
+  },
+  {
+    id: "play",
+    icon: "\uD83C\uDFAE",
+    nameKey: "catPlayName",
+    descKey: "catPlayDesc",
+  },
+  {
+    id: "build",
+    icon: "\uD83D\uDEE0",
+    nameKey: "catBuildName",
+    descKey: "catBuildDesc",
+  },
+  {
+    id: "vote",
+    icon: "\uD83D\uDDF3",
+    nameKey: "catVoteName",
+    descKey: "catVoteDesc",
+  },
 ];
 
 const CATEGORY_ICON: Record<string, string> = Object.fromEntries(
-  CATEGORIES.map((c) => [c.id, c.icon])
+  CATEGORIES.map((c) => [c.id, c.icon]),
 );
 
 function resolveIcon(service: EcosystemService): string {
@@ -153,7 +180,13 @@ function useTypewriter(text: string, speed = 40) {
 
 // ─── Toki Character (inline copy from OnboardingQuest) ───────────────
 
-function TokiCharacter({ mood, size = "large" }: { mood: Mood; size?: "large" | "small" }) {
+function TokiCharacter({
+  mood,
+  size = "large",
+}: {
+  mood: Mood;
+  size?: "large" | "small";
+}) {
   const imageSrc = MOOD_IMAGES[mood];
   const [prevSrc, setPrevSrc] = useState(imageSrc);
   const [transitioning, setTransitioning] = useState(false);
@@ -228,7 +261,9 @@ function ExploreDialogueBox({
       <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6 h-[140px] sm:h-[156px] flex flex-col">
         <div className="flex items-center mb-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/30">
-            <span className="text-accent-cyan font-bold text-sm tracking-wide">Toki</span>
+            <span className="text-accent-cyan font-bold text-sm tracking-wide">
+              Toki
+            </span>
           </div>
         </div>
         <p className="text-gray-100 text-base sm:text-lg leading-relaxed flex-1">
@@ -292,7 +327,17 @@ function CategoryPicker({
 
 // ─── Service Card ────────────────────────────────────────────────────
 
-function ServiceCard({ service, t, locale, onServiceClick }: { service: EcosystemService; t: Dictionary["explore"]; locale: string; onServiceClick?: (serviceId: string) => void }) {
+function ServiceCard({
+  service,
+  t,
+  locale,
+  onServiceClick,
+}: {
+  service: EcosystemService;
+  t: Dictionary["explore"];
+  locale: string;
+  onServiceClick?: (serviceId: string) => void;
+}) {
   const name = locale === "ko" ? service.nameKo : service.nameEn;
   const desc = locale === "ko" ? service.descKo : service.descEn;
   const icon = resolveIcon(service);
@@ -354,9 +399,17 @@ function RecommendedCards({
           <div
             key={service.id}
             className="animate-slide-up-fade"
-            style={{ animationDelay: `${i * 120}ms`, animationFillMode: "both" }}
+            style={{
+              animationDelay: `${i * 120}ms`,
+              animationFillMode: "both",
+            }}
           >
-            <ServiceCard service={service} t={t} locale={locale} onServiceClick={onServiceClick} />
+            <ServiceCard
+              service={service}
+              t={t}
+              locale={locale}
+              onServiceClick={onServiceClick}
+            />
           </div>
         ))}
       </div>
@@ -380,12 +433,25 @@ function RecommendedCards({
 
 // ─── Full Service Grid ───────────────────────────────────────────────
 
-function FullServiceGrid({ t, services, locale, onServiceClick }: { t: Dictionary["explore"]; services: EcosystemService[]; locale: string; onServiceClick?: (serviceId: string) => void }) {
+function FullServiceGrid({
+  t,
+  services,
+  locale,
+  onServiceClick,
+}: {
+  t: Dictionary["explore"];
+  services: EcosystemService[];
+  locale: string;
+  onServiceClick?: (serviceId: string) => void;
+}) {
   const [activeFilter, setActiveFilter] = useState<string>("all");
 
   const filters = [
     { id: "all", label: t.filterAll },
-    ...CATEGORIES.map((cat) => ({ id: cat.id, label: `${cat.icon} ${t[cat.nameKey]}` })),
+    ...CATEGORIES.map((cat) => ({
+      id: cat.id,
+      label: `${cat.icon} ${t[cat.nameKey]}`,
+    })),
   ];
 
   const filtered =
@@ -425,9 +491,17 @@ function FullServiceGrid({ t, services, locale, onServiceClick }: { t: Dictionar
             <div
               key={service.id}
               className="animate-fade-in"
-              style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}
+              style={{
+                animationDelay: `${i * 60}ms`,
+                animationFillMode: "both",
+              }}
             >
-              <ServiceCard service={service} t={t} locale={locale} onServiceClick={onServiceClick} />
+              <ServiceCard
+                service={service}
+                t={t}
+                locale={locale}
+                onServiceClick={onServiceClick}
+              />
             </div>
           ))}
         </div>
@@ -464,7 +538,7 @@ export default function ExploreContent() {
   useEffect(() => {
     trackActivity("explore-visit");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [trackActivity]);
 
   useEffect(() => {
     fetch("/api/admin/services")
@@ -477,11 +551,15 @@ export default function ExploreContent() {
   const categoryReactions = buildCategoryReactions(et);
 
   const currentGreetingLine = greetingLines[dialogueIndex];
-  const currentReaction = categoryReactions.find((r) => r.categoryId === selectedCategory);
+  const currentReaction = categoryReactions.find(
+    (r) => r.categoryId === selectedCategory,
+  );
   const currentReactionLine = currentReaction?.lines[reactionDialogueIndex];
 
   const recommendedServices = selectedCategory
-    ? allServices.filter((s) => s.categories.includes(selectedCategory)).slice(0, 3)
+    ? allServices
+        .filter((s) => s.categories.includes(selectedCategory))
+        .slice(0, 3)
     : [];
 
   // ── Phase: greeting ──
@@ -521,13 +599,23 @@ export default function ExploreContent() {
     setPhase("choosing");
   };
 
-  const handleServiceClick = useCallback((serviceId: string) => {
-    trackActivity("service-click", { serviceId });
-  }, [trackActivity]);
+  const handleServiceClick = useCallback(
+    (serviceId: string) => {
+      trackActivity("service-click", { serviceId });
+    },
+    [trackActivity],
+  );
 
   // ── Phase: fullList ──
   if (phase === "fullList") {
-    return <FullServiceGrid t={et} services={allServices} locale={locale} onServiceClick={handleServiceClick} />;
+    return (
+      <FullServiceGrid
+        t={et}
+        services={allServices}
+        locale={locale}
+        onServiceClick={handleServiceClick}
+      />
+    );
   }
 
   // ── Visual Novel Phases (greeting, choosing, recommended) ──
@@ -576,7 +664,10 @@ export default function ExploreContent() {
             <ExploreDialogueBox
               line={currentReactionLine}
               onNext={handleReactionNext}
-              isLast={reactionDialogueIndex === (currentReaction?.lines.length ?? 1) - 1}
+              isLast={
+                reactionDialogueIndex ===
+                (currentReaction?.lines.length ?? 1) - 1
+              }
             />
           )}
 

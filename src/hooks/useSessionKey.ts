@@ -1,31 +1,28 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  generatePrivateKey,
-  privateKeyToAccount,
-} from "viem/accounts";
-import {
-  createPublicClient,
-  http,
-  type Address,
-  type Hex,
-  encodeFunctionData,
-  encodeAbiParameters,
-  parseUnits,
-  maxUint256,
-  erc20Abi,
-} from "viem";
-import { sepolia, mainnet } from "viem/chains";
-import { createBundlerClient } from "viem/account-abstraction";
-import {
-  toMetaMaskSmartAccount,
-  Implementation,
   createDelegation,
   getDeleGatorEnvironment,
+  Implementation,
+  toMetaMaskSmartAccount,
 } from "@metamask/delegation-toolkit";
-import { encodeDelegations } from "@metamask/delegation-toolkit/utils";
 import { erc7710BundlerActions } from "@metamask/delegation-toolkit/experimental";
+import { encodeDelegations } from "@metamask/delegation-toolkit/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  type Address,
+  createPublicClient,
+  encodeAbiParameters,
+  encodeFunctionData,
+  erc20Abi,
+  type Hex,
+  http,
+  maxUint256,
+  parseUnits,
+} from "viem";
+import { createBundlerClient } from "viem/account-abstraction";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { mainnet, sepolia } from "viem/chains";
 import { CONTRACTS } from "@/constants/contracts";
 import { tonTokenAbi } from "@/lib/abi";
 
@@ -115,7 +112,9 @@ export function useSessionKey(
   getEthereumProvider: (() => Promise<any>) | null,
   userAddress: Address | null,
 ) {
-  const [sessionKeyAddress, setSessionKeyAddress] = useState<Address | null>(null);
+  const [sessionKeyAddress, setSessionKeyAddress] = useState<Address | null>(
+    null,
+  );
   const [delegationReady, setDelegationReady] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +132,11 @@ export function useSessionKey(
     const storedKey = loadSessionKey();
     const storedDelegation = loadDelegation();
 
-    if (storedKey && storedDelegation && storedDelegation.delegator.toLowerCase() === userAddress.toLowerCase()) {
+    if (
+      storedKey &&
+      storedDelegation &&
+      storedDelegation.delegator.toLowerCase() === userAddress.toLowerCase()
+    ) {
       setSessionKeyAddress(storedKey.address);
       setExpiry(storedKey.expiry);
       setDelegationReady(true);
@@ -162,16 +165,19 @@ export function useSessionKey(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (provider as any).request({
         method: "wallet_sendCalls",
-        params: [{
-          version: "2.0.0",
-          from: userAddress,
-          chainId: chainHex,
-          atomicRequired: true,
-          calls: [],
-        }],
+        params: [
+          {
+            version: "2.0.0",
+            from: userAddress,
+            chainId: chainHex,
+            atomicRequired: true,
+            calls: [],
+          },
+        ],
       });
 
-      const batchId = typeof result === "string" ? result : result?.id || String(result);
+      const batchId =
+        typeof result === "string" ? result : result?.id || String(result);
 
       // Poll for completion
       for (let i = 0; i < 60; i++) {
@@ -286,11 +292,14 @@ export function useSessionKey(
           delegate: delegation.delegate,
           delegator: delegation.delegator,
           authority: delegation.authority,
-          caveats: delegation.caveats.map((c: { enforcer: Hex; terms: Hex }) => ({
-            enforcer: c.enforcer,
-            terms: c.terms,
-          })),
-          salt: delegation.salt === "0x" ? "0" : BigInt(delegation.salt).toString(),
+          caveats: delegation.caveats.map(
+            (c: { enforcer: Hex; terms: Hex }) => ({
+              enforcer: c.enforcer,
+              terms: c.terms,
+            }),
+          ),
+          salt:
+            delegation.salt === "0x" ? "0" : BigInt(delegation.salt).toString(),
         },
       };
 
@@ -303,7 +312,10 @@ export function useSessionKey(
       const signedDelegation = { ...delegation, signature };
 
       // Store signed delegation
-      localStorage.setItem(DELEGATION_STORAGE, JSON.stringify(signedDelegation));
+      localStorage.setItem(
+        DELEGATION_STORAGE,
+        JSON.stringify(signedDelegation),
+      );
 
       setSessionKeyAddress(sessionAddr);
       setExpiry(expiryTime);
@@ -334,7 +346,9 @@ export function useSessionKey(
       const storedKey = loadSessionKey();
       const storedDelegation = loadDelegation();
       if (!storedKey || !storedDelegation) {
-        throw new Error("No session key or delegation found. Please sign delegation first.");
+        throw new Error(
+          "No session key or delegation found. Please sign delegation first.",
+        );
       }
 
       const environment = getDeleGatorEnvironment(chain.id);
