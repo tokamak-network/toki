@@ -43,6 +43,7 @@ next-env.d.ts
 paymaster/out/
 paymaster/cache/
 paymaster/broadcast/
+paymaster/foundry.lock
 
 # metamask snap
 snap/dist/
