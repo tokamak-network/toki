@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "biome:check": "biome check .",
-    "biome:fix": "biome check --write . --unsafe"
+    "biome:fix": "biome check --write . --unsafe",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@metamask/delegation-toolkit": "^0.13.0",
