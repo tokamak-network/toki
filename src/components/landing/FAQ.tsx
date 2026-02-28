@@ -43,7 +43,11 @@ export default function FAQ() {
                     openIndex === i ? "rotate-180" : ""
                   }`}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  />
                 </svg>
               </button>
               {openIndex === i && (

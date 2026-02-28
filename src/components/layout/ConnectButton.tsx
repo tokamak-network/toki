@@ -20,24 +20,16 @@ export default function ConnectButton() {
   }
 
   if (authenticated && user) {
-    const embeddedWallet = wallets.find(
-      (w) => w.walletClientType === "privy"
-    );
-    const externalWallet = wallets.find(
-      (w) => w.walletClientType !== "privy"
-    );
+    const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
+    const externalWallet = wallets.find((w) => w.walletClientType !== "privy");
     const displayWallet = externalWallet || embeddedWallet;
     const addr = displayWallet?.address;
-    const shortAddr = addr
-      ? `${addr.slice(0, 6)}...${addr.slice(-4)}`
-      : null;
+    const shortAddr = addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : null;
 
     const googleAccount = user.linkedAccounts?.find(
-      (a) => a.type === "google_oauth"
+      (a) => a.type === "google_oauth",
     );
-    const emailAccount = user.linkedAccounts?.find(
-      (a) => a.type === "email"
-    );
+    const emailAccount = user.linkedAccounts?.find((a) => a.type === "email");
     const displayName =
       (googleAccount as { name?: string })?.name ||
       (emailAccount as { address?: string })?.address ||
@@ -55,9 +47,7 @@ export default function ConnectButton() {
             {displayName}
           </span>
           {shortAddr && (
-            <span className="text-gray-500 font-mono text-xs">
-              {shortAddr}
-            </span>
+            <span className="text-gray-500 font-mono text-xs">{shortAddr}</span>
           )}
         </a>
         <button

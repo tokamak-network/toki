@@ -12,7 +12,7 @@ const OnboardingQuest = dynamic(
         <div className="text-gray-400">Loading quest...</div>
       </div>
     ),
-  }
+  },
 );
 
 export default function OnboardingPage() {

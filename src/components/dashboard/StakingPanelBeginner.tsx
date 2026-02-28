@@ -1,32 +1,31 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createPublicClient,
   createWalletClient,
-  http,
-  formatUnits,
-  parseUnits,
+  custom,
   encodeAbiParameters,
   encodeFunctionData,
-  custom,
+  formatUnits,
+  http,
+  parseUnits,
 } from "viem";
-import { sepolia, mainnet } from "viem/chains";
-import { CONTRACTS } from "@/constants/contracts";
-import {
-  seigManagerAbi,
-  layer2RegistryAbi,
-  candidateAbi,
-  tonTokenAbi,
-  depositManagerAbi,
-} from "@/lib/abi";
+import { mainnet, sepolia } from "viem/chains";
 import { useTranslation } from "@/components/providers/LanguageProvider";
-import TokiCoach, { type CoachState } from "./TokiCoach";
-import OperatorCard from "./OperatorCard";
-import SeigniorageRain from "./SeigniorageRain";
-
+import { CONTRACTS } from "@/constants/contracts";
 import type { PaymasterMode, StakingMode } from "@/hooks/useEip7702";
 import type { useSessionKey } from "@/hooks/useSessionKey";
+import {
+  candidateAbi,
+  depositManagerAbi,
+  layer2RegistryAbi,
+  seigManagerAbi,
+  tonTokenAbi,
+} from "@/lib/abi";
+import OperatorCard from "./OperatorCard";
+import SeigniorageRain from "./SeigniorageRain";
+import TokiCoach, { type CoachState } from "./TokiCoach";
 
 type SessionKeyReturn = ReturnType<typeof useSessionKey>;
 
@@ -52,7 +51,9 @@ interface StakingPanelBeginnerProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getEthereumProvider: () => Promise<any>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  smartAccountClient?: { sendTransaction: (...args: any[]) => Promise<`0x${string}`> } | null;
+  smartAccountClient?: {
+    sendTransaction: (...args: any[]) => Promise<`0x${string}`>;
+  } | null;
   onBalanceChange?: () => void;
   paymasterMode?: PaymasterMode;
   isMetaMask?: boolean;
@@ -79,7 +80,9 @@ export default function StakingPanelBeginner({
   const [tonBalance, setTonBalance] = useState<string>("0");
   const [stakingMode, setStakingMode] = useState<StakingMode>("direct");
   const [shuffling, setShuffling] = useState(false);
-  const [autoSelectedIndex, setAutoSelectedIndex] = useState<number | undefined>(0);
+  const [autoSelectedIndex, setAutoSelectedIndex] = useState<
+    number | undefined
+  >(0);
   const selectedOpRef = useRef(selectedOp);
   selectedOpRef.current = selectedOp;
   const { t } = useTranslation();
@@ -92,8 +95,14 @@ export default function StakingPanelBeginner({
   const depositManagerAddr = CONTRACTS.DEPOSIT_MANAGER_PROXY as `0x${string}`;
 
   // Compute total staked across all operators for seigniorage calculation
-  const totalStakedAll = operators.reduce((sum, op) => sum + Number(op.totalStaked), 0);
-  const myTotalStaked = operators.reduce((sum, op) => sum + Number(op.myStaked), 0);
+  const totalStakedAll = operators.reduce(
+    (sum, op) => sum + Number(op.totalStaked),
+    0,
+  );
+  const myTotalStaked = operators.reduce(
+    (sum, op) => sum + Number(op.myStaked),
+    0,
+  );
 
   // Coach state
   const getCoachState = (): CoachState => {
@@ -122,8 +131,8 @@ export default function StakingPanelBeginner({
             abi: layer2RegistryAbi,
             functionName: "layer2ByIndex",
             args: [BigInt(i)],
-          })
-        )
+          }),
+        ),
       );
 
       const memoContracts = addresses.map((a) => ({
@@ -144,9 +153,18 @@ export default function StakingPanelBeginner({
       }));
 
       const [memoResults, stakedResults, myStakedResults] = await Promise.all([
-        publicClient.multicall({ contracts: memoContracts, allowFailure: true }),
-        publicClient.multicall({ contracts: stakedContracts, allowFailure: true }),
-        publicClient.multicall({ contracts: myStakedContracts, allowFailure: true }),
+        publicClient.multicall({
+          contracts: memoContracts,
+          allowFailure: true,
+        }),
+        publicClient.multicall({
+          contracts: stakedContracts,
+          allowFailure: true,
+        }),
+        publicClient.multicall({
+          contracts: myStakedContracts,
+          allowFailure: true,
+        }),
       ]);
 
       const ops: Operator[] = addresses.map((a, i) => ({
@@ -184,8 +202,8 @@ export default function StakingPanelBeginner({
       console.error("Failed to fetch operators:", e);
     }
     setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addr, seigManagerAddr, registryAddr, tonAddr]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addr]);
 
   useEffect(() => {
     if (walletAddress) {
@@ -213,7 +231,7 @@ export default function StakingPanelBeginner({
       const tonAmount = parseUnits(amount, 18);
       const stakingData = encodeAbiParameters(
         [{ type: "address" }, { type: "address" }],
-        [depositManagerAddr, selectedOp as `0x${string}`]
+        [depositManagerAddr, selectedOp as `0x${string}`],
       );
 
       let hash: `0x${string}`;
@@ -263,9 +281,15 @@ export default function StakingPanelBeginner({
       console.error("Staking failed:", errMsg);
       if (errMsg.includes("User rejected")) {
         setError(t.dashboard.txRejected);
-      } else if (errMsg.includes("insufficient TON") || errMsg.includes("insufficient funds")) {
+      } else if (
+        errMsg.includes("insufficient TON") ||
+        errMsg.includes("insufficient funds")
+      ) {
         setError(t.dashboard.insufficientTonForGas);
-      } else if (errMsg.includes("validatePaymasterUserOp") || errMsg.includes("Paymaster")) {
+      } else if (
+        errMsg.includes("validatePaymasterUserOp") ||
+        errMsg.includes("Paymaster")
+      ) {
         setError(t.dashboard.paymasterValidationFailed);
       } else {
         setError(errMsg.slice(0, 200));
@@ -330,9 +354,15 @@ export default function StakingPanelBeginner({
       console.error("Unstake failed:", errMsg);
       if (errMsg.includes("User rejected")) {
         setError(t.dashboard.txRejected);
-      } else if (errMsg.includes("insufficient TON") || errMsg.includes("insufficient funds")) {
+      } else if (
+        errMsg.includes("insufficient TON") ||
+        errMsg.includes("insufficient funds")
+      ) {
         setError(t.dashboard.insufficientTonForGas);
-      } else if (errMsg.includes("validatePaymasterUserOp") || errMsg.includes("Paymaster")) {
+      } else if (
+        errMsg.includes("validatePaymasterUserOp") ||
+        errMsg.includes("Paymaster")
+      ) {
         setError(t.dashboard.paymasterValidationFailed);
       } else {
         setError(errMsg.slice(0, 200));
@@ -342,7 +372,9 @@ export default function StakingPanelBeginner({
   };
 
   const selectedOperator = operators.find((o) => o.address === selectedOp);
-  const myStakedOnSelected = selectedOperator ? Number(selectedOperator.myStaked) : 0;
+  const myStakedOnSelected = selectedOperator
+    ? Number(selectedOperator.myStaked)
+    : 0;
 
   if (loading) {
     return (
@@ -379,7 +411,9 @@ export default function StakingPanelBeginner({
       {/* Toki Coach */}
       <TokiCoach
         state={getCoachState()}
-        earningsAmount={myTotalStaked > 0 ? myTotalStaked.toFixed(4) : undefined}
+        earningsAmount={
+          myTotalStaked > 0 ? myTotalStaked.toFixed(4) : undefined
+        }
       />
 
       {/* Earnings Simulator */}
@@ -419,8 +453,12 @@ export default function StakingPanelBeginner({
                   : "bg-white/5 border-transparent hover:bg-white/10"
               }`}
             >
-              <div className="font-medium text-gray-200">{t.dashboard.directMode}</div>
-              <div className="text-gray-500 mt-0.5">{t.dashboard.directModeDesc}</div>
+              <div className="font-medium text-gray-200">
+                {t.dashboard.directMode}
+              </div>
+              <div className="text-gray-500 mt-0.5">
+                {t.dashboard.directModeDesc}
+              </div>
             </button>
             <button
               onClick={() => setStakingMode("delegation")}
@@ -430,26 +468,38 @@ export default function StakingPanelBeginner({
                   : "bg-white/5 border-transparent hover:bg-white/10"
               }`}
             >
-              <div className="font-medium text-gray-200">{t.dashboard.delegationMode}</div>
-              <div className="text-gray-500 mt-0.5">{t.dashboard.delegationModeDesc}</div>
+              <div className="font-medium text-gray-200">
+                {t.dashboard.delegationMode}
+              </div>
+              <div className="text-gray-500 mt-0.5">
+                {t.dashboard.delegationModeDesc}
+              </div>
             </button>
           </div>
 
           {stakingMode === "delegation" && (
             <div className="mt-2 space-y-2">
               {/* Step 1: Smart Account Upgrade */}
-              <div className={`p-2 rounded-lg border text-xs ${
-                sessionKey.isSmartAccount
-                  ? "bg-green-500/5 border-green-500/20"
-                  : "bg-white/5 border-white/10"
-              }`}>
+              <div
+                className={`p-2 rounded-lg border text-xs ${
+                  sessionKey.isSmartAccount
+                    ? "bg-green-500/5 border-green-500/20"
+                    : "bg-white/5 border-white/10"
+                }`}
+              >
                 <div className="flex items-center gap-2 mb-1">
-                  <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                    sessionKey.isSmartAccount ? "bg-green-500/20 text-green-400" : "bg-white/10 text-gray-400"
-                  }`}>
+                  <div
+                    className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      sessionKey.isSmartAccount
+                        ? "bg-green-500/20 text-green-400"
+                        : "bg-white/10 text-gray-400"
+                    }`}
+                  >
                     {sessionKey.isSmartAccount ? "\u2713" : "1"}
                   </div>
-                  <span className="text-gray-300">{t.dashboard.stepUpgrade}</span>
+                  <span className="text-gray-300">
+                    {t.dashboard.stepUpgrade}
+                  </span>
                 </div>
                 {!sessionKey.isSmartAccount && (
                   <div className="ml-6">
@@ -458,31 +508,43 @@ export default function StakingPanelBeginner({
                       disabled={sessionKey.isUpgrading}
                       className="w-full py-1.5 rounded-lg bg-yellow-600/80 text-white font-semibold text-xs disabled:opacity-40 hover:bg-yellow-600 transition-colors"
                     >
-                      {sessionKey.isUpgrading ? t.dashboard.upgrading : t.dashboard.upgradeSmartAccount}
+                      {sessionKey.isUpgrading
+                        ? t.dashboard.upgrading
+                        : t.dashboard.upgradeSmartAccount}
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Step 2: Delegation */}
-              <div className={`p-2 rounded-lg border text-xs ${
-                sessionKey.delegationReady
-                  ? "bg-green-500/5 border-green-500/20"
-                  : sessionKey.isSmartAccount
-                    ? "bg-white/5 border-white/10"
-                    : "bg-white/3 border-white/5 opacity-50"
-              }`}>
+              <div
+                className={`p-2 rounded-lg border text-xs ${
+                  sessionKey.delegationReady
+                    ? "bg-green-500/5 border-green-500/20"
+                    : sessionKey.isSmartAccount
+                      ? "bg-white/5 border-white/10"
+                      : "bg-white/3 border-white/5 opacity-50"
+                }`}
+              >
                 <div className="flex items-center gap-2 mb-1">
-                  <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                    sessionKey.delegationReady ? "bg-green-500/20 text-green-400" : "bg-white/10 text-gray-400"
-                  }`}>
+                  <div
+                    className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      sessionKey.delegationReady
+                        ? "bg-green-500/20 text-green-400"
+                        : "bg-white/10 text-gray-400"
+                    }`}
+                  >
                     {sessionKey.delegationReady ? "\u2713" : "2"}
                   </div>
-                  <span className="text-gray-300">{t.dashboard.stepDelegation}</span>
+                  <span className="text-gray-300">
+                    {t.dashboard.stepDelegation}
+                  </span>
                 </div>
                 {sessionKey.delegationReady ? (
                   <div className="ml-6 flex items-center justify-between">
-                    <span className="text-green-400">{t.dashboard.delegationActive}</span>
+                    <span className="text-green-400">
+                      {t.dashboard.delegationActive}
+                    </span>
                     <button
                       onClick={sessionKey.revokeSessionKey}
                       className="text-red-400 hover:text-red-300 transition-colors"
@@ -497,14 +559,20 @@ export default function StakingPanelBeginner({
                       disabled={sessionKey.isRequesting}
                       className="w-full py-1.5 rounded-lg bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-xs disabled:opacity-40 hover:scale-[1.02] transition-transform"
                     >
-                      {sessionKey.isRequesting ? t.dashboard.signingDelegation : t.dashboard.signDelegation}
+                      {sessionKey.isRequesting
+                        ? t.dashboard.signingDelegation
+                        : t.dashboard.signDelegation}
                     </button>
                   </div>
                 ) : (
-                  <p className="ml-6 text-gray-500">{t.dashboard.completeStep1First}</p>
+                  <p className="ml-6 text-gray-500">
+                    {t.dashboard.completeStep1First}
+                  </p>
                 )}
                 {sessionKey.error && (
-                  <div className="ml-6 text-red-400 mt-1">{sessionKey.error}</div>
+                  <div className="ml-6 text-red-400 mt-1">
+                    {sessionKey.error}
+                  </div>
                 )}
               </div>
             </div>
@@ -538,7 +606,10 @@ export default function StakingPanelBeginner({
         </div>
         <div className="text-xs text-gray-500 mt-1">
           {t.dashboard.balance}{" "}
-          {Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 })} TON
+          {Number(tonBalance).toLocaleString("en-US", {
+            maximumFractionDigits: 2,
+          })}{" "}
+          TON
         </div>
       </div>
 
@@ -582,7 +653,9 @@ export default function StakingPanelBeginner({
       {/* Status Messages */}
       {txHash && (
         <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 mb-3">
-          <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
+          <div className="text-sm text-green-400">
+            {t.dashboard.txSubmitted}
+          </div>
           <a
             href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${txHash}`}
             target="_blank"
@@ -602,7 +675,9 @@ export default function StakingPanelBeginner({
       {/* My Staking Summary (compact) */}
       {operators.some((o) => Number(o.myStaked) > 0) && (
         <div className="mt-4 pt-4 border-t border-white/5">
-          <h3 className="text-sm text-gray-400 mb-3">{t.dashboard.myStakedPositions}</h3>
+          <h3 className="text-sm text-gray-400 mb-3">
+            {t.dashboard.myStakedPositions}
+          </h3>
           <div className="space-y-2">
             {operators
               .filter((o) => Number(o.myStaked) > 0)
@@ -615,7 +690,10 @@ export default function StakingPanelBeginner({
                     {op.name || `${op.address.slice(0, 10)}...`}
                   </span>
                   <span className="font-mono-num text-accent-cyan">
-                    {Number(op.myStaked).toLocaleString("en-US", { maximumFractionDigits: 2 })} TON
+                    {Number(op.myStaked).toLocaleString("en-US", {
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    TON
                   </span>
                 </div>
               ))}

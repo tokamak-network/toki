@@ -2,19 +2,19 @@
 
 import {
   createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
   type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
 import {
   ACHIEVEMENTS,
-  EMPTY_STORAGE,
-  checkCondition,
-  calculateLevel,
   type Achievement,
   type AchievementStorage,
+  calculateLevel,
+  checkCondition,
+  EMPTY_STORAGE,
 } from "@/lib/achievements";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ function migrateOnboarding(storage: AchievementStorage): AchievementStorage {
 
     // Check if already migrated
     const alreadyMigrated = completed.every((id) =>
-      storage.metadata.questsCompleted.includes(id)
+      storage.metadata.questsCompleted.includes(id),
     );
     if (alreadyMigrated) return storage;
 
@@ -153,11 +153,17 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
             next.metadata.totalStaked += amount;
             const paymasterMode = meta?.paymasterMode as string;
             const stakingMode = meta?.stakingMode as string;
-            if (paymasterMode === "sponsor" && !next.unlocked.includes("stake-gasless")) {
+            if (
+              paymasterMode === "sponsor" &&
+              !next.unlocked.includes("stake-gasless")
+            ) {
               // Mark gasless used — condition check below will handle unlock
               next.unlocked.push("stake-gasless");
             }
-            if (stakingMode === "delegation" && !next.unlocked.includes("stake-delegation")) {
+            if (
+              stakingMode === "delegation" &&
+              !next.unlocked.includes("stake-delegation")
+            ) {
               next.unlocked.push("stake-delegation");
             }
             break;
@@ -176,14 +182,20 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
           }
           case "service-click": {
             const serviceId = meta?.serviceId as string;
-            if (serviceId && !next.metadata.servicesClicked.includes(serviceId)) {
+            if (
+              serviceId &&
+              !next.metadata.servicesClicked.includes(serviceId)
+            ) {
               next.metadata.servicesClicked.push(serviceId);
             }
             break;
           }
           case "category-view": {
             const categoryId = meta?.categoryId as string;
-            if (categoryId && !next.metadata.categoriesViewed.includes(categoryId)) {
+            if (
+              categoryId &&
+              !next.metadata.categoriesViewed.includes(categoryId)
+            ) {
               next.metadata.categoriesViewed.push(categoryId);
             }
             break;
@@ -227,7 +239,7 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
         return next;
       });
     },
-    []
+    [],
   );
 
   const dismissToast = useCallback(() => {

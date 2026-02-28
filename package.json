@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "biome:check": "biome check .",
+    "biome:fix": "biome check --write . --unsafe"
   },
   "dependencies": {
     "@metamask/delegation-toolkit": "^0.13.0",
@@ -17,6 +19,7 @@
     "viem": "^2.46.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

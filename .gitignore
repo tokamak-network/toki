@@ -47,6 +47,11 @@ paymaster/cache/
 snap/dist/
 snap/node_modules/
 
+# ignore vendor libs for biome/eslint
+lib/
+paymaster/lib/
+paymaster/broadcast/
+
 # claude tooling
 **/CLAUDE.md
 .omc/

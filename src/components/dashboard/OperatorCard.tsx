@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
 interface Operator {
@@ -113,9 +113,10 @@ export default function OperatorCard({
               className={`
                 snap-center shrink-0 w-[160px] p-4 rounded-xl border transition-all duration-300
                 bg-gradient-to-br ${CARD_GRADIENTS[gradientIdx]}
-                ${isSelected
-                  ? `${CARD_BORDER_COLORS[gradientIdx]} scale-105 shadow-lg ${CARD_GLOW_COLORS[gradientIdx]}`
-                  : "border-white/10 hover:border-white/20 hover:scale-[1.02]"
+                ${
+                  isSelected
+                    ? `${CARD_BORDER_COLORS[gradientIdx]} scale-105 shadow-lg ${CARD_GLOW_COLORS[gradientIdx]}`
+                    : "border-white/10 hover:border-white/20 hover:scale-[1.02]"
                 }
                 ${shuffling ? "animate-card-shuffle" : ""}
               `}
@@ -141,7 +142,10 @@ export default function OperatorCard({
               {/* My staked */}
               {Number(op.myStaked) > 0 && (
                 <div className="text-xs font-mono-num text-accent-cyan text-center">
-                  {t.dashboard.myStake}: {Number(op.myStaked).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                  {t.dashboard.myStake}:{" "}
+                  {Number(op.myStaked).toLocaleString("en-US", {
+                    maximumFractionDigits: 2,
+                  })}
                 </div>
               )}
 

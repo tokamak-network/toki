@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { StakingData } from "@/lib/staking";
 
@@ -9,7 +9,17 @@ interface StakingPreviewClientProps {
   data: StakingData | null;
 }
 
-function AnimatedGauge({ value, max, color, delay = 0 }: { value: number; max: number; color: string; delay?: number }) {
+function AnimatedGauge({
+  value,
+  max,
+  color,
+  delay = 0,
+}: {
+  value: number;
+  max: number;
+  color: string;
+  delay?: number;
+}) {
   const [width, setWidth] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -20,14 +30,17 @@ function AnimatedGauge({ value, max, color, delay = 0 }: { value: number; max: n
           setTimeout(() => setWidth(Math.min((value / max) * 100, 100)), delay);
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, [value, max, delay]);
 
   return (
-    <div ref={ref} className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
+    <div
+      ref={ref}
+      className="w-full h-3 rounded-full bg-white/10 overflow-hidden"
+    >
       <div
         className={`h-full rounded-full ${color} transition-all duration-1000 ease-out`}
         style={{ width: `${width}%` }}
@@ -36,7 +49,15 @@ function AnimatedGauge({ value, max, color, delay = 0 }: { value: number; max: n
   );
 }
 
-function StatRow({ label, value, subtext, gauge, gaugeMax, color, delay }: {
+function StatRow({
+  label,
+  value,
+  subtext,
+  gauge,
+  gaugeMax,
+  color,
+  delay,
+}: {
   label: string;
   value: string;
   subtext: string;
@@ -49,23 +70,34 @@ function StatRow({ label, value, subtext, gauge, gaugeMax, color, delay }: {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-sm text-gray-400">{label}</span>
-        <span className={`text-lg font-bold font-mono-num ${color}`}>{value}</span>
+        <span className={`text-lg font-bold font-mono-num ${color}`}>
+          {value}
+        </span>
       </div>
-      <AnimatedGauge value={gauge} max={gaugeMax} color={color.replace("text-", "bg-")} delay={delay} />
+      <AnimatedGauge
+        value={gauge}
+        max={gaugeMax}
+        color={color.replace("text-", "bg-")}
+        delay={delay}
+      />
       <div className="text-xs text-gray-500">{subtext}</div>
     </div>
   );
 }
 
-export default function StakingPreviewClient({ data }: StakingPreviewClientProps) {
+export default function StakingPreviewClient({
+  data,
+}: StakingPreviewClientProps) {
   const { t } = useTranslation();
   const [showCard, setShowCard] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setShowCard(true); },
-      { threshold: 0.2 }
+      ([entry]) => {
+        if (entry.isIntersecting) setShowCard(true);
+      },
+      { threshold: 0.2 },
     );
     if (cardRef.current) observer.observe(cardRef.current);
     return () => observer.disconnect();
@@ -101,7 +133,9 @@ export default function StakingPreviewClient({ data }: StakingPreviewClientProps
               <div
                 key={i}
                 className="absolute top-0 right-0 h-[200%] w-px bg-gradient-to-b from-amber-400/20 to-transparent origin-top"
-                style={{ transform: `translate(-50%, -10%) rotate(${i * 22.5}deg)` }}
+                style={{
+                  transform: `translate(-50%, -10%) rotate(${i * 22.5}deg)`,
+                }}
               />
             ))}
           </div>
@@ -112,22 +146,28 @@ export default function StakingPreviewClient({ data }: StakingPreviewClientProps
               <h2 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300">
                 {t.statsCard.reportTitle}
               </h2>
-              <p className="text-sm text-gray-400 mt-1">{t.statsCard.reportSubtitle}</p>
+              <p className="text-sm text-gray-400 mt-1">
+                {t.statsCard.reportSubtitle}
+              </p>
             </div>
             <div className="flex flex-col items-center">
               <div className="text-xs text-gray-500">{t.statsCard.grade}</div>
-              <div className="text-3xl font-black text-amber-400 animate-pulse">{t.statsCard.gradeValue}</div>
+              <div className="text-3xl font-black text-amber-400 animate-pulse">
+                {t.statsCard.gradeValue}
+              </div>
             </div>
           </div>
 
           <div className="relative p-6 md:p-8">
             <div className="flex flex-col md:flex-row gap-8">
               {/* Left: Toki + comment */}
-              <div className={`
+              <div
+                className={`
                 shrink-0 flex flex-col items-center gap-4
                 transition-all duration-500 delay-300
                 ${showCard ? "opacity-100 scale-100" : "opacity-0 scale-75"}
-              `}>
+              `}
+              >
                 <div className="relative">
                   <div className="absolute inset-0 rounded-full bg-amber-400/10 blur-2xl" />
                   <Image
@@ -161,7 +201,7 @@ export default function StakingPreviewClient({ data }: StakingPreviewClientProps
                 <StatRow
                   label={t.stakingPreview.totalStaked}
                   value={`${(data.totalStakedRaw / 1_000_000).toFixed(1)}M TON`}
-                  subtext={data.totalStaked + " TON"}
+                  subtext={`${data.totalStaked} TON`}
                   gauge={data.totalStakedRaw / 1_000_000}
                   gaugeMax={50}
                   color="text-accent-cyan"
@@ -189,7 +229,6 @@ export default function StakingPreviewClient({ data }: StakingPreviewClientProps
             </div>
           </div>
         </div>
-
       </div>
     </section>
   );

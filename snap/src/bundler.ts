@@ -21,7 +21,7 @@ type JsonRpcResponse = {
 async function rpc(
   bundlerUrl: string,
   method: string,
-  params: unknown[]
+  params: unknown[],
 ): Promise<unknown> {
   const response = await fetch(bundlerUrl, {
     method: "POST",
@@ -39,7 +39,9 @@ async function rpc(
     const detail = json.error.data
       ? ` (${JSON.stringify(json.error.data)})`
       : "";
-    throw new Error(`Bundler error [${method}]: ${json.error.message}${detail}`);
+    throw new Error(
+      `Bundler error [${method}]: ${json.error.message}${detail}`,
+    );
   }
   return json.result;
 }
@@ -65,7 +67,7 @@ export async function estimateUserOperationGas(
   bundlerUrl: string,
   userOp: Record<string, string>,
   entryPoint: string,
-  eip7702Auth?: Eip7702Auth
+  eip7702Auth?: Eip7702Auth,
 ): Promise<GasEstimate> {
   const params: unknown[] = [userOp, entryPoint];
   if (eip7702Auth) {
@@ -81,13 +83,9 @@ export async function estimateUserOperationGas(
  * Get current gas price from Pimlico.
  */
 export async function getUserOperationGasPrice(
-  bundlerUrl: string
+  bundlerUrl: string,
 ): Promise<{ fast: GasPrice }> {
-  const result = await rpc(
-    bundlerUrl,
-    "pimlico_getUserOperationGasPrice",
-    []
-  );
+  const result = await rpc(bundlerUrl, "pimlico_getUserOperationGasPrice", []);
   return result as { fast: GasPrice };
 }
 
@@ -99,7 +97,7 @@ export async function sendUserOperation(
   bundlerUrl: string,
   userOp: Record<string, string>,
   entryPoint: string,
-  eip7702Auth?: Eip7702Auth
+  eip7702Auth?: Eip7702Auth,
 ): Promise<string> {
   const params: unknown[] = [userOp, entryPoint];
   if (eip7702Auth) {
@@ -114,7 +112,7 @@ export async function sendUserOperation(
  */
 export async function getUserOperationReceipt(
   bundlerUrl: string,
-  userOpHash: string
+  userOpHash: string,
 ): Promise<unknown> {
   const result = await rpc(bundlerUrl, "eth_getUserOperationReceipt", [
     userOpHash,

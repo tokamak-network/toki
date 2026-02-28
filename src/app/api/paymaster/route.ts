@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { CONTRACTS } from "@/constants/contracts";
 
 const TON_PAYMASTER = CONTRACTS.TON_PAYMASTER;
@@ -35,13 +35,21 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { jsonrpc: "2.0", id, error: { code: -32601, message: "Method not found" } },
-      { status: 400 }
+      {
+        jsonrpc: "2.0",
+        id,
+        error: { code: -32601, message: "Method not found" },
+      },
+      { status: 400 },
     );
   } catch {
     return NextResponse.json(
-      { jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } },
-      { status: 400 }
+      {
+        jsonrpc: "2.0",
+        id: null,
+        error: { code: -32700, message: "Parse error" },
+      },
+      { status: 400 },
     );
   }
 }

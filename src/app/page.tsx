@@ -1,14 +1,13 @@
 import { Suspense } from "react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import FloatingPlayer from "@/components/audio/FloatingPlayer";
+import CTASection from "@/components/landing/CTASection";
 import HeroSection from "@/components/landing/HeroSection";
 import HowItWorks from "@/components/landing/HowItWorks";
-import WhyToki from "@/components/landing/WhyToki";
 import StakingPreview from "@/components/landing/StakingPreview";
-
-import CTASection from "@/components/landing/CTASection";
 import TokiBridge from "@/components/landing/TokiBridge";
-import FloatingPlayer from "@/components/audio/FloatingPlayer";
+import WhyToki from "@/components/landing/WhyToki";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 import { fetchStakingData } from "@/lib/staking";
 
 export const dynamic = "force-dynamic";

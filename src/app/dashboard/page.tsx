@@ -11,7 +11,7 @@ const DashboardContent = dynamic(
         <div className="text-gray-400">Loading dashboard...</div>
       </div>
     ),
-  }
+  },
 );
 
 export default function DashboardPage() {

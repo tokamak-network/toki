@@ -27,11 +27,14 @@ const en = {
     title: "How It Works",
     subtitle: "From exchange to staking in 3 simple steps",
     step1Title: "Login",
-    step1Desc: "Sign in with Kakao or Google. Your wallet is created automatically.",
+    step1Desc:
+      "Sign in with Kakao or Google. Your wallet is created automatically.",
     step2Title: "Transfer TON",
-    step2Desc: "Withdraw TON from your exchange (Upbit, Bithumb) to your Toki address.",
+    step2Desc:
+      "Withdraw TON from your exchange (Upbit, Bithumb) to your Toki address.",
     step3Title: "Stake",
-    step3Desc: "Press one button. Toki handles wrapping, operator selection, and gas fees in TON.",
+    step3Desc:
+      "Press one button. Toki handles wrapping, operator selection, and gas fees in TON.",
   },
   whyToki: {
     title: "Why Toki?",
@@ -81,7 +84,8 @@ const en = {
     title: "Ready to earn",
     titleHighlight: "~35% APR",
     titleEnd: "on your TON?",
-    subtitle: "Stop letting your TON sit idle on exchanges. Let Toki put it to work.",
+    subtitle:
+      "Stop letting your TON sit idle on exchanges. Let Toki put it to work.",
     button: "Start Staking Now",
     dialogue: "Ready to begin? Staking is easy with me by your side!",
     choiceStart: "Start with Toki",
@@ -94,23 +98,28 @@ const en = {
     toCta: "So, are you ready?",
   },
   howItWorksVn: {
-    step1Dialogue: "Hey! Let's start by creating a wallet. Just login with Google or Kakao — done!",
-    step2Dialogue: "Next, send TON from your exchange. Just one copy-paste of the address!",
-    step3Dialogue: "Last step! One button and you're staking! Wrapping? Gas? I'll handle it all~",
+    step1Dialogue:
+      "Hey! Let's start by creating a wallet. Just login with Google or Kakao — done!",
+    step2Dialogue:
+      "Next, send TON from your exchange. Just one copy-paste of the address!",
+    step3Dialogue:
+      "Last step! One button and you're staking! Wrapping? Gas? I'll handle it all~",
   },
   whyTokiVs: {
     oldWay: "Old Way",
     tokiWay: "Toki",
     vs: "VS",
     totalWin: "Toki wins!",
-    resultMessage: "I'll handle all the complicated stuff. You just sit back and enjoy!",
+    resultMessage:
+      "I'll handle all the complicated stuff. You just sit back and enjoy!",
   },
   statsCard: {
     reportTitle: "Toki's Staking Report Card",
     reportSubtitle: "Real-time on-chain data report",
     grade: "Grade",
     gradeValue: "S+",
-    tokiComment: "Pretty good scores, right? Rewards are stacking up every block!",
+    tokiComment:
+      "Pretty good scores, right? Rewards are stacking up every block!",
   },
   faqChat: {
     title: "Ask Toki!",
@@ -121,7 +130,8 @@ const en = {
   stakingPreview: {
     title: "Live Staking Stats",
     subtitle: "Real-time data from Tokamak Network contracts",
-    seigManagerInfo: "SeigManager: {totalStaked} TON staked across {operatorCount} operators",
+    seigManagerInfo:
+      "SeigManager: {totalStaked} TON staked across {operatorCount} operators",
     currentApr: "Current APR",
     compoundSeigniorage: "Compound seigniorage",
     totalStaked: "Total Staked",
@@ -133,7 +143,8 @@ const en = {
     daily: "Daily",
     monthly: "Monthly",
     yearly: "Yearly",
-    disclaimer: "* Based on current on-chain APR ({apr}%). Actual returns may vary. Seigniorage compounds automatically.",
+    disclaimer:
+      "* Based on current on-chain APR ({apr}%). Actual returns may vary. Seigniorage compounds automatically.",
     activeOperators: "Active Operators",
     failedToLoad: "Failed to load on-chain data. Please refresh.",
   },
@@ -175,8 +186,10 @@ const en = {
     txSubmitted: "Transaction submitted!",
     noStakedBalance: "No staked balance on this operator",
     txRejected: "Transaction rejected by user",
-    insufficientTonForGas: "Insufficient TON balance. You need enough TON to cover both the staking amount and gas fee.",
-    paymasterValidationFailed: "Gas payment validation failed. Please check your TON balance and try again.",
+    insufficientTonForGas:
+      "Insufficient TON balance. You need enough TON to cover both the staking amount and gas fee.",
+    paymasterValidationFailed:
+      "Gas payment validation failed. Please check your TON balance and try again.",
     myStakedPositions: "My Staked Positions",
     estimatedGas: "Est. gas: ~{amount} TON",
     // Delegation / Session Key
@@ -192,9 +205,12 @@ const en = {
     revokeSessionKey: "Revoke Session Key",
     stakeTonDelegation: "Stake TON (Gasless via Delegation)",
     delegationRequired: "Please sign a delegation first",
-    sessionKeyInfo: "Session key allows gasless staking for 7 days after a one-time signature.",
-    metamaskDelegationUnsupported: "MetaMask does not support delegation signing from external dApps. For gasless staking, please connect with a Privy embedded wallet.",
-    firstTxNote: "First use requires a small ETH fee for smart account upgrade.",
+    sessionKeyInfo:
+      "Session key allows gasless staking for 7 days after a one-time signature.",
+    metamaskDelegationUnsupported:
+      "MetaMask does not support delegation signing from external dApps. For gasless staking, please connect with a Privy embedded wallet.",
+    firstTxNote:
+      "First use requires a small ETH fee for smart account upgrade.",
     stepUpgrade: "Smart Account Upgrade (one-time)",
     stepDelegation: "Delegation Signature (free)",
     upgradeNote: "Requires a small amount of ETH (one-time only).",
@@ -224,7 +240,8 @@ const en = {
     period6m: "6 months",
     period1y: "1 year",
     period3y: "3 years",
-    earningsNote: "* Estimated based on current on-chain data. Actual returns may vary.",
+    earningsNote:
+      "* Estimated based on current on-chain data. Actual returns may vary.",
     inputAmountPrompt: "Enter a staking amount to see estimated earnings",
     // Unstaking
     unstaking: "Unstaking",
@@ -266,17 +283,22 @@ const en = {
     yourAddress: "Your Address",
     metamaskNotDetected: "MetaMask not detected. Please install it first!",
     metamaskCancelled: "MetaMask connection was cancelled.",
-    metamaskInstallCheck: "If you've finished installing MetaMask, click the button below.",
+    metamaskInstallCheck:
+      "If you've finished installing MetaMask, click the button below.",
     verifyInstall: "Verify Installation",
-    metamaskNotYet: "MetaMask not yet detected. Please install it and refresh this page!",
+    metamaskNotYet:
+      "MetaMask not yet detected. Please install it and refresh this page!",
     privyNotReady: "Login service is loading. Please wait a moment!",
     substepLabel: "Step {current}/{total}",
-    exportKeyInstruction: "Click the button below to view your private key. Copy it and keep it safe!",
+    exportKeyInstruction:
+      "Click the button below to view your private key. Copy it and keep it safe!",
     exportKeyButton: "Export Private Key",
     exportKeyConfirm: "I've safely copied the private key",
-    installMetamaskInstruction: "Now it's time to install MetaMask. It's a Chrome extension.",
+    installMetamaskInstruction:
+      "Now it's time to install MetaMask. It's a Chrome extension.",
     installMetamaskButton: "Install MetaMask",
-    importKeyInstruction: "Open MetaMask and go to 'Import Account' -> Paste your private key",
+    importKeyInstruction:
+      "Open MetaMask and go to 'Import Account' -> Paste your private key",
     importKeyConfirm: "I've imported the key into MetaMask",
     // Quest 1: Create Wallet (Privy login)
     quest1Title: "Create Wallet",
@@ -285,7 +307,8 @@ const en = {
     quest1Intro1: "Hi! I'm Toki.",
     quest1Intro2: "I'll be your guide to TON staking.",
     quest1Intro3: "First, you need to create a wallet. It's super easy!",
-    quest1Intro4: "Just sign in with Google or email and your wallet is created automatically.",
+    quest1Intro4:
+      "Just sign in with Google or email and your wallet is created automatically.",
     quest1Intro5: "Click the button below to get started!",
     quest1Action: "Sign in to create wallet",
     quest1Success1: "Great job! You've got your wallet!",
@@ -294,11 +317,16 @@ const en = {
     quest2Title: "Bridge to MetaMask",
     quest2Subtitle: "Export & import private key",
     quest2Badge: "Bridge Builder",
-    quest2Intro1: "Wait! The wallet you just created has something called a 'private key'.",
-    quest2Intro2: "A private key is the real key to your wallet. Whoever has it owns the wallet.",
-    quest2Intro3: "Right now Toki is keeping it safe, but we need MetaMask to verify with exchanges.",
-    quest2Intro4: "Exchanges like Upbit only support wallet verification through MetaMask!",
-    quest2Intro5: "So we'll copy your private key into MetaMask. It's like using the same wallet from two apps.",
+    quest2Intro1:
+      "Wait! The wallet you just created has something called a 'private key'.",
+    quest2Intro2:
+      "A private key is the real key to your wallet. Whoever has it owns the wallet.",
+    quest2Intro3:
+      "Right now Toki is keeping it safe, but we need MetaMask to verify with exchanges.",
+    quest2Intro4:
+      "Exchanges like Upbit only support wallet verification through MetaMask!",
+    quest2Intro5:
+      "So we'll copy your private key into MetaMask. It's like using the same wallet from two apps.",
     quest2Intro6: "Don't worry, it's easy in 3 steps!",
     quest2Action: "Get Started",
     quest2Success1: "Perfect! MetaMask bridge complete!",
@@ -308,17 +336,21 @@ const en = {
     quest3Title: "Exchange Verification",
     quest3Subtitle: "Register exchange wallet",
     quest3Badge: "Exchange Pro",
-    quest3Intro1: "To get TON from an exchange, you need to verify your wallet address.",
+    quest3Intro1:
+      "To get TON from an exchange, you need to verify your wallet address.",
     quest3Intro2: "Open your exchange app. Let's do this together!",
-    quest3Intro3: "Register your personal wallet address and verify with MetaMask.",
+    quest3Intro3:
+      "Register your personal wallet address and verify with MetaMask.",
     quest3Intro4: "Don't forget to select the Ethereum (ETH) network!",
     quest3Intro5: "Check the guide for your exchange below.",
-    quest3Intro6: "Each exchange has a slightly different process, so follow their official guide.",
+    quest3Intro6:
+      "Each exchange has a slightly different process, so follow their official guide.",
     quest3Intro7: "When you're done, confirm below.",
     quest3Confirm: "I've completed wallet verification on my exchange",
     quest3ActionLabel: "Confirm Complete",
     quest3Success1: "Amazing! That was the hardest step!",
-    quest3Success2: "Now you can send TON directly to this address from your exchange.",
+    quest3Success2:
+      "Now you can send TON directly to this address from your exchange.",
     quest3Success3: "Third quest cleared! You're practically a pro!",
     quest3ExchangeGuide: "Exchange Wallet Registration Guides",
     quest3UpbitGuide: "Upbit Guide",
@@ -330,7 +362,8 @@ const en = {
     quest4Subtitle: "Withdraw TON from exchange",
     quest4Badge: "TON Holder",
     quest4Intro1: "Now let's get some real TON!",
-    quest4Intro2: "In your exchange app: Withdraw -> TON -> Enter your wallet address",
+    quest4Intro2:
+      "In your exchange app: Withdraw -> TON -> Enter your wallet address",
     quest4Intro3: "Start with a small amount for testing!",
     quest4Intro4: "About 10 TON is enough. Confirm below when done.",
     quest4Confirm: "I've completed the TON withdrawal from my exchange",
@@ -347,8 +380,10 @@ const en = {
     quest5Intro4: "No ETH gas needed -- just stake with TON directly!",
     quest5Action: "Start Gasless Staking on Dashboard",
     quest5Success1: "All quests cleared!",
-    quest5Success2: "You... are you a genius? I didn't expect you to finish this fast.",
-    quest5Success3: "From now on, you'll earn seigniorage rewards with every block.",
+    quest5Success2:
+      "You... are you a genius? I didn't expect you to finish this fast.",
+    quest5Success3:
+      "From now on, you'll earn seigniorage rewards with every block.",
     quest5Success4: "Looking forward to working together, partner!",
     // Mood labels
     moodWelcome: "-- friendly",
@@ -376,7 +411,8 @@ const en = {
   explore: {
     title: "Tokamak Ecosystem",
     subtitle: "Your staking journey is just the beginning",
-    tokiMessage: "Now that you're staking, let's explore the Tokamak ecosystem!",
+    tokiMessage:
+      "Now that you're staking, let's explore the Tokamak ecosystem!",
     visitService: "Visit",
     comingSoon: "Coming Soon",
     backToDashboard: "Back to Dashboard",

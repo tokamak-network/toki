@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createPublicClient,
   createWalletClient,
-  http,
-  formatUnits,
-  parseUnits,
-  encodeFunctionData,
   custom,
+  encodeFunctionData,
+  formatUnits,
+  http,
+  parseUnits,
 } from "viem";
-import { sepolia, mainnet } from "viem/chains";
+import { mainnet, sepolia } from "viem/chains";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 import { CONTRACTS } from "@/constants/contracts";
 import {
-  seigManagerAbi,
-  layer2RegistryAbi,
   candidateAbi,
   depositManagerAbi,
+  layer2RegistryAbi,
+  seigManagerAbi,
 } from "@/lib/abi";
-import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
 const chain = isTestnet ? sepolia : mainnet;
@@ -54,7 +54,9 @@ interface UnstakingPanelProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getEthereumProvider: () => Promise<any>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  smartAccountClient?: { sendTransaction: (...args: any[]) => Promise<`0x${string}`> } | null;
+  smartAccountClient?: {
+    sendTransaction: (...args: any[]) => Promise<`0x${string}`>;
+  } | null;
   onBalanceChange?: () => void;
   paymasterMode?: PaymasterMode;
 }
@@ -83,12 +85,16 @@ export default function UnstakingPanel({
 }: UnstakingPanelProps) {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [loading, setLoading] = useState(true);
-  const [unstakeAmounts, setUnstakeAmounts] = useState<Record<string, string>>({});
+  const [unstakeAmounts, setUnstakeAmounts] = useState<Record<string, string>>(
+    {},
+  );
   const [requesting, setRequesting] = useState<string | null>(null);
   const [processingOp, setProcessingOp] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [withdrawalRequests, setWithdrawalRequests] = useState<Record<string, WithdrawalRequest[]>>({});
+  const [withdrawalRequests, setWithdrawalRequests] = useState<
+    Record<string, WithdrawalRequest[]>
+  >({});
   const [loadingRequests, setLoadingRequests] = useState(false);
   const operatorsRef = useRef(operators);
   operatorsRef.current = operators;
@@ -116,8 +122,8 @@ export default function UnstakingPanel({
             abi: layer2RegistryAbi,
             functionName: "layer2ByIndex",
             args: [BigInt(i)],
-          })
-        )
+          }),
+        ),
       );
 
       const memoContracts = addresses.map((a) => ({
@@ -138,9 +144,18 @@ export default function UnstakingPanel({
       }));
 
       const [memoResults, stakedResults, myStakedResults] = await Promise.all([
-        publicClient.multicall({ contracts: memoContracts, allowFailure: true }),
-        publicClient.multicall({ contracts: stakedContracts, allowFailure: true }),
-        publicClient.multicall({ contracts: myStakedContracts, allowFailure: true }),
+        publicClient.multicall({
+          contracts: memoContracts,
+          allowFailure: true,
+        }),
+        publicClient.multicall({
+          contracts: stakedContracts,
+          allowFailure: true,
+        }),
+        publicClient.multicall({
+          contracts: myStakedContracts,
+          allowFailure: true,
+        }),
       ]);
 
       const ops: Operator[] = addresses.map((a, i) => ({
@@ -167,7 +182,7 @@ export default function UnstakingPanel({
       console.error("Failed to fetch operators:", e);
     }
     setLoading(false);
-  }, [addr, seigManagerAddr, registryAddr]);
+  }, [addr]);
 
   const fetchWithdrawalRequests = useCallback(async () => {
     if (operatorsRef.current.length === 0 && !loading) {
@@ -191,8 +206,8 @@ export default function UnstakingPanel({
             abi: layer2RegistryAbi,
             functionName: "layer2ByIndex",
             args: [BigInt(i)],
-          })
-        )
+          }),
+        ),
       );
 
       const allRequests: Record<string, WithdrawalRequest[]> = {};
@@ -227,7 +242,11 @@ export default function UnstakingPanel({
           const total = Number(numTotal);
           const requests: WithdrawalRequest[] = [];
 
-          for (let i = startIndex; i < total && requests.length < pending; i++) {
+          for (
+            let i = startIndex;
+            i < total && requests.length < pending;
+            i++
+          ) {
             try {
               const result = await publicClient.readContract({
                 address: depositManagerAddr,
@@ -236,11 +255,16 @@ export default function UnstakingPanel({
                 args: [layer2Addr, addr, BigInt(i)],
               });
 
-              const [withdrawableBlockNumber, amount, processed] = result as [bigint, bigint, boolean];
+              const [withdrawableBlockNumber, amount, processed] = result as [
+                bigint,
+                bigint,
+                boolean,
+              ];
 
               if (processed) continue;
 
-              const blocksRemaining = Number(withdrawableBlockNumber) - Number(blockNumber);
+              const blocksRemaining =
+                Number(withdrawableBlockNumber) - Number(blockNumber);
               requests.push({
                 index: i,
                 withdrawableBlockNumber,
@@ -267,7 +291,7 @@ export default function UnstakingPanel({
       console.error("Failed to fetch withdrawal requests:", e);
     }
     setLoadingRequests(false);
-  }, [addr, depositManagerAddr, registryAddr, loading]);
+  }, [addr, loading]);
 
   useEffect(() => {
     if (walletAddress) {
@@ -345,7 +369,10 @@ export default function UnstakingPanel({
     setRequesting(null);
   };
 
-  const handleProcessRequests = async (operatorAddr: string, receiveTON: boolean) => {
+  const handleProcessRequests = async (
+    operatorAddr: string,
+    receiveTON: boolean,
+  ) => {
     const requests = withdrawalRequests[operatorAddr];
     if (!requests) return;
 
@@ -367,7 +394,11 @@ export default function UnstakingPanel({
               data: encodeFunctionData({
                 abi: depositManagerAbi,
                 functionName: "processRequests",
-                args: [operatorAddr as `0x${string}`, BigInt(withdrawableCount), receiveTON],
+                args: [
+                  operatorAddr as `0x${string}`,
+                  BigInt(withdrawableCount),
+                  receiveTON,
+                ],
               }),
             },
           ],
@@ -384,7 +415,11 @@ export default function UnstakingPanel({
           address: depositManagerAddr,
           abi: depositManagerAbi,
           functionName: "processRequests",
-          args: [operatorAddr as `0x${string}`, BigInt(withdrawableCount), receiveTON],
+          args: [
+            operatorAddr as `0x${string}`,
+            BigInt(withdrawableCount),
+            receiveTON,
+          ],
         });
       }
 
@@ -468,23 +503,34 @@ export default function UnstakingPanel({
       </div>
 
       {/* Summary Cards */}
-      {(totalPendingAmount > BigInt(0) || totalWithdrawableAmount > BigInt(0)) && (
+      {(totalPendingAmount > BigInt(0) ||
+        totalWithdrawableAmount > BigInt(0)) && (
         <div className="grid grid-cols-2 gap-3 mb-5">
           <div className="p-3 rounded-lg bg-white/5">
-            <div className="text-xs text-gray-500 mb-1">{t.dashboard.pendingAmount} ({totalPendingCount})</div>
+            <div className="text-xs text-gray-500 mb-1">
+              {t.dashboard.pendingAmount} ({totalPendingCount})
+            </div>
             <div className="text-sm font-mono-num text-yellow-400">
-              {Number(formatUnits(totalPendingAmount, 27)).toLocaleString("en-US", {
-                maximumFractionDigits: 2,
-              })}{" "}
+              {Number(formatUnits(totalPendingAmount, 27)).toLocaleString(
+                "en-US",
+                {
+                  maximumFractionDigits: 2,
+                },
+              )}{" "}
               WTON
             </div>
           </div>
           <div className="p-3 rounded-lg bg-white/5">
-            <div className="text-xs text-gray-500 mb-1">{t.dashboard.withdrawableAmount} ({totalWithdrawableCount})</div>
+            <div className="text-xs text-gray-500 mb-1">
+              {t.dashboard.withdrawableAmount} ({totalWithdrawableCount})
+            </div>
             <div className="text-sm font-mono-num text-green-400">
-              {Number(formatUnits(totalWithdrawableAmount, 27)).toLocaleString("en-US", {
-                maximumFractionDigits: 2,
-              })}{" "}
+              {Number(formatUnits(totalWithdrawableAmount, 27)).toLocaleString(
+                "en-US",
+                {
+                  maximumFractionDigits: 2,
+                },
+              )}{" "}
               WTON
             </div>
           </div>
@@ -493,7 +539,9 @@ export default function UnstakingPanel({
 
       {/* My Staking Positions */}
       <div className="mb-6">
-        <h3 className="text-sm text-gray-400 mb-3">{t.dashboard.myStakingPositions2}</h3>
+        <h3 className="text-sm text-gray-400 mb-3">
+          {t.dashboard.myStakingPositions2}
+        </h3>
         {operators.length === 0 ? (
           <div className="p-4 rounded-lg bg-white/5 text-center text-sm text-gray-500">
             {t.dashboard.noStakedToUnstake}
@@ -597,15 +645,23 @@ export default function UnstakingPanel({
           <div className="space-y-3">
             {Object.entries(withdrawalRequests).map(([opAddr, requests]) => {
               // Find operator name
-              const opName = operators.find((o) => o.address === opAddr)?.name ||
+              const opName =
+                operators.find((o) => o.address === opAddr)?.name ||
                 `${opAddr.slice(0, 10)}...${opAddr.slice(-6)}`;
-              const withdrawableCount = requests.filter((r) => r.isWithdrawable).length;
+              const withdrawableCount = requests.filter(
+                (r) => r.isWithdrawable,
+              ).length;
 
               return (
-                <div key={opAddr} className="rounded-lg bg-white/5 border border-white/5 overflow-hidden">
+                <div
+                  key={opAddr}
+                  className="rounded-lg bg-white/5 border border-white/5 overflow-hidden"
+                >
                   {/* Operator Header */}
                   <div className="px-4 py-2 bg-white/5 flex justify-between items-center">
-                    <span className="text-xs text-gray-400 truncate max-w-[200px]">{opName}</span>
+                    <span className="text-xs text-gray-400 truncate max-w-[200px]">
+                      {opName}
+                    </span>
                     <span className="text-xs text-gray-500 font-mono">
                       {opAddr.slice(0, 8)}...{opAddr.slice(-4)}
                     </span>
@@ -618,7 +674,9 @@ export default function UnstakingPanel({
                         <div className="flex justify-between items-center">
                           <div>
                             <span className="text-sm font-mono-num text-gray-200">
-                              {Number(formatUnits(req.amount, 27)).toLocaleString("en-US", {
+                              {Number(
+                                formatUnits(req.amount, 27),
+                              ).toLocaleString("en-US", {
                                 maximumFractionDigits: 2,
                               })}{" "}
                               WTON
@@ -635,10 +693,16 @@ export default function UnstakingPanel({
                                   {t.dashboard.waiting}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  {t.dashboard.blocksRemaining.replace("{blocks}", req.blocksRemaining.toLocaleString())}
+                                  {t.dashboard.blocksRemaining.replace(
+                                    "{blocks}",
+                                    req.blocksRemaining.toLocaleString(),
+                                  )}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  {t.dashboard.timeRemaining.replace("{time}", formatTimeRemaining(req.blocksRemaining))}
+                                  {t.dashboard.timeRemaining.replace(
+                                    "{time}",
+                                    formatTimeRemaining(req.blocksRemaining),
+                                  )}
                                 </div>
                               </div>
                             )}
@@ -681,7 +745,9 @@ export default function UnstakingPanel({
       {/* Status Messages */}
       {txHash && (
         <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 mt-4">
-          <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
+          <div className="text-sm text-green-400">
+            {t.dashboard.txSubmitted}
+          </div>
           <a
             href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${txHash}`}
             target="_blank"

@@ -12,9 +12,7 @@ export default function Footer() {
           <div className="w-6 h-6 rounded-md bg-gradient-to-br from-accent-blue to-accent-navy flex items-center justify-center text-white font-bold text-xs">
             T
           </div>
-          <span className="text-sm text-gray-400">
-            {t.footer.builtOn}
-          </span>
+          <span className="text-sm text-gray-400">{t.footer.builtOn}</span>
         </div>
 
         <div className="flex items-center gap-6 text-sm text-gray-500">

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const steps = [
@@ -94,7 +94,7 @@ function useInView(threshold = 0.2) {
           observer.disconnect();
         }
       },
-      { threshold }
+      { threshold },
     );
     observer.observe(el);
     return () => observer.disconnect();

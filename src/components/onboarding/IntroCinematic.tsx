@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
-type CinematicPhase = "boot" | "typing" | "ready" | "panning" | "reveal" | "done";
+type CinematicPhase =
+  | "boot"
+  | "typing"
+  | "ready"
+  | "panning"
+  | "reveal"
+  | "done";
 
 // ─── Terminal Typing Hook ────────────────────────────────────────────
 
@@ -11,7 +17,7 @@ function useTerminalSequence(
   lines: string[],
   active: boolean,
   charSpeed = 30,
-  lineDelay = 300
+  lineDelay = 300,
 ) {
   const [visibleLines, setVisibleLines] = useState<string[]>([]);
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
@@ -74,7 +80,15 @@ function useTerminalSequence(
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [active, currentLineIndex, currentCharIndex, lines, charSpeed, lineDelay, done]);
+  }, [
+    active,
+    currentLineIndex,
+    currentCharIndex,
+    lines,
+    charSpeed,
+    lineDelay,
+    done,
+  ]);
 
   return { visibleLines, done, skipAll };
 }
@@ -90,22 +104,26 @@ export default function IntroCinematic({
   const [phase, setPhase] = useState<CinematicPhase>("boot");
   const completeCalled = useRef(false);
 
-  const terminalLines = useMemo(() => [
-    t.onboarding.introTerminal1,
-    t.onboarding.introTerminal2,
-    t.onboarding.introTerminal3,
-    t.onboarding.introTerminal4,
-    t.onboarding.introTerminal5,
-    t.onboarding.introTerminal6,
-    t.onboarding.introTerminal7,
-    t.onboarding.introTerminal8,
-    t.onboarding.introTerminal9,
-  ], [t]);
-
-  const { visibleLines, done: typingDone, skipAll } = useTerminalSequence(
-    terminalLines,
-    phase === "typing"
+  const terminalLines = useMemo(
+    () => [
+      t.onboarding.introTerminal1,
+      t.onboarding.introTerminal2,
+      t.onboarding.introTerminal3,
+      t.onboarding.introTerminal4,
+      t.onboarding.introTerminal5,
+      t.onboarding.introTerminal6,
+      t.onboarding.introTerminal7,
+      t.onboarding.introTerminal8,
+      t.onboarding.introTerminal9,
+    ],
+    [t],
   );
+
+  const {
+    visibleLines,
+    done: typingDone,
+    skipAll,
+  } = useTerminalSequence(terminalLines, phase === "typing");
 
   // Boot → Typing
   useEffect(() => {
