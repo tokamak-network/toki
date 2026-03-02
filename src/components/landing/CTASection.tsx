@@ -70,7 +70,7 @@ export default function CTASection() {
             ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
           `}
         >
-          {t.cta.subtitle}
+          {t.cta.subtitle1}<br />{t.cta.subtitle2}
         </p>
 
         <Link

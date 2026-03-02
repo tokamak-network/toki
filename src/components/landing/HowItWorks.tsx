@@ -107,6 +107,7 @@ function StepCard({
   bullets,
   cta,
   isExpanded,
+  anyExpanded,
   onToggle,
   visible,
 }: {
@@ -117,6 +118,7 @@ function StepCard({
   bullets: string[];
   cta?: string;
   isExpanded: boolean;
+  anyExpanded: boolean;
   onToggle: () => void;
   visible: boolean;
 }) {
@@ -135,7 +137,7 @@ function StepCard({
           className={`
             absolute z-20 pointer-events-none
             transition-all duration-500
-            ${isExpanded ? "opacity-0 scale-75" : "opacity-100 scale-100"}
+            ${anyExpanded ? "opacity-0 scale-75" : "opacity-100 scale-100"}
             ${miniCharacters[index]!.position}
           `}
         >
@@ -361,6 +363,7 @@ export default function HowItWorks() {
                 bullets={stepData[i].bullets}
                 cta={stepData[i].cta}
                 isExpanded={expandedIndex === i}
+                anyExpanded={expandedIndex !== null}
                 onToggle={() => setExpandedIndex(expandedIndex === i ? null : i)}
                 visible={visible}
               />
