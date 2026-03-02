@@ -395,251 +395,220 @@ export default function StakingScreen() {
           }}
         />
       ))}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
 
-      {/* Step indicator */}
-      <div className="absolute top-4 left-4 z-30">
-        <div className="flex items-center gap-2">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
-                step > s ? "bg-accent-cyan text-white" :
-                step === s ? "bg-accent-cyan/20 border-2 border-accent-cyan text-accent-cyan" :
-                "bg-white/10 text-gray-600"
-              }`}>
-                {step > s ? "\u2713" : s}
-              </div>
-              {s < 3 && (
-                <div className={`w-8 h-0.5 transition-colors duration-500 ${step > s ? "bg-accent-cyan" : "bg-white/10"}`} />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Back button */}
-      {step > 1 && step < 4 && (
-        <button
-          onClick={() => setStep((step - 1) as Step)}
-          className="absolute top-4 right-4 z-30 px-3 py-1.5 rounded-lg bg-white/10 text-gray-400 text-sm hover:bg-white/20 transition-colors"
-        >
-          ← {t.header.howItWorks ? "Back" : "뒤로"}
-        </button>
-      )}
-
-      {/* Main content area */}
-      <div className="absolute inset-0 top-14 bottom-[140px] z-10 flex">
-        {/* Left: Toki Character */}
-        <div className="w-[35%] flex items-end justify-center pb-4">
+      {/* Character + Bottom Panel (matching OnboardingQuest layout) */}
+      <div className="absolute bottom-0 left-0 right-0 z-20">
+        <div className="max-w-3xl mx-auto">
+          {/* Toki Character - centered above bottom panel */}
           <TokiCharacter mood={mood} />
-        </div>
 
-        {/* Right: Interactive Panel */}
-        <div className="w-[65%] flex items-center justify-center p-4">
-          <div className="w-full max-w-md">
-            {/* Step 1: Operator Selection */}
-            {step === 1 && (
-              <div className="animate-slide-up">
-                <GlassPanel>
-                  <h3 className="text-sm font-semibold text-accent-cyan mb-3 tracking-wider">
-                    {t.stakingScreen.step1Title}
-                  </h3>
-
-                  <OperatorCard
-                    operators={operators}
-                    selectedOp={selectedOp}
-                    onSelect={(address) => {
-                      setSelectedOp(address);
-                      setAutoSelectedIndex(undefined);
-                    }}
-                    shuffling={shuffling}
-                    autoSelectedIndex={autoSelectedIndex}
-                  />
-
-                  <div className="flex justify-center mb-3">
-                    <button
-                      onClick={handleAutoSelect}
-                      className="px-5 py-2.5 rounded-full bg-gradient-to-r from-accent-amber/20 to-yellow-500/20 border border-accent-amber/30 text-accent-amber text-sm font-semibold hover:border-accent-amber/50 hover:scale-105 transition-all"
-                    >
-                      {t.stakingScreen.tokiPickButton}
-                    </button>
-                  </div>
-
-                  {selectedOp && (
-                    <button
-                      onClick={() => setStep(2)}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
-                    >
-                      {t.stakingScreen.nextStep} →
-                    </button>
-                  )}
-                </GlassPanel>
-              </div>
-            )}
-
-            {/* Step 2: Amount Input */}
-            {step === 2 && (
-              <div className="animate-slide-up">
-                <GlassPanel>
-                  <h3 className="text-sm font-semibold text-accent-cyan mb-3 tracking-wider">
-                    {t.stakingScreen.step2Title}
-                  </h3>
-
-                  {/* Selected operator summary */}
-                  {selectedOperator && (
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10 mb-4">
-                      <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white">
-                        {selectedOperator.name.charAt(0).toUpperCase()}
+          {/* Interactive Panel (steps 1-3) or Dialogue (step 4) */}
+          {step < 4 ? (
+            <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
+              {/* Step indicator + back button */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3].map((s) => (
+                    <div key={s} className="flex items-center gap-2">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
+                        step > s ? "bg-accent-cyan text-white" :
+                        step === s ? "bg-accent-cyan/20 border-2 border-accent-cyan text-accent-cyan" :
+                        "bg-white/10 text-gray-600"
+                      }`}>
+                        {step > s ? "\u2713" : s}
                       </div>
-                      <div>
-                        <div className="text-sm text-white font-medium">{selectedOperator.name}</div>
-                        <div className="text-xs text-gray-500">
-                          {Number(selectedOperator.totalStaked).toLocaleString("en-US", { maximumFractionDigits: 0 })} TON
+                      {s < 3 && (
+                        <div className={`w-6 h-0.5 transition-colors duration-500 ${step > s ? "bg-accent-cyan" : "bg-white/10"}`} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {step > 1 && (
+                  <button
+                    onClick={() => setStep((step - 1) as Step)}
+                    className="px-3 py-1 rounded-lg bg-white/10 text-gray-400 text-xs hover:bg-white/20 transition-colors"
+                  >
+                    ← Back
+                  </button>
+                )}
+              </div>
+
+              {/* Dialogue text with typewriter */}
+              <DialogueInline text={dialogue} mood={mood} stepProgress={t.stakingScreen.stepLabel.replace("{current}", String(step)).replace("{total}", "3")} />
+
+              {/* Step content */}
+              <div className="mt-4 space-y-4">
+                {/* Step 1: Operator Selection */}
+                {step === 1 && (
+                  <>
+                    <OperatorCard
+                      operators={operators}
+                      selectedOp={selectedOp}
+                      onSelect={(address) => {
+                        setSelectedOp(address);
+                        setAutoSelectedIndex(undefined);
+                      }}
+                      shuffling={shuffling}
+                      autoSelectedIndex={autoSelectedIndex}
+                    />
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleAutoSelect}
+                        className="flex-1 py-3 rounded-xl bg-gradient-to-r from-accent-amber/20 to-yellow-500/20 border border-accent-amber/30 text-accent-amber text-sm font-semibold hover:border-accent-amber/50 hover:scale-[1.02] transition-all"
+                      >
+                        {t.stakingScreen.tokiPickButton}
+                      </button>
+                      {selectedOp && (
+                        <button
+                          onClick={() => setStep(2)}
+                          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
+                        >
+                          {t.stakingScreen.nextStep} →
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Step 2: Amount Input */}
+                {step === 2 && (
+                  <>
+                    {selectedOperator && (
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white">
+                          {selectedOperator.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="text-sm text-white font-medium">{selectedOperator.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {Number(selectedOperator.totalStaked).toLocaleString("en-US", { maximumFractionDigits: 0 })} TON
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Amount input */}
-                  <div className="mb-4">
-                    <div className="relative">
-                      <input
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        placeholder="0.0"
-                        min="0"
-                        step="any"
-                        className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-accent-cyan/50 font-mono-num"
-                      />
+                    <div>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={amount}
+                          onChange={(e) => setAmount(e.target.value)}
+                          placeholder="0.0"
+                          min="0"
+                          step="any"
+                          className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-accent-cyan/50 font-mono-num"
+                        />
+                        <button
+                          onClick={() => setAmount(tonBalance)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-accent-cyan/10 text-accent-cyan text-xs font-semibold hover:bg-accent-cyan/20 transition-colors"
+                        >
+                          MAX
+                        </button>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-2">
+                        {t.dashboard.balance} {Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 })} TON
+                      </div>
+                    </div>
+
+                    {amount && Number(amount) > 0 && (
                       <button
-                        onClick={() => setAmount(tonBalance)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-accent-cyan/10 text-accent-cyan text-xs font-semibold hover:bg-accent-cyan/20 transition-colors"
+                        onClick={() => setStep(3)}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
                       >
-                        MAX
+                        {t.stakingScreen.nextStep} →
                       </button>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2">
-                      {t.dashboard.balance} {Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 })} TON
-                    </div>
-                  </div>
+                    )}
+                  </>
+                )}
 
-                  {amount && Number(amount) > 0 && (
-                    <button
-                      onClick={() => setStep(3)}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
-                    >
-                      {t.stakingScreen.nextStep} →
-                    </button>
-                  )}
-                </GlassPanel>
-              </div>
-            )}
-
-            {/* Step 3: Execute */}
-            {step === 3 && (
-              <div className="animate-slide-up">
-                <GlassPanel>
-                  <h3 className="text-sm font-semibold text-accent-cyan mb-4 tracking-wider">
-                    {t.stakingScreen.step3Title}
-                  </h3>
-
-                  {/* Summary */}
-                  <div className="space-y-3 mb-6">
-                    <div className="flex justify-between p-3 rounded-lg bg-white/5">
-                      <span className="text-gray-400 text-sm">{t.stakingScreen.step1Title}</span>
-                      <span className="text-white text-sm font-medium">{selectedOperator?.name}</span>
+                {/* Step 3: Execute */}
+                {step === 3 && (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex justify-between p-3 rounded-lg bg-white/5">
+                        <span className="text-gray-400 text-sm">{t.stakingScreen.step1Title}</span>
+                        <span className="text-white text-sm font-medium">{selectedOperator?.name}</span>
+                      </div>
+                      <div className="flex justify-between p-3 rounded-lg bg-white/5">
+                        <span className="text-gray-400 text-sm">{t.stakingScreen.step2Title}</span>
+                        <span className="text-white text-sm font-mono-num">{amount} TON</span>
+                      </div>
+                      {smartAccountClient && paymasterMode === "sponsor" && (
+                        <div className="flex justify-between p-3 rounded-lg bg-green-500/5">
+                          <span className="text-gray-400 text-sm">Gas</span>
+                          <span className="text-green-400 text-sm font-medium">{t.dashboard.gaslessShort}</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex justify-between p-3 rounded-lg bg-white/5">
-                      <span className="text-gray-400 text-sm">{t.stakingScreen.step2Title}</span>
-                      <span className="text-white text-sm font-mono-num">{amount} TON</span>
-                    </div>
-                    {smartAccountClient && paymasterMode === "sponsor" && (
-                      <div className="flex justify-between p-3 rounded-lg bg-green-500/5">
-                        <span className="text-gray-400 text-sm">Gas</span>
-                        <span className="text-green-400 text-sm font-medium">{t.dashboard.gaslessShort}</span>
+
+                    {!error ? (
+                      <button
+                        onClick={handleStake}
+                        disabled={staking}
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold text-lg disabled:opacity-50 hover:scale-[1.02] transition-transform shadow-lg shadow-accent-cyan/20 animate-glow-cyan"
+                      >
+                        {staking ? t.stakingScreen.step3Staking : t.stakingScreen.stakeButton}
+                      </button>
+                    ) : (
+                      <>
+                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                          <div className="text-sm text-red-400 break-all">{error}</div>
+                        </div>
+                        <button
+                          onClick={() => { setError(null); setTxHash(null); }}
+                          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold text-sm hover:bg-white/15 transition-colors"
+                        >
+                          {t.stakingScreen.retryButton}
+                        </button>
+                      </>
+                    )}
+
+                    {txHash && !error && (
+                      <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                        <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
+                        <a
+                          href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-green-500 hover:text-green-300 font-mono break-all"
+                        >
+                          {txHash}
+                        </a>
                       </div>
                     )}
-                  </div>
-
-                  {/* Stake button */}
-                  {!error ? (
-                    <button
-                      onClick={handleStake}
-                      disabled={staking}
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold text-lg disabled:opacity-50 hover:scale-[1.02] transition-transform shadow-lg shadow-accent-cyan/20 animate-glow-cyan"
-                    >
-                      {staking ? t.stakingScreen.step3Staking : t.stakingScreen.stakeButton}
-                    </button>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                        <div className="text-sm text-red-400 break-all">{error}</div>
-                      </div>
-                      <button
-                        onClick={() => { setError(null); setTxHash(null); }}
-                        className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold text-sm hover:bg-white/15 transition-colors"
-                      >
-                        {t.stakingScreen.retryButton}
-                      </button>
-                    </div>
-                  )}
-
-                  {txHash && !error && (
-                    <div className="mt-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                      <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
-                      <a
-                        href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-green-500 hover:text-green-300 font-mono break-all"
-                      >
-                        {txHash}
-                      </a>
-                    </div>
-                  )}
-                </GlassPanel>
+                  </>
+                )}
               </div>
-            )}
-
-            {/* Step 4: Celebration */}
-            {step === 4 && (
-              <div className="animate-slide-up flex flex-col items-center">
+            </div>
+          ) : (
+            /* Step 4: Celebration - full bottom panel */
+            <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-8 sm:px-8">
+              <div className="max-w-2xl mx-auto text-center animate-fade-in">
                 <div className="text-accent-amber text-sm font-semibold tracking-widest mb-4 animate-pulse">
                   {t.stakingScreen.step4CardUnlocked}
                 </div>
 
-                {/* Member Card */}
-                <div className={`transition-all duration-700 ${cardRevealed ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-75 rotate-12"}`}>
+                <div className={`flex justify-center mb-6 transition-all duration-700 ${cardRevealed ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-75 rotate-12"}`}>
                   <UnlockedCard tier={cardTier} />
                 </div>
 
+                <p className="text-gray-100 text-base leading-relaxed mb-6">
+                  {dialogue}
+                </p>
+
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="mt-6 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-105 transition-transform"
+                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
                 >
                   {t.stakingScreen.goToDashboard} →
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Bottom Dialogue Bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-20">
-        <DialogueBar text={dialogue} mood={mood} />
-      </div>
-    </div>
-  );
-}
-
-// ─── Glass Panel ─────────────────────────────────────────────────────
-
-function GlassPanel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
-      {children}
     </div>
   );
 }
@@ -665,46 +634,47 @@ function TokiCharacter({ mood }: { mood: Mood }) {
   const glowColor = MOOD_GLOW[mood];
 
   return (
-    <div className="relative w-48 sm:w-64 md:w-72 lg:w-80 overflow-visible">
-      <div
-        className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 transition-colors duration-700 opacity-40"
-        style={{ backgroundColor: glowColor }}
-      />
-      <Image
-        src={transitioning ? prevSrc : imageSrc}
-        alt="Toki"
-        width={512}
-        height={512}
-        className={`relative z-10 drop-shadow-2xl transition-opacity duration-200 w-full h-auto ${
-          transitioning ? "opacity-0" : "opacity-100"
-        }`}
-        priority
-      />
+    <div className="flex justify-center z-10">
+      <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] overflow-visible">
+        <div
+          className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 animate-glow-pulse transition-colors duration-700 opacity-40"
+          style={{ backgroundColor: glowColor }}
+        />
+        <Image
+          src={transitioning ? prevSrc : imageSrc}
+          alt="Toki"
+          width={512}
+          height={512}
+          className={`relative z-10 drop-shadow-2xl transition-opacity duration-200 w-full h-auto ${
+            transitioning ? "opacity-0" : "opacity-100"
+          }`}
+          priority
+        />
+      </div>
     </div>
   );
 }
 
-// ─── Dialogue Bar ────────────────────────────────────────────────────
+// ─── Dialogue Inline (matches OnboardingQuest DialogueBox) ───────────
 
-function DialogueBar({ text, mood }: { text: string; mood: Mood }) {
+function DialogueInline({ text, mood, stepProgress }: { text: string; mood: Mood; stepProgress: string }) {
   const { displayed, done, skip } = useTypewriter(text, 30);
 
   return (
     <div className="cursor-pointer select-none" onClick={() => !done && skip()}>
-      <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 px-6 py-5 sm:px-8 sm:py-6 h-[130px] sm:h-[140px] flex flex-col">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cyan/10 border border-accent-cyan/30">
-            <span className="text-accent-cyan font-bold text-sm tracking-wide">Toki</span>
-            <span className="text-xs text-accent-cyan/60">{mood}</span>
-          </div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/30">
+          <span className="text-accent-cyan font-bold text-sm tracking-wide">Toki</span>
+          <span className="text-xs text-accent-cyan/60">{mood}</span>
         </div>
-        <p className="text-gray-100 text-sm sm:text-base leading-relaxed flex-1">
-          {displayed}
-          {!done && (
-            <span className="inline-block w-0.5 h-4 bg-accent-cyan ml-0.5 animate-pulse align-middle" />
-          )}
-        </p>
+        <span className="text-xs text-gray-500 tabular-nums">{stepProgress}</span>
       </div>
+      <p className="text-gray-100 text-base sm:text-lg leading-relaxed">
+        {displayed}
+        {!done && (
+          <span className="inline-block w-0.5 h-5 bg-accent-cyan ml-0.5 animate-pulse align-middle" />
+        )}
+      </p>
     </div>
   );
 }
