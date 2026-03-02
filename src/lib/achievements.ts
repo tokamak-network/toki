@@ -285,6 +285,30 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
 ];
 
+// ─── Card Tiers ──────────────────────────────────────────────────────────────
+
+export interface CardTier {
+  level: number;
+  tier: string;
+  name: string;
+  charImage: string;
+  bgImage: string;
+  stars: number;
+  threshold: number;
+}
+
+export const CARD_TIERS: CardTier[] = [
+  { level: 1, tier: "BRONZE", name: "Beginner", charImage: "/toki-card-bronze.png", bgImage: "/card-bg-bronze.png", stars: 1, threshold: 0 },
+  { level: 2, tier: "SILVER", name: "Explorer", charImage: "/toki-card-silver.png", bgImage: "/card-bg-silver.png", stars: 2, threshold: 500 },
+  { level: 3, tier: "GOLD", name: "Staker", charImage: "/toki-card-gold-v2.png", bgImage: "/card-bg-gold.png", stars: 3, threshold: 1500 },
+  { level: 4, tier: "PLATINUM", name: "Expert", charImage: "/toki-card-platinum.png", bgImage: "/card-bg-platinum.png", stars: 4, threshold: 3000 },
+  { level: 5, tier: "TOKI BLACK", name: "Master", charImage: "/toki-card-black.png", bgImage: "/card-bg-black.png", stars: 5, threshold: 5000 },
+];
+
+export function getCardTier(level: number): CardTier {
+  return CARD_TIERS[Math.min(level, 5) - 1] || CARD_TIERS[0];
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export function checkCondition(achievement: Achievement, storage: AchievementStorage): boolean {

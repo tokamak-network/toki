@@ -1,8 +1,19 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback, type MouseEvent } from "react";
+import Image from "next/image";
 import type { Achievement, AchievementCategory } from "@/lib/achievements";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+
+// ─── Card Image Map (shared with AchievementCard) ─────────────────────────────
+const CARD_IMAGES: Record<string, string> = {
+  "onboarding-wallet": "/cards/onboarding-wallet.png",
+  "onboarding-bridge": "/cards/onboarding-bridge.png",
+  "onboarding-exchange": "/cards/onboarding-exchange.png",
+  "onboarding-ton": "/cards/onboarding-ton.png",
+  "onboarding-complete": "/cards/onboarding-complete.png",
+  "stake-first": "/cards/stake-first.png",
+};
 
 // ─── Category Styles (shared with AchievementCard) ────────────────────────────
 
@@ -52,6 +63,8 @@ export default function CardDetailModal({ achievement, unlocked, onClose }: Card
   const rarity = getRarity(achievement.points);
   const isSpecial = achievement.category === "special";
   const starsStr = "\u2605".repeat(rarity.stars) + "\u2606".repeat(5 - rarity.stars);
+  const cardImage = CARD_IMAGES[achievement.id];
+  const hasImage = !!cardImage;
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
@@ -112,113 +125,157 @@ export default function CardDetailModal({ achievement, unlocked, onClose }: Card
               transformStyle: "preserve-3d",
             }}
           >
-            <div
-              className="relative w-[260px] h-[364px] sm:w-[300px] sm:h-[420px] rounded-2xl overflow-hidden"
-              style={{
-                border: `3px solid ${unlocked ? cat.border : "rgba(255,255,255,0.1)"}`,
-                boxShadow: unlocked
-                  ? `0 0 40px ${cat.glow}, 0 8px 32px rgba(0,0,0,0.5)`
-                  : "0 8px 32px rgba(0,0,0,0.4)",
-              }}
-            >
-              {/* Background */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${unlocked ? cat.bg : "from-gray-900/80 to-gray-800/60"}`} />
-
-              {/* Hologram for special */}
-              {isSpecial && unlocked && (
-                <div
-                  className="absolute inset-0 pointer-events-none z-[3] opacity-30"
-                  style={{
-                    background: hovered
-                      ? `conic-gradient(from ${light.x * 3.6}deg at ${light.x}% ${light.y}%, #ff0080, #ff8c00, #40e0d0, #7b68ee, #ff0080)`
-                      : "conic-gradient(from 0deg at 50% 50%, #ff0080, #ff8c00, #40e0d0, #7b68ee, #ff0080)",
-                    mixBlendMode: "overlay",
-                  }}
+            {hasImage ? (
+              /* Image-based card */
+              <div
+                className={`relative w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] rounded-2xl overflow-hidden bg-black ${
+                  unlocked ? "" : "grayscale brightness-50"
+                }`}
+                style={{
+                  border: `3px solid ${unlocked ? cat.border : "rgba(255,255,255,0.1)"}`,
+                  boxShadow: unlocked
+                    ? `0 0 60px ${cat.glow}, 0 8px 32px rgba(0,0,0,0.5)`
+                    : "0 8px 32px rgba(0,0,0,0.4)",
+                }}
+              >
+                <Image
+                  src={cardImage}
+                  alt={title}
+                  fill
+                  className="object-contain"
+                  sizes="400px"
+                  priority
                 />
-              )}
 
-              {/* Light reflection */}
-              {hovered && unlocked && (
-                <div
-                  className="absolute inset-0 pointer-events-none z-[4]"
-                  style={{
-                    background: `radial-gradient(circle at ${light.x}% ${light.y}%, rgba(255,255,255,0.35) 0%, transparent 50%)`,
-                  }}
-                />
-              )}
-
-              {/* Card content */}
-              <div className="relative z-[2] h-full flex flex-col p-5">
-                {/* Top bar */}
-                <div className="flex items-center justify-between mb-3">
-                  <span
-                    className="text-[9px] font-bold tracking-[0.2em] px-2 py-1 rounded"
+                {/* Light reflection on hover */}
+                {hovered && unlocked && (
+                  <div
+                    className="absolute inset-0 pointer-events-none z-[4]"
                     style={{
-                      backgroundColor: unlocked ? `${cat.border}25` : "rgba(255,255,255,0.05)",
-                      color: unlocked ? cat.border : "rgba(255,255,255,0.3)",
+                      background: `radial-gradient(circle at ${light.x}% ${light.y}%, rgba(255,255,255,0.35) 0%, transparent 50%)`,
                     }}
-                  >
-                    {CATEGORY_LABELS[achievement.category]}
-                  </span>
-                  <span className="text-xs font-bold text-gray-500">
-                    #{achievement.id.split("-").pop()?.toUpperCase()}
-                  </span>
-                </div>
+                  />
+                )}
 
-                {/* Illustration */}
-                <div className="flex-1 flex items-center justify-center">
-                  {unlocked ? (
-                    <div className="text-7xl sm:text-8xl drop-shadow-lg select-none">
-                      {achievement.icon}
+                {/* Locked overlay */}
+                {!unlocked && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-[3]">
+                    <div className="w-16 h-16 rounded-full bg-black/60 border border-white/10 flex items-center justify-center">
+                      <span className="text-white/30 text-3xl">?</span>
                     </div>
-                  ) : (
-                    <div className="relative">
-                      <div className="text-7xl sm:text-8xl opacity-15 blur-[3px] select-none">
-                        {achievement.icon}
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                          <span className="text-white/25 text-3xl">?</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Divider */}
-                <div className="h-px w-full mb-3" style={{ backgroundColor: unlocked ? `${cat.border}40` : "rgba(255,255,255,0.08)" }} />
-
-                {/* Bottom info */}
-                <div>
-                  <div className={`text-base font-bold mb-1 ${unlocked ? "text-white" : "text-gray-600"}`}>
-                    {unlocked ? title : "???"}
                   </div>
-                  <div className={`text-xs leading-relaxed mb-2 ${unlocked ? "text-gray-400" : "text-gray-700"}`}>
-                    {unlocked ? desc : "???"}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div
-                      className="text-sm tracking-wider"
+                )}
+              </div>
+            ) : (
+              /* Fallback: emoji-based card */
+              <div
+                className="relative w-[260px] h-[364px] sm:w-[300px] sm:h-[420px] rounded-2xl overflow-hidden"
+                style={{
+                  border: `3px solid ${unlocked ? cat.border : "rgba(255,255,255,0.1)"}`,
+                  boxShadow: unlocked
+                    ? `0 0 40px ${cat.glow}, 0 8px 32px rgba(0,0,0,0.5)`
+                    : "0 8px 32px rgba(0,0,0,0.4)",
+                }}
+              >
+                {/* Background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${unlocked ? cat.bg : "from-gray-900/80 to-gray-800/60"}`} />
+
+                {/* Hologram for special */}
+                {isSpecial && unlocked && (
+                  <div
+                    className="absolute inset-0 pointer-events-none z-[3] opacity-30"
+                    style={{
+                      background: hovered
+                        ? `conic-gradient(from ${light.x * 3.6}deg at ${light.x}% ${light.y}%, #ff0080, #ff8c00, #40e0d0, #7b68ee, #ff0080)`
+                        : "conic-gradient(from 0deg at 50% 50%, #ff0080, #ff8c00, #40e0d0, #7b68ee, #ff0080)",
+                      mixBlendMode: "overlay",
+                    }}
+                  />
+                )}
+
+                {/* Light reflection */}
+                {hovered && unlocked && (
+                  <div
+                    className="absolute inset-0 pointer-events-none z-[4]"
+                    style={{
+                      background: `radial-gradient(circle at ${light.x}% ${light.y}%, rgba(255,255,255,0.35) 0%, transparent 50%)`,
+                    }}
+                  />
+                )}
+
+                {/* Card content */}
+                <div className="relative z-[2] h-full flex flex-col p-5">
+                  {/* Top bar */}
+                  <div className="flex items-center justify-between mb-3">
+                    <span
+                      className="text-[9px] font-bold tracking-[0.2em] px-2 py-1 rounded"
                       style={{
-                        background: unlocked
-                          ? "linear-gradient(180deg, #fcd34d, #b45309)"
-                          : "linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))",
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
+                        backgroundColor: unlocked ? `${cat.border}25` : "rgba(255,255,255,0.05)",
+                        color: unlocked ? cat.border : "rgba(255,255,255,0.3)",
                       }}
                     >
-                      {starsStr}
-                    </div>
-                    <span
-                      className="text-sm font-bold font-mono-num"
-                      style={{ color: unlocked ? "#fcd34d" : "rgba(255,255,255,0.15)" }}
-                    >
-                      {achievement.points} XP
+                      {CATEGORY_LABELS[achievement.category]}
                     </span>
+                    <span className="text-xs font-bold text-gray-500">
+                      #{achievement.id.split("-").pop()?.toUpperCase()}
+                    </span>
+                  </div>
+
+                  {/* Illustration */}
+                  <div className="flex-1 flex items-center justify-center">
+                    {unlocked ? (
+                      <div className="text-7xl sm:text-8xl drop-shadow-lg select-none">
+                        {achievement.icon}
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <div className="text-7xl sm:text-8xl opacity-15 blur-[3px] select-none">
+                          {achievement.icon}
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                            <span className="text-white/25 text-3xl">?</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-px w-full mb-3" style={{ backgroundColor: unlocked ? `${cat.border}40` : "rgba(255,255,255,0.08)" }} />
+
+                  {/* Bottom info */}
+                  <div>
+                    <div className={`text-base font-bold mb-1 ${unlocked ? "text-white" : "text-gray-600"}`}>
+                      {unlocked ? title : "???"}
+                    </div>
+                    <div className={`text-xs leading-relaxed mb-2 ${unlocked ? "text-gray-400" : "text-gray-700"}`}>
+                      {unlocked ? desc : "???"}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="text-sm tracking-wider"
+                        style={{
+                          background: unlocked
+                            ? "linear-gradient(180deg, #fcd34d, #b45309)"
+                            : "linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        {starsStr}
+                      </div>
+                      <span
+                        className="text-sm font-bold font-mono-num"
+                        style={{ color: unlocked ? "#fcd34d" : "rgba(255,255,255,0.15)" }}
+                      >
+                        {achievement.points} XP
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

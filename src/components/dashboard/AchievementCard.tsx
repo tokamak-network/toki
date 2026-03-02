@@ -1,7 +1,19 @@
 "use client";
 
 import { useState, useRef, useCallback, type MouseEvent } from "react";
+import Image from "next/image";
 import type { Achievement, AchievementCategory } from "@/lib/achievements";
+
+// ─── Card Image Map ──────────────────────────────────────────────────────────
+// Maps achievement IDs to card image paths in /public/cards/
+const CARD_IMAGES: Record<string, string> = {
+  "onboarding-wallet": "/cards/onboarding-wallet.png",
+  "onboarding-bridge": "/cards/onboarding-bridge.png",
+  "onboarding-exchange": "/cards/onboarding-exchange.png",
+  "onboarding-ton": "/cards/onboarding-ton.png",
+  "onboarding-complete": "/cards/onboarding-complete.png",
+  "stake-first": "/cards/stake-first.png",
+};
 
 // ─── Category Styles ──────────────────────────────────────────────────────────
 
@@ -71,7 +83,87 @@ export default function AchievementCard({ achievement, unlocked, title, isNew, o
   const rarity = getRarity(achievement.points);
   const isSpecial = achievement.category === "special";
   const starsStr = "\u2605".repeat(rarity.stars) + "\u2606".repeat(5 - rarity.stars);
+  const cardImage = CARD_IMAGES[achievement.id];
+  const hasImage = !!cardImage;
 
+  // Card with actual image — the image IS the card (includes border, title, XP, etc.)
+  if (hasImage) {
+    return (
+      <div style={{ perspective: "800px" }}>
+        <div
+          ref={cardRef}
+          onMouseMove={handleMouseMove}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={handleLeave}
+          onClick={onClick}
+          className={`relative cursor-pointer transition-transform duration-200 ease-out ${
+            unlocked ? "" : "grayscale brightness-50"
+          }`}
+          style={{
+            transform: hovered && unlocked
+              ? `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale(1.05)`
+              : "rotateX(0) rotateY(0) scale(1)",
+            transformStyle: "preserve-3d",
+          }}
+        >
+          <div
+            className="relative w-full rounded-xl overflow-hidden bg-black"
+            style={{
+              aspectRatio: "630/948",
+              border: `2px solid ${unlocked ? cat.border : "rgba(255,255,255,0.1)"}`,
+              boxShadow: unlocked ? `0 0 20px ${cat.glow}, 0 4px 20px rgba(0,0,0,0.4)` : "0 4px 20px rgba(0,0,0,0.3)",
+            }}
+          >
+            <Image
+              src={cardImage}
+              alt={title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
+            />
+
+            {/* Light reflection on hover */}
+            {hovered && unlocked && (
+              <div
+                className="absolute inset-0 pointer-events-none z-[4]"
+                style={{
+                  background: `radial-gradient(circle at ${light.x}% ${light.y}%, rgba(255,255,255,0.3) 0%, transparent 50%)`,
+                }}
+              />
+            )}
+
+            {/* Locked overlay */}
+            {!unlocked && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-[3]">
+                <div className="w-10 h-10 rounded-full bg-black/60 border border-white/10 flex items-center justify-center">
+                  <span className="text-white/40 text-lg">?</span>
+                </div>
+              </div>
+            )}
+
+            {/* NEW badge */}
+            {isNew && unlocked && (
+              <div className="absolute top-1.5 right-1.5 z-[5]">
+                <span className="px-1.5 py-0.5 rounded text-[7px] font-black tracking-wider bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/30">
+                  NEW
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Unlocked glow pulse */}
+          {unlocked && (
+            <div
+              className="absolute inset-0 rounded-xl pointer-events-none animate-pulse opacity-20"
+              style={{ boxShadow: `inset 0 0 30px ${cat.glow}` }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback: emoji-based card for achievements without images
   return (
     <div style={{ perspective: "800px" }}>
       <div

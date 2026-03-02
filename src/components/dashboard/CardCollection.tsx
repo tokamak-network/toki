@@ -133,7 +133,8 @@ export default function CardCollection() {
         {/* Card Grid */}
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
           {sorted.map((achievement) => {
-            const unlocked = storage.unlocked.includes(achievement.id);
+            // TODO: remove temp preview unlock
+            const unlocked = achievement.id === "onboarding-wallet" || storage.unlocked.includes(achievement.id);
             const title = locale === "ko" ? achievement.titleKo : achievement.titleEn;
 
             return (
@@ -153,7 +154,7 @@ export default function CardCollection() {
       {selectedCard && (
         <CardDetailModal
           achievement={selectedCard}
-          unlocked={storage.unlocked.includes(selectedCard.id)}
+          unlocked={selectedCard.id === "onboarding-wallet" || storage.unlocked.includes(selectedCard.id)}
           onClose={() => setSelectedCard(null)}
         />
       )}
