@@ -190,6 +190,7 @@ const en = {
     verified: "Verified",
     allWallets: "All Wallets",
     staking: "Staking",
+    stakingDesc: "Stake your TON and earn rewards",
     refresh: "Refresh",
     selectOperator: "Select Operator",
     total: "Total:",

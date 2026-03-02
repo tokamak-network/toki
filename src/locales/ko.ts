@@ -190,6 +190,7 @@ const ko = {
     verified: "인증됨",
     allWallets: "모든 지갑",
     staking: "스테이킹",
+    stakingDesc: "TON을 스테이킹하고 보상을 받아보세요",
     refresh: "새로고침",
     selectOperator: "오퍼레이터 선택",
     total: "전체:",

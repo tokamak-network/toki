@@ -6,13 +6,9 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { formatUnits } from "viem";
 import { createPublicClient, http } from "viem";
 import { sepolia, mainnet } from "viem/chains";
-import StakingPanel from "./StakingPanel";
-import StakingPanelBeginner from "./StakingPanelBeginner";
 import Link from "next/link";
-import UnstakingPanel from "./UnstakingPanel";
-import AchievementPanel from "./AchievementPanel";
+import CardCollection from "./CardCollection";
 import { useEip7702 } from "@/hooks/useEip7702";
-import { useSessionKey } from "@/hooks/useSessionKey";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
@@ -51,26 +47,13 @@ interface Balances {
 export default function DashboardContent() {
   const { ready, authenticated, user, logout, exportWallet } = usePrivy();
   const { wallets } = useWallets();
-  const { smartAccountClient, walletType, paymasterMode, isMetaMask } = useEip7702();
+  const { smartAccountClient, walletType, paymasterMode } = useEip7702();
   const router = useRouter();
   const [balances, setBalances] = useState<Balances | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
-  const [stakingUiMode, setStakingUiMode] = useState<"beginner" | "expert">(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("toki-staking-mode") as "beginner" | "expert") || "beginner";
-    }
-    return "beginner";
-  });
-  const [stakingTab, setStakingTab] = useState<"staking" | "unstaking">("staking");
-  const [isFirstStake] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !localStorage.getItem("toki-first-stake-done");
-    }
-    return true;
-  });
   const { t } = useTranslation();
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
@@ -127,16 +110,6 @@ export default function DashboardContent() {
       router.push("/");
     }
   }, [ready, authenticated, router]);
-
-  const getEthereumProvider = useCallback(async () => {
-    if (!primaryWallet) throw new Error("No wallet connected");
-    return await primaryWallet.getEthereumProvider();
-  }, [primaryWallet]);
-
-  const sessionKey = useSessionKey(
-    primaryWallet ? getEthereumProvider : null,
-    (primaryWallet?.address as `0x${string}`) || null,
-  );
 
   useEffect(() => {
     if (balanceAddress) {
@@ -357,117 +330,30 @@ export default function DashboardContent() {
           </div>
         </div>
 
-        {/* Achievement Panel */}
-        <AchievementPanel />
-
-        {/* Staking / Unstaking Tabs + Panel */}
-        {primaryWallet && (
-          <div className="mb-6">
-            {/* Staking / Unstaking Tab */}
-            <div className="flex items-center gap-1 mb-4 p-1 rounded-xl bg-white/5 w-fit">
-              <button
-                onClick={() => setStakingTab("staking")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  stakingTab === "staking"
-                    ? "bg-accent-blue/20 text-accent-cyan"
-                    : "text-gray-500 hover:text-gray-300"
-                }`}
-              >
-                {t.dashboard.stakingTab}
-              </button>
-              <button
-                onClick={() => setStakingTab("unstaking")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  stakingTab === "unstaking"
-                    ? "bg-accent-blue/20 text-accent-cyan"
-                    : "text-gray-500 hover:text-gray-300"
-                }`}
-              >
-                {t.dashboard.unstakingTab}
-              </button>
+        {/* Quick Actions */}
+        <div className="flex gap-3 mb-6">
+          <Link
+            href="/staking"
+            className="flex-1 p-4 rounded-xl bg-gradient-to-r from-accent-blue/10 to-accent-cyan/10 border border-accent-cyan/20 hover:border-accent-cyan/40 transition-all group"
+          >
+            <div className="text-accent-cyan font-semibold text-sm mb-1 group-hover:translate-x-1 transition-transform">
+              {t.dashboard.staking} →
             </div>
+            <div className="text-xs text-gray-500">{t.dashboard.stakingDesc}</div>
+          </Link>
+          <a
+            href="/explore"
+            className="flex-1 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:border-purple-500/40 transition-all group"
+          >
+            <div className="text-purple-400 font-semibold text-sm mb-1 group-hover:translate-x-1 transition-transform">
+              {t.dashboard.exploreButton} →
+            </div>
+            <div className="text-xs text-gray-500">{t.dashboard.exploreDesc}</div>
+          </a>
+        </div>
 
-            {stakingTab === "staking" ? (
-              <>
-                {/* Beginner / Expert Mode Toggle */}
-                <div className="flex items-center gap-1 mb-4 p-1 rounded-xl bg-white/5 w-fit">
-                  <button
-                    onClick={() => {
-                      setStakingUiMode("beginner");
-                      localStorage.setItem("toki-staking-mode", "beginner");
-                    }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      stakingUiMode === "beginner"
-                        ? "bg-accent-blue/20 text-accent-cyan"
-                        : "text-gray-500 hover:text-gray-300"
-                    }`}
-                  >
-                    {t.dashboard.beginnerMode}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStakingUiMode("expert");
-                      localStorage.setItem("toki-staking-mode", "expert");
-                    }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      stakingUiMode === "expert"
-                        ? "bg-accent-blue/20 text-accent-cyan"
-                        : "text-gray-500 hover:text-gray-300"
-                    }`}
-                  >
-                    {t.dashboard.expertMode}
-                  </button>
-                </div>
-
-                {stakingUiMode === "beginner" ? (
-                  isFirstStake ? (
-                    <div className="card p-6 text-center">
-                      <div className="mb-4">
-                        <div className="text-4xl mb-2">&#x2728;</div>
-                        <h3 className="text-lg font-semibold text-white mb-2">{t.dashboard.staking}</h3>
-                        <p className="text-sm text-gray-400">{t.stakingScreen.step1Dialogue}</p>
-                      </div>
-                      <Link
-                        href="/staking"
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-105 transition-transform"
-                      >
-                        {t.stakingScreen.stakeButton} →
-                      </Link>
-                    </div>
-                  ) : (
-                    <StakingPanelBeginner
-                      walletAddress={primaryWallet.address}
-                      getEthereumProvider={getEthereumProvider}
-                      smartAccountClient={smartAccountClient}
-                      onBalanceChange={fetchBalances}
-                      paymasterMode={paymasterMode}
-                      isMetaMask={isMetaMask}
-                      sessionKey={sessionKey}
-                    />
-                  )
-                ) : (
-                  <StakingPanel
-                    walletAddress={primaryWallet.address}
-                    getEthereumProvider={getEthereumProvider}
-                    smartAccountClient={smartAccountClient}
-                    onBalanceChange={fetchBalances}
-                    paymasterMode={paymasterMode}
-                    isMetaMask={isMetaMask}
-                    sessionKey={sessionKey}
-                  />
-                )}
-              </>
-            ) : (
-              <UnstakingPanel
-                walletAddress={primaryWallet.address}
-                getEthereumProvider={getEthereumProvider}
-                smartAccountClient={smartAccountClient}
-                onBalanceChange={fetchBalances}
-                paymasterMode={paymasterMode}
-              />
-            )}
-          </div>
-        )}
+        {/* Card Collection */}
+        <CardCollection />
 
         {/* Connected Accounts */}
         <div className="card p-6 mb-6">
@@ -494,22 +380,6 @@ export default function DashboardContent() {
                 ) : null}
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Ecosystem Banner */}
-        <div className="card p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">{t.dashboard.exploreTitle}</h2>
-              <p className="text-sm text-gray-500">{t.dashboard.exploreDesc}</p>
-            </div>
-            <a
-              href="/explore"
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-accent-blue/20 to-accent-cyan/20 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:from-accent-blue/30 hover:to-accent-cyan/30 transition-all shrink-0"
-            >
-              {t.dashboard.exploreButton} →
-            </a>
           </div>
         </div>
 
