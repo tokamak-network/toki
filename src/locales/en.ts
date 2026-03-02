@@ -463,6 +463,32 @@ const en = {
     complete: "First stake done! You can check your rewards on the dashboard anytime.",
     tokiPickButton: "Toki's Pick!",
   },
+  stakingScreen: {
+    // Step 1: Operator
+    step1Title: "Choose Operator",
+    step1Dialogue: "First, let's pick where to stake! An operator manages your TON for you.",
+    step1OperatorSelected: "Nice! You picked {name}. It has {amount} TON staked.",
+    step1TokiPick: "I picked the best one for you! The most stable operator.",
+    tokiPickButton: "Toki's Pick!",
+    nextStep: "Next",
+    // Step 2: Amount
+    step2Title: "Staking Amount",
+    step2Dialogue: "How much do you want to stake? You have {balance} TON in your wallet!",
+    step2Ready: "Great, {amount} TON! Ready? Let's move to the next step!",
+    // Step 3: Execute
+    step3Title: "Execute Staking",
+    step3Dialogue: "Just one button! Press it and your rewards start stacking!",
+    step3Staking: "Staking in progress... hang tight!",
+    step3Error: "Hmm... something went wrong. Want to try again?",
+    stakeButton: "Start Staking!",
+    retryButton: "Try Again",
+    // Step 4: Celebration
+    step4Dialogue: "Congrats! First stake done! Your member card has been unlocked!",
+    step4CardUnlocked: "Card Unlocked!",
+    goToDashboard: "Check on Dashboard",
+    // Common
+    stepLabel: "STEP {current}/{total}",
+  },
 } as const;
 
 export default en;

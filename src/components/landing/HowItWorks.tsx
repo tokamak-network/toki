@@ -268,7 +268,7 @@ function StepCard({
                 {cta && (
                   <div className="mt-2">
                     <Link
-                      href="/dashboard"
+                      href="/staking"
                       onClick={(e) => e.stopPropagation()}
                       className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(245,158,11,0.3)]"
                     >
@@ -383,7 +383,7 @@ export default function HowItWorks() {
           `}
         >
           <Link
-            href="/dashboard"
+            href="/staking"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_30px_rgba(6,182,212,0.2)]"
           >
             {t.howItWorks.step3Cta}

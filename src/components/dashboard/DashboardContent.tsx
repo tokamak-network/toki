@@ -8,7 +8,7 @@ import { createPublicClient, http } from "viem";
 import { sepolia, mainnet } from "viem/chains";
 import StakingPanel from "./StakingPanel";
 import StakingPanelBeginner from "./StakingPanelBeginner";
-import VNStakingPanel from "./VNStakingPanel";
+import Link from "next/link";
 import UnstakingPanel from "./UnstakingPanel";
 import AchievementPanel from "./AchievementPanel";
 import { useEip7702 } from "@/hooks/useEip7702";
@@ -65,7 +65,7 @@ export default function DashboardContent() {
     return "beginner";
   });
   const [stakingTab, setStakingTab] = useState<"staking" | "unstaking">("staking");
-  const [isFirstStake, setIsFirstStake] = useState(() => {
+  const [isFirstStake] = useState(() => {
     if (typeof window !== "undefined") {
       return !localStorage.getItem("toki-first-stake-done");
     }
@@ -421,16 +421,19 @@ export default function DashboardContent() {
 
                 {stakingUiMode === "beginner" ? (
                   isFirstStake ? (
-                    <VNStakingPanel
-                      walletAddress={primaryWallet.address}
-                      getEthereumProvider={getEthereumProvider}
-                      smartAccountClient={smartAccountClient}
-                      onBalanceChange={fetchBalances}
-                      paymasterMode={paymasterMode}
-                      isMetaMask={isMetaMask}
-                      sessionKey={sessionKey}
-                      onFirstStakeComplete={() => setIsFirstStake(false)}
-                    />
+                    <div className="card p-6 text-center">
+                      <div className="mb-4">
+                        <div className="text-4xl mb-2">&#x2728;</div>
+                        <h3 className="text-lg font-semibold text-white mb-2">{t.dashboard.staking}</h3>
+                        <p className="text-sm text-gray-400">{t.stakingScreen.step1Dialogue}</p>
+                      </div>
+                      <Link
+                        href="/staking"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-105 transition-transform"
+                      >
+                        {t.stakingScreen.stakeButton} →
+                      </Link>
+                    </div>
                   ) : (
                     <StakingPanelBeginner
                       walletAddress={primaryWallet.address}

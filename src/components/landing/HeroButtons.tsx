@@ -12,7 +12,7 @@ export default function HeroButtons() {
   const handleStartStaking = () => {
     if (!ready) return;
     if (authenticated) {
-      router.push("/dashboard");
+      router.push("/staking");
     } else {
       login();
     }

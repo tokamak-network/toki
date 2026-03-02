@@ -50,6 +50,9 @@ paymaster/cache/
 snap/dist/
 snap/node_modules/
 
+# asset archive (unused assets kept for potential reuse)
+public/_archive/
+
 # claude tooling
 **/CLAUDE.md
 .omc/

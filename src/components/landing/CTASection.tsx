@@ -74,7 +74,7 @@ export default function CTASection() {
         </p>
 
         <Link
-          href="/dashboard"
+          href="/staking"
           className={`
             inline-flex items-center gap-3 px-10 py-5 rounded-2xl
             bg-gradient-to-r from-amber-500 to-yellow-500

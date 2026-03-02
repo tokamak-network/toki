@@ -463,6 +463,32 @@ const ko = {
     complete: "첫 스테이킹 성공! 대시보드에서 언제든 확인할 수 있어.",
     tokiPickButton: "토키가 골라줄게!",
   },
+  stakingScreen: {
+    // Step 1: Operator
+    step1Title: "오퍼레이터 선택",
+    step1Dialogue: "먼저 어디에 스테이킹할지 골라보자! 오퍼레이터는 네 TON을 관리해주는 곳이야.",
+    step1OperatorSelected: "좋아! {name}을 선택했네. 총 {amount} TON이 스테이킹 된 곳이야.",
+    step1TokiPick: "내가 제일 좋은 곳을 골랐어! 가장 안정적인 오퍼레이터야.",
+    tokiPickButton: "토키가 골라줄게!",
+    nextStep: "다음으로",
+    // Step 2: Amount
+    step2Title: "스테이킹 금액",
+    step2Dialogue: "얼마나 맡길 거야? 네 지갑에 {balance} TON이 있어!",
+    step2Ready: "좋아, {amount} TON! 준비됐으면 다음 단계로 가자!",
+    // Step 3: Execute
+    step3Title: "스테이킹 실행",
+    step3Dialogue: "버튼 하나면 끝이야! 누르면 보상이 쌓이기 시작해!",
+    step3Staking: "스테이킹 진행 중... 잠깐만 기다려!",
+    step3Error: "음... 뭔가 잘못됐어. 다시 해볼까?",
+    stakeButton: "스테이킹 시작!",
+    retryButton: "다시 시도",
+    // Step 4: Celebration
+    step4Dialogue: "축하해! 첫 스테이킹 성공이야! 네 멤버카드가 해금됐어!",
+    step4CardUnlocked: "멤버카드 해금!",
+    goToDashboard: "대시보드에서 확인하기",
+    // Common
+    stepLabel: "STEP {current}/{total}",
+  },
 } as const;
 
 export default ko;
