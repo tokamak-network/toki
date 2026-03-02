@@ -158,6 +158,18 @@ const ko = {
   footer: {
     builtOn: "토키 \u2014 토카막 네트워크 기반",
     stakingDashboard: "스테이킹 대시보드",
+    about: "소개",
+    projects: "프로젝트",
+    team: "팀",
+    blog: "블로그",
+    technology: "기술",
+    stakingProtocol: "스테이킹 프로토콜",
+    eip7702: "EIP-7702",
+    resources: "리소스",
+    docs: "문서",
+    license: "라이선스",
+    termsConditions: "이용약관",
+    community: "커뮤니티",
   },
   dashboard: {
     loading: "로딩 중...",
@@ -388,6 +400,9 @@ const ko = {
     introTerminal9: "> 준비 완료.",
     introTerminalSkip: "아무 곳이나 클릭하여 건너뛰기",
     quest1VideoPrompt: "블록체인이 뭔지 궁금하다면? 영상 보기",
+    watchTutorial: "튜토리얼 보기",
+    quest2VideoPrompt: "MetaMask 설치 방법이 궁금해?",
+    quest3VideoPrompt: "거래소에서 TON 보내는 방법이 궁금해?",
     closeVideo: "닫기",
     exploreEcosystem: "생태계 둘러보기",
   },
@@ -483,7 +498,8 @@ const ko = {
     stakeButton: "스테이킹 시작!",
     retryButton: "다시 시도",
     // Step 4: Celebration
-    step4Dialogue: "축하해! 첫 스테이킹 성공이야! 네 멤버카드가 해금됐어!",
+    step4TapToReveal: "멤버카드를 획득했어! 카드를 눌러서 확인해봐!",
+    step4Dialogue: "축하해! 첫 스테이킹 성공이야! 대시보드에서 보상을 확인할 수 있어!",
     step4CardUnlocked: "멤버카드 해금!",
     goToDashboard: "대시보드에서 확인하기",
     // Common

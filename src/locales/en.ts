@@ -158,6 +158,18 @@ const en = {
   footer: {
     builtOn: "Toki \u2014 Built on Tokamak Network",
     stakingDashboard: "Staking Dashboard",
+    about: "ABOUT",
+    projects: "Projects",
+    team: "Team",
+    blog: "Blog",
+    technology: "TECHNOLOGY",
+    stakingProtocol: "Staking Protocol",
+    eip7702: "EIP-7702",
+    resources: "RESOURCES",
+    docs: "Docs",
+    license: "License",
+    termsConditions: "Terms & Conditions",
+    community: "COMMUNITY",
   },
   dashboard: {
     loading: "Loading...",
@@ -388,6 +400,9 @@ const en = {
     introTerminal9: "> ready.",
     introTerminalSkip: "Click anywhere to skip",
     quest1VideoPrompt: "Curious about blockchain? Watch this!",
+    watchTutorial: "Watch Tutorial",
+    quest2VideoPrompt: "How to install MetaMask?",
+    quest3VideoPrompt: "How to send TON from exchange?",
     closeVideo: "Close",
     exploreEcosystem: "Explore Ecosystem",
   },
@@ -483,7 +498,8 @@ const en = {
     stakeButton: "Start Staking!",
     retryButton: "Try Again",
     // Step 4: Celebration
-    step4Dialogue: "Congrats! First stake done! Your member card has been unlocked!",
+    step4TapToReveal: "You got a member card! Tap to reveal it!",
+    step4Dialogue: "Congrats! First stake done! Check your rewards on the dashboard!",
     step4CardUnlocked: "Card Unlocked!",
     goToDashboard: "Check on Dashboard",
     // Common

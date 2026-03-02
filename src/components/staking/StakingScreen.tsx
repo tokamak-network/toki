@@ -50,7 +50,7 @@ interface Operator {
   myStaked: string;
 }
 
-type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "presenting" | "celebrate";
+type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "presenting" | "celebrate" | "card-reveal";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -64,6 +64,7 @@ const MOOD_IMAGES: Record<Mood, string> = {
   wink: "/toki-wink.png",
   presenting: "/toki-presenting.png",
   celebrate: "/toki-celebrate.png",
+  "card-reveal": "/toki-card-reveal.png",
 };
 
 const MOOD_GLOW: Record<Mood, string> = {
@@ -76,12 +77,13 @@ const MOOD_GLOW: Record<Mood, string> = {
   wink: "rgba(236, 72, 153, 0.35)",
   presenting: "rgba(96, 165, 250, 0.35)",
   celebrate: "rgba(245, 158, 11, 0.45)",
+  "card-reveal": "rgba(245, 158, 11, 0.40)",
 };
 
 const STEP_BACKGROUNDS: Record<Step, string> = {
   1: "/backgrounds/staking-night.png",
   2: "/backgrounds/staking-dawn.png",
-  3: "/backgrounds/staking-sunrise.png",
+  3: "/backgrounds/staking-dawn.png",
   4: "/backgrounds/staking-sunrise.png",
 };
 
@@ -327,7 +329,7 @@ export default function StakingScreen() {
   const cardTier = CARD_TIERS[Math.min(currentLevel, 5) - 1];
 
   function getMood(): Mood {
-    if (step === 4) return "celebrate";
+    if (step === 4) return cardRevealed ? "celebrate" : "card-reveal";
     if (staking) return "excited";
     if (error) return "thinking";
     if (step === 3) return "excited";
@@ -359,7 +361,8 @@ export default function StakingScreen() {
       if (error) return s.step3Error;
       return s.step3Dialogue;
     }
-    return s.step4Dialogue;
+    if (cardRevealed) return s.step4Dialogue;
+    return s.step4TapToReveal;
   }
 
   // ─── Render ────────────────────────────────────────────────────────
@@ -397,216 +400,235 @@ export default function StakingScreen() {
       ))}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
 
-      {/* Character + Bottom Panel (matching OnboardingQuest layout) */}
-      <div className="absolute bottom-0 left-0 right-0 z-20">
-        <div className="max-w-3xl mx-auto">
-          {/* Toki Character - centered above bottom panel */}
-          <TokiCharacter mood={mood} />
+      {/* Middle area: Character left + Interactive panel right */}
+      <div className="absolute inset-x-0 top-16 bottom-[176px] z-10 flex items-center justify-center">
+        <div className="max-w-3xl w-full mx-auto flex items-end h-full">
+          {/* Left: Toki Character */}
+          <div className="w-[40%] flex items-end justify-center">
+            <TokiCharacter mood={mood} />
+          </div>
 
-          {/* Interactive Panel (steps 1-3) or Dialogue (step 4) */}
-          {step < 4 ? (
-            <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
-              {/* Step indicator + back button */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  {[1, 2, 3].map((s) => (
-                    <div key={s} className="flex items-center gap-2">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
-                        step > s ? "bg-accent-cyan text-white" :
-                        step === s ? "bg-accent-cyan/20 border-2 border-accent-cyan text-accent-cyan" :
-                        "bg-white/10 text-gray-600"
-                      }`}>
-                        {step > s ? "\u2713" : s}
+          {/* Right: Interactive Panel */}
+          <div className="w-[60%] flex items-end justify-center pb-4">
+            <div className="w-full max-w-sm animate-slide-up">
+            <div className="bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
+                {/* Step indicator + back button (hidden on step 4) */}
+                {step < 4 && (
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3].map((s) => (
+                      <div key={s} className="flex items-center gap-2">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
+                          step > s ? "bg-accent-cyan text-white" :
+                          step === s ? "bg-accent-cyan/20 border-2 border-accent-cyan text-accent-cyan" :
+                          "bg-white/10 text-gray-600"
+                        }`}>
+                          {step > s ? "\u2713" : s}
+                        </div>
+                        {s < 3 && (
+                          <div className={`w-6 h-0.5 transition-colors duration-500 ${step > s ? "bg-accent-cyan" : "bg-white/10"}`} />
+                        )}
                       </div>
-                      {s < 3 && (
-                        <div className={`w-6 h-0.5 transition-colors duration-500 ${step > s ? "bg-accent-cyan" : "bg-white/10"}`} />
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  {step > 1 && (
+                    <button
+                      onClick={() => setStep((step - 1) as Step)}
+                      className="px-3 py-1 rounded-lg bg-white/10 text-gray-400 text-xs hover:bg-white/20 transition-colors"
+                    >
+                      ← Back
+                    </button>
+                  )}
                 </div>
-                {step > 1 && (
-                  <button
-                    onClick={() => setStep((step - 1) as Step)}
-                    className="px-3 py-1 rounded-lg bg-white/10 text-gray-400 text-xs hover:bg-white/20 transition-colors"
-                  >
-                    ← Back
-                  </button>
                 )}
-              </div>
 
-              {/* Dialogue text with typewriter */}
-              <DialogueInline text={dialogue} mood={mood} stepProgress={t.stakingScreen.stepLabel.replace("{current}", String(step)).replace("{total}", "3")} />
+                {/* Step content */}
+                <div className="space-y-3">
+                  {/* Step 1: Operator Selection */}
+                  {step === 1 && (
+                    <>
+                      <OperatorCard
+                        operators={operators}
+                        selectedOp={selectedOp}
+                        onSelect={(address) => {
+                          setSelectedOp(address);
+                          setAutoSelectedIndex(undefined);
+                        }}
+                        shuffling={shuffling}
+                        autoSelectedIndex={autoSelectedIndex}
+                      />
 
-              {/* Step content */}
-              <div className="mt-4 space-y-4">
-                {/* Step 1: Operator Selection */}
-                {step === 1 && (
-                  <>
-                    <OperatorCard
-                      operators={operators}
-                      selectedOp={selectedOp}
-                      onSelect={(address) => {
-                        setSelectedOp(address);
-                        setAutoSelectedIndex(undefined);
-                      }}
-                      shuffling={shuffling}
-                      autoSelectedIndex={autoSelectedIndex}
-                    />
-
-                    <div className="flex gap-3">
-                      <button
-                        onClick={handleAutoSelect}
-                        className="flex-1 py-3 rounded-xl bg-gradient-to-r from-accent-amber/20 to-yellow-500/20 border border-accent-amber/30 text-accent-amber text-sm font-semibold hover:border-accent-amber/50 hover:scale-[1.02] transition-all"
-                      >
-                        {t.stakingScreen.tokiPickButton}
-                      </button>
-                      {selectedOp && (
+                      <div className="flex gap-3">
                         <button
-                          onClick={() => setStep(2)}
-                          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
+                          onClick={handleAutoSelect}
+                          className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-accent-amber/20 to-yellow-500/20 border border-accent-amber/30 text-accent-amber text-sm font-semibold hover:border-accent-amber/50 hover:scale-[1.02] transition-all"
+                        >
+                          {t.stakingScreen.tokiPickButton}
+                        </button>
+                        {selectedOp && (
+                          <button
+                            onClick={() => setStep(2)}
+                            className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
+                          >
+                            {t.stakingScreen.nextStep} →
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {/* Step 2: Amount Input */}
+                  {step === 2 && (
+                    <>
+                      {selectedOperator && (
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
+                          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white">
+                            {selectedOperator.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-sm text-white font-medium">{selectedOperator.name}</div>
+                            <div className="text-xs text-gray-500">
+                              {Number(selectedOperator.totalStaked).toLocaleString("en-US", { maximumFractionDigits: 0 })} TON
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            placeholder="0.0"
+                            min="0"
+                            step="any"
+                            className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-accent-cyan/50 font-mono-num"
+                          />
+                          <button
+                            onClick={() => setAmount(tonBalance)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-accent-cyan/10 text-accent-cyan text-xs font-semibold hover:bg-accent-cyan/20 transition-colors"
+                          >
+                            MAX
+                          </button>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-2">
+                          {t.dashboard.balance} {Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 })} TON
+                        </div>
+                      </div>
+
+                      {amount && Number(amount) > 0 && (
+                        <button
+                          onClick={() => setStep(3)}
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
                         >
                           {t.stakingScreen.nextStep} →
                         </button>
                       )}
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
 
-                {/* Step 2: Amount Input */}
-                {step === 2 && (
-                  <>
-                    {selectedOperator && (
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white">
-                          {selectedOperator.name.charAt(0).toUpperCase()}
+                  {/* Step 3: Execute */}
+                  {step === 3 && (
+                    <>
+                      <div className="space-y-2">
+                        <div className="flex justify-between p-3 rounded-lg bg-white/5">
+                          <span className="text-gray-400 text-sm">{t.stakingScreen.step1Title}</span>
+                          <span className="text-white text-sm font-medium">{selectedOperator?.name}</span>
                         </div>
-                        <div>
-                          <div className="text-sm text-white font-medium">{selectedOperator.name}</div>
-                          <div className="text-xs text-gray-500">
-                            {Number(selectedOperator.totalStaked).toLocaleString("en-US", { maximumFractionDigits: 0 })} TON
+                        <div className="flex justify-between p-3 rounded-lg bg-white/5">
+                          <span className="text-gray-400 text-sm">{t.stakingScreen.step2Title}</span>
+                          <span className="text-white text-sm font-mono-num">{amount} TON</span>
+                        </div>
+                        {smartAccountClient && paymasterMode === "sponsor" && (
+                          <div className="flex justify-between p-3 rounded-lg bg-green-500/5">
+                            <span className="text-gray-400 text-sm">Gas</span>
+                            <span className="text-green-400 text-sm font-medium">{t.dashboard.gaslessShort}</span>
                           </div>
-                        </div>
+                        )}
                       </div>
-                    )}
 
-                    <div>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          value={amount}
-                          onChange={(e) => setAmount(e.target.value)}
-                          placeholder="0.0"
-                          min="0"
-                          step="any"
-                          className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-accent-cyan/50 font-mono-num"
-                        />
+                      {!error ? (
                         <button
-                          onClick={() => setAmount(tonBalance)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-accent-cyan/10 text-accent-cyan text-xs font-semibold hover:bg-accent-cyan/20 transition-colors"
+                          onClick={handleStake}
+                          disabled={staking}
+                          className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold text-lg disabled:opacity-50 hover:scale-[1.02] transition-transform shadow-lg shadow-accent-cyan/20 animate-glow-cyan"
                         >
-                          MAX
+                          {staking ? t.stakingScreen.step3Staking : t.stakingScreen.stakeButton}
                         </button>
-                      </div>
-                      <div className="text-xs text-gray-500 mt-2">
-                        {t.dashboard.balance} {Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 })} TON
-                      </div>
-                    </div>
+                      ) : (
+                        <>
+                          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                            <div className="text-sm text-red-400 break-all">{error}</div>
+                          </div>
+                          <button
+                            onClick={() => { setError(null); setTxHash(null); }}
+                            className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold text-sm hover:bg-white/15 transition-colors"
+                          >
+                            {t.stakingScreen.retryButton}
+                          </button>
+                        </>
+                      )}
 
-                    {amount && Number(amount) > 0 && (
-                      <button
-                        onClick={() => setStep(3)}
-                        className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
-                      >
-                        {t.stakingScreen.nextStep} →
-                      </button>
-                    )}
-                  </>
-                )}
-
-                {/* Step 3: Execute */}
-                {step === 3 && (
-                  <>
-                    <div className="space-y-2">
-                      <div className="flex justify-between p-3 rounded-lg bg-white/5">
-                        <span className="text-gray-400 text-sm">{t.stakingScreen.step1Title}</span>
-                        <span className="text-white text-sm font-medium">{selectedOperator?.name}</span>
-                      </div>
-                      <div className="flex justify-between p-3 rounded-lg bg-white/5">
-                        <span className="text-gray-400 text-sm">{t.stakingScreen.step2Title}</span>
-                        <span className="text-white text-sm font-mono-num">{amount} TON</span>
-                      </div>
-                      {smartAccountClient && paymasterMode === "sponsor" && (
-                        <div className="flex justify-between p-3 rounded-lg bg-green-500/5">
-                          <span className="text-gray-400 text-sm">Gas</span>
-                          <span className="text-green-400 text-sm font-medium">{t.dashboard.gaslessShort}</span>
+                      {txHash && !error && (
+                        <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                          <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
+                          <a
+                            href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-green-500 hover:text-green-300 font-mono break-all"
+                          >
+                            {txHash}
+                          </a>
                         </div>
                       )}
-                    </div>
+                    </>
+                  )}
 
-                    {!error ? (
-                      <button
-                        onClick={handleStake}
-                        disabled={staking}
-                        className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold text-lg disabled:opacity-50 hover:scale-[1.02] transition-transform shadow-lg shadow-accent-cyan/20 animate-glow-cyan"
-                      >
-                        {staking ? t.stakingScreen.step3Staking : t.stakingScreen.stakeButton}
-                      </button>
-                    ) : (
-                      <>
-                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                          <div className="text-sm text-red-400 break-all">{error}</div>
-                        </div>
-                        <button
-                          onClick={() => { setError(null); setTxHash(null); }}
-                          className="w-full py-3 rounded-xl bg-white/10 text-white font-semibold text-sm hover:bg-white/15 transition-colors"
-                        >
-                          {t.stakingScreen.retryButton}
-                        </button>
-                      </>
-                    )}
-
-                    {txHash && !error && (
-                      <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                        <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
-                        <a
-                          href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-green-500 hover:text-green-300 font-mono break-all"
-                        >
-                          {txHash}
-                        </a>
+                  {/* Step 4: Card Unlock Celebration */}
+                  {step === 4 && (
+                    <div className="animate-fade-in">
+                      <div className="text-accent-amber text-sm font-semibold tracking-widest mb-3 text-center animate-pulse">
+                        {t.stakingScreen.step4CardUnlocked}
                       </div>
-                    )}
-                  </>
-                )}
+
+                      <div className="flex justify-center mb-4">
+                        <CardRevealGacha
+                          tier={cardTier}
+                          revealed={step === 4}
+                          onReveal={() => setCardRevealed(true)}
+                        />
+                      </div>
+
+                      {cardRevealed && (
+                        <button
+                          onClick={() => router.push("/dashboard")}
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm glow-blue hover:scale-[1.02] transition-transform animate-fade-in"
+                        >
+                          {t.stakingScreen.goToDashboard} →
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          ) : (
-            /* Step 4: Celebration - full bottom panel */
-            <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-8 sm:px-8">
-              <div className="max-w-2xl mx-auto text-center animate-fade-in">
-                <div className="text-accent-amber text-sm font-semibold tracking-widest mb-4 animate-pulse">
-                  {t.stakingScreen.step4CardUnlocked}
-                </div>
+          </div>
+          </div>
+        </div>
 
-                <div className={`flex justify-center mb-6 transition-all duration-700 ${cardRevealed ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-75 rotate-12"}`}>
-                  <UnlockedCard tier={cardTier} />
-                </div>
-
-                <p className="text-gray-100 text-base leading-relaxed mb-6">
-                  {dialogue}
-                </p>
-
-                <button
-                  onClick={() => router.push("/dashboard")}
-                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
-                >
-                  {t.stakingScreen.goToDashboard} →
-                </button>
-              </div>
-            </div>
-          )}
+      {/* Bottom: Dialogue bar (onboarding style) */}
+      <div className="absolute bottom-0 left-0 right-0 z-20">
+        <div className="max-w-3xl mx-auto">
+          <DialogueBar
+            text={dialogue}
+            mood={mood}
+            stepProgress={step === 4
+              ? "Complete!"
+              : t.stakingScreen.stepLabel.replace("{current}", String(step)).replace("{total}", "3")
+            }
+          />
         </div>
       </div>
     </div>
@@ -655,26 +677,31 @@ function TokiCharacter({ mood }: { mood: Mood }) {
   );
 }
 
-// ─── Dialogue Inline (matches OnboardingQuest DialogueBox) ───────────
+// ─── Dialogue Bar (matches OnboardingQuest DialogueBox) ──────────────
 
-function DialogueInline({ text, mood, stepProgress }: { text: string; mood: Mood; stepProgress: string }) {
+function DialogueBar({ text, mood, stepProgress }: { text: string; mood: Mood; stepProgress: string }) {
   const { displayed, done, skip } = useTypewriter(text, 30);
 
   return (
-    <div className="cursor-pointer select-none" onClick={() => !done && skip()}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/30">
-          <span className="text-accent-cyan font-bold text-sm tracking-wide">Toki</span>
-          <span className="text-xs text-accent-cyan/60">{mood}</span>
+    <div
+      className="cursor-pointer select-none w-full"
+      onClick={() => !done && skip()}
+    >
+      <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6 h-[160px] sm:h-[176px] flex flex-col">
+        <div className="flex items-center justify-between mb-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/30">
+            <span className="text-accent-cyan font-bold text-sm tracking-wide">Toki</span>
+            <span className="text-xs text-accent-cyan/60">{mood}</span>
+          </div>
+          <span className="text-xs text-gray-500 tabular-nums">{stepProgress}</span>
         </div>
-        <span className="text-xs text-gray-500 tabular-nums">{stepProgress}</span>
+        <p className="text-gray-100 text-base sm:text-lg leading-relaxed flex-1">
+          {displayed}
+          {!done && (
+            <span className="inline-block w-0.5 h-5 bg-accent-cyan ml-0.5 animate-pulse align-middle" />
+          )}
+        </p>
       </div>
-      <p className="text-gray-100 text-base sm:text-lg leading-relaxed">
-        {displayed}
-        {!done && (
-          <span className="inline-block w-0.5 h-5 bg-accent-cyan ml-0.5 animate-pulse align-middle" />
-        )}
-      </p>
     </div>
   );
 }
@@ -682,43 +709,221 @@ function DialogueInline({ text, mood, stepProgress }: { text: string; mood: Mood
 // ─── Unlocked Card ───────────────────────────────────────────────────
 
 function UnlockedCard({ tier }: { tier: typeof CARD_TIERS[number] }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [light, setLight] = useState({ x: 50, y: 50 });
+  const [hovered, setHovered] = useState(false);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const ry = ((e.clientX - cx) / (rect.width / 2)) * 15;
+    const rx = -((e.clientY - cy) / (rect.height / 2)) * 15;
+    setRotation({ x: rx, y: ry });
+    setLight({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    });
+  }, []);
+
+  const handleLeave = useCallback(() => {
+    setRotation({ x: 0, y: 0 });
+    setLight({ x: 50, y: 50 });
+    setHovered(false);
+  }, []);
+
   const starsStr = "\u2605".repeat(tier.stars) + "\u2606".repeat(5 - tier.stars);
 
   return (
     <div style={{ perspective: "1200px" }}>
-      <div className="relative w-[320px] h-[200px] rounded-2xl overflow-hidden shadow-2xl border border-white/20 hover:scale-105 transition-transform duration-300">
-        <Image src={tier.bgImage} alt={tier.tier} fill className="object-cover" />
-        <div className="relative h-full z-[2] flex">
-          <div className="w-[45%] h-full relative">
-            <Image src={tier.charImage} alt={tier.name} fill className="object-contain object-bottom drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]" />
-          </div>
-          <div className="w-[55%] h-full p-4 flex flex-col justify-between">
-            <div>
-              <div className="text-[8px] font-semibold tracking-[0.3em]" style={{ color: "rgba(255,255,255,0.5)" }}>
-                TOKI STAKING MEMBER
+      <div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={handleLeave}
+        className="relative cursor-pointer transition-transform duration-200 ease-out"
+        style={{
+          transform: hovered
+            ? `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale(1.05)`
+            : "rotateX(0) rotateY(0) scale(1)",
+          transformStyle: "preserve-3d",
+        }}
+      >
+        <div className="relative w-[320px] h-[200px] rounded-2xl overflow-hidden shadow-2xl border border-white/20">
+          <Image src={tier.bgImage} alt={tier.tier} fill className="object-cover" />
+
+          {hovered && (
+            <div
+              className="absolute inset-0 pointer-events-none z-[5]"
+              style={{
+                background: `radial-gradient(circle at ${light.x}% ${light.y}%, rgba(255,255,255,0.4) 0%, transparent 50%)`,
+              }}
+            />
+          )}
+
+          <div className="relative h-full z-[2] flex">
+            <div className="w-[45%] h-full relative">
+              <Image src={tier.charImage} alt={tier.name} fill className="object-contain object-bottom drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]" />
+            </div>
+            <div className="w-[55%] h-full p-4 flex flex-col justify-between">
+              <div>
+                <div className="text-[8px] font-semibold tracking-[0.3em]" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  TOKI STAKING MEMBER
+                </div>
+                <div className="text-lg font-black tracking-[0.15em] mt-1" style={{
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.55) 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}>
+                  {tier.tier}
+                </div>
               </div>
-              <div className="text-lg font-black tracking-[0.15em] mt-1" style={{
-                background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.55) 100%)",
+              <div className="text-base" style={{
+                letterSpacing: "0.2em",
+                background: "linear-gradient(180deg, #fcd34d 0%, #b45309 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}>
-                {tier.tier}
+                {starsStr}
               </div>
-            </div>
-            <div className="text-base" style={{
-              letterSpacing: "0.2em",
-              background: "linear-gradient(180deg, #fcd34d 0%, #b45309 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}>
-              {starsStr}
-            </div>
-            <div className="text-[11px] font-medium tracking-[0.08em]" style={{ color: "rgba(255,255,255,0.65)" }}>
-              Level {tier.level} &middot; {tier.name}
+              <div className="text-[11px] font-medium tracking-[0.08em]" style={{ color: "rgba(255,255,255,0.65)" }}>
+                Level {tier.level} &middot; {tier.name}
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Card Reveal: Gacha (Light Beam + Drop + Flip + Burst) ───────────
+
+const GACHA_PARTICLES = Array.from({ length: 16 }, (_, i) => {
+  const angle = (i / 16) * 360;
+  const distance = 90 + Math.random() * 70;
+  const tx = Math.cos((angle * Math.PI) / 180) * distance;
+  const ty = Math.sin((angle * Math.PI) / 180) * distance;
+  const size = 3 + Math.random() * 5;
+  const delay = Math.random() * 0.35;
+  return { tx, ty, size, delay };
+});
+
+function CardRevealGacha({ tier, revealed, onReveal }: { tier: typeof CARD_TIERS[number]; revealed: boolean; onReveal?: () => void }) {
+  const [phase, setPhase] = useState<"idle" | "beam" | "drop" | "waiting" | "flip" | "done">("idle");
+
+  useEffect(() => {
+    if (!revealed) { setPhase("idle"); return; }
+    const t0 = setTimeout(() => setPhase("beam"), 50);
+    const t1 = setTimeout(() => setPhase("drop"), 450);
+    const t2 = setTimeout(() => setPhase("waiting"), 1150);
+    return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
+  }, [revealed]);
+
+  const handleCardClick = () => {
+    if (phase !== "waiting") return;
+    setPhase("flip");
+    setTimeout(() => {
+      setPhase("done");
+      onReveal?.();
+    }, 700);
+  };
+
+  return (
+    <div className="relative" style={{ minHeight: 220 }}>
+      {/* Light beam from above */}
+      {(phase === "beam" || phase === "drop") && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80px] animate-light-beam overflow-hidden"
+          style={{
+            background: "linear-gradient(180deg, rgba(245,158,11,0.8), rgba(245,158,11,0.2), transparent)",
+            filter: "blur(8px)",
+            height: 0,
+          }}
+        />
+      )}
+
+      {/* Card container */}
+      {(phase !== "idle" && phase !== "beam") && (
+        <div
+          style={{ perspective: "1200px" }}
+          onClick={handleCardClick}
+          className={phase === "waiting" ? "cursor-pointer" : ""}
+        >
+          {/* Drop stage */}
+          <div className={phase === "drop" ? "animate-gacha-drop" : ""} style={{ transformStyle: "preserve-3d" }}>
+            {/* Flip stage */}
+            <div
+              className={phase === "flip" || phase === "done" ? "animate-gacha-flip" : ""}
+              style={{
+                transformStyle: "preserve-3d",
+                transform: phase === "drop" || phase === "waiting" ? "rotateY(180deg)" : undefined,
+              }}
+            >
+              {/* Front (actual card) */}
+              <div className="card-front relative overflow-hidden rounded-2xl">
+                <UnlockedCard tier={tier} />
+                {/* Shine after flip */}
+                {phase === "done" && (
+                  <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-10">
+                    <div
+                      className="absolute inset-y-0 w-[60%]"
+                      style={{
+                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+                        animation: "shine-sweep 0.6s ease-out 0.2s forwards",
+                        transform: "translateX(-100%)",
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+              {/* Back (silhouette) */}
+              <div className="card-back absolute inset-0 rounded-2xl overflow-hidden pointer-events-none" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
+                <div className="w-[320px] h-[200px] rounded-2xl bg-gradient-to-br from-accent-amber/30 to-yellow-900/50 border border-accent-amber/20 flex items-center justify-center">
+                  <div className="text-accent-amber/40 text-4xl font-black">?</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tap prompt */}
+          {phase === "waiting" && (
+            <div className="absolute -bottom-8 left-0 right-0 text-center">
+              <span className="text-accent-amber/80 text-xs font-semibold tracking-wider animate-pulse">
+                TAP TO REVEAL
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Shimmer glow behind card after flip */}
+      {phase === "done" && (
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[160px] rounded-full animate-gacha-shimmer"
+          style={{ background: "radial-gradient(circle, rgba(245,158,11,0.5), transparent 70%)" }}
+        />
+      )}
+
+      {/* Particles burst after flip */}
+      {(phase === "done") && GACHA_PARTICLES.map((p, i) => (
+        <div
+          key={i}
+          className="absolute top-1/2 left-1/2 rounded-full"
+          style={{
+            width: p.size,
+            height: p.size,
+            marginLeft: -p.size / 2,
+            marginTop: -p.size / 2,
+            background: `hsl(${40 + (i % 4) * 5}, 90%, ${55 + (i % 3) * 10}%)`,
+            boxShadow: `0 0 ${p.size * 2}px hsl(${40 + (i % 4) * 5}, 90%, 60%)`,
+            animation: `burst-particle 0.9s ease-out ${p.delay}s forwards`,
+            "--tx": `${p.tx}px`,
+            "--ty": `${p.ty}px`,
+          } as React.CSSProperties}
+        />
+      ))}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Header from "@/components/layout/Header";
 
 const StakingScreen = dynamic(
   () => import("@/components/staking/StakingScreen"),
@@ -15,5 +16,10 @@ const StakingScreen = dynamic(
 );
 
 export default function StakingPage() {
-  return <StakingScreen />;
+  return (
+    <>
+      <Header />
+      <StakingScreen />
+    </>
+  );
 }
