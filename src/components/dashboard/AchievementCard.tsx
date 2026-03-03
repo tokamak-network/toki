@@ -13,6 +13,18 @@ const CARD_IMAGES: Record<string, string> = {
   "onboarding-ton": "/cards/onboarding-ton.png",
   "onboarding-complete": "/cards/onboarding-complete.png",
   "stake-first": "/cards/stake-first.png",
+  "stake-10": "/cards/stake-10.png",
+  "stake-100": "/cards/stake-100.png",
+  "stake-gasless": "/cards/stake-gasless.png",
+  "stake-delegation": "/cards/stake-delegation.png",
+  "unstake-first": "/cards/unstake-first.png",
+  "explore-visit": "/cards/explore-visit.png",
+  "explore-click": "/cards/explore-click.png",
+  "explore-all-categories": "/cards/explore-all-categories.png",
+  "chat-start": "/cards/chat-start.png",
+  "chat-dialogue-10": "/cards/chat-dialogue-10.png",
+  "chat-freetext": "/cards/chat-freetext.png",
+  "power-user": "/cards/power-user.png",
 };
 
 // ─── Category Styles ──────────────────────────────────────────────────────────
