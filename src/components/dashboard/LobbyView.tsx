@@ -34,19 +34,25 @@ export default function LobbyView({
   const [dialogueText, setDialogueText] = useState("");
   const [roomLoaded, setRoomLoaded] = useState(false);
 
-  // Entrance animation
-  useEffect(() => {
-    const timer = setTimeout(() => setRoomLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Random Toki greeting
   const greetings = [
     t.lobby.tokiGreeting1,
     t.lobby.tokiGreeting2,
     t.lobby.tokiGreeting3,
     t.lobby.tokiGreeting4,
   ];
+
+  // Entrance animation + auto-greeting
+  useEffect(() => {
+    const timer = setTimeout(() => setRoomLoaded(true), 100);
+    const greetTimer = setTimeout(() => {
+      const g = [t.lobby.tokiGreeting1, t.lobby.tokiGreeting2, t.lobby.tokiGreeting3, t.lobby.tokiGreeting4];
+      setDialogueText(g[Math.floor(Math.random() * g.length)]);
+      setShowDialogue(true);
+      setTimeout(() => setShowDialogue(false), 5000);
+    }, 1200);
+    return () => { clearTimeout(timer); clearTimeout(greetTimer); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleTokiClick = () => {
     const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -71,7 +77,7 @@ export default function LobbyView({
   };
 
   return (
-    <div className="relative w-full h-[calc(100vh-64px)] overflow-hidden select-none bg-[#0a0e1a]">
+    <div className="relative w-full h-[calc(100vh-64px)] mt-16 overflow-hidden select-none bg-[#0a0e1a]">
       {/* === Room Background (fullscreen 16:9) === */}
       <div className="absolute inset-0">
         <Image
@@ -273,63 +279,69 @@ export default function LobbyView({
 
       {/* === Room Title === */}
       <div
-        className={`absolute top-5 left-1/2 -translate-x-1/2 text-center z-10 transition-all duration-700 ${
+        className={`absolute top-4 left-1/2 -translate-x-1/2 text-center z-10 transition-all duration-700 ${
           roomLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
         }`}
       >
-        <h1 className="text-lg font-bold text-white/70 tracking-wider uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          {displayName}&apos;s Room
-        </h1>
-        <p className="text-[11px] text-cyan-400/50 mt-0.5 drop-shadow-md">{t.lobby.welcomeSub}</p>
-      </div>
-
-      {/* === Toki Character (overlaid on room center-bottom) === */}
-      <div
-        className={`absolute bottom-[2%] left-1/2 -translate-x-1/2 z-10 transition-all duration-700 delay-500 ${
-          roomLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        }`}
-      >
-        {/* Character glow on floor */}
-        <div
-          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[160px] h-[60px] opacity-50"
-          style={{
-            background: "radial-gradient(ellipse, rgba(74,144,217,0.35) 0%, transparent 70%)",
-            filter: "blur(15px)",
-          }}
-        />
-
-        {/* Toki image - clickable */}
-        <button
-          onClick={handleTokiClick}
-          className="relative cursor-pointer hover:scale-105 transition-transform duration-300 focus:outline-none"
-          aria-label="Talk to Toki"
-        >
-          <Image
-            src="/toki-welcome.png"
-            alt="Toki"
-            width={180}
-            height={230}
-            className="object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
-            priority
-          />
-        </button>
-      </div>
-
-      {/* === VN Dialogue Box === */}
-      <div
-        className={`absolute bottom-3 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-xl transition-all duration-300 ${
-          showDialogue ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-        }`}
-      >
-        <div className="relative bg-[#0f1729]/90 backdrop-blur-md border border-cyan-400/20 rounded-xl px-6 py-4 shadow-xl shadow-black/50">
-          {/* Name tag */}
-          <div className="absolute -top-3 left-4 px-3 py-0.5 bg-cyan-500/20 border border-cyan-400/30 rounded-md">
-            <span className="text-xs font-bold text-cyan-400">TOKI</span>
-          </div>
-          {/* Dialogue text */}
-          <p className="text-sm text-gray-200 mt-1 leading-relaxed">{dialogueText}</p>
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-black/40 backdrop-blur-sm border border-purple-400/10">
+          <div className="w-1.5 h-1.5 rounded-full bg-purple-300/80 shadow-[0_0_6px_2px_rgba(192,132,252,0.4)]" />
+          <h1 className="text-xs font-mono tracking-[0.15em] uppercase" style={{ color: "rgba(216,180,254,0.7)" }}>
+            {displayName}&apos;s Room
+          </h1>
         </div>
       </div>
+
+      {/* === VN-Style Toki Dialogue (slides in from bottom) === */}
+      <div
+        className={`absolute bottom-0 left-0 right-0 z-20 transition-all duration-500 ${
+          showDialogue ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="relative flex items-end px-4 pb-4 pt-2">
+          {/* Toki character portrait - slides in from left */}
+          <div className={`relative flex-shrink-0 transition-all duration-500 delay-100 ${
+            showDialogue ? "translate-x-0 opacity-100" : "-translate-x-12 opacity-0"
+          }`}>
+            <Image
+              src="/toki-welcome.png"
+              alt="Toki"
+              width={140}
+              height={180}
+              className="object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]"
+            />
+          </div>
+          {/* Dialogue box */}
+          <div className={`flex-1 ml-2 mb-4 transition-all duration-400 delay-200 ${
+            showDialogue ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+          }`}>
+            <div className="relative bg-[#0f1729]/90 backdrop-blur-md border border-cyan-400/20 rounded-xl px-5 py-3 shadow-xl shadow-black/50">
+              <div className="absolute -top-3 left-4 px-3 py-0.5 bg-cyan-500/20 border border-cyan-400/30 rounded-md">
+                <span className="text-xs font-bold text-cyan-400">TOKI</span>
+              </div>
+              <p className="text-sm text-gray-200 mt-1 leading-relaxed">{dialogueText}</p>
+            </div>
+          </div>
+        </div>
+        {/* Gradient fade behind dialogue area */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
+      </div>
+
+      {/* === Toki Chat Button (bottom-right, triggers dialogue) === */}
+      <button
+        onClick={handleTokiClick}
+        className={`absolute bottom-4 right-4 z-15 w-12 h-12 rounded-full overflow-hidden border-2 border-cyan-400/30 shadow-lg shadow-black/40 hover:scale-110 hover:border-cyan-400/60 transition-all duration-300 ${
+          showDialogue ? "opacity-0 pointer-events-none" : "opacity-100"
+        } ${roomLoaded ? "translate-y-0" : "translate-y-8 opacity-0"}`}
+        aria-label="Talk to Toki"
+      >
+        <Image
+          src="/toki-welcome.png"
+          alt="Chat with Toki"
+          width={48}
+          height={48}
+          className="object-cover object-top scale-150"
+        />
+      </button>
 
       {/* === Overlay Panels === */}
 

@@ -6,11 +6,31 @@ import LobbyHotspot from "@/components/dashboard/LobbyHotspot";
 
 export default function LobbyPreview() {
   const [roomLoaded, setRoomLoaded] = useState(false);
+  const [showDialogue, setShowDialogue] = useState(false);
+  const [dialogueText, setDialogueText] = useState("");
+
+  const greetings = [
+    "Welcome to your room! Click around to explore~",
+    "Hey! Try clicking the monitors or the portal!",
+    "The achievement board has your card collection!",
+  ];
 
   useEffect(() => {
     const timer = setTimeout(() => setRoomLoaded(true), 100);
-    return () => clearTimeout(timer);
+    const greetTimer = setTimeout(() => {
+      setDialogueText(greetings[Math.floor(Math.random() * greetings.length)]);
+      setShowDialogue(true);
+      setTimeout(() => setShowDialogue(false), 5000);
+    }, 1200);
+    return () => { clearTimeout(timer); clearTimeout(greetTimer); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleTokiClick = () => {
+    setDialogueText(greetings[Math.floor(Math.random() * greetings.length)]);
+    setShowDialogue(true);
+    setTimeout(() => setShowDialogue(false), 4000);
+  };
 
   return (
     <div className="relative w-full h-screen overflow-hidden select-none bg-[#0a0e1a]">
@@ -165,15 +185,42 @@ export default function LobbyPreview() {
           color="139,92,246" pingDelay={1.8} />
       </div>
 
-      {/* Toki Character */}
-      <div className={`absolute bottom-[2%] left-1/2 -translate-x-1/2 z-10 transition-all duration-700 delay-500 ${
-        roomLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      {/* VN-Style Toki Dialogue */}
+      <div className={`absolute bottom-0 left-0 right-0 z-20 transition-all duration-500 ${
+        showDialogue ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
       }`}>
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[160px] h-[60px] opacity-50"
-          style={{ background: "radial-gradient(ellipse, rgba(74,144,217,0.35) 0%, transparent 70%)", filter: "blur(15px)" }}
-        />
-        <Image src="/toki-welcome.png" alt="Toki" width={180} height={230} className="object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]" priority />
+        <div className="relative flex items-end px-4 pb-4 pt-2">
+          <div className={`relative flex-shrink-0 transition-all duration-500 delay-100 ${
+            showDialogue ? "translate-x-0 opacity-100" : "-translate-x-12 opacity-0"
+          }`}>
+            <Image src="/toki-welcome.png" alt="Toki" width={140} height={180}
+              className="object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]" />
+          </div>
+          <div className={`flex-1 ml-2 mb-4 transition-all duration-400 delay-200 ${
+            showDialogue ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+          }`}>
+            <div className="relative bg-[#0f1729]/90 backdrop-blur-md border border-cyan-400/20 rounded-xl px-5 py-3 shadow-xl shadow-black/50">
+              <div className="absolute -top-3 left-4 px-3 py-0.5 bg-cyan-500/20 border border-cyan-400/30 rounded-md">
+                <span className="text-xs font-bold text-cyan-400">TOKI</span>
+              </div>
+              <p className="text-sm text-gray-200 mt-1 leading-relaxed">{dialogueText}</p>
+            </div>
+          </div>
+        </div>
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
       </div>
+
+      {/* Toki Chat Button */}
+      <button
+        onClick={handleTokiClick}
+        className={`absolute bottom-4 right-4 z-15 w-12 h-12 rounded-full overflow-hidden border-2 border-cyan-400/30 shadow-lg shadow-black/40 hover:scale-110 hover:border-cyan-400/60 transition-all duration-300 ${
+          showDialogue ? "opacity-0 pointer-events-none" : "opacity-100"
+        } ${roomLoaded ? "translate-y-0" : "translate-y-8 opacity-0"}`}
+        aria-label="Talk to Toki"
+      >
+        <Image src="/toki-welcome.png" alt="Chat with Toki" width={48} height={48}
+          className="object-cover object-top scale-150" />
+      </button>
     </div>
   );
 }
