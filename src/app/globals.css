@@ -299,3 +299,59 @@ body {
     opacity: 0;
   }
 }
+
+/* ─── Hologram Toki ──────────────────────────────────────── */
+
+@keyframes holoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes holoBasePulse {
+  0%, 100% { opacity: 0.5; transform: translateX(-50%) scaleX(1); }
+  50% { opacity: 1; transform: translateX(-50%) scaleX(1.1); }
+}
+
+@keyframes holoScanScroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 40px; }
+}
+
+@keyframes holoGlitch {
+  0%, 100% { opacity: 1; clip-path: inset(0); }
+  92% { opacity: 1; clip-path: inset(0); }
+  93% { opacity: 0.85; clip-path: inset(20% 0 30% 0); transform: translateX(2px); }
+  94% { opacity: 1; clip-path: inset(0); transform: translateX(0); }
+  96% { opacity: 0.9; clip-path: inset(60% 0 10% 0); transform: translateX(-1px); }
+  97% { opacity: 1; clip-path: inset(0); transform: translateX(0); }
+}
+
+/* ─── Achievement Toast Animations ────────────────────────── */
+
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(0) scale(1); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-80px) scale(0.5); }
+}
+
+@keyframes miniFloat {
+  0% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 6px var(--glow-color, rgba(34,211,238,0.3)); }
+  50% { box-shadow: 0 0 14px var(--glow-color, rgba(34,211,238,0.5)); }
+}
+
+@keyframes burstPulse {
+  0% { opacity: 0; transform: scale(0.3); }
+  30% { opacity: 0.8; }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes legendaryFlash {
+  0% { opacity: 0.8; }
+  100% { opacity: 0; }
+}

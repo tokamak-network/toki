@@ -467,6 +467,8 @@ const ko = {
     // Toast
     toastTitle: "업적 달성!",
     toastXp: "+{points} XP",
+    toastCardUnlocked: "카드 획득!",
+    toastTapToClose: "탭하여 닫기",
   },
   vnStaking: {
     welcome: "TON 스테이킹을 도와줄게! 먼저 오퍼레이터를 골라볼까?",

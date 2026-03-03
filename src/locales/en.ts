@@ -467,6 +467,8 @@ const en = {
     // Toast
     toastTitle: "Achievement Unlocked!",
     toastXp: "+{points} XP",
+    toastCardUnlocked: "Card Unlocked!",
+    toastTapToClose: "Tap to close",
   },
   vnStaking: {
     welcome: "Let me help you stake your TON! First, let's pick an operator.",
