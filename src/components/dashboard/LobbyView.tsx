@@ -283,9 +283,9 @@ export default function LobbyView({
           roomLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
         }`}
       >
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-black/40 backdrop-blur-sm border border-purple-400/10">
-          <div className="w-1.5 h-1.5 rounded-full bg-purple-300/80 shadow-[0_0_6px_2px_rgba(192,132,252,0.4)]" />
-          <h1 className="text-xs font-mono tracking-[0.15em] uppercase" style={{ color: "rgba(216,180,254,0.7)" }}>
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-black/50 backdrop-blur-sm border border-white/10">
+          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_2px_rgba(34,211,238,0.5)]" />
+          <h1 className="text-xs font-mono text-cyan-300/80 tracking-[0.15em] uppercase">
             {displayName}&apos;s Room
           </h1>
         </div>
