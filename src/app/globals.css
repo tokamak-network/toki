@@ -205,3 +205,97 @@ body {
   transform-style: preserve-3d;
 }
 .animate-gacha-shimmer { animation: gacha-shimmer 1s ease-out forwards; animation-delay: 1.2s; opacity: 0; }
+
+/* ─── Lobby Animations ────────────────────────────────── */
+
+@keyframes monitorPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes portalGlow {
+  0% { opacity: 0.5; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes boardPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes safeBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes dustFloat {
+  0% { transform: translate(0, 0); opacity: 0; }
+  20% { opacity: 0.6; }
+  50% { transform: translate(15px, -20px); opacity: 0.4; }
+  80% { opacity: 0.6; }
+  100% { transform: translate(-10px, -40px); opacity: 0; }
+}
+
+/* Portal orbiting particle */
+@keyframes portalOrbit {
+  0%   { transform: translate(-30px, -50px); opacity: 0; }
+  10%  { opacity: 1; }
+  25%  { transform: translate(30px, -40px); }
+  50%  { transform: translate(25px, 40px); opacity: 0.6; }
+  75%  { transform: translate(-25px, 35px); }
+  90%  { opacity: 1; }
+  100% { transform: translate(-30px, -50px); opacity: 0; }
+}
+
+/* Monitor cyan particles rising from screens */
+@keyframes monitorParticle {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+  15%  { opacity: 0.9; }
+  50%  { transform: translate(8px, -25px) scale(1.2); opacity: 0.6; }
+  85%  { opacity: 0.3; }
+  100% { transform: translate(-5px, -50px) scale(0.5); opacity: 0; }
+}
+
+/* Board sparkle particles floating around pins */
+@keyframes boardParticle {
+  0%   { transform: translate(0, 0) scale(0.5); opacity: 0; }
+  20%  { opacity: 1; transform: scale(1.3); }
+  50%  { transform: translate(5px, -10px) scale(1); opacity: 0.7; }
+  80%  { transform: translate(-3px, -18px) scale(0.8); opacity: 0.4; }
+  100% { transform: translate(2px, -25px) scale(0.3); opacity: 0; }
+}
+
+/* Safe ambient particles (slow drift) */
+@keyframes safeParticle {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+  20%  { opacity: 0.8; }
+  50%  { transform: translate(4px, -12px) scale(1.1); opacity: 0.5; }
+  100% { transform: translate(-3px, -22px) scale(0.4); opacity: 0; }
+}
+
+/* Beacon - large pulsing orb to attract attention */
+@keyframes beacon {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
+
+/* Hotspot ping ripple - sonar-like wave expanding outward */
+@keyframes hotspotPing {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}
