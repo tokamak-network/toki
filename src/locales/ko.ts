@@ -215,6 +215,10 @@ const ko = {
     disclaimer: "* 현재 온체인 연이율({apr}%) 기준. 실제 수익은 달라질 수 있습니다. 시뇨리지는 자동 복리됩니다.",
     activeOperators: "활성 오퍼레이터",
     failedToLoad: "온체인 데이터를 불러오지 못했습니다. 새로고침해 주세요.",
+    arcadeTag: "인터랙티브 시뮬레이터",
+    arcadeTitle: "토키 수익",
+    arcadeTitleAccent: "시뮬레이터",
+    arcadeSubtitle: "내 TON이 얼마나 벌 수 있는지 직접 확인해 보세요.",
   },
   footer: {
     builtOn: "토키 \u2014 토카막 네트워크 기반",

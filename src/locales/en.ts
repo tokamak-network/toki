@@ -220,6 +220,10 @@ const en = {
     disclaimer: "* Based on current on-chain APR ({apr}%). Actual returns may vary. Seigniorage compounds automatically.",
     activeOperators: "Active Operators",
     failedToLoad: "Failed to load on-chain data. Please refresh.",
+    arcadeTag: "INTERACTIVE SIMULATOR",
+    arcadeTitle: "TOKI PROFIT",
+    arcadeTitleAccent: "SIMULATOR",
+    arcadeSubtitle: "See how much your TON can earn.",
   },
   footer: {
     builtOn: "Toki \u2014 Built on Tokamak Network",

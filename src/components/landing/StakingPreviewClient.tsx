@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { StakingData } from "@/lib/staking";
 
@@ -9,15 +10,6 @@ interface StakingPreviewClientProps {
   data: StakingData | null;
 }
 
-type VariantKey = "combo" | "sim" | "vs" | "live" | "summary";
-
-const VARIANT_LABELS: Record<VariantKey, string> = {
-  combo: "★ Combined",
-  sim: "A: Simulator",
-  vs: "B: Exchange vs Toki",
-  live: "C: Live Counter",
-  summary: "D: Summary",
-};
 
 /* ─── Variant A: Revenue Simulator ───────────────────────────────────────── */
 
@@ -1019,7 +1011,7 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
             </div>
             <span className="text-xs font-mono font-black uppercase tracking-[0.2em]"
               style={{ color: "#22d3ee", textShadow: "0 0 10px rgba(34,211,238,0.6), 0 0 20px rgba(34,211,238,0.3)" }}>
-              TOKI LAUNCH ARCADE
+              TOKI PROFIT SIMULATOR
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -1184,16 +1176,31 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
                     }}>
                     WIN
                   </div>
-                  <div className="text-[8px] text-cyan-400/80 font-mono font-bold uppercase mb-1">2P · {t.statsCard.comboToki}</div>
+                  {/* C: Star particles — behind text */}
+                  {[...Array(6)].map((_, i) => (
+                    <span key={i} className="absolute text-[8px] animate-pulse pointer-events-none select-none z-0"
+                      style={{
+                        color: "#f59e0b",
+                        top: `${10 + Math.sin(i * 1.2) * 30}%`,
+                        left: `${10 + (i * 16) % 85}%`,
+                        animationDelay: `${i * 300}ms`,
+                        animationDuration: `${1.5 + i * 0.3}s`,
+                        opacity: 0.3,
+                        textShadow: "0 0 4px rgba(245,158,11,0.5)",
+                      }}>
+                      ★
+                    </span>
+                  ))}
+                  <div className="relative z-10 text-[8px] text-cyan-400/80 font-mono font-bold uppercase mb-1">2P · {t.statsCard.comboToki}</div>
                   {/* A: Count-up animation */}
-                  <div className="text-lg font-black font-mono-num"
+                  <div className="relative z-10 text-lg font-black font-mono-num"
                     style={{ color: "#22d3ee", textShadow: "0 0 14px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)" }}>
                     +{fmt(vsCountUp)}
                   </div>
                   {/* E: TON/year label */}
-                  <div className="text-[9px] font-mono font-bold" style={{ color: "rgba(34,211,238,0.7)" }}>TON / year</div>
+                  <div className="relative z-10 text-[9px] font-mono font-bold" style={{ color: "rgba(34,211,238,0.7)" }}>TON / year</div>
                   {/* D: Full progress bar */}
-                  <div className="mt-1.5 mx-2 h-1.5 rounded-full" style={{ background: "rgba(34,211,238,0.1)" }}>
+                  <div className="relative z-10 mt-1.5 mx-2 h-1.5 rounded-full" style={{ background: "rgba(34,211,238,0.1)" }}>
                     <div className="h-full rounded-full transition-all duration-1000"
                       style={{
                         width: `${Math.min((vsCountUp / Math.max(tokiEarn1y, 1)) * 100, 100)}%`,
@@ -1201,21 +1208,6 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
                         boxShadow: "0 0 8px rgba(34,211,238,0.4)",
                       }} />
                   </div>
-                  {/* C: Star particles */}
-                  {[...Array(6)].map((_, i) => (
-                    <span key={i} className="absolute text-[8px] animate-pulse pointer-events-none select-none"
-                      style={{
-                        color: "#f59e0b",
-                        top: `${10 + Math.sin(i * 1.2) * 30}%`,
-                        left: `${10 + (i * 16) % 85}%`,
-                        animationDelay: `${i * 300}ms`,
-                        animationDuration: `${1.5 + i * 0.3}s`,
-                        opacity: 0.6,
-                        textShadow: "0 0 4px rgba(245,158,11,0.5)",
-                      }}>
-                      ★
-                    </span>
-                  ))}
                 </div>
               </div>
             </div>
@@ -1268,6 +1260,18 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
                 <p className="text-[10px] text-purple-300/70 font-mono">{reaction}</p>
               </div>
             </div>
+
+            {/* ─ STAKING CTA ─ */}
+            <Link href="/staking"
+              className="block w-full text-center py-2.5 rounded-lg font-mono font-bold text-sm uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: "linear-gradient(135deg, #22d3ee, #06b6d4)",
+                color: "#0a0a1a",
+                boxShadow: "0 0 20px rgba(34,211,238,0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
+                textShadow: "0 1px 0 rgba(255,255,255,0.15)",
+              }}>
+              {t.hero.startStaking} →
+            </Link>
           </div>
 
           {/* ── RIGHT: Launch Scene ── */}
@@ -1283,16 +1287,16 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
                 style={{ top: `${s.t}%`, left: `${s.l}%`, animationDelay: `${i * 400}ms`, animationDuration: `${2 + i * 0.5}s` }} />
             ))}
 
-            {/* Exhaust trail — gradient (blue → cyan → amber) */}
+            {/* Exhaust trail — gradient, top extends behind rocket (z-[6] < z-20) */}
             <div
               className="absolute w-[30%] rounded-t-full transition-all ease-out z-[6]"
               style={{
                 left: "50%",
-                transform: "translateX(calc(-50% + 20px))",
+                transform: "translateX(-50%)",
                 bottom: "8%",
-                height: `${Math.max(rocketHeight - 4, 0)}%`,
+                height: `${Math.max(rocketHeight + 5, 0)}%`,
                 transitionDuration: "0.8s",
-                background: "linear-gradient(to top, rgba(245,158,11,0.2), rgba(34,211,238,0.12), rgba(74,144,217,0.06), transparent)",
+                background: "linear-gradient(to top, rgba(245,158,11,0.2), rgba(34,211,238,0.12) 50%, rgba(74,144,217,0.06) 80%, transparent)",
                 filter: "blur(5px)",
               }}
             />
@@ -1302,10 +1306,10 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
                 left: "50%",
                 transform: "translateX(-50%)",
                 bottom: "8%",
-                height: `${Math.max(rocketHeight - 6, 0)}%`,
+                height: `${Math.max(rocketHeight + 3, 0)}%`,
                 transitionDuration: "0.8s",
                 transitionDelay: "50ms",
-                background: "linear-gradient(to top, rgba(245,158,11,0.35), rgba(34,211,238,0.18), rgba(74,144,217,0.06), transparent)",
+                background: "linear-gradient(to top, rgba(245,158,11,0.35), rgba(34,211,238,0.18) 50%, rgba(74,144,217,0.06) 80%, transparent)",
                 boxShadow: "0 0 14px rgba(34,211,238,0.1)",
               }}
             />
@@ -1361,69 +1365,105 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
                 <Image src="/toki-rocket.png" alt="Toki on rocket" width={120} height={120}
                   className="relative drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]" />
 
-                {/* Rocket exhaust — gradient billowing cloud smoke */}
-                <div className="absolute left-1/2 -translate-x-1/2 top-[78%] flex flex-col items-center pointer-events-none">
+                {/* Rocket exhaust — rich billowing cloud smoke */}
+                <div className="absolute flex flex-col items-center pointer-events-none" style={{ left: "calc(50% - 20px)", top: "calc(75% + 15px)", transform: "translateX(-50%)" }}>
                   {/* Inner bright core — white hot */}
-                  <div className="w-4 rounded-b-full"
+                  <div className="w-5 rounded-b-full"
                     style={{
-                      height: Math.max(16, (amount / 100_000) * 45),
-                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(34,211,238,0.5), rgba(74,144,217,0.2), transparent)",
+                      height: Math.max(20, (amount / 100_000) * 55),
+                      background: "linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(34,211,238,0.6), rgba(74,144,217,0.25), transparent)",
                       animation: "rocketFlame 0.1s ease-in-out infinite alternate",
                       filter: "blur(1px)",
                     }} />
                   {/* Wide outer plume — cyan glow */}
-                  <div className="absolute top-0 w-14 rounded-b-full"
+                  <div className="absolute top-0 w-16 rounded-b-full"
                     style={{
-                      height: Math.max(24, (amount / 100_000) * 60),
-                      background: "linear-gradient(to bottom, rgba(34,211,238,0.35), rgba(74,144,217,0.18), rgba(245,158,11,0.06), transparent)",
+                      height: Math.max(30, (amount / 100_000) * 70),
+                      background: "linear-gradient(to bottom, rgba(34,211,238,0.4), rgba(74,144,217,0.2), rgba(245,158,11,0.08), transparent)",
                       animation: "rocketFlame 0.15s ease-in-out infinite alternate-reverse",
                       filter: "blur(5px)",
                     }} />
-                  {/* Wide spread smoke puffs — left side */}
-                  {[0, 1, 2, 3, 4, 5].map((i) => {
-                    const colors = [
-                      ["34,211,238", "34,211,238"],   // cyan
-                      ["74,144,217", "74,144,217"],    // blue
-                      ["245,158,11", "245,158,11"],    // amber
-                      ["34,211,238", "74,144,217"],    // cyan-blue
-                      ["245,158,11", "34,211,238"],    // amber-cyan
-                      ["74,144,217", "245,158,11"],    // blue-amber
-                    ][i];
+                  {/* Extra wide ambient glow */}
+                  <div className="absolute top-2 w-24 rounded-b-full"
+                    style={{
+                      height: Math.max(40, (amount / 100_000) * 80),
+                      background: "linear-gradient(to bottom, rgba(34,211,238,0.15), rgba(74,144,217,0.08), transparent)",
+                      animation: "rocketFlame 0.2s ease-in-out infinite alternate",
+                      filter: "blur(10px)",
+                    }} />
+                  {/* Dense smoke puffs — left cascade (8 layers) */}
+                  {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+                    const colorSets = [
+                      ["34,211,238", "34,211,238"],
+                      ["74,144,217", "74,144,217"],
+                      ["245,158,11", "245,158,11"],
+                      ["34,211,238", "74,144,217"],
+                      ["245,158,11", "34,211,238"],
+                      ["74,144,217", "245,158,11"],
+                      ["34,211,238", "245,158,11"],
+                      ["74,144,217", "34,211,238"],
+                    ];
+                    const colors = colorSets[i];
                     return (
                       <div key={`l${i}`} className="absolute rounded-full"
                         style={{
-                          top: 4 + i * 7,
-                          left: `calc(50% - ${10 + i * 8}px)`,
-                          width: 14 + i * 10,
-                          height: 14 + i * 10,
-                          background: `radial-gradient(circle, rgba(${colors[0]},${0.35 - i * 0.04}), rgba(${colors[1]},${0.12 - i * 0.015}), transparent)`,
-                          animation: `rocketSmoke ${0.8 + i * 0.3}s ease-out infinite`,
-                          animationDelay: `${i * 0.12}s`,
-                          filter: `blur(${3 + i}px)`,
+                          top: 2 + i * 8,
+                          left: `calc(50% - ${14 + i * 10}px)`,
+                          width: 18 + i * 12,
+                          height: 18 + i * 12,
+                          background: `radial-gradient(circle, rgba(${colors[0]},${0.4 - i * 0.035}), rgba(${colors[1]},${0.15 - i * 0.013}), transparent)`,
+                          animation: `rocketSmoke ${0.7 + i * 0.25}s ease-out infinite`,
+                          animationDelay: `${i * 0.1}s`,
+                          filter: `blur(${3 + i * 1.2}px)`,
                         }} />
                     );
                   })}
-                  {/* Wide spread smoke puffs — right side */}
-                  {[0, 1, 2, 3, 4, 5].map((i) => {
-                    const colors = [
-                      ["245,158,11", "245,158,11"],    // amber
-                      ["34,211,238", "34,211,238"],    // cyan
-                      ["74,144,217", "74,144,217"],    // blue
-                      ["245,158,11", "34,211,238"],    // amber-cyan
-                      ["34,211,238", "74,144,217"],    // cyan-blue
-                      ["74,144,217", "245,158,11"],    // blue-amber
-                    ][i];
+                  {/* Dense smoke puffs — right cascade (8 layers) */}
+                  {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+                    const colorSets = [
+                      ["245,158,11", "245,158,11"],
+                      ["34,211,238", "34,211,238"],
+                      ["74,144,217", "74,144,217"],
+                      ["245,158,11", "34,211,238"],
+                      ["34,211,238", "74,144,217"],
+                      ["74,144,217", "245,158,11"],
+                      ["245,158,11", "74,144,217"],
+                      ["34,211,238", "245,158,11"],
+                    ];
+                    const colors = colorSets[i];
                     return (
                       <div key={`r${i}`} className="absolute rounded-full"
                         style={{
-                          top: 4 + i * 7,
-                          left: `calc(50% + ${4 + i * 6}px)`,
-                          width: 14 + i * 10,
-                          height: 14 + i * 10,
-                          background: `radial-gradient(circle, rgba(${colors[0]},${0.35 - i * 0.04}), rgba(${colors[1]},${0.12 - i * 0.015}), transparent)`,
-                          animation: `rocketSmoke ${0.9 + i * 0.28}s ease-out infinite`,
-                          animationDelay: `${0.06 + i * 0.13}s`,
-                          filter: `blur(${3 + i}px)`,
+                          top: 2 + i * 8,
+                          left: `calc(50% + ${6 + i * 8}px)`,
+                          width: 18 + i * 12,
+                          height: 18 + i * 12,
+                          background: `radial-gradient(circle, rgba(${colors[0]},${0.4 - i * 0.035}), rgba(${colors[1]},${0.15 - i * 0.013}), transparent)`,
+                          animation: `rocketSmoke ${0.8 + i * 0.22}s ease-out infinite`,
+                          animationDelay: `${0.05 + i * 0.11}s`,
+                          filter: `blur(${3 + i * 1.2}px)`,
+                        }} />
+                    );
+                  })}
+                  {/* Bottom mushroom cloud — extra wide base puffs */}
+                  {[0, 1, 2, 3].map((i) => {
+                    const colors = [
+                      ["34,211,238", "74,144,217"],
+                      ["245,158,11", "34,211,238"],
+                      ["74,144,217", "245,158,11"],
+                      ["34,211,238", "245,158,11"],
+                    ][i];
+                    return (
+                      <div key={`b${i}`} className="absolute rounded-full"
+                        style={{
+                          top: 50 + i * 14,
+                          left: `calc(50% + ${-50 + i * 25}px)`,
+                          width: 40 + i * 15,
+                          height: 30 + i * 10,
+                          background: `radial-gradient(ellipse, rgba(${colors[0]},${0.25 - i * 0.04}), rgba(${colors[1]},${0.1 - i * 0.02}), transparent)`,
+                          animation: `rocketSmoke ${1.2 + i * 0.4}s ease-out infinite`,
+                          animationDelay: `${i * 0.15}s`,
+                          filter: `blur(${6 + i * 2}px)`,
                         }} />
                     );
                   })}
@@ -1469,7 +1509,6 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
 
 export default function StakingPreviewClient({ data }: StakingPreviewClientProps) {
   const { t } = useTranslation();
-  const [variant, setVariant] = useState<VariantKey>("combo");
   const [showCard, setShowCard] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -1495,28 +1534,23 @@ export default function StakingPreviewClient({ data }: StakingPreviewClientProps
   return (
     <section className="py-24 px-4">
       <div className="max-w-5xl mx-auto" ref={cardRef}>
-        {/* Variant Toggle (temporary — remove after choosing) */}
-        <div className="flex justify-center gap-1 mb-6 flex-wrap">
-          {(Object.keys(VARIANT_LABELS) as VariantKey[]).map((key) => (
-            <button
-              key={key}
-              onClick={() => setVariant(key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors ${
-                variant === key
-                  ? "bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/30"
-                  : "bg-white/5 text-gray-500 border border-white/10 hover:bg-white/10"
-              }`}
-            >
-              {VARIANT_LABELS[key]}
-            </button>
-          ))}
+        {/* Section Header */}
+        <div className="text-center mb-14 px-4">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400 tracking-widest mb-6">
+            {t.stakingPreview.arcadeTag}
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight uppercase">
+            {t.stakingPreview.arcadeTitle}{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-amber-400">
+              {t.stakingPreview.arcadeTitleAccent}
+            </span>
+          </h2>
+          <p className="text-lg text-gray-400 max-w-xl mx-auto">
+            {t.stakingPreview.arcadeSubtitle}
+          </p>
         </div>
 
-        {variant === "combo" && <CombinedVariant data={data} show={showCard} />}
-        {variant === "sim" && <SimulatorVariant data={data} show={showCard} />}
-        {variant === "vs" && <BankVsVariant data={data} show={showCard} />}
-        {variant === "live" && <LiveCounterVariant data={data} show={showCard} />}
-        {variant === "summary" && <SummaryVariant data={data} show={showCard} />}
+        <CombinedVariant data={data} show={showCard} />
       </div>
     </section>
   );

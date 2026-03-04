@@ -54,12 +54,12 @@ export default async function Home() {
         <div id="how-it-works">
           <HowItWorks />
         </div>
-        <GachaIntoWall />
         <div id="stats">
           <Suspense fallback={<StakingLoading />}>
             <StakingPreview />
           </Suspense>
         </div>
+        <GachaIntoWall />
         <CTASection />
       </main>
       <Footer />

@@ -6,6 +6,7 @@ import CollectionShowcase from "./CollectionShowcase";
 import FloatingCardWall from "./FloatingCardWall";
 import CardWallGacha from "./CardWallGacha";
 import GachaThenWall from "./GachaThenWall";
+import GachaIntoWall from "./GachaIntoWall";
 
 const VARIANTS = [
   { id: "A", label: "Gacha Teaser", component: CardPackOpening },
@@ -13,6 +14,7 @@ const VARIANTS = [
   { id: "C", label: "Card Wall", component: FloatingCardWall },
   { id: "C+A", label: "Wall + Gacha", component: CardWallGacha },
   { id: "A→C", label: "Gacha → Wall", component: GachaThenWall },
+  { id: "A⟶C", label: "Gacha into Wall", component: GachaIntoWall },
 ] as const;
 
 export default function CardSectionSwitcher() {

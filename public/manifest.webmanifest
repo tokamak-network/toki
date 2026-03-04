@@ -1,0 +1,17 @@
+{
+  "name": "Toki - TON Staking Made Easy",
+  "short_name": "Toki",
+  "description": "Stake your TON with one click. Earn seigniorage rewards.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#22d3ee",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

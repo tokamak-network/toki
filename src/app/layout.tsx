@@ -33,6 +33,7 @@ export const metadata: Metadata = {
   description:
     "Stake your TON with one click. Earn seigniorage rewards with 20%+ APR. No MetaMask, no ETH gas fees, no complexity.",
   keywords: ["TON", "Tokamak Network", "Staking", "Seigniorage", "DeFi"],
+  manifest: "/manifest.webmanifest",
   openGraph: {
     title: "Toki - TON Staking Made Easy",
     description: "Stake your TON with one click. Earn 20%+ APR seigniorage rewards.",
