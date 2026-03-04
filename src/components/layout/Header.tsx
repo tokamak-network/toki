@@ -61,7 +61,7 @@ export default function Header() {
             alt="Toki"
             width={32}
             height={32}
-            className="w-8 h-8 rounded-lg"
+            className="w-8 h-8 rounded-lg bg-[#0a0a0f]"
           />
           <span className="text-lg font-bold">
             <span className="text-gradient">Toki</span>
