@@ -208,7 +208,6 @@ export default function GachaIntoWall() {
   const isGacha = phase === "idle" || phase === "flip-burst" || phase === "revealed";
   const showWall = phase === "wall-draw" || phase === "card-fly" || phase === "running";
   const isRunning = phase === "running";
-  const isFlying = phase === "card-fly";
   const showFloatingCard = isGacha || phase === "wall-draw" || phase === "card-fly";
 
   return (
@@ -282,11 +281,11 @@ export default function GachaIntoWall() {
 
               <div
                 className={`relative w-[220px] h-[308px] sm:w-[260px] sm:h-[364px] ${
-                  phase === "idle" ? "cursor-pointer" : ""
+                  phase === "idle" ? "cursor-pointer giw-peek" : ""
                 }`}
                 style={{
                   transformStyle: "preserve-3d",
-                  transition: "transform 0.7s ease-out",
+                  transition: phase === "idle" ? "none" : "transform 0.7s ease-out",
                   transform:
                     phase !== "idle" && phase !== "flip-burst"
                       ? "rotateY(180deg)"
@@ -305,9 +304,11 @@ export default function GachaIntoWall() {
                   <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                     <Image src="/toki-logo.png" alt="Toki" width={56} height={56} className="opacity-30" />
-                    <div className="text-[10px] tracking-[0.3em] text-white/20 uppercase">Tap to reveal</div>
+                    <div className="text-[11px] tracking-[0.3em] uppercase font-medium text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-amber-400">Tap to reveal</div>
                   </div>
                   <div className="absolute inset-0 rounded-xl pointer-events-none" style={{ boxShadow: "inset 0 0 60px rgba(34,211,238,0.08)" }} />
+                  {/* Shimmer sweep (idle only) */}
+                  {phase === "idle" && <div className="giw-shimmer" />}
                 </div>
 
                 {/* Front */}
@@ -426,7 +427,7 @@ export default function GachaIntoWall() {
 
         {/* Tap prompt (idle only) */}
         {phase === "idle" && (
-          <div className="text-center mt-8 text-sm text-gray-500 animate-pulse">
+          <div className="text-center mt-8 text-sm font-medium animate-pulse text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-amber-400">
             Tap the card to reveal
           </div>
         )}
@@ -480,6 +481,78 @@ export default function GachaIntoWall() {
         @keyframes wallReveal {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Peek Tilt — card tilts to tease the front face */
+        .giw-peek {
+          animation: giw-peekTilt 7s ease-in-out infinite;
+        }
+        @keyframes giw-peekTilt {
+          0% { transform: rotateY(0deg); }
+          17% { transform: rotateY(-12deg); }
+          27% { transform: rotateY(-12deg); }
+          40% { transform: rotateY(0deg); }
+          57% { transform: rotateY(12deg); }
+          67% { transform: rotateY(12deg); }
+          80% { transform: rotateY(0deg); }
+          100% { transform: rotateY(0deg); }
+        }
+
+        /* Shimmer sweep — diagonal light streak */
+        .giw-shimmer {
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          pointer-events: none;
+          z-index: 5;
+          overflow: hidden;
+        }
+        /* Left-to-right sweep (left tilt) */
+        .giw-shimmer::after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -60%;
+          width: 40%;
+          height: 200%;
+          background: linear-gradient(
+            105deg,
+            transparent 30%,
+            rgba(255,255,255,0.12) 45%,
+            rgba(255,255,255,0.25) 50%,
+            rgba(255,255,255,0.12) 55%,
+            transparent 70%
+          );
+          animation: giw-shimmerLTR 7s ease-in-out infinite;
+        }
+        @keyframes giw-shimmerLTR {
+          0%, 10% { transform: translateX(0); }
+          32% { transform: translateX(400%); }
+          32.1%, 100% { transform: translateX(0); }
+        }
+
+        /* Right-to-left sweep (right tilt) */
+        .giw-shimmer::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          right: -60%;
+          width: 40%;
+          height: 200%;
+          background: linear-gradient(
+            -105deg,
+            transparent 30%,
+            rgba(255,255,255,0.12) 45%,
+            rgba(255,255,255,0.25) 50%,
+            rgba(255,255,255,0.12) 55%,
+            transparent 70%
+          );
+          animation: giw-shimmerRTL 7s ease-in-out infinite;
+        }
+        @keyframes giw-shimmerRTL {
+          0%, 50% { transform: translateX(0); }
+          72% { transform: translateX(-400%); }
+          72.1%, 100% { transform: translateX(0); }
         }
       `}</style>
     </section>
