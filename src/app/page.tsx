@@ -4,7 +4,7 @@ import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/landing/HeroSection";
 import HowItWorks from "@/components/landing/HowItWorks";
 import StakingPreview from "@/components/landing/StakingPreview";
-import TokiMembershipCard from "@/components/landing/TokiMembershipCard";
+import CardSectionSwitcher from "@/components/landing/CardSectionSwitcher";
 
 import CTASection from "@/components/landing/CTASection";
 import FloatingPlayer from "@/components/audio/FloatingPlayer";
@@ -53,7 +53,7 @@ export default async function Home() {
         <div id="how-it-works">
           <HowItWorks />
         </div>
-        <TokiMembershipCard />
+        <CardSectionSwitcher />
         <div id="stats">
           <Suspense fallback={<StakingLoading />}>
             <StakingPreview />
