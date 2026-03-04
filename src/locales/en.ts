@@ -424,6 +424,7 @@ const en = {
     quest1VideoPrompt: "Curious about blockchain? Watch this!",
     watchTutorial: "Watch Tutorial",
     quest2VideoPrompt: "How to install MetaMask?",
+    quest2ImportVideoPrompt: "How to import a key into MetaMask?",
     quest3VideoPrompt: "How to send TON from exchange?",
     closeVideo: "Close",
     exploreEcosystem: "Explore Ecosystem",

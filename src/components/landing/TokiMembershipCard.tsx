@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, MouseEvent } from "react";
 import Image from "next/image";
+import { CARD_TIERS } from "@/lib/achievements";
 
 /* ─── Card Data ─────────────────────────────────────────────────────────────── */
 
@@ -16,33 +17,18 @@ interface CardData {
   xp: string;
 }
 
-const CARDS: CardData[] = [
-  {
-    level: 1, tier: "BRONZE", name: "Beginner",
-    bgImage: "/card-bg-bronze.png", charImage: "/toki-card-bronze.png",
-    stars: 1, achievements: "5/19", xp: "500 XP",
-  },
-  {
-    level: 2, tier: "SILVER", name: "Explorer",
-    bgImage: "/card-bg-silver.png", charImage: "/toki-card-silver.png",
-    stars: 2, achievements: "8/19", xp: "1,500 XP",
-  },
-  {
-    level: 3, tier: "GOLD", name: "Staker",
-    bgImage: "/card-bg-gold.png", charImage: "/toki-card-gold-v2.png",
-    stars: 3, achievements: "12/19", xp: "3,000 XP",
-  },
-  {
-    level: 4, tier: "PLATINUM", name: "Expert",
-    bgImage: "/card-bg-platinum.png", charImage: "/toki-card-platinum.png",
-    stars: 4, achievements: "16/19", xp: "5,000 XP",
-  },
-  {
-    level: 5, tier: "TOKI BLACK", name: "Master",
-    bgImage: "/card-bg-black.png", charImage: "/toki-card-black.png",
-    stars: 5, achievements: "19/19", xp: "MAX",
-  },
-];
+const DISPLAY_EXTRAS: Record<number, { achievements: string; xp: string }> = {
+  1: { achievements: "5/19", xp: "500 XP" },
+  2: { achievements: "8/19", xp: "1,500 XP" },
+  3: { achievements: "12/19", xp: "3,000 XP" },
+  4: { achievements: "16/19", xp: "5,000 XP" },
+  5: { achievements: "19/19", xp: "MAX" },
+};
+
+const CARDS: CardData[] = CARD_TIERS.map((t) => ({
+  ...t,
+  ...DISPLAY_EXTRAS[t.level],
+}));
 
 // Duplicate cards for seamless infinite loop
 const MARQUEE_CARDS = [...CARDS, ...CARDS];

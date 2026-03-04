@@ -26,7 +26,7 @@ import { useAchievement } from "@/components/providers/AchievementProvider";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEip7702 } from "@/hooks/useEip7702";
 import { useSessionKey } from "@/hooks/useSessionKey";
-import { calculateLevel } from "@/lib/achievements";
+import { calculateLevel, CARD_TIERS, type CardTier } from "@/lib/achievements";
 import OperatorCard from "@/components/dashboard/OperatorCard";
 
 // ─── Config ──────────────────────────────────────────────────────────
@@ -86,14 +86,6 @@ const STEP_BACKGROUNDS: Record<Step, string> = {
   3: "/backgrounds/staking-dawn.png",
   4: "/backgrounds/staking-sunrise.png",
 };
-
-const CARD_TIERS = [
-  { level: 1, tier: "BRONZE", name: "Beginner", charImage: "/toki-card-bronze.png", bgImage: "/card-bg-bronze.png", stars: 1, threshold: 0 },
-  { level: 2, tier: "SILVER", name: "Explorer", charImage: "/toki-card-silver.png", bgImage: "/card-bg-silver.png", stars: 2, threshold: 500 },
-  { level: 3, tier: "GOLD", name: "Staker", charImage: "/toki-card-gold-v2.png", bgImage: "/card-bg-gold.png", stars: 3, threshold: 1500 },
-  { level: 4, tier: "PLATINUM", name: "Expert", charImage: "/toki-card-platinum.png", bgImage: "/card-bg-platinum.png", stars: 4, threshold: 3000 },
-  { level: 5, tier: "TOKI BLACK", name: "Master", charImage: "/toki-card-black.png", bgImage: "/card-bg-black.png", stars: 5, threshold: 5000 },
-];
 
 // ─── Typewriter Hook ─────────────────────────────────────────────────
 
@@ -708,7 +700,7 @@ function DialogueBar({ text, mood, stepProgress }: { text: string; mood: Mood; s
 
 // ─── Unlocked Card ───────────────────────────────────────────────────
 
-function UnlockedCard({ tier }: { tier: typeof CARD_TIERS[number] }) {
+function UnlockedCard({ tier }: { tier: CardTier }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [light, setLight] = useState({ x: 50, y: 50 });
@@ -811,7 +803,7 @@ const GACHA_PARTICLES = Array.from({ length: 16 }, (_, i) => {
   return { tx, ty, size, delay };
 });
 
-function CardRevealGacha({ tier, revealed, onReveal }: { tier: typeof CARD_TIERS[number]; revealed: boolean; onReveal?: () => void }) {
+function CardRevealGacha({ tier, revealed, onReveal }: { tier: CardTier; revealed: boolean; onReveal?: () => void }) {
   const [phase, setPhase] = useState<"idle" | "beam" | "drop" | "waiting" | "flip" | "done">("idle");
 
   useEffect(() => {

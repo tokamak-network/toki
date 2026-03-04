@@ -7,6 +7,7 @@ import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { Dictionary } from "@/locales";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import IntroCinematic from "./IntroCinematic";
+import LaptopVideoOverlay from "./LaptopVideoOverlay";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
@@ -340,9 +341,17 @@ const EXCHANGE_GUIDES = [
 const QUEST_BACKGROUNDS: Record<string, string> = {
   "create-wallet": "/backgrounds/1.png",
   "bridge-metamask": "/backgrounds/2.png",
-  "verify-exchange": "/backgrounds/4.png",
-  "receive-ton": "/backgrounds/5.png",
-  "first-stake": "/backgrounds/6.png",
+  "verify-exchange": "/backgrounds/3.png",
+  "receive-ton": "/backgrounds/staking-night.png",
+  "first-stake": "/backgrounds/staking-sunrise.png",
+};
+
+// ─── Tutorial Video URLs ──────────────────────────────────────────────
+
+const TUTORIAL_VIDEOS: Record<string, string> = {
+  "create-wallet": "https://www.youtube.com/embed/UURB7Tc7D4M?start=129&autoplay=1",
+  "install-metamask": "https://www.youtube.com/embed/VIDEO_ID?autoplay=1",
+  "verify-exchange": "https://www.youtube.com/embed/VIDEO_ID?autoplay=1",
 };
 
 // ─── Character Display (Visual Novel Style) ──────────────────────────
@@ -421,6 +430,7 @@ export default function OnboardingQuest() {
   const [subStepIndex, setSubStepIndex] = useState(0);
   const [subStepConfirmed, setSubStepConfirmed] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [videoKey, setVideoKey] = useState<string>("create-wallet");
   const [showCinematic, setShowCinematic] = useState(false);
   const [cinematicComplete, setCinematicComplete] = useState(false);
   const [cinematicJustFinished, setCinematicJustFinished] = useState(false);
@@ -726,7 +736,7 @@ export default function OnboardingQuest() {
                   <>
                     {quest.id === "create-wallet" && (
                       <button
-                        onClick={() => setShowVideo(true)}
+                        onClick={() => { setVideoKey("create-wallet"); setShowVideo(true); }}
                         className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
                       >
                         <span>▶</span>
@@ -753,6 +763,16 @@ export default function OnboardingQuest() {
 
                 {quest.action.type === "confirm" && (
                   <>
+                    {/* Video button for Quest 3 */}
+                    {quest.id === "verify-exchange" && (
+                      <button
+                        onClick={() => { setVideoKey("verify-exchange"); setShowVideo(true); }}
+                        className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <span>▶</span>
+                        <span>{t.onboarding.quest3VideoPrompt}</span>
+                      </button>
+                    )}
                     {/* Exchange guide links for Quest 3 */}
                     {quest.id === "verify-exchange" && (
                       <div className="space-y-2">
@@ -831,6 +851,28 @@ export default function OnboardingQuest() {
                       {currentSubStep.instruction}
                     </p>
 
+                    {/* Video button for MetaMask install substep */}
+                    {quest.id === "bridge-metamask" && subStepIndex === 1 && (
+                      <button
+                        onClick={() => { setVideoKey("install-metamask"); setShowVideo(true); }}
+                        className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <span>▶</span>
+                        <span>{t.onboarding.quest2VideoPrompt}</span>
+                      </button>
+                    )}
+
+                    {/* Video button for MetaMask import key substep */}
+                    {quest.id === "bridge-metamask" && subStepIndex === 2 && (
+                      <button
+                        onClick={() => { setVideoKey("import-key"); setShowVideo(true); }}
+                        className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <span>▶</span>
+                        <span>{t.onboarding.quest2ImportVideoPrompt}</span>
+                      </button>
+                    )}
+
                     {(currentSubStep.action.type === "privy-login" || currentSubStep.action.type === "link") && (
                       <button
                         onClick={() => handleSubStepAction(currentSubStep)}
@@ -908,30 +950,13 @@ export default function OnboardingQuest() {
         </div>
       </div>
 
-      {/* YouTube Video Modal */}
-      {showVideo && (
-        <div
-          className="fixed inset-0 z-40 bg-black/90 flex flex-col items-center justify-center p-4"
-          onClick={() => setShowVideo(false)}
-        >
-          <button
-            onClick={() => setShowVideo(false)}
-            className="mb-4 px-5 py-2.5 rounded-full bg-white/15 text-white text-sm font-medium flex items-center gap-2 hover:bg-white/25 transition-colors"
-          >
-            ✕ {t.onboarding.closeVideo}
-          </button>
-          <div
-            className="w-full max-w-3xl aspect-video"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <iframe
-              src="https://www.youtube.com/embed/UURB7Tc7D4M?start=129&autoplay=1"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-              className="w-full h-full rounded-xl"
-            />
-          </div>
-        </div>
+      {/* Laptop Video Overlay */}
+      {showVideo && TUTORIAL_VIDEOS[videoKey] && (
+        <LaptopVideoOverlay
+          videoUrl={TUTORIAL_VIDEOS[videoKey]}
+          bgImage={bgImage}
+          onClose={() => setShowVideo(false)}
+        />
       )}
 
       {/* Intro Cinematic Overlay */}

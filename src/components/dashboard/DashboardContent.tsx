@@ -158,7 +158,7 @@ export default function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-grid">
+    <div className={`min-h-screen bg-grid ${isDesktop ? "h-screen overflow-hidden" : ""}`}>
       <Header />
 
       {/* Desktop: 2.5D Lobby View */}

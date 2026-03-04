@@ -77,7 +77,7 @@ export default function LobbyView({
   };
 
   return (
-    <div className="relative w-full h-[calc(100vh-64px)] mt-16 overflow-hidden select-none bg-[#0a0e1a]">
+    <div className="relative w-full h-screen overflow-hidden select-none bg-[#0a0e1a]">
       {/* === Room Background (fullscreen 16:9) === */}
       <div className="absolute inset-0">
         <Image
@@ -279,7 +279,7 @@ export default function LobbyView({
 
       {/* === Room Title === */}
       <div
-        className={`absolute top-4 left-1/2 -translate-x-1/2 text-center z-10 transition-all duration-700 ${
+        className={`absolute top-20 left-1/2 -translate-x-1/2 text-center z-10 transition-all duration-700 ${
           roomLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
         }`}
       >
@@ -291,57 +291,92 @@ export default function LobbyView({
         </div>
       </div>
 
-      {/* === VN-Style Toki Dialogue (slides in from bottom) === */}
+      {/* === Hologram Toki (on plant pot) === */}
       <div
-        className={`absolute bottom-0 left-0 right-0 z-20 transition-all duration-500 ${
-          showDialogue ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
+        className={`absolute z-20 transition-all duration-700 delay-500 ${
+          roomLoaded ? "opacity-100" : "opacity-0"
         }`}
+        style={{ bottom: "30%", left: "38%", width: "12%", height: "35%" }}
       >
-        <div className="relative flex items-end px-4 pb-4 pt-2">
-          {/* Toki character portrait - slides in from left */}
-          <div className={`relative flex-shrink-0 transition-all duration-500 delay-100 ${
-            showDialogue ? "translate-x-0 opacity-100" : "-translate-x-12 opacity-0"
-          }`}>
-            <Image
-              src="/toki-welcome.png"
-              alt="Toki"
-              width={140}
-              height={180}
-              className="object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]"
-            />
-          </div>
-          {/* Dialogue box */}
-          <div className={`flex-1 ml-2 mb-4 transition-all duration-400 delay-200 ${
-            showDialogue ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-          }`}>
-            <div className="relative bg-[#0f1729]/90 backdrop-blur-md border border-cyan-400/20 rounded-xl px-5 py-3 shadow-xl shadow-black/50">
-              <div className="absolute -top-3 left-4 px-3 py-0.5 bg-cyan-500/20 border border-cyan-400/30 rounded-md">
-                <span className="text-xs font-bold text-cyan-400">TOKI</span>
-              </div>
-              <p className="text-sm text-gray-200 mt-1 leading-relaxed">{dialogueText}</p>
+        {/* Hologram base glow — sits on the plant pot */}
+        <div
+          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[90%] h-4 rounded-full"
+          style={{
+            background: "radial-gradient(ellipse, rgba(34,211,238,0.5) 0%, rgba(34,211,238,0.15) 50%, transparent 80%)",
+            filter: "blur(4px)",
+            animation: "holoBasePulse 2s ease-in-out infinite",
+          }}
+        />
+
+        {/* Projection beam */}
+        <div
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none"
+          style={{
+            width: "70%",
+            height: "100%",
+            background: "linear-gradient(0deg, rgba(34,211,238,0.12) 0%, rgba(34,211,238,0.03) 50%, transparent 100%)",
+            clipPath: "polygon(25% 100%, 75% 100%, 90% 0%, 10% 0%)",
+          }}
+        />
+
+        {/* Chibi Toki hologram */}
+        <div
+          className="relative w-full h-full flex items-end justify-center cursor-pointer"
+          onClick={handleTokiClick}
+        >
+          <Image
+            src="/toki-holo-chibi.png"
+            alt="Toki Hologram"
+            width={120}
+            height={120}
+            className={`relative z-10 object-contain transition-all duration-500 ${
+              showDialogue ? "scale-110" : "scale-100"
+            }`}
+            style={{
+              maxHeight: "85%",
+              filter: "brightness(1.3) saturate(0.7) drop-shadow(0 0 12px rgba(34,211,238,0.5))",
+              opacity: 0.88,
+              animation: "holoFloat 3s ease-in-out infinite",
+            }}
+          />
+          {/* Scanline overlay */}
+          <div
+            className="absolute inset-0 z-20 pointer-events-none"
+            style={{
+              backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(34,211,238,0.06) 1px, rgba(34,211,238,0.06) 2px)",
+              animation: "holoScanScroll 2s linear infinite",
+            }}
+          />
+          {/* Glitch flicker */}
+          <div
+            className="absolute inset-0 z-20 pointer-events-none"
+            style={{ animation: "holoGlitch 6s ease-in-out infinite" }}
+          />
+        </div>
+
+        {/* Speech bubble */}
+        <div
+          className={`absolute -top-14 left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-400 ${
+            showDialogue ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-95"
+          }`}
+        >
+          <div
+            className="relative rounded-xl px-4 py-2 max-w-[220px] whitespace-nowrap border"
+            style={{
+              background: "rgba(15,23,41,0.75)",
+              borderColor: "rgba(34,211,238,0.2)",
+              boxShadow: "0 0 20px rgba(34,211,238,0.1), inset 0 0 20px rgba(34,211,238,0.03)",
+            }}
+          >
+            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded text-[9px] font-bold tracking-wider" style={{ background: "rgba(34,211,238,0.15)", color: "rgba(34,211,238,0.8)", border: "1px solid rgba(34,211,238,0.25)" }}>
+              TOKI
             </div>
+            <p className="text-xs leading-relaxed mt-1 whitespace-normal" style={{ color: "rgba(34,211,238,0.8)" }}>{dialogueText}</p>
+            {/* Bubble tail */}
+            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45" style={{ background: "rgba(15,23,41,0.75)", borderRight: "1px solid rgba(34,211,238,0.2)", borderBottom: "1px solid rgba(34,211,238,0.2)" }} />
           </div>
         </div>
-        {/* Gradient fade behind dialogue area */}
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
       </div>
-
-      {/* === Toki Chat Button (bottom-right, triggers dialogue) === */}
-      <button
-        onClick={handleTokiClick}
-        className={`absolute bottom-4 right-4 z-15 w-12 h-12 rounded-full overflow-hidden border-2 border-cyan-400/30 shadow-lg shadow-black/40 hover:scale-110 hover:border-cyan-400/60 transition-all duration-300 ${
-          showDialogue ? "opacity-0 pointer-events-none" : "opacity-100"
-        } ${roomLoaded ? "translate-y-0" : "translate-y-8 opacity-0"}`}
-        aria-label="Talk to Toki"
-      >
-        <Image
-          src="/toki-welcome.png"
-          alt="Chat with Toki"
-          width={48}
-          height={48}
-          className="object-cover object-top scale-150"
-        />
-      </button>
 
       {/* === Overlay Panels === */}
 

@@ -424,6 +424,7 @@ const ko = {
     quest1VideoPrompt: "블록체인이 뭔지 궁금하다면? 영상 보기",
     watchTutorial: "튜토리얼 보기",
     quest2VideoPrompt: "MetaMask 설치 방법이 궁금해?",
+    quest2ImportVideoPrompt: "MetaMask에 키 가져오는 방법이 궁금해?",
     quest3VideoPrompt: "거래소에서 TON 보내는 방법이 궁금해?",
     closeVideo: "닫기",
     exploreEcosystem: "생태계 둘러보기",
