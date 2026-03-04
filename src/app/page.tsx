@@ -51,13 +51,13 @@ export default async function Home() {
       <Header />
       <main>
         <HeroSection apr={apr} />
-        <div id="how-it-works">
-          <HowItWorks />
-        </div>
         <div id="stats">
           <Suspense fallback={<StakingLoading />}>
             <StakingPreview />
           </Suspense>
+        </div>
+        <div id="how-it-works">
+          <HowItWorks />
         </div>
         <GachaIntoWall />
         <CTASection />
