@@ -4,7 +4,7 @@ import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/landing/HeroSection";
 import HowItWorks from "@/components/landing/HowItWorks";
 import StakingPreview from "@/components/landing/StakingPreview";
-import CardSectionSwitcher from "@/components/landing/CardSectionSwitcher";
+import GachaIntoWall from "@/components/landing/GachaIntoWall";
 
 import CTASection from "@/components/landing/CTASection";
 import FloatingPlayer from "@/components/audio/FloatingPlayer";
@@ -53,7 +53,7 @@ export default async function Home() {
         <div id="how-it-works">
           <HowItWorks />
         </div>
-        <CardSectionSwitcher />
+        <GachaIntoWall />
         <div id="stats">
           <Suspense fallback={<StakingLoading />}>
             <StakingPreview />
