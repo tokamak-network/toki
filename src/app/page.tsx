@@ -8,6 +8,7 @@ import GachaIntoWall from "@/components/landing/GachaIntoWall";
 
 import CTASection from "@/components/landing/CTASection";
 import FloatingPlayer from "@/components/audio/FloatingPlayer";
+import { StakingDataProvider } from "@/components/providers/StakingDataProvider";
 import { fetchStakingData } from "@/lib/staking";
 
 export const dynamic = "force-dynamic";
@@ -46,7 +47,7 @@ export default async function Home() {
   }
 
   return (
-    <>
+    <StakingDataProvider apr={apr}>
       <Header />
       <main>
         <HeroSection apr={apr} />
@@ -63,6 +64,6 @@ export default async function Home() {
       </main>
       <Footer />
       <FloatingPlayer />
-    </>
+    </StakingDataProvider>
   );
 }

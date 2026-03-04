@@ -112,8 +112,8 @@ export const DIALOGUE_TREE: DialogueNode[] = [
   {
     id: "apr-info",
     mood: "excited",
-    textKo: "현재 시뇨리지 APR은 약 22%야! 복리로 자동 적용되니까, 맡겨두기만 하면 TON이 계속 불어나!",
-    textEn: "Current seigniorage APR is about 22%! It compounds automatically, so your TON keeps growing just by holding!",
+    textKo: "현재 시뇨리지 APR은 약 {apr}%야! 복리로 자동 적용되니까, 맡겨두기만 하면 TON이 계속 불어나!",
+    textEn: "Current seigniorage APR is about {apr}%! It compounds automatically, so your TON keeps growing just by holding!",
     choices: [
       { labelKo: "시뇨리지가 뭐야?", labelEn: "What's seigniorage?", next: "seigniorage" },
       { labelKo: "바로 스테이킹!", labelEn: "Start staking!", next: "go-dashboard" },

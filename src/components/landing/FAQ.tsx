@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useStakingData, replaceApr } from "@/components/providers/StakingDataProvider";
 
 function TypingBubble({ text, onDone }: { text: string; onDone?: () => void }) {
   const [displayed, setDisplayed] = useState("");
@@ -38,9 +39,10 @@ export default function FAQ() {
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+  const { apr } = useStakingData();
 
   const faqs = [
-    { q: t.faq.q1, a: t.faq.a1 },
+    { q: t.faq.q1, a: replaceApr(t.faq.a1, apr) },
     { q: t.faq.q2, a: t.faq.a2 },
     { q: t.faq.q3, a: t.faq.a3 },
     { q: t.faq.q4, a: t.faq.a4 },

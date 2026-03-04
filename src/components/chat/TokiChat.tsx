@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
+import { useStakingData, replaceApr } from "@/components/providers/StakingDataProvider";
 import {
   type Mood,
   type DialogueNode,
@@ -248,6 +249,7 @@ function ChatWindow({
 }) {
   const router = useRouter();
   const { trackActivity } = useAchievement();
+  const { apr } = useStakingData();
   const [currentNodeId, setCurrentNodeId] = useState("root");
   const [typingDone, setTypingDone] = useState(false);
   const [key, setKey] = useState(0); // force re-render on node change
@@ -255,7 +257,7 @@ function ChatWindow({
   const node = getNode(currentNodeId);
   if (!node) return null;
 
-  const text = locale === "ko" ? node.textKo : node.textEn;
+  const text = replaceApr(locale === "ko" ? node.textKo : node.textEn, apr);
   const isNavNode = currentNodeId in NAV_ROUTES;
 
   const navigateTo = (nodeId: string) => {

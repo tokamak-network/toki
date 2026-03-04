@@ -3,9 +3,11 @@
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useStakingData, replaceApr } from "@/components/providers/StakingDataProvider";
 
 export default function CTASection() {
   const { t } = useTranslation();
+  const { apr } = useStakingData();
   const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -58,7 +60,7 @@ export default function CTASection() {
         >
           {t.cta.title}{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300">
-            {t.cta.titleHighlight}
+            {replaceApr(t.cta.titleHighlight, apr)}
           </span>{" "}
           {t.cta.titleEnd}
         </h2>
