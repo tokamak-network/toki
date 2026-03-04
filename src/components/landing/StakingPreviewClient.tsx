@@ -895,13 +895,56 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
 
   const tokiEarn1y = Math.round(userSeigPerDay * 365);
 
-  // Rocket height: 10% at min (100 TON), 85% at max (100K TON)
-  const rocketHeight = 10 + (amount / 100_000) * 75;
+  // Rocket height: 10% at min (100 TON), 68% at max (100K TON)
+  // Capped so character + speech bubble stays within container
+  const rocketHeight = 10 + (amount / 100_000) * 58;
+  const isMaxAmount = amount >= 100_000;
 
-  const reaction =
-    amount < 500 ? t.statsCard.comboTokiReaction1 :
-    amount < 5000 ? t.statsCard.comboTokiReaction2 :
-    t.statsCard.comboTokiReaction3;
+  // Toki speech bubble state machine: idle → updated → nudge cycle
+  type TokiState = "idle" | "updated" | "nudge";
+  const [tokiState, setTokiState] = useState<TokiState>("idle");
+  const [nudgeIndex, setNudgeIndex] = useState(0);
+  const lastInteraction = useRef(Date.now());
+  const hasInteracted = useRef(false);
+
+  const nudgeLines = [
+    t.statsCard.comboTokiNudge1,
+    t.statsCard.comboTokiNudge2,
+    t.statsCard.comboTokiNudge3,
+    t.statsCard.comboTokiNudge4,
+  ];
+
+  const tokiBubbleText = tokiState === "idle"
+    ? t.statsCard.comboTokiIdle
+    : tokiState === "updated"
+    ? (tokiEarn1y < 500 ? t.statsCard.comboTokiGainSmall
+      : tokiEarn1y < 5000 ? t.statsCard.comboTokiGainMid
+      : t.statsCard.comboTokiGainBig)
+    : nudgeLines[nudgeIndex % nudgeLines.length];
+
+  // On amount change → "updated" state
+  useEffect(() => {
+    if (!hasInteracted.current) {
+      hasInteracted.current = true;
+      // skip first render
+      return;
+    }
+    setTokiState("updated");
+    lastInteraction.current = Date.now();
+  }, [amount]);
+
+  // Nudge timer: after 8s of no interaction, cycle nudge messages
+  useEffect(() => {
+    if (!show) return;
+    const interval = setInterval(() => {
+      if (Date.now() - lastInteraction.current > 8000 && hasInteracted.current) {
+        setTokiState("nudge");
+        setNudgeIndex((i) => i + 1);
+        lastInteraction.current = Date.now(); // reset so next nudge comes after 8s
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [show]);
 
   // Reset accumulated on amount change
   useEffect(() => { setAccumulated(0); }, [amount]);
@@ -1247,20 +1290,6 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
               </div>
             </div>
 
-            {/* ─ Toki Reaction (speech bubble) ─ */}
-            <div className="flex items-center gap-2">
-              <Image src="/toki-proud.png" alt="Toki" width={34} height={34}
-                className="shrink-0 rounded-full"
-                style={{ border: "2px solid #a855f740", boxShadow: "0 0 8px rgba(168,85,247,0.15)" }} />
-              <div className="rounded-md px-3 py-1.5 relative"
-                style={{
-                  background: "rgba(15,10,35,0.8)",
-                  border: "1.5px solid #a855f720",
-                }}>
-                <p className="text-[10px] text-purple-300/70 font-mono">{reaction}</p>
-              </div>
-            </div>
-
             {/* ─ STAKING CTA ─ */}
             <Link href="/staking"
               className="block w-full text-center py-2.5 rounded-lg font-mono font-bold text-sm uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -1349,7 +1378,31 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
               );
             })}
 
-            {/* Toki on rocket — dynamic height, centered above tower */}
+            {/* Toki speech bubble — centered in launch scene, independent of rocket */}
+            <div className="absolute z-30 pointer-events-none whitespace-nowrap"
+              style={{
+                left: "50%",
+                transform: "translateX(-50%) translateY(-95px)",
+                bottom: `${rocketHeight + 12}%`,
+                transition: "bottom 0.8s cubic-bezier(0.25, 0.8, 0.25, 1)",
+              }}>
+              <div className="relative px-2.5 py-1 rounded-lg text-[9px] font-mono font-bold animate-bounce"
+                style={{
+                  animationDuration: "3s",
+                  background: "rgba(10,8,25,0.9)",
+                  border: "1.5px solid rgba(34,211,238,0.3)",
+                  color: "#22d3ee",
+                  boxShadow: "0 0 12px rgba(34,211,238,0.15)",
+                  textShadow: "0 0 6px rgba(34,211,238,0.4)",
+                }}>
+                {tokiBubbleText}
+                {/* Tail */}
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45"
+                  style={{ background: "rgba(10,8,25,0.9)", borderRight: "1.5px solid rgba(34,211,238,0.3)", borderBottom: "1.5px solid rgba(34,211,238,0.3)" }} />
+              </div>
+            </div>
+
+            {/* Toki on rocket — dynamic height, 20px right offset */}
             <div
               className="absolute z-20 transition-all pointer-events-none"
               style={{
@@ -1493,11 +1546,69 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
             <div className="absolute right-2 top-[10%] bottom-[10%] w-[3px] rounded-full bg-white/[0.04]">
               <div
                 className="absolute bottom-0 w-full rounded-full bg-gradient-to-t from-amber-400/40 to-accent-cyan/40 transition-all duration-800"
-                style={{ height: `${(rocketHeight / 85) * 100}%`, transitionDuration: "0.8s" }}
+                style={{ height: `${(rocketHeight / 68) * 100}%`, transitionDuration: "0.8s" }}
               />
             </div>
             <div className="absolute right-1 text-[7px] font-mono text-gray-600" style={{ top: "8%" }}>MAX</div>
             <div className="absolute right-1 text-[7px] font-mono text-gray-600" style={{ bottom: "9%" }}>PAD</div>
+
+            {/* Fireworks at max amount */}
+            {isMaxAmount && (
+              <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
+                {/* Burst particles radiating from center */}
+                {Array.from({ length: 16 }, (_, i) => {
+                  const angle = (i / 16) * 360;
+                  const rad = (angle * Math.PI) / 180;
+                  const dist = 60 + (i % 3) * 25;
+                  const dx = Math.cos(rad) * dist;
+                  const dy = Math.sin(rad) * dist;
+                  const colors = ["#22d3ee", "#f59e0b", "#a855f7", "#ef4444", "#4ade80", "#fbbf24"];
+                  const color = colors[i % colors.length];
+                  return (
+                    <div key={`fw-${i}`} className="absolute rounded-full"
+                      style={{
+                        width: 4 + (i % 3) * 2,
+                        height: 4 + (i % 3) * 2,
+                        background: color,
+                        boxShadow: `0 0 8px ${color}, 0 0 16px ${color}80`,
+                        left: "50%",
+                        top: "30%",
+                        animation: `fireworkBurst 1.8s ease-out infinite`,
+                        animationDelay: `${(i % 4) * 0.15}s`,
+                        // @ts-expect-error CSS custom properties
+                        "--fw-dx": `${dx}px`,
+                        "--fw-dy": `${dy}px`,
+                      }} />
+                  );
+                })}
+                {/* Sparkle streaks */}
+                {Array.from({ length: 8 }, (_, i) => {
+                  const colors = ["#fbbf24", "#22d3ee", "#a855f7", "#f59e0b"];
+                  return (
+                    <div key={`sp-${i}`} className="absolute text-sm pointer-events-none select-none"
+                      style={{
+                        left: `${15 + (i * 11) % 75}%`,
+                        top: `${10 + (i * 13) % 50}%`,
+                        color: colors[i % colors.length],
+                        animation: `fireworkSparkle 1.2s ease-out infinite`,
+                        animationDelay: `${i * 0.2}s`,
+                        textShadow: `0 0 6px ${colors[i % colors.length]}`,
+                      }}>
+                      ✦
+                    </div>
+                  );
+                })}
+                {/* "MAX POWER!" text */}
+                <div className="absolute top-[12%] left-1/2 -translate-x-1/2 text-[11px] font-mono font-black uppercase tracking-[0.2em]"
+                  style={{
+                    color: "#fbbf24",
+                    textShadow: "0 0 10px rgba(251,191,36,0.6), 0 0 20px rgba(251,191,36,0.3)",
+                    animation: "fireworkSparkle 1s ease-in-out infinite",
+                  }}>
+                  MAX POWER!
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -370,6 +370,18 @@ body {
   100% { opacity: 0; transform: translate(0, -70px) scale(6); }
 }
 
+@keyframes fireworkBurst {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  15% { opacity: 1; transform: translate(calc(var(--fw-dx) * 0.5), calc(var(--fw-dy) * 0.5)) scale(1.2); }
+  60% { opacity: 0.8; transform: translate(var(--fw-dx), var(--fw-dy)) scale(1); }
+  100% { opacity: 0; transform: translate(calc(var(--fw-dx) * 1.2), calc(var(--fw-dy) * 1.3)) scale(0.3); }
+}
+
+@keyframes fireworkSparkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
+
 @keyframes brokenSmoke {
   0% { opacity: 0.3; transform: translateY(0) scale(1); }
   50% { opacity: 0.15; transform: translateY(-12px) scale(1.5); }
