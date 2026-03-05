@@ -105,10 +105,12 @@ function TiltCard({
   achievement,
   innerRef,
   dimmed,
+  onClick,
 }: {
   achievement: AchievementItem;
   innerRef?: React.Ref<HTMLDivElement>;
   dimmed?: boolean;
+  onClick?: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
@@ -148,6 +150,7 @@ function TiltCard({
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={handleLeave}
+        onClick={onClick}
         className="relative transition-transform duration-200 ease-out cursor-pointer"
         style={{
           transform: hovered
@@ -209,11 +212,175 @@ function TiltCard({
   );
 }
 
+/* ─── Focus Card Modal ─────────────────────────────────────────────────────── */
+
+function FocusCardModal({
+  achievement,
+  onClose,
+}: {
+  achievement: AchievementItem;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [light, setLight] = useState({ x: 50, y: 50 });
+  const [entered, setEntered] = useState(false);
+  const rarity = getRarity(achievement.points);
+  const rarityColor = RARITY_COLORS[rarity.label];
+
+  useEffect(() => {
+    // Trigger enter animation on next frame
+    requestAnimationFrame(() => setEntered(true));
+  }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    setRotation({
+      x: -((e.clientY - cy) / (rect.height / 2)) * 18,
+      y: ((e.clientX - cx) / (rect.width / 2)) * 18,
+    });
+    setLight({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    });
+  }, []);
+
+  const handleLeave = useCallback(() => {
+    setRotation({ x: 0, y: 0 });
+    setLight({ x: 50, y: 50 });
+  }, []);
+
+  const holoAngle = Math.atan2(light.y / 100 - 0.5, light.x / 100 - 0.5) * (180 / Math.PI) + 90;
+  const starsStr = "★".repeat(rarity.stars) + "☆".repeat(5 - rarity.stars);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={onClose}
+      style={{
+        backgroundColor: entered ? "rgba(0,0,0,0.75)" : "rgba(0,0,0,0)",
+        backdropFilter: entered ? "blur(8px)" : "blur(0px)",
+        transition: "background-color 0.4s ease, backdrop-filter 0.4s ease",
+      }}
+    >
+      <div
+        className="flex flex-col items-center"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          transform: entered ? "scale(1) translateY(0)" : "scale(0.5) translateY(60px)",
+          opacity: entered ? 1 : 0,
+          transition: "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease",
+        }}
+      >
+        {/* Glow behind card */}
+        <div
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: "500px",
+            height: "500px",
+            background: `radial-gradient(circle, ${rarityColor}30 0%, ${rarityColor}10 40%, transparent 70%)`,
+            filter: "blur(40px)",
+            animation: "focusGlow 3s ease-in-out infinite alternate",
+          }}
+        />
+
+        <div style={{ perspective: "1200px" }}>
+          <div
+            ref={ref}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleLeave}
+            className="relative cursor-grab active:cursor-grabbing"
+            style={{
+              transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+              transformStyle: "preserve-3d",
+              transition: "transform 0.1s linear",
+            }}
+          >
+            <div
+              className="relative w-[280px] h-[392px] sm:w-[320px] sm:h-[448px] rounded-2xl overflow-hidden"
+              style={{
+                border: `3px solid ${rarityColor}`,
+                boxShadow: `0 0 40px ${rarityColor}50, 0 0 80px ${rarityColor}20, 0 30px 60px rgba(0,0,0,0.6)`,
+              }}
+            >
+              {CARD_IMAGES[achievement.id] && (
+                <Image
+                  src={CARD_IMAGES[achievement.id]}
+                  alt={achievement.titleEn}
+                  fill
+                  className="object-cover"
+                  sizes="320px"
+                />
+              )}
+
+              {/* Holographic overlay */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: getHoloGradient(holoAngle, rarity.stars),
+                  mixBlendMode: "color-dodge",
+                  opacity: getHoloOpacity(rarity.stars),
+                }}
+              />
+
+              {/* Spotlight */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle at ${light.x}% ${light.y}%, rgba(255,255,255,0.35) 0%, transparent 50%)`,
+                  mixBlendMode: "overlay",
+                }}
+              />
+
+              {/* Inner edge glow */}
+              <div
+                className="absolute inset-0 pointer-events-none rounded-2xl"
+                style={{
+                  boxShadow: `inset 0 0 40px ${rarityColor}15`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Card info */}
+        <div className="text-center mt-6 relative z-10">
+          <div className="text-lg font-bold text-white mb-2">{achievement.titleEn}</div>
+          <div className="flex items-center justify-center gap-3">
+            <span
+              className="text-xs font-bold tracking-wider px-3 py-1 rounded-full"
+              style={{ color: rarityColor, backgroundColor: `${rarityColor}20`, border: `1px solid ${rarityColor}40` }}
+            >
+              {rarity.label}
+            </span>
+            <span
+              className="text-sm tracking-wider"
+              style={{ color: rarityColor, textShadow: `0 0 8px ${rarityColor}` }}
+            >
+              {starsStr}
+            </span>
+          </div>
+          <p className="text-sm text-gray-400 mt-2 max-w-[280px]">{achievement.descEn}</p>
+        </div>
+
+        {/* Close hint */}
+        <div className="mt-6 text-xs text-gray-500 tracking-wider uppercase">
+          click anywhere to close
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main ─────────────────────────────────────────────────────────────────── */
 
 export default function GachaIntoWall() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [flyStyle, setFlyStyle] = useState<React.CSSProperties>({});
+  const [focusedCard, setFocusedCard] = useState<AchievementItem | null>(null);
 
   const gachaCardRef = useRef<HTMLDivElement>(null);
   const targetSlotRef = useRef<HTMLDivElement>(null);
@@ -267,6 +434,11 @@ export default function GachaIntoWall() {
     return () => clearTimeout(t);
   }, [phase]);
 
+  const handleCardClick = useCallback((achievement: AchievementItem) => {
+    if (phase !== "running") return;
+    setFocusedCard(achievement);
+  }, [phase]);
+
   const isGacha = phase === "idle" || phase === "flip-burst" || phase === "revealed";
   const showWall = phase === "wall-draw" || phase === "card-fly" || phase === "running";
   const isRunning = phase === "running";
@@ -274,6 +446,129 @@ export default function GachaIntoWall() {
 
   return (
     <section className="relative py-24 overflow-hidden">
+      {/* Keyframe animations */}
+      <style jsx>{`
+        @keyframes focusGlow {
+          0% { opacity: 0.6; transform: scale(0.9); }
+          100% { opacity: 1; transform: scale(1.1); }
+        }
+        .giw-container {
+          overflow: hidden;
+          width: 100%;
+          padding: 0.5rem 0;
+        }
+        .giw-row2 {
+          margin-top: 1.5rem;
+        }
+        .giw-track, .giw-track-reverse {
+          display: flex;
+          gap: 1.5rem;
+          width: max-content;
+        }
+        .giw-track-animate {
+          animation: giw-scroll 35s linear infinite;
+        }
+        .giw-track-animate:hover {
+          animation-play-state: paused;
+        }
+        .giw-track-reverse-animate {
+          animation: giw-scroll-reverse 38s linear infinite;
+        }
+        .giw-track-reverse-animate:hover {
+          animation-play-state: paused;
+        }
+        .giw-paused {
+          animation-play-state: paused !important;
+        }
+        .giw-item {
+          flex-shrink: 0;
+        }
+        @keyframes giw-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes giw-scroll-reverse {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+        @keyframes wallReveal {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Peek Tilt — card tilts to tease the front face */
+        .giw-peek {
+          animation: giw-peekTilt 7s ease-in-out infinite;
+        }
+        @keyframes giw-peekTilt {
+          0% { transform: rotateY(0deg); }
+          17% { transform: rotateY(-12deg); }
+          27% { transform: rotateY(-12deg); }
+          40% { transform: rotateY(0deg); }
+          57% { transform: rotateY(12deg); }
+          67% { transform: rotateY(12deg); }
+          80% { transform: rotateY(0deg); }
+          100% { transform: rotateY(0deg); }
+        }
+
+        /* Shimmer sweep — diagonal light streak */
+        .giw-shimmer {
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          pointer-events: none;
+          z-index: 5;
+          overflow: hidden;
+        }
+        /* Left-to-right sweep (left tilt) */
+        .giw-shimmer::after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -60%;
+          width: 40%;
+          height: 200%;
+          background: linear-gradient(
+            105deg,
+            transparent 30%,
+            rgba(255,255,255,0.12) 45%,
+            rgba(255,255,255,0.25) 50%,
+            rgba(255,255,255,0.12) 55%,
+            transparent 70%
+          );
+          animation: giw-shimmerLTR 7s ease-in-out infinite;
+        }
+        @keyframes giw-shimmerLTR {
+          0%, 10% { transform: translateX(0); }
+          32% { transform: translateX(400%); }
+          32.1%, 100% { transform: translateX(0); }
+        }
+
+        /* Right-to-left sweep (right tilt) */
+        .giw-shimmer::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          right: -60%;
+          width: 40%;
+          height: 200%;
+          background: linear-gradient(
+            -105deg,
+            transparent 30%,
+            rgba(255,255,255,0.12) 45%,
+            rgba(255,255,255,0.25) 50%,
+            rgba(255,255,255,0.12) 55%,
+            transparent 70%
+          );
+          animation: giw-shimmerRTL 7s ease-in-out infinite;
+        }
+        @keyframes giw-shimmerRTL {
+          0%, 50% { transform: translateX(0); }
+          72% { transform: translateX(-400%); }
+          72.1%, 100% { transform: translateX(0); }
+        }
+      `}</style>
+
       {/* Background glow */}
       <div className="absolute inset-0 opacity-25">
         <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px]" />
@@ -440,7 +735,7 @@ export default function GachaIntoWall() {
           >
             {/* Row 1 */}
             <div className="giw-container">
-              <div className={`giw-track ${isRunning ? "giw-track-animate" : ""}`}>
+              <div className={`giw-track ${isRunning ? "giw-track-animate" : ""} ${focusedCard ? "giw-paused" : ""}`}>
                 {ROW1_CARDS.map((c, i) => {
                   const isTarget =
                     c.id === FEATURED.id && i === FEATURED_ROW1_INDEX;
@@ -450,6 +745,7 @@ export default function GachaIntoWall() {
                         achievement={c}
                         innerRef={isTarget ? targetSlotRef : undefined}
                         dimmed={isTarget && !isRunning}
+                        onClick={() => handleCardClick(c)}
                       />
                     </div>
                   );
@@ -459,10 +755,13 @@ export default function GachaIntoWall() {
 
             {/* Row 2 (reverse) */}
             <div className="giw-container giw-row2">
-              <div className={`giw-track-reverse ${isRunning ? "giw-track-reverse-animate" : ""}`}>
+              <div className={`giw-track-reverse ${isRunning ? "giw-track-reverse-animate" : ""} ${focusedCard ? "giw-paused" : ""}`}>
                 {ROW2_CARDS.map((c, i) => (
                   <div key={`r2-${c.id}-${i}`} className="giw-item">
-                    <TiltCard achievement={c} />
+                    <TiltCard
+                      achievement={c}
+                      onClick={() => handleCardClick(c)}
+                    />
                   </div>
                 ))}
               </div>
@@ -503,120 +802,13 @@ export default function GachaIntoWall() {
         </>
       )}
 
-      <style jsx>{`
-        .giw-container {
-          overflow: hidden;
-          width: 100%;
-          padding: 0.5rem 0;
-        }
-        .giw-row2 {
-          margin-top: 1.5rem;
-        }
-        .giw-track, .giw-track-reverse {
-          display: flex;
-          gap: 1.5rem;
-          width: max-content;
-        }
-        .giw-track-animate {
-          animation: giw-scroll 35s linear infinite;
-        }
-        .giw-track-animate:hover {
-          animation-play-state: paused;
-        }
-        .giw-track-reverse-animate {
-          animation: giw-scroll-reverse 38s linear infinite;
-        }
-        .giw-track-reverse-animate:hover {
-          animation-play-state: paused;
-        }
-        .giw-item {
-          flex-shrink: 0;
-        }
-        @keyframes giw-scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes giw-scroll-reverse {
-          0% { transform: translateX(-50%); }
-          100% { transform: translateX(0); }
-        }
-        @keyframes wallReveal {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Peek Tilt — card tilts to tease the front face */
-        .giw-peek {
-          animation: giw-peekTilt 7s ease-in-out infinite;
-        }
-        @keyframes giw-peekTilt {
-          0% { transform: rotateY(0deg); }
-          17% { transform: rotateY(-12deg); }
-          27% { transform: rotateY(-12deg); }
-          40% { transform: rotateY(0deg); }
-          57% { transform: rotateY(12deg); }
-          67% { transform: rotateY(12deg); }
-          80% { transform: rotateY(0deg); }
-          100% { transform: rotateY(0deg); }
-        }
-
-        /* Shimmer sweep — diagonal light streak */
-        .giw-shimmer {
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          pointer-events: none;
-          z-index: 5;
-          overflow: hidden;
-        }
-        /* Left-to-right sweep (left tilt) */
-        .giw-shimmer::after {
-          content: '';
-          position: absolute;
-          top: -50%;
-          left: -60%;
-          width: 40%;
-          height: 200%;
-          background: linear-gradient(
-            105deg,
-            transparent 30%,
-            rgba(255,255,255,0.12) 45%,
-            rgba(255,255,255,0.25) 50%,
-            rgba(255,255,255,0.12) 55%,
-            transparent 70%
-          );
-          animation: giw-shimmerLTR 7s ease-in-out infinite;
-        }
-        @keyframes giw-shimmerLTR {
-          0%, 10% { transform: translateX(0); }
-          32% { transform: translateX(400%); }
-          32.1%, 100% { transform: translateX(0); }
-        }
-
-        /* Right-to-left sweep (right tilt) */
-        .giw-shimmer::before {
-          content: '';
-          position: absolute;
-          top: -50%;
-          right: -60%;
-          width: 40%;
-          height: 200%;
-          background: linear-gradient(
-            -105deg,
-            transparent 30%,
-            rgba(255,255,255,0.12) 45%,
-            rgba(255,255,255,0.25) 50%,
-            rgba(255,255,255,0.12) 55%,
-            transparent 70%
-          );
-          animation: giw-shimmerRTL 7s ease-in-out infinite;
-        }
-        @keyframes giw-shimmerRTL {
-          0%, 50% { transform: translateX(0); }
-          72% { transform: translateX(-400%); }
-          72.1%, 100% { transform: translateX(0); }
-        }
-      `}</style>
+      {/* ─── Focus Card Modal ─── */}
+      {focusedCard && (
+        <FocusCardModal
+          achievement={focusedCard}
+          onClose={() => setFocusedCard(null)}
+        />
+      )}
     </section>
   );
 }
