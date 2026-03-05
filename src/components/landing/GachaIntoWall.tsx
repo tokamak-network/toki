@@ -33,6 +33,14 @@ const CATEGORY_COLORS: Record<string, string> = {
   special: "#ef4444",
 };
 
+const RARITY_COLORS: Record<string, string> = {
+  COMMON: "#9ca3af",
+  UNCOMMON: "#60a5fa",
+  RARE: "#a78bfa",
+  EPIC: "#ffd700",
+  LEGENDARY: "#ff4444",
+};
+
 function getRarity(points: number) {
   if (points >= 1000) return { stars: 5, label: "LEGENDARY" };
   if (points >= 500) return { stars: 4, label: "EPIC" };
@@ -57,6 +65,40 @@ const FEATURED_ROW1_INDEX = ROW1_BASE.findIndex((a) => a.id === FEATURED.id);
 // idle → flip-burst → revealed → wall-draw → card-fly → running
 type Phase = "idle" | "flip-burst" | "revealed" | "wall-draw" | "card-fly" | "running";
 
+function getHoloGradient(angle: number, stars: number): string {
+  if (stars >= 5) {
+    return `linear-gradient(${angle}deg,
+      rgba(255,0,0,0.3) 0%, rgba(255,165,0,0.3) 14%,
+      rgba(255,255,0,0.3) 28%, rgba(0,255,0,0.3) 42%,
+      rgba(0,100,255,0.3) 57%, rgba(128,0,255,0.3) 71%,
+      rgba(255,0,128,0.3) 85%, rgba(255,0,0,0.3) 100%)`;
+  }
+  if (stars >= 4) {
+    return `linear-gradient(${angle}deg,
+      rgba(255,200,50,0.35) 0%, rgba(255,120,50,0.25) 33%,
+      rgba(100,200,255,0.25) 66%, rgba(255,200,50,0.35) 100%)`;
+  }
+  if (stars >= 3) {
+    return `linear-gradient(${angle}deg,
+      rgba(150,200,255,0.25) 0%, rgba(200,150,255,0.2) 50%,
+      rgba(150,200,255,0.25) 100%)`;
+  }
+  if (stars >= 2) {
+    return `linear-gradient(${angle}deg,
+      transparent 25%, rgba(200,230,255,0.2) 50%, transparent 75%)`;
+  }
+  return `linear-gradient(${angle}deg,
+    transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)`;
+}
+
+function getHoloOpacity(stars: number): number {
+  if (stars >= 5) return 0.7;
+  if (stars >= 4) return 0.5;
+  if (stars >= 3) return 0.35;
+  if (stars >= 2) return 0.2;
+  return 0.12;
+}
+
 /* ─── 3D Tilt Card ─────────────────────────────────────────────────────────── */
 
 function TiltCard({
@@ -72,7 +114,8 @@ function TiltCard({
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [light, setLight] = useState({ x: 50, y: 50 });
   const [hovered, setHovered] = useState(false);
-  const color = CATEGORY_COLORS[achievement.category];
+  const rarity = getRarity(achievement.points);
+  const rarityColor = RARITY_COLORS[rarity.label];
 
   const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return;
@@ -94,6 +137,9 @@ function TiltCard({
     setLight({ x: 50, y: 50 });
     setHovered(false);
   }, []);
+
+  // Holographic angle from cursor position
+  const holoAngle = Math.atan2(light.y / 100 - 0.5, light.x / 100 - 0.5) * (180 / Math.PI) + 90;
 
   return (
     <div style={{ perspective: "800px" }} ref={innerRef}>
@@ -117,9 +163,9 @@ function TiltCard({
         <div
           className="relative w-[160px] h-[224px] sm:w-[180px] sm:h-[252px] rounded-xl overflow-hidden"
           style={{
-            border: `2px solid ${hovered ? color : "rgba(255,255,255,0.1)"}`,
+            border: `2px solid ${hovered ? rarityColor : "rgba(255,255,255,0.1)"}`,
             boxShadow: hovered
-              ? `0 0 24px ${color}30, 0 16px 48px rgba(0,0,0,0.5)`
+              ? `0 0 24px ${rarityColor}40, 0 0 60px ${rarityColor}15, 0 16px 48px rgba(0,0,0,0.5)`
               : "0 8px 32px rgba(0,0,0,0.4)",
             transition: "border-color 0.3s, box-shadow 0.3s",
           }}
@@ -133,14 +179,30 @@ function TiltCard({
               sizes="180px"
             />
           )}
+
+          {/* Holographic overlay — color-dodge gradient that follows cursor */}
+          {hovered && (
+            <div
+              className="absolute inset-0 pointer-events-none z-10"
+              style={{
+                background: getHoloGradient(holoAngle, rarity.stars),
+                mixBlendMode: "color-dodge",
+                opacity: getHoloOpacity(rarity.stars),
+              }}
+            />
+          )}
+
+          {/* Spotlight that follows cursor */}
           {hovered && (
             <div
               className="absolute inset-0 pointer-events-none z-10"
               style={{
                 background: `radial-gradient(circle at ${light.x}% ${light.y}%, rgba(255,255,255,0.3) 0%, transparent 50%)`,
+                mixBlendMode: "overlay",
               }}
             />
           )}
+
         </div>
       </div>
     </div>
