@@ -13,6 +13,7 @@ interface StakingPreviewClientProps {
 
 /* ─── Variant A: Revenue Simulator ───────────────────────────────────────── */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function SimulatorVariant({ data, show }: { data: StakingData; show: boolean }) {
   const { t } = useTranslation();
   const [amount, setAmount] = useState(1_000_000);
@@ -99,6 +100,7 @@ function SimulatorVariant({ data, show }: { data: StakingData; show: boolean }) 
 
 /* ─── Variant B: Bank vs Toki ────────────────────────────────────────────── */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function BankVsVariant({ data, show }: { data: StakingData; show: boolean }) {
   const { t } = useTranslation();
   const bankRate = 0.035;
@@ -190,6 +192,7 @@ function BankVsVariant({ data, show }: { data: StakingData; show: boolean }) {
 
 /* ─── Variant C: Live Counter ────────────────────────────────────────────── */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function LiveCounterVariant({ data, show }: { data: StakingData; show: boolean }) {
   const { t } = useTranslation();
   const [secondsAgo, setSecondsAgo] = useState(0);
@@ -278,6 +281,7 @@ function LiveCounterVariant({ data, show }: { data: StakingData; show: boolean }
 
 /* ─── Variant D: 3-Line Summary ──────────────────────────────────────────── */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function SummaryVariant({ data, show }: { data: StakingData; show: boolean }) {
   const { t } = useTranslation();
 
@@ -340,6 +344,7 @@ function SummaryVariant({ data, show }: { data: StakingData; show: boolean }) {
 
 type VsStyle = "race" | "bars" | "timeline" | "gauge";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const VS_STYLE_LABELS: Record<VsStyle, string> = {
   race: "A: Counting Race",
   bars: "B: Vertical Bars",
@@ -348,6 +353,7 @@ const VS_STYLE_LABELS: Record<VsStyle, string> = {
 };
 
 /* --- A: Counting Race --- */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function VsCountingRace({
   tokiEarn, animated, exchangeLabel, exchangeDesc, tokiLabel, tokiDesc, aprStr, perYear,
 }: {
@@ -431,6 +437,7 @@ function LaunchPad({ broken }: { broken?: boolean }) {
 }
 
 /* --- CSS Rocket (kept as fallback, not currently used) --- */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _CssRocket({ broken, size = 44 }: { broken?: boolean; size?: number }) {
   const s = size;
   if (broken) {
@@ -495,6 +502,7 @@ function _CssRocket({ broken, size = 44 }: { broken?: boolean; size?: number }) 
 }
 
 /* --- B: Rocket Launch Pad + Coin Particles --- */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function VsVerticalBars({
   tokiEarn, animated, exchangeLabel, exchangeDesc, tokiLabel, tokiDesc, aprStr, perYear,
 }: {
@@ -688,6 +696,7 @@ function VsVerticalBars({
 }
 
 /* --- C: Timeline Graph (SVG line chart) --- */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function VsTimelineGraph({
   tokiEarn, animated, exchangeLabel, tokiLabel, aprStr, perYear,
 }: {
@@ -792,6 +801,7 @@ function VsTimelineGraph({
 }
 
 /* --- D: Circular Gauge / Speedometer --- */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function VsGaugeMeter({
   tokiEarn, animated, exchangeLabel, tokiLabel, aprStr, perYear, aprNum,
 }: {
@@ -885,7 +895,8 @@ function CombinedVariant({ data, show }: { data: StakingData; show: boolean }) {
   const nextId = useRef(0);
   const exhaustId = useRef(0);
   const [vsCountUp, setVsCountUp] = useState(0);
-  const apr = data.apr / 100;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _apr = data.apr / 100;
 
   // Per-user seigniorage (single source of truth for all earnings)
   const userSeigPerBlock = data.totalStakedRaw > 0

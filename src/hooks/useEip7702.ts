@@ -74,6 +74,7 @@ type EnsureDelegationFn = () => Promise<SignedAuthorization | null>;
 
 // Creates MetaMask DeleGator Smart Account + BundlerClient + wrapper
 // Used by MetaMask external wallet path only
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function setupDelegationToolkit(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signer: any,
@@ -200,6 +201,7 @@ export function useEip7702() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const smartAccount = await toSimple7702SmartAccount({
           client: publicClient,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           owner: localAccount as any,
         });
 
@@ -413,6 +415,7 @@ export function useEip7702() {
                 });
               } catch (pollErr: unknown) {
                 // code 5730 = bundle dropped (user rejected or expired)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const errCode = (pollErr as { code?: number })?.code;
                 if (errCode === 5730) {
                   throw new Error("Transaction was rejected or expired");

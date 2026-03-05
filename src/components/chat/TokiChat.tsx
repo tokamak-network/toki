@@ -254,6 +254,10 @@ function ChatWindow({
   const [typingDone, setTypingDone] = useState(false);
   const [key, setKey] = useState(0); // force re-render on node change
 
+  const handleTypingComplete = useCallback(() => {
+    setTypingDone(true);
+  }, []);
+
   const node = getNode(currentNodeId);
   if (!node) return null;
 
@@ -288,10 +292,6 @@ function ChatWindow({
       navigateTo("fallback");
     }
   };
-
-  const handleTypingComplete = useCallback(() => {
-    setTypingDone(true);
-  }, []);
 
   return (
     <div className="w-80 sm:w-96 rounded-2xl overflow-hidden border border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/50 animate-slide-up-fade flex flex-col max-h-[520px]">

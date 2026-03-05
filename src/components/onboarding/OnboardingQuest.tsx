@@ -432,7 +432,8 @@ export default function OnboardingQuest() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoKey, setVideoKey] = useState<string>("create-wallet");
   const [showCinematic, setShowCinematic] = useState(false);
-  const [cinematicComplete, setCinematicComplete] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_cinematicComplete, setCinematicComplete] = useState(false);
   const [cinematicJustFinished, setCinematicJustFinished] = useState(false);
   const questAreaRef = useRef<HTMLDivElement>(null);
 

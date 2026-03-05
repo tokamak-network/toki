@@ -31,11 +31,13 @@ export default function ToastTestPage() {
 
 function ToastTestContent() {
   const { unlockQueue, dismissToast } = useAchievement();
-  const [queue, setQueue] = useState<Achievement[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_queue, _setQueue] = useState<Achievement[]>([]);
 
   // Directly inject into the unlock queue by manipulating state
   // Since we can't call setUnlockQueue directly, we'll use a workaround
-  const [fakeQueue, setFakeQueue] = useState<Achievement[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_fakeQueue, _setFakeQueue] = useState<Achievement[]>([]);
 
   return (
     <div className="min-h-screen bg-background p-8">

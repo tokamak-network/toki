@@ -12,7 +12,7 @@ interface LobbyViewProps {
   balances: { eth: string; ton: string; wton: string } | null;
   loading: boolean;
   walletAddress: string;
-  shortAddr: string;
+  shortAddr?: string;
   displayName: string;
   onRefreshBalances: () => void;
   isTestnet: boolean;
@@ -22,6 +22,7 @@ export default function LobbyView({
   balances,
   loading,
   walletAddress,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   shortAddr,
   displayName,
   onRefreshBalances,

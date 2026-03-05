@@ -86,7 +86,8 @@ export default function CollectionShowcase() {
           {ACHIEVEMENTS.map((achievement) => {
             const isRevealed = REVEALED_IDS.has(achievement.id);
             const color = CATEGORY_COLORS[achievement.category];
-            const rarity = getRarity(achievement.points);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const _rarity = getRarity(achievement.points);
             const isHovered = hoveredId === achievement.id;
 
             return (
