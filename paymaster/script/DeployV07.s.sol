@@ -6,15 +6,15 @@ import "../src/TONPaymaster.sol";
 
 contract DeployTONPaymasterV07 is Script {
     function run() external {
-        // EntryPoint v0.7 (used by @metamask/delegation-toolkit)
-        address entryPointV07 = 0x0000000071727De22E5E9d8BAf0edAc6f37da032;
-        address tonToken = 0xa30fe40285B8f5c0457DbC3B7C8A280373c40044;
-        address deployer = msg.sender;
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address deployer = vm.addr(deployerPrivateKey);
 
-        // TON price: ~2500 TON per ETH (testnet approximate)
-        uint256 tokenPerEth = 2500e18;
+        // Load values from .env
+        address entryPointV07 = vm.envAddress("ENTRY_POINT_V07");
+        address tonToken = vm.envAddress("SEPOLIA_TON_TOKEN");
+        uint256 tokenPerEth = vm.envUint("DEFAULT_TOKEN_PER_ETH");
 
-        vm.startBroadcast();
+        vm.startBroadcast(deployerPrivateKey);
 
         // Deploy paymaster targeting EntryPoint v0.7
         TONPaymaster paymaster = new TONPaymaster(

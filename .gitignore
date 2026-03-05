@@ -45,6 +45,9 @@ next-env.d.ts
 # foundry build artifacts & cache
 paymaster/out/
 paymaster/cache/
+paymaster/broadcast/
+paymaster/foundry.lock
+paymaster/.env
 
 # metamask snap
 snap/dist/
