@@ -350,7 +350,7 @@ const QUEST_BACKGROUNDS: Record<string, string> = {
 
 const TUTORIAL_VIDEOS: Record<string, string> = {
   "create-wallet": "https://www.youtube.com/embed/UURB7Tc7D4M?start=129&autoplay=1",
-  "install-metamask": "https://www.youtube.com/embed/VIDEO_ID?autoplay=1",
+  "install-metamask": "https://www.youtube.com/embed/gGr7GU27_e8?autoplay=1",
   "verify-exchange": "https://www.youtube.com/embed/VIDEO_ID?autoplay=1",
 };
 
@@ -852,15 +852,24 @@ export default function OnboardingQuest() {
                       {currentSubStep.instruction}
                     </p>
 
-                    {/* Video button for MetaMask install substep */}
-                    {quest.id === "bridge-metamask" && subStepIndex === 1 && (
-                      <button
-                        onClick={() => { setVideoKey("install-metamask"); setShowVideo(true); }}
-                        className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <span>▶</span>
-                        <span>{t.onboarding.quest2VideoPrompt}</span>
-                      </button>
+                    {/* Video button for MetaMask install substep - shown as subtle link after verify area */}
+                    {quest.id === "bridge-metamask" && subStepIndex === 1 && !subStepConfirmed && (
+                      <div className="flex items-center justify-center gap-4 text-xs">
+                        <button
+                          onClick={() => handleSubStepAction(currentSubStep)}
+                          className="text-gray-500 hover:text-accent-cyan transition-colors underline underline-offset-2"
+                        >
+                          {currentSubStep.action.label}
+                        </button>
+                        <span className="text-gray-600">|</span>
+                        <button
+                          onClick={() => { setVideoKey("install-metamask"); setShowVideo(true); }}
+                          className="text-gray-500 hover:text-accent-cyan transition-colors underline underline-offset-2 flex items-center gap-1"
+                        >
+                          <span>▶</span>
+                          <span>{t.onboarding.quest2VideoPrompt}</span>
+                        </button>
+                      </div>
                     )}
 
                     {/* Video button for MetaMask import key substep */}
@@ -874,7 +883,9 @@ export default function OnboardingQuest() {
                       </button>
                     )}
 
-                    {(currentSubStep.action.type === "privy-login" || currentSubStep.action.type === "link") && (
+                    {/* Action button - hide for metamask install substep (handled above) */}
+                    {(currentSubStep.action.type === "privy-login" || currentSubStep.action.type === "link") &&
+                      !(quest.id === "bridge-metamask" && subStepIndex === 1) && (
                       <button
                         onClick={() => handleSubStepAction(currentSubStep)}
                         className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue/80 to-accent-navy/80 text-white font-semibold hover:scale-[1.02] transition-transform"
@@ -897,7 +908,7 @@ export default function OnboardingQuest() {
                       </label>
                     )}
 
-                    {currentSubStep.verify === "metamask-installed" && (
+                    {currentSubStep.verify === "metamask-installed" && !subStepConfirmed && (
                       <div className="space-y-3">
                         <p className="text-gray-400 text-xs text-center">
                           {t.onboarding.metamaskInstallCheck}
@@ -912,22 +923,35 @@ export default function OnboardingQuest() {
                               alert(t.onboarding.metamaskNotYet);
                             }
                           }}
-                          className="w-full py-2 rounded-xl bg-white/10 text-white font-semibold text-sm hover:bg-white/20 transition-colors"
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-cyan to-emerald-500 text-black font-bold text-sm hover:scale-[1.02] transition-transform animate-pulse shadow-lg shadow-accent-cyan/25"
                         >
                           {t.onboarding.verifyInstall}
                         </button>
                       </div>
                     )}
 
-                    <button
-                      onClick={handleSubStepNext}
-                      disabled={!subStepConfirmed}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform"
-                    >
-                      {subStepIndex < quest.substeps!.length - 1
-                        ? t.onboarding.clickToNext
-                        : t.onboarding.complete}
-                    </button>
+                    {currentSubStep.verify === "metamask-installed" && subStepConfirmed && (
+                      <div className="flex items-center justify-center gap-2 py-2 text-emerald-400 text-sm font-semibold">
+                        <span>&#10003;</span>
+                        <span>MetaMask Verified</span>
+                      </div>
+                    )}
+
+                    {(!currentSubStep.verify || currentSubStep.verify !== "metamask-installed" || subStepConfirmed) && (
+                      <button
+                        onClick={handleSubStepNext}
+                        disabled={!subStepConfirmed}
+                        className={`w-full py-3 rounded-xl text-white font-semibold transition-all ${
+                          subStepConfirmed
+                            ? "bg-gradient-to-r from-accent-blue to-accent-navy hover:scale-[1.02]"
+                            : "bg-gradient-to-r from-accent-blue to-accent-navy opacity-40 cursor-not-allowed"
+                        }`}
+                      >
+                        {subStepIndex < quest.substeps!.length - 1
+                          ? t.onboarding.clickToNext
+                          : t.onboarding.complete}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

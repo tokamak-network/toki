@@ -7,6 +7,7 @@ import { useTranslation } from "@/components/providers/LanguageProvider";
 import LobbyHotspot from "./LobbyHotspot";
 import LobbyOverlay from "./LobbyOverlay";
 import CardCollection from "./CardCollection";
+import type { UserStakingData } from "@/hooks/useStakingSubgraph";
 
 interface LobbyViewProps {
   balances: { eth: string; ton: string; wton: string } | null;
@@ -16,6 +17,8 @@ interface LobbyViewProps {
   displayName: string;
   onRefreshBalances: () => void;
   isTestnet: boolean;
+  subgraphData?: UserStakingData | null;
+  subgraphLoading?: boolean;
 }
 
 export default function LobbyView({
@@ -27,6 +30,9 @@ export default function LobbyView({
   displayName,
   onRefreshBalances,
   isTestnet,
+  subgraphData,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subgraphLoading,
 }: LobbyViewProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -301,8 +307,9 @@ export default function LobbyView({
       >
         {/* Hologram base glow — sits on the plant pot */}
         <div
-          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[90%] h-4 rounded-full"
+          className="absolute -bottom-2 left-1/2 w-[90%] h-4 rounded-full"
           style={{
+            transform: "translateX(calc(-50% + 100px))",
             background: "radial-gradient(ellipse, rgba(34,211,238,0.5) 0%, rgba(34,211,238,0.15) 50%, transparent 80%)",
             filter: "blur(4px)",
             animation: "holoBasePulse 2s ease-in-out infinite",
@@ -311,8 +318,9 @@ export default function LobbyView({
 
         {/* Projection beam */}
         <div
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none"
+          className="absolute bottom-0 left-1/2 pointer-events-none"
           style={{
+            transform: "translateX(calc(-50% + 100px))",
             width: "70%",
             height: "100%",
             background: "linear-gradient(0deg, rgba(34,211,238,0.12) 0%, rgba(34,211,238,0.03) 50%, transparent 100%)",
@@ -335,6 +343,8 @@ export default function LobbyView({
             }`}
             style={{
               maxHeight: "85%",
+              top: "-100px",
+              left: "100px",
               filter: "brightness(1.3) saturate(0.7) drop-shadow(0 0 12px rgba(34,211,238,0.5))",
               opacity: 0.88,
               animation: "holoFloat 3s ease-in-out infinite",
@@ -342,24 +352,35 @@ export default function LobbyView({
           />
           {/* Scanline overlay */}
           <div
-            className="absolute inset-0 z-20 pointer-events-none"
+            className="absolute z-20 pointer-events-none"
             style={{
+              top: "-100px",
+              left: "100px",
+              right: "-100px",
+              bottom: "0",
               backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(34,211,238,0.06) 1px, rgba(34,211,238,0.06) 2px)",
               animation: "holoScanScroll 2s linear infinite",
             }}
           />
           {/* Glitch flicker */}
           <div
-            className="absolute inset-0 z-20 pointer-events-none"
-            style={{ animation: "holoGlitch 6s ease-in-out infinite" }}
+            className="absolute z-20 pointer-events-none"
+            style={{
+              top: "-100px",
+              left: "100px",
+              right: "-100px",
+              bottom: "0",
+              animation: "holoGlitch 6s ease-in-out infinite",
+            }}
           />
         </div>
 
         {/* Speech bubble */}
         <div
-          className={`absolute -top-14 left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-400 ${
+          className={`absolute pointer-events-none transition-all duration-400 ${
             showDialogue ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-95"
           }`}
+          style={{ top: "-114px", left: "calc(50% + 100px)", transform: "translateX(-50%)" }}
         >
           <div
             className="relative rounded-xl px-4 py-2 max-w-[220px] whitespace-nowrap border"
@@ -429,6 +450,36 @@ export default function LobbyView({
               </div>
             </div>
           </div>
+
+          {/* Seigniorage Breakdown */}
+          {subgraphData && (
+            <div>
+              <h3 className="text-sm text-gray-400 mb-3">{t.dashboard.staking}</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                  <div className="text-xs text-gray-500 mb-1">{t.dashboard.stakedPrincipal}</div>
+                  <div className="text-base font-mono-num font-semibold text-gray-300">
+                    {subgraphData.depositedFormatted}
+                  </div>
+                  <div className="text-[10px] text-gray-600">WTON</div>
+                </div>
+                <div className="p-3 rounded-lg bg-white/5 border border-green-500/10">
+                  <div className="text-xs text-gray-500 mb-1">{t.dashboard.seigEarned}</div>
+                  <div className="text-base font-mono-num font-semibold text-green-400">
+                    +{subgraphData.seigEarnedFormatted}
+                  </div>
+                  <div className="text-[10px] text-gray-600">WTON</div>
+                </div>
+                <div className="p-3 rounded-lg bg-white/5 border border-accent-gold/10">
+                  <div className="text-xs text-gray-500 mb-1">{t.dashboard.totalStakedValue}</div>
+                  <div className="text-base font-mono-num font-semibold text-accent-gold">
+                    {loading ? "..." : balances?.wton || "\u2014"}
+                  </div>
+                  <div className="text-[10px] text-gray-600">WTON</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex flex-wrap gap-3">

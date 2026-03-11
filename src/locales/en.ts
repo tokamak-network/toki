@@ -371,6 +371,9 @@ const en = {
     exploreTitle: "Tokamak Ecosystem",
     exploreDesc: "Discover more services in the Tokamak ecosystem",
     exploreButton: "Explore",
+    stakedPrincipal: "Principal",
+    seigEarned: "Seigniorage",
+    totalStakedValue: "Total (on-chain)",
   },
   onboarding: {
     allClear: "All Quests Clear!",

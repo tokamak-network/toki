@@ -11,6 +11,7 @@ import Header from "@/components/layout/Header";
 import CardCollection from "./CardCollection";
 import LobbyView from "./LobbyView";
 import { useEip7702 } from "@/hooks/useEip7702";
+import { useStakingSubgraph } from "@/hooks/useStakingSubgraph";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
@@ -80,6 +81,9 @@ export default function DashboardContent() {
   // EIP-7702: EOA === Smart Account, so balance address is always the EOA
   const balanceAddress = primaryWallet?.address;
 
+  // Subgraph: seigniorage earnings breakdown
+  const { data: subgraphData, loading: subgraphLoading, refresh: refreshSubgraph } = useStakingSubgraph(balanceAddress);
+
   const fetchBalances = useCallback(async () => {
     if (!balanceAddress) return;
     setLoading(true);
@@ -127,6 +131,10 @@ export default function DashboardContent() {
     }
   }, [balanceAddress, fetchBalances]);
 
+  const handleRefresh = useCallback(() => {
+    fetchBalances();
+    refreshSubgraph();
+  }, [fetchBalances, refreshSubgraph]);
 
   if (!ready || !authenticated) {
     return (
@@ -169,8 +177,10 @@ export default function DashboardContent() {
           walletAddress={addr}
           shortAddr={shortAddr}
           displayName={displayName}
-          onRefreshBalances={fetchBalances}
+          onRefreshBalances={handleRefresh}
           isTestnet={isTestnet}
+          subgraphData={subgraphData}
+          subgraphLoading={subgraphLoading}
         />
       ) : (
         /* Mobile: Original list layout */
@@ -249,10 +259,37 @@ export default function DashboardContent() {
               />
             </div>
 
+            {/* Seigniorage Breakdown */}
+            {subgraphData && (
+              <div className="mt-4 mb-6">
+                <h3 className="text-sm text-gray-400 mb-3">{t.dashboard.staking}</h3>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                    <div className="text-xs text-gray-500 mb-1">{t.dashboard.stakedPrincipal}</div>
+                    <div className="text-base font-mono-num font-semibold text-gray-300">
+                      {subgraphData.depositedFormatted} <span className="text-xs text-gray-500">WTON</span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5 border border-accent-cyan/10">
+                    <div className="text-xs text-gray-500 mb-1">{t.dashboard.seigEarned}</div>
+                    <div className="text-base font-mono-num font-semibold text-green-400">
+                      +{subgraphData.seigEarnedFormatted} <span className="text-xs text-gray-500">WTON</span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5 border border-accent-gold/10">
+                    <div className="text-xs text-gray-500 mb-1">{t.dashboard.totalStakedValue}</div>
+                    <div className="text-base font-mono-num font-semibold text-accent-gold">
+                      {loading ? "..." : balances?.wton || "\u2014"} <span className="text-xs text-gray-500">WTON</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
               <button
-                onClick={fetchBalances}
+                onClick={handleRefresh}
                 className="px-4 py-2 rounded-lg bg-white/10 text-sm text-gray-300 hover:bg-white/15 transition-colors"
               >
                 {t.dashboard.refreshBalances}

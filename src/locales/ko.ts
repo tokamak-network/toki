@@ -366,6 +366,9 @@ const ko = {
     exploreTitle: "토카막 생태계",
     exploreDesc: "토카막 생태계의 다양한 서비스를 둘러보세요",
     exploreButton: "둘러보기",
+    stakedPrincipal: "원금",
+    seigEarned: "시뇨리지 수익",
+    totalStakedValue: "합계 (온체인)",
   },
   onboarding: {
     allClear: "모든 퀘스트 클리어!",
