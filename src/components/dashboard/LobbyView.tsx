@@ -303,13 +303,12 @@ export default function LobbyView({
         className={`absolute z-20 transition-all duration-700 delay-500 ${
           roomLoaded ? "opacity-100" : "opacity-0"
         }`}
-        style={{ bottom: "30%", left: "38%", width: "12%", height: "35%" }}
+        style={{ bottom: "calc(30% + 119px)", left: "calc(38% + 145px)", width: "12%", height: "35%" }}
       >
         {/* Hologram base glow — sits on the plant pot */}
         <div
-          className="absolute -bottom-2 left-1/2 w-[90%] h-4 rounded-full"
+          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[90%] h-4 rounded-full"
           style={{
-            transform: "translateX(calc(-50% + 100px))",
             background: "radial-gradient(ellipse, rgba(34,211,238,0.5) 0%, rgba(34,211,238,0.15) 50%, transparent 80%)",
             filter: "blur(4px)",
             animation: "holoBasePulse 2s ease-in-out infinite",
@@ -318,9 +317,8 @@ export default function LobbyView({
 
         {/* Projection beam */}
         <div
-          className="absolute bottom-0 left-1/2 pointer-events-none"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none"
           style={{
-            transform: "translateX(calc(-50% + 100px))",
             width: "70%",
             height: "100%",
             background: "linear-gradient(0deg, rgba(34,211,238,0.12) 0%, rgba(34,211,238,0.03) 50%, transparent 100%)",
@@ -343,8 +341,6 @@ export default function LobbyView({
             }`}
             style={{
               maxHeight: "85%",
-              top: "-100px",
-              left: "100px",
               filter: "brightness(1.3) saturate(0.7) drop-shadow(0 0 12px rgba(34,211,238,0.5))",
               opacity: 0.88,
               animation: "holoFloat 3s ease-in-out infinite",
@@ -352,26 +348,16 @@ export default function LobbyView({
           />
           {/* Scanline overlay */}
           <div
-            className="absolute z-20 pointer-events-none"
+            className="absolute inset-0 z-20 pointer-events-none"
             style={{
-              top: "-100px",
-              left: "100px",
-              right: "-100px",
-              bottom: "0",
               backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(34,211,238,0.06) 1px, rgba(34,211,238,0.06) 2px)",
               animation: "holoScanScroll 2s linear infinite",
             }}
           />
           {/* Glitch flicker */}
           <div
-            className="absolute z-20 pointer-events-none"
-            style={{
-              top: "-100px",
-              left: "100px",
-              right: "-100px",
-              bottom: "0",
-              animation: "holoGlitch 6s ease-in-out infinite",
-            }}
+            className="absolute inset-0 z-20 pointer-events-none"
+            style={{ animation: "holoGlitch 6s ease-in-out infinite" }}
           />
         </div>
 
@@ -380,7 +366,7 @@ export default function LobbyView({
           className={`absolute pointer-events-none transition-all duration-400 ${
             showDialogue ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-95"
           }`}
-          style={{ top: "-114px", left: "calc(50% + 100px)", transform: "translateX(-50%)" }}
+          style={{ top: "-14px", left: "50%", transform: "translateX(-50%)" }}
         >
           <div
             className="relative rounded-xl px-4 py-2 max-w-[220px] whitespace-nowrap border"
