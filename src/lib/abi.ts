@@ -39,6 +39,20 @@ export const seigManagerAbi = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [{ name: "layer2", type: "address" }],
+    name: "commissionRates",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "layer2", type: "address" }],
+    name: "isCommissionRateNegative",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 export const layer2RegistryAbi = [

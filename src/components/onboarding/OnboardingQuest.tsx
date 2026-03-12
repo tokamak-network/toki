@@ -8,6 +8,7 @@ import type { Dictionary } from "@/locales";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import IntroCinematic from "./IntroCinematic";
 import LaptopVideoOverlay from "./LaptopVideoOverlay";
+import SeigniorageRain from "@/components/dashboard/SeigniorageRain";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
@@ -154,8 +155,8 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       intro: [
         { text: t.quest4Intro1, mood: "excited" },
         { text: t.quest4Intro2, mood: "explain" },
-        { text: t.quest4Intro3, mood: "thinking" },
-        { text: t.quest4Intro4, mood: "cheer" },
+        { text: t.quest4Intro3, mood: "excited" },
+        { text: t.quest4Intro4, mood: "wink" },
       ],
       action: { type: "confirm", label: t.quest4ActionLabel, confirmText: t.quest4Confirm },
       verify: "user-confirm",
@@ -351,12 +352,13 @@ const QUEST_BACKGROUNDS: Record<string, string> = {
 const TUTORIAL_VIDEOS: Record<string, string> = {
   "create-wallet": "https://www.youtube.com/embed/UURB7Tc7D4M?start=129&autoplay=1",
   "install-metamask": "https://www.youtube.com/embed/gGr7GU27_e8?autoplay=1",
+  "import-key": "https://www.youtube.com/embed/gGr7GU27_e8?start=24&autoplay=1",
   "verify-exchange": "https://www.youtube.com/embed/VIDEO_ID?autoplay=1",
 };
 
 // ─── Character Display (Visual Novel Style) ──────────────────────────
 
-function TokiCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
+function TokiCharacter({ mood, phase, compact }: { mood?: Mood; phase?: Phase; compact?: boolean }) {
   const effectiveMood: Mood =
     phase === "badge"
       ? "proud"
@@ -383,7 +385,11 @@ function TokiCharacter({ mood, phase }: { mood?: Mood; phase?: Phase }) {
 
   return (
     <div className="flex justify-center z-10">
-      <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] overflow-visible">
+      <div className={`relative overflow-visible ${
+        compact
+          ? "w-40 sm:w-48 md:w-56 lg:w-64"
+          : "w-64 sm:w-80 md:w-96 lg:w-[28rem]"
+      }`}>
         <div
           className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 animate-glow-pulse transition-colors duration-700 opacity-40"
           style={{ backgroundColor: glowColor }}
@@ -431,6 +437,8 @@ export default function OnboardingQuest() {
   const [subStepConfirmed, setSubStepConfirmed] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoKey, setVideoKey] = useState<string>("create-wallet");
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [calcAmount, setCalcAmount] = useState("");
   const [showCinematic, setShowCinematic] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_cinematicComplete, setCinematicComplete] = useState(false);
@@ -515,6 +523,10 @@ export default function OnboardingQuest() {
       setPhase("action");
     } else if (phase === "success") {
       setPhase("badge");
+      // Trigger achievement toast immediately when badge phase starts
+      if (quest) {
+        trackActivity("quest-complete", { questId: quest.id, xp: quest.xp });
+      }
     }
   };
 
@@ -606,9 +618,6 @@ export default function OnboardingQuest() {
     setDialogueIndex(0);
     saveProgress(newIndex, newXp, newCompleted);
 
-    // Track achievement
-    trackActivity("quest-complete", { questId: quest.id, xp: quest.xp });
-
     if (quest.action?.type === "navigate" && quest.action.route) {
       router.push(quest.action.route);
     }
@@ -689,7 +698,7 @@ export default function OnboardingQuest() {
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <div className="max-w-3xl mx-auto">
           <div className={cinematicJustFinished ? "animate-character-entrance" : ""}>
-            <TokiCharacter mood={currentLine?.mood} phase={phase} />
+            <TokiCharacter mood={currentLine?.mood} phase={phase} compact={quest.id === "verify-exchange" && phase === "action"} />
           </div>
 
           {/* Wallet Address (Quest 1 success) */}
@@ -708,7 +717,7 @@ export default function OnboardingQuest() {
               <BadgeReveal quest={quest} />
               <button
                 onClick={handleBadgeDone}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold hover:scale-[1.02] transition-transform"
+                className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500 hover:scale-[1.02] transition-all"
               >
                 {questIndex < QUESTS.length - 1
                   ? t.onboarding.nextQuest
@@ -738,7 +747,7 @@ export default function OnboardingQuest() {
                     {quest.id === "create-wallet" && (
                       <button
                         onClick={() => { setVideoKey("create-wallet"); setShowVideo(true); }}
-                        className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors flex items-center justify-center gap-2"
                       >
                         <span>▶</span>
                         <span>{t.onboarding.quest1VideoPrompt}</span>
@@ -768,7 +777,7 @@ export default function OnboardingQuest() {
                     {quest.id === "verify-exchange" && (
                       <button
                         onClick={() => { setVideoKey("verify-exchange"); setShowVideo(true); }}
-                        className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors flex items-center justify-center gap-2"
                       >
                         <span>▶</span>
                         <span>{t.onboarding.quest3VideoPrompt}</span>
@@ -803,6 +812,16 @@ export default function OnboardingQuest() {
                           })}
                         </div>
                       </div>
+                    )}
+                    {/* Calculator button for Quest 4 */}
+                    {quest.id === "receive-ton" && (
+                      <button
+                        onClick={() => { setCalcAmount(""); setShowCalculator(true); }}
+                        className="w-full py-3 rounded-xl bg-accent-amber/10 border border-accent-amber/30 text-accent-amber text-sm font-medium hover:bg-accent-amber/20 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <span className="text-base">&#x1F4B0;</span>
+                        <span>{t.onboarding.openCalculator}</span>
+                      </button>
                     )}
                     <label className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
                       <input
@@ -854,17 +873,16 @@ export default function OnboardingQuest() {
 
                     {/* Video button for MetaMask install substep - shown as subtle link after verify area */}
                     {quest.id === "bridge-metamask" && subStepIndex === 1 && !subStepConfirmed && (
-                      <div className="flex items-center justify-center gap-4 text-xs">
+                      <div className="flex items-center justify-center gap-3 text-xs">
                         <button
                           onClick={() => handleSubStepAction(currentSubStep)}
-                          className="text-gray-500 hover:text-accent-cyan transition-colors underline underline-offset-2"
+                          className="px-4 py-2 rounded-lg border border-white/20 bg-white/10 text-white text-xs font-medium hover:bg-white/20 transition-colors"
                         >
                           {currentSubStep.action.label}
                         </button>
-                        <span className="text-gray-600">|</span>
                         <button
                           onClick={() => { setVideoKey("install-metamask"); setShowVideo(true); }}
-                          className="text-gray-500 hover:text-accent-cyan transition-colors underline underline-offset-2 flex items-center gap-1"
+                          className="px-4 py-2 rounded-lg border border-accent-cyan/30 bg-accent-cyan/10 text-accent-cyan text-xs font-medium hover:bg-accent-cyan/20 transition-colors flex items-center gap-1"
                         >
                           <span>▶</span>
                           <span>{t.onboarding.quest2VideoPrompt}</span>
@@ -876,7 +894,7 @@ export default function OnboardingQuest() {
                     {quest.id === "bridge-metamask" && subStepIndex === 2 && (
                       <button
                         onClick={() => { setVideoKey("import-key"); setShowVideo(true); }}
-                        className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors flex items-center justify-center gap-2"
                       >
                         <span>▶</span>
                         <span>{t.onboarding.quest2ImportVideoPrompt}</span>
@@ -943,8 +961,8 @@ export default function OnboardingQuest() {
                         disabled={!subStepConfirmed}
                         className={`w-full py-3 rounded-xl text-white font-semibold transition-all ${
                           subStepConfirmed
-                            ? "bg-gradient-to-r from-accent-blue to-accent-navy hover:scale-[1.02]"
-                            : "bg-gradient-to-r from-accent-blue to-accent-navy opacity-40 cursor-not-allowed"
+                            ? "bg-emerald-600 hover:bg-emerald-500 hover:scale-[1.02]"
+                            : "bg-emerald-600/40 opacity-40 cursor-not-allowed"
                         }`}
                       >
                         {subStepIndex < quest.substeps!.length - 1
@@ -982,6 +1000,35 @@ export default function OnboardingQuest() {
           bgImage={bgImage}
           onClose={() => setShowVideo(false)}
         />
+      )}
+
+      {/* Laptop Calculator Overlay */}
+      {showCalculator && (
+        <LaptopVideoOverlay
+          bgImage={bgImage}
+          onClose={() => setShowCalculator(false)}
+        >
+          <div className="flex flex-col items-center justify-center h-full p-6 sm:p-10">
+            <div className="w-full max-w-md space-y-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-white text-center">
+                {t.onboarding.calcTitle}
+              </h2>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-400">{t.onboarding.calcInputLabel}</label>
+                <input
+                  type="number"
+                  value={calcAmount}
+                  onChange={(e) => setCalcAmount(e.target.value)}
+                  placeholder={t.onboarding.calcInputPlaceholder}
+                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-lg font-mono placeholder:text-gray-600 focus:outline-none focus:border-accent-amber/50 focus:ring-1 focus:ring-accent-amber/30 transition-colors"
+                  min="0"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <SeigniorageRain inputAmount={calcAmount} totalStaked={11_000_000} />
+            </div>
+          </div>
+        </LaptopVideoOverlay>
       )}
 
       {/* Intro Cinematic Overlay */}

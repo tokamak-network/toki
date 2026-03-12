@@ -48,6 +48,7 @@ interface Operator {
   name: string;
   totalStaked: string;
   myStaked: string;
+  commissionRate: number; // percentage, negative = rebate
 }
 
 type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "presenting" | "celebrate" | "card-reveal";
@@ -208,19 +209,35 @@ export default function StakingScreen() {
         address: seigManagerAddr, abi: seigManagerAbi, functionName: "stakeOf" as const,
         args: [a, addr] as const,
       }));
+      const commissionContracts = addresses.map((a) => ({
+        address: seigManagerAddr, abi: seigManagerAbi, functionName: "commissionRates" as const,
+        args: [a] as const,
+      }));
+      const commissionNegContracts = addresses.map((a) => ({
+        address: seigManagerAddr, abi: seigManagerAbi, functionName: "isCommissionRateNegative" as const,
+        args: [a] as const,
+      }));
 
-      const [memoResults, stakedResults, myStakedResults] = await Promise.all([
+      const [memoResults, stakedResults, myStakedResults, commResults, commNegResults] = await Promise.all([
         publicClient.multicall({ contracts: memoContracts, allowFailure: true }),
         publicClient.multicall({ contracts: stakedContracts, allowFailure: true }),
         publicClient.multicall({ contracts: myStakedContracts, allowFailure: true }),
+        publicClient.multicall({ contracts: commissionContracts, allowFailure: true }),
+        publicClient.multicall({ contracts: commissionNegContracts, allowFailure: true }),
       ]);
 
-      const ops: Operator[] = addresses.map((a, i) => ({
-        address: a,
-        name: memoResults[i].status === "success" ? (memoResults[i].result as string) || `Operator ${i}` : `Operator ${i}`,
-        totalStaked: stakedResults[i].status === "success" ? formatUnits(stakedResults[i].result as bigint, 27) : "0",
-        myStaked: myStakedResults[i].status === "success" ? formatUnits(myStakedResults[i].result as bigint, 27) : "0",
-      }));
+      const ops: Operator[] = addresses.map((a, i) => {
+        // Commission rate: RAY format (1e27 = 100%)
+        const rawRate = commResults[i].status === "success" ? Number(formatUnits(commResults[i].result as bigint, 27)) * 100 : 0;
+        const isNeg = commNegResults[i].status === "success" ? (commNegResults[i].result as boolean) : false;
+        return {
+          address: a,
+          name: memoResults[i].status === "success" ? (memoResults[i].result as string) || `Operator ${i}` : `Operator ${i}`,
+          totalStaked: stakedResults[i].status === "success" ? formatUnits(stakedResults[i].result as bigint, 27) : "0",
+          myStaked: myStakedResults[i].status === "success" ? formatUnits(myStakedResults[i].result as bigint, 27) : "0",
+          commissionRate: isNeg ? -rawRate : rawRate,
+        };
+      });
 
       ops.sort((a, b) => Number(b.totalStaked) - Number(a.totalStaked));
       const topOps = ops.slice(0, 10);

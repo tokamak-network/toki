@@ -23,7 +23,7 @@ export default function PrivyProvider({
     <Provider
       appId={appId}
       config={{
-        loginMethods: ["google", "email", "wallet"],
+        loginMethods: ["google", "email"],
         appearance: {
           theme: "dark",
           accentColor: "#4a90d9",

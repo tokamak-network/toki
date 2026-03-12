@@ -8,6 +8,7 @@ interface Operator {
   name: string;
   totalStaked: string;
   myStaked: string;
+  commissionRate?: number;
 }
 
 const CARD_GRADIENTS = [
@@ -137,6 +138,15 @@ export default function OperatorCard({
               <div className="text-sm font-mono-num text-white text-center mb-2">
                 {formatStaked(op.totalStaked)} TON
               </div>
+
+              {/* Commission rate */}
+              {op.commissionRate !== undefined && (
+                <div className={`text-xs font-mono-num text-center mb-2 ${
+                  op.commissionRate < 0 ? "text-green-400" : op.commissionRate === 0 ? "text-gray-400" : "text-amber-400"
+                }`}>
+                  {t.dashboard.commission}: {op.commissionRate < 0 ? "" : op.commissionRate > 0 ? "+" : ""}{op.commissionRate.toFixed(1)}%
+                </div>
+              )}
 
               {/* My staked */}
               {Number(op.myStaked) > 0 && (
