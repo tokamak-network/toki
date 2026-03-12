@@ -587,9 +587,12 @@ const ko = {
     tokiPickButton: "토키가 골라줄게!",
     tokiPickHover: "내가 제일 좋은 오퍼레이터 찾아줄게! 수수료 낮고 물량 많은 곳으로~",
     nextStep: "다음으로",
+    gasReserve: "~{amount} TON 가스비 예약",
+    estimatedGasCost: "예상 가스비: ~{amount} TON (MAX 누르면 자동으로 빠져요)",
     // Step 2: Amount
     step2Title: "스테이킹 금액",
     step2Dialogue: "얼마나 맡길 거야? 네 지갑에 {balance} TON이 있어!",
+    step2DialogueWithGas: "{balance} TON이 있어! 가스비로 ~{gas} TON 정도 필요하니까, MAX 누르면 내가 알아서 빼놓을게~",
     step2Ready: "좋아, {amount} TON! 준비됐으면 다음 단계로 가자!",
     // Step 3: Execute
     step3Title: "스테이킹 실행",

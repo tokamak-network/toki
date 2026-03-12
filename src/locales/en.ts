@@ -592,9 +592,12 @@ const en = {
     tokiPickButton: "Toki's Pick!",
     tokiPickHover: "I'll find the best operator for you! Lowest fees and most staked — trust me~",
     nextStep: "Next",
+    gasReserve: "~{amount} TON reserved for gas",
+    estimatedGasCost: "Estimated gas fee: ~{amount} TON (auto-deducted from MAX)",
     // Step 2: Amount
     step2Title: "Staking Amount",
     step2Dialogue: "How much do you want to stake? You have {balance} TON in your wallet!",
+    step2DialogueWithGas: "You have {balance} TON! About ~{gas} TON goes to gas, so I'll save that for you when you hit MAX~",
     step2Ready: "Great, {amount} TON! Ready? Let's move to the next step!",
     // Step 3: Execute
     step3Title: "Execute Staking",

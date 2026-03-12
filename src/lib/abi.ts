@@ -266,3 +266,21 @@ export const depositManagerAbi = [
     type: "function",
   },
 ] as const;
+
+// TONPaymaster (gas cost estimation via on-chain oracle)
+export const tonPaymasterAbi = [
+  {
+    inputs: [{ name: "ethAmount", type: "uint256" }],
+    name: "ethToToken",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getTokenPerEth",
+    outputs: [{ name: "tokenPerEthRate", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
