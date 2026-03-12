@@ -130,19 +130,7 @@ export default function Footer() {
               priority
             />
 
-            {/* Tokamon - absolute positioned, doesn't affect Toki layout */}
-            <Image
-              src="/toki-bag-full.png"
-              alt="Tokamon with bag"
-              width={140}
-              height={140}
-              className={`absolute bottom-0 object-contain drop-shadow-[0_4px_20px_rgba(245,158,11,0.2)] transition-all duration-700 delay-300 ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-16"
-              }`}
-              style={{ right: "0px" }}
-            />
+
           </div>
         </div>
       </div>

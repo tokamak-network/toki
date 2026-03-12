@@ -61,11 +61,16 @@ export default function Header() {
             alt="Toki"
             width={32}
             height={32}
-            className="w-8 h-8 rounded-lg bg-[#0a0a0f]"
+            className="w-8 h-8 rounded-full bg-white/10 p-0.5"
           />
-          <span className="text-lg font-bold">
-            <span className="text-gradient">Toki</span>
-          </span>
+          <Image
+            src="/toki-title-logo.png"
+            alt="Toki — Stake Easy"
+            width={120}
+            height={48}
+            className="w-[60px] h-auto"
+            priority
+          />
         </a>
 
         {/* Desktop Nav */}

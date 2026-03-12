@@ -264,8 +264,14 @@ export default function StakingScreen() {
     if (operators.length === 0) return;
     setShuffling(true);
     setTimeout(() => {
-      setSelectedOp(operators[0].address);
-      setAutoSelectedIndex(0);
+      // Pick the operator with lowest commission, then highest staked
+      const best = [...operators].sort((a, b) => {
+        if (a.commissionRate !== b.commissionRate) return a.commissionRate - b.commissionRate;
+        return Number(b.totalStaked) - Number(a.totalStaked);
+      })[0];
+      const idx = operators.findIndex((o) => o.address === best.address);
+      setSelectedOp(best.address);
+      setAutoSelectedIndex(idx);
       setShuffling(false);
     }, 500);
   };
