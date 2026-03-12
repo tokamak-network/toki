@@ -100,14 +100,14 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       ],
       substeps: [
         {
-          instruction: t.exportKeyInstruction,
-          action: { type: "privy-login", label: t.exportKeyButton },
-          verify: t.exportKeyConfirm,
-        },
-        {
           instruction: t.installMetamaskInstruction,
           action: { type: "link", label: t.installMetamaskButton, url: "https://metamask.io/download/" },
           verify: "metamask-installed",
+        },
+        {
+          instruction: t.exportKeyInstruction,
+          action: { type: "privy-login", label: t.exportKeyButton },
+          verify: t.exportKeyConfirm,
         },
         {
           instruction: t.importKeyInstruction,
@@ -863,7 +863,7 @@ export default function OnboardingQuest() {
                     </p>
 
                     {/* Video button for MetaMask install substep - shown as subtle link after verify area */}
-                    {quest.id === "bridge-metamask" && subStepIndex === 1 && !subStepConfirmed && (
+                    {quest.id === "bridge-metamask" && subStepIndex === 0 && !subStepConfirmed && (
                       <div className="flex items-center justify-center gap-3 text-xs">
                         <button
                           onClick={() => handleSubStepAction(currentSubStep)}
@@ -894,7 +894,7 @@ export default function OnboardingQuest() {
 
                     {/* Action button - hide for metamask install substep (handled above) */}
                     {(currentSubStep.action.type === "privy-login" || currentSubStep.action.type === "link") &&
-                      !(quest.id === "bridge-metamask" && subStepIndex === 1) && (
+                      !(quest.id === "bridge-metamask" && subStepIndex === 0) && (
                       <button
                         onClick={() => handleSubStepAction(currentSubStep)}
                         className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue/80 to-accent-navy/80 text-white font-semibold hover:scale-[1.02] transition-transform"
