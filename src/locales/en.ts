@@ -404,7 +404,7 @@ const en = {
     exportKeyConfirm: "I've safely copied the private key",
     installMetamaskInstruction: "First, let's install MetaMask! It's a Chrome extension.",
     installMetamaskButton: "Install MetaMask",
-    importKeyInstruction: "Open MetaMask and go to 'Import Account' -> Paste your private key",
+    importKeyInstruction: "Browser top-right puzzle icon 🧩 → Click MetaMask → Account icon → 'Import Account' → Paste your private key",
     importKeyConfirm: "I've imported the key into MetaMask",
     keyCopyReminder: "Did you copy the key? You'll paste it into MetaMask in the next step!",
     // Quest 1: Create Wallet (Privy login)

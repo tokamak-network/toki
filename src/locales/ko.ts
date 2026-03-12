@@ -399,7 +399,7 @@ const ko = {
     exportKeyConfirm: "비밀키를 안전하게 복사했어요",
     installMetamaskInstruction: "먼저 MetaMask를 설치하자! 크롬 확장 프로그램이야.",
     installMetamaskButton: "MetaMask 설치하기",
-    importKeyInstruction: "MetaMask를 열어서 '계정 가져오기' -> 비밀키 붙여넣기",
+    importKeyInstruction: "브라우저 우측 상단 퍼즐 아이콘 🧩 → MetaMask 클릭 → 계정 아이콘 → '계정 가져오기' → 비밀키 붙여넣기",
     importKeyConfirm: "MetaMask에 키를 가져왔어요",
     keyCopyReminder: "비밀키를 복사했지? 다음 단계에서 MetaMask에 붙여넣을 거야!",
     // Quest 1: Create Wallet (Privy login)
