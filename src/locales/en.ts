@@ -588,7 +588,7 @@ const en = {
     step1Title: "Choose Operator",
     step1Dialogue: "First, let's pick where to stake! An operator manages your TON for you.",
     step1OperatorSelected: "Nice! You picked {name}. It has {amount} TON staked.",
-    step1TokiPick: "I picked the best one for you! The most stable operator.",
+    step1TokiPick: "I picked this one! Lowest fee and the most staked — looks solid~",
     tokiPickButton: "Toki's Pick!",
     nextStep: "Next",
     // Step 2: Amount

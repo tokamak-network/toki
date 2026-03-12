@@ -583,7 +583,7 @@ const ko = {
     step1Title: "오퍼레이터 선택",
     step1Dialogue: "먼저 어디에 스테이킹할지 골라보자! 오퍼레이터는 네 TON을 관리해주는 곳이야.",
     step1OperatorSelected: "좋아! {name}을 선택했네. 총 {amount} TON이 스테이킹 된 곳이야.",
-    step1TokiPick: "내가 제일 좋은 곳을 골랐어! 가장 안정적인 오퍼레이터야.",
+    step1TokiPick: "여기 골랐어! 수수료가 제일 낮고 물량도 많아서 안정적이야~",
     tokiPickButton: "토키가 골라줄게!",
     nextStep: "다음으로",
     // Step 2: Amount

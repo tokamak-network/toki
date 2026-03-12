@@ -76,8 +76,8 @@ export default function OperatorCard({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const CARD_WIDTH = 160;
-  const GAP = 12;
+  const CARD_WIDTH = 112;
+  const GAP = 8;
 
   const updateActiveIndex = useCallback(() => {
     const el = scrollRef.current;
@@ -100,7 +100,7 @@ export default function OperatorCard({
     <div className="mb-4">
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide"
+        className="flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide"
       >
         {operators.map((op, i) => {
           const isSelected = selectedOp === op.address;
@@ -112,7 +112,7 @@ export default function OperatorCard({
               key={op.address}
               onClick={() => onSelect(op.address)}
               className={`
-                snap-center shrink-0 w-[160px] p-4 rounded-xl border transition-all duration-300
+                snap-center shrink-0 w-[112px] p-3 rounded-xl border transition-all duration-300
                 bg-gradient-to-br ${CARD_GRADIENTS[gradientIdx]}
                 ${isSelected
                   ? `${CARD_BORDER_COLORS[gradientIdx]} scale-105 shadow-lg ${CARD_GLOW_COLORS[gradientIdx]}`
@@ -122,43 +122,40 @@ export default function OperatorCard({
               `}
             >
               {/* Icon/Initial */}
-              <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold text-white mb-3 mx-auto">
+              <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-base font-bold text-white mb-2 mx-auto">
                 {op.name ? op.name.charAt(0).toUpperCase() : "O"}
               </div>
 
               {/* Name */}
-              <div className="text-sm font-semibold text-white truncate text-center mb-2">
-                {op.name || `${op.address.slice(0, 8)}...`}
+              <div className="text-xs font-semibold text-white truncate text-center mb-1">
+                {op.name || `${op.address.slice(0, 6)}...`}
               </div>
 
               {/* Total staked */}
-              <div className="text-xs text-gray-300 text-center mb-1">
-                {t.dashboard.operatorStaked}
-              </div>
-              <div className="text-sm font-mono-num text-white text-center mb-2">
+              <div className="text-[10px] font-mono-num text-gray-300 text-center mb-1">
                 {formatStaked(op.totalStaked)} TON
               </div>
 
               {/* Commission rate */}
               {op.commissionRate !== undefined && (
-                <div className={`text-xs font-mono-num text-center mb-2 ${
+                <div className={`text-[10px] font-mono-num text-center ${
                   op.commissionRate < 0 ? "text-green-400" : op.commissionRate === 0 ? "text-gray-400" : "text-amber-400"
                 }`}>
-                  {t.dashboard.commission}: {op.commissionRate < 0 ? "" : op.commissionRate > 0 ? "+" : ""}{op.commissionRate.toFixed(1)}%
+                  {op.commissionRate < 0 ? "" : op.commissionRate > 0 ? "+" : ""}{op.commissionRate.toFixed(1)}%
                 </div>
               )}
 
               {/* My staked */}
               {Number(op.myStaked) > 0 && (
-                <div className="text-xs font-mono-num text-accent-cyan text-center">
-                  {t.dashboard.myStake}: {Number(op.myStaked).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                <div className="text-[10px] font-mono-num text-accent-cyan text-center mt-1">
+                  {t.dashboard.myStake}: {Number(op.myStaked).toLocaleString("en-US", { maximumFractionDigits: 0 })}
                 </div>
               )}
 
               {/* Auto selected badge */}
               {isAutoSelected && (
-                <div className="mt-2 px-2 py-0.5 rounded-full bg-accent-amber/20 text-accent-amber text-xs font-semibold text-center">
-                  {t.dashboard.tokiAutoSelected}
+                <div className="mt-1 px-1.5 py-0.5 rounded-full bg-accent-amber/20 text-accent-amber text-[10px] font-semibold text-center">
+                  Toki Pick
                 </div>
               )}
             </button>
