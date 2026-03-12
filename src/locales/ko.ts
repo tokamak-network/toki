@@ -254,6 +254,10 @@ const ko = {
     achievementBoardDesc: "카드 컬렉션 보기",
     exploreDoor: "탐험 포탈",
     exploreDoorDesc: "생태계 둘러보기",
+    tokiHoverStaking: "여긴 스테이킹 터미널이야! TON을 스테이킹하고 시뇨리지를 받을 수 있어~",
+    tokiHoverWallet: "지갑 금고야! 잔액 확인하고 주소도 관리할 수 있어.",
+    tokiHoverAchievement: "업적 보드야! 지금까지 모은 카드를 볼 수 있어~",
+    tokiHoverExplore: "탐험 포탈이야! 토카막 생태계를 둘러볼 수 있어.",
   },
   dashboard: {
     loading: "로딩 중...",

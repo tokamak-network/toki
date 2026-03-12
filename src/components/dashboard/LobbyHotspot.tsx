@@ -10,6 +10,8 @@ interface LobbyHotspotProps {
   size?: { width: string; height: string };
   color?: string; // e.g. "34,211,238" (cyan), "168,85,247" (purple)
   pingDelay?: number; // stagger ping animation per hotspot (seconds)
+  onHoverEnter?: () => void;
+  onHoverLeave?: () => void;
 }
 
 export default function LobbyHotspot({
@@ -20,6 +22,8 @@ export default function LobbyHotspot({
   size = { width: "120px", height: "120px" },
   color = "255,255,255",
   pingDelay = 0,
+  onHoverEnter,
+  onHoverLeave,
 }: LobbyHotspotProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -28,8 +32,8 @@ export default function LobbyHotspot({
       className="absolute cursor-pointer focus:outline-none group"
       style={{ ...position, width: size.width, height: size.height }}
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => { setIsHovered(true); onHoverEnter?.(); }}
+      onMouseLeave={() => { setIsHovered(false); onHoverLeave?.(); }}
       aria-label={`${label}: ${description}`}
     >
       {/* Hover glow bloom */}

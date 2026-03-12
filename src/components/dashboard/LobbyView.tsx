@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/components/providers/LanguageProvider";
@@ -53,19 +53,31 @@ export default function LobbyView({
     const timer = setTimeout(() => setRoomLoaded(true), 100);
     const greetTimer = setTimeout(() => {
       const g = [t.lobby.tokiGreeting1, t.lobby.tokiGreeting2, t.lobby.tokiGreeting3, t.lobby.tokiGreeting4];
-      setDialogueText(g[Math.floor(Math.random() * g.length)]);
-      setShowDialogue(true);
-      setTimeout(() => setShowDialogue(false), 5000);
+      showTokiMessage(g[Math.floor(Math.random() * g.length)], 5000);
     }, 1200);
     return () => { clearTimeout(timer); clearTimeout(greetTimer); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const dialogueTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const showTokiMessage = useCallback((text: string, duration?: number) => {
+    if (dialogueTimerRef.current) clearTimeout(dialogueTimerRef.current);
+    setDialogueText(text);
+    setShowDialogue(true);
+    if (duration) {
+      dialogueTimerRef.current = setTimeout(() => setShowDialogue(false), duration);
+    }
+  }, []);
+
+  const hideTokiMessage = useCallback(() => {
+    if (dialogueTimerRef.current) clearTimeout(dialogueTimerRef.current);
+    dialogueTimerRef.current = setTimeout(() => setShowDialogue(false), 300);
+  }, []);
+
   const handleTokiClick = () => {
     const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-    setDialogueText(randomGreeting);
-    setShowDialogue(true);
-    setTimeout(() => setShowDialogue(false), 4000);
+    showTokiMessage(randomGreeting, 4000);
   };
 
   const handleStaking = () => {
@@ -248,6 +260,8 @@ export default function LobbyView({
           size={{ width: "38%", height: "35%" }}
           color="34,211,238"
           pingDelay={0}
+          onHoverEnter={() => showTokiMessage(t.lobby.tokiHoverStaking)}
+          onHoverLeave={hideTokiMessage}
         />
 
         {/* Wallet Vault - covers the safe */}
@@ -259,6 +273,8 @@ export default function LobbyView({
           size={{ width: "14%", height: "22%" }}
           color="245,158,11"
           pingDelay={1.2}
+          onHoverEnter={() => showTokiMessage(t.lobby.tokiHoverWallet)}
+          onHoverLeave={hideTokiMessage}
         />
 
         {/* Achievement Board - covers the right wall bulletin board */}
@@ -270,6 +286,8 @@ export default function LobbyView({
           size={{ width: "20%", height: "55%" }}
           color="168,85,247"
           pingDelay={0.6}
+          onHoverEnter={() => showTokiMessage(t.lobby.tokiHoverAchievement)}
+          onHoverLeave={hideTokiMessage}
         />
 
         {/* Explore Portal - covers the swirling vortex doorway */}
@@ -281,6 +299,8 @@ export default function LobbyView({
           size={{ width: "18%", height: "78%" }}
           color="139,92,246"
           pingDelay={1.8}
+          onHoverEnter={() => showTokiMessage(t.lobby.tokiHoverExplore)}
+          onHoverLeave={hideTokiMessage}
         />
       </div>
 
@@ -303,7 +323,7 @@ export default function LobbyView({
         className={`absolute z-20 transition-all duration-700 delay-500 ${
           roomLoaded ? "opacity-100" : "opacity-0"
         }`}
-        style={{ bottom: "calc(30% + 119px)", left: "calc(38% + 145px)", width: "12%", height: "35%" }}
+        style={{ bottom: "calc(30% + 119px)", left: "calc(38% + 127px)", width: "12%", height: "35%" }}
       >
         {/* Hologram base glow — sits on the plant pot */}
         <div

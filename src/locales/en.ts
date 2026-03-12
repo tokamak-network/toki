@@ -259,6 +259,10 @@ const en = {
     achievementBoardDesc: "View your card collection",
     exploreDoor: "Explore Portal",
     exploreDoorDesc: "Discover the ecosystem",
+    tokiHoverStaking: "This is the Staking Terminal! You can stake TON and earn seigniorage here~",
+    tokiHoverWallet: "Your Wallet Vault! Check your balances and manage addresses here.",
+    tokiHoverAchievement: "The Achievement Board! See all the cards you've collected so far~",
+    tokiHoverExplore: "The Explore Portal! Step through to discover the Tokamak ecosystem.",
   },
   dashboard: {
     loading: "Loading...",
