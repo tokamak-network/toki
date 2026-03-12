@@ -547,10 +547,13 @@ export default function OnboardingQuest() {
     }
   };
 
+  const [keyExported, setKeyExported] = useState(false);
+
   const handleSubStepAction = async (substep: QuestSubStep) => {
     if (substep.action.type === "privy-login") {
       if (embeddedWallet) {
         await exportWallet({ address: embeddedWallet.address });
+        setKeyExported(true);
       }
     } else if (substep.action.type === "link") {
       window.open(substep.action.url, "_blank");
@@ -901,6 +904,14 @@ export default function OnboardingQuest() {
                       >
                         {currentSubStep.action.label}
                       </button>
+                    )}
+
+                    {/* Copy reminder after key export */}
+                    {quest.id === "bridge-metamask" && subStepIndex === 1 && keyExported && !subStepConfirmed && (
+                      <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-amber/10 border border-accent-amber/30 text-accent-amber text-sm">
+                        <span className="text-base">&#x1F511;</span>
+                        <span>{t.onboarding.keyCopyReminder}</span>
+                      </div>
                     )}
 
                     {currentSubStep.verify && currentSubStep.verify !== "metamask-installed" && (

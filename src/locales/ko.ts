@@ -401,6 +401,7 @@ const ko = {
     installMetamaskButton: "MetaMask 설치하기",
     importKeyInstruction: "MetaMask를 열어서 '계정 가져오기' -> 비밀키 붙여넣기",
     importKeyConfirm: "MetaMask에 키를 가져왔어요",
+    keyCopyReminder: "비밀키를 복사했지? 다음 단계에서 MetaMask에 붙여넣을 거야!",
     // Quest 1: Create Wallet (Privy login)
     quest1Title: "지갑 만들기",
     quest1Subtitle: "Privy 로그인",

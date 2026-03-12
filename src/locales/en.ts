@@ -406,6 +406,7 @@ const en = {
     installMetamaskButton: "Install MetaMask",
     importKeyInstruction: "Open MetaMask and go to 'Import Account' -> Paste your private key",
     importKeyConfirm: "I've imported the key into MetaMask",
+    keyCopyReminder: "Did you copy the key? You'll paste it into MetaMask in the next step!",
     // Quest 1: Create Wallet (Privy login)
     quest1Title: "Create Wallet",
     quest1Subtitle: "Privy Login",
