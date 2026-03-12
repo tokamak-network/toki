@@ -590,6 +590,7 @@ const en = {
     step1OperatorSelected: "Nice! You picked {name}. It has {amount} TON staked.",
     step1TokiPick: "I picked this one! Lowest fee and the most staked — looks solid~",
     tokiPickButton: "Toki's Pick!",
+    tokiPickHover: "I'll find the best operator for you! Lowest fees and most staked — trust me~",
     nextStep: "Next",
     // Step 2: Amount
     step2Title: "Staking Amount",

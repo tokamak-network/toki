@@ -93,92 +93,121 @@ export default function OperatorCard({
     return () => el.removeEventListener("scroll", updateActiveIndex);
   }, [updateActiveIndex]);
 
-  // How many dots to show (group cards into pages of ~2 visible cards)
-  const totalDots = operators.length;
+  const canScrollLeft = activeIndex > 0;
+  const canScrollRight = activeIndex < operators.length - 1;
+
+  const scrollTo = useCallback((index: number) => {
+    scrollRef.current?.scrollTo({
+      left: index * (CARD_WIDTH + GAP),
+      behavior: "smooth",
+    });
+  }, []);
 
   return (
     <div className="mb-4">
-      <div
-        ref={scrollRef}
-        className="flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide"
-      >
-        {operators.map((op, i) => {
-          const isSelected = selectedOp === op.address;
-          const gradientIdx = i % CARD_GRADIENTS.length;
-          const isAutoSelected = autoSelectedIndex === i;
+      <div className="flex items-center gap-1">
+        {/* Left arrow */}
+        <button
+          onClick={() => scrollTo(activeIndex - 1)}
+          disabled={!canScrollLeft}
+          className={`shrink-0 w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
+            canScrollLeft
+              ? "bg-white/10 border-white/20 text-white/70 hover:bg-white/20 hover:text-white"
+              : "bg-transparent border-transparent text-transparent cursor-default"
+          }`}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
 
-          return (
-            <button
-              key={op.address}
-              onClick={() => onSelect(op.address)}
-              className={`
-                snap-center shrink-0 w-[112px] p-3 rounded-xl border transition-all duration-300
-                bg-gradient-to-br ${CARD_GRADIENTS[gradientIdx]}
-                ${isSelected
-                  ? `${CARD_BORDER_COLORS[gradientIdx]} scale-105 shadow-lg ${CARD_GLOW_COLORS[gradientIdx]}`
-                  : "border-white/10 hover:border-white/20 hover:scale-[1.02]"
-                }
-                ${shuffling ? "animate-card-shuffle" : ""}
-              `}
-            >
-              {/* Icon/Initial */}
-              <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-base font-bold text-white mb-2 mx-auto">
-                {op.name ? op.name.charAt(0).toUpperCase() : "O"}
-              </div>
+        <div
+          ref={scrollRef}
+          className="flex gap-2 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide min-w-0 flex-1"
+        >
+          {operators.map((op, i) => {
+            const isSelected = selectedOp === op.address;
+            const gradientIdx = i % CARD_GRADIENTS.length;
+            const isAutoSelected = autoSelectedIndex === i;
 
-              {/* Name */}
-              <div className="text-xs font-semibold text-white truncate text-center mb-1">
-                {op.name || `${op.address.slice(0, 6)}...`}
-              </div>
-
-              {/* Total staked */}
-              <div className="text-[10px] font-mono-num text-gray-300 text-center mb-1">
-                {formatStaked(op.totalStaked)} TON
-              </div>
-
-              {/* Commission rate */}
-              {op.commissionRate !== undefined && (
-                <div className={`text-[10px] font-mono-num text-center ${
-                  op.commissionRate < 0 ? "text-green-400" : op.commissionRate === 0 ? "text-gray-400" : "text-amber-400"
-                }`}>
-                  {op.commissionRate < 0 ? "" : op.commissionRate > 0 ? "+" : ""}{op.commissionRate.toFixed(1)}%
+            return (
+              <button
+                key={op.address}
+                onClick={() => onSelect(op.address)}
+                className={`
+                  snap-center shrink-0 w-[112px] p-3 rounded-xl border transition-all duration-300
+                  bg-gradient-to-br ${CARD_GRADIENTS[gradientIdx]}
+                  ${isSelected
+                    ? `${CARD_BORDER_COLORS[gradientIdx]} scale-105 shadow-lg ${CARD_GLOW_COLORS[gradientIdx]}`
+                    : "border-white/10 hover:border-white/20 hover:scale-[1.02]"
+                  }
+                  ${shuffling ? "animate-card-shuffle" : ""}
+                `}
+              >
+                {/* Icon/Initial */}
+                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-base font-bold text-white mb-2 mx-auto">
+                  {op.name ? op.name.charAt(0).toUpperCase() : "O"}
                 </div>
-              )}
 
-              {/* My staked */}
-              {Number(op.myStaked) > 0 && (
-                <div className="text-[10px] font-mono-num text-accent-cyan text-center mt-1">
-                  {t.dashboard.myStake}: {Number(op.myStaked).toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                {/* Name */}
+                <div className="text-xs font-semibold text-white truncate text-center mb-1">
+                  {op.name || `${op.address.slice(0, 6)}...`}
                 </div>
-              )}
 
-              {/* Auto selected badge */}
-              {isAutoSelected && (
-                <div className="mt-1 px-1.5 py-0.5 rounded-full bg-accent-amber/20 text-accent-amber text-[10px] font-semibold text-center">
-                  Toki Pick
+                {/* Total staked */}
+                <div className="text-[10px] font-mono-num text-gray-300 text-center mb-1">
+                  {formatStaked(op.totalStaked)} TON
                 </div>
-              )}
-            </button>
-          );
-        })}
+
+                {/* Commission rate */}
+                {op.commissionRate !== undefined && (
+                  <div className={`text-[10px] font-mono-num text-center ${
+                    op.commissionRate < 0 ? "text-green-400" : op.commissionRate === 0 ? "text-gray-400" : "text-amber-400"
+                  }`}>
+                    {op.commissionRate < 0 ? "" : op.commissionRate > 0 ? "+" : ""}{op.commissionRate.toFixed(1)}%
+                  </div>
+                )}
+
+                {/* My staked */}
+                {Number(op.myStaked) > 0 && (
+                  <div className="text-[10px] font-mono-num text-accent-cyan text-center mt-1">
+                    {t.dashboard.myStake}: {Number(op.myStaked).toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                  </div>
+                )}
+
+                {/* Auto selected badge */}
+                {isAutoSelected && (
+                  <div className="mt-1 px-1.5 py-0.5 rounded-full bg-accent-amber/20 text-accent-amber text-[10px] font-semibold text-center">
+                    Toki Pick
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right arrow */}
+        <button
+          onClick={() => scrollTo(activeIndex + 1)}
+          disabled={!canScrollRight}
+          className={`shrink-0 w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
+            canScrollRight
+              ? "bg-white/10 border-white/20 text-white/70 hover:bg-white/20 hover:text-white"
+              : "bg-transparent border-transparent text-transparent cursor-default"
+          }`}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
 
       {/* Scroll indicator dots */}
-      {totalDots > 2 && (
+      {operators.length > 3 && (
         <div className="flex items-center justify-center gap-1 mt-1">
           {operators.map((_, i) => (
-            <button
+            <div
               key={i}
-              onClick={() => {
-                scrollRef.current?.scrollTo({
-                  left: i * (CARD_WIDTH + GAP),
-                  behavior: "smooth",
-                });
-              }}
               className={`rounded-full transition-all duration-200 ${
                 i === activeIndex
                   ? "w-4 h-1.5 bg-accent-cyan"
-                  : "w-1.5 h-1.5 bg-white/20 hover:bg-white/40"
+                  : "w-1.5 h-1.5 bg-white/20"
               }`}
             />
           ))}

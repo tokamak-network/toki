@@ -158,6 +158,7 @@ export default function StakingScreen() {
   // VN state
   const [step, setStep] = useState<Step>(1);
   const [cardRevealed, setCardRevealed] = useState(false);
+  const [hoverDialogue, setHoverDialogue] = useState<string | null>(null);
 
   const walletAddress = primaryWallet?.address || "";
   const addr = walletAddress as `0x${string}`;
@@ -398,8 +399,8 @@ export default function StakingScreen() {
     );
   }
 
-  const mood = getMood();
-  const dialogue = getDialogue();
+  const mood = hoverDialogue ? "wink" as Mood : getMood();
+  const dialogue = hoverDialogue || getDialogue();
   return (
     <div className="fixed inset-0 overflow-hidden">
       {/* Background - transitions between stages */}
@@ -476,6 +477,8 @@ export default function StakingScreen() {
                       <div className="flex gap-3">
                         <button
                           onClick={handleAutoSelect}
+                          onMouseEnter={() => setHoverDialogue(t.stakingScreen.tokiPickHover)}
+                          onMouseLeave={() => setHoverDialogue(null)}
                           className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-accent-amber/20 to-yellow-500/20 border border-accent-amber/30 text-accent-amber text-sm font-semibold hover:border-accent-amber/50 hover:scale-[1.02] transition-all"
                         >
                           {t.stakingScreen.tokiPickButton}
