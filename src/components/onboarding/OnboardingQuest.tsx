@@ -430,6 +430,7 @@ export default function OnboardingQuest() {
   const [videoKey, setVideoKey] = useState<string>("create-wallet");
   const [showCalculator, setShowCalculator] = useState(false);
   const [calcAmount, setCalcAmount] = useState("");
+  const [selectedExchange, setSelectedExchange] = useState<string | null>(null);
   const [showCinematic, setShowCinematic] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_cinematicComplete, setCinematicComplete] = useState(false);
@@ -777,11 +778,11 @@ export default function OnboardingQuest() {
                         <span>{t.onboarding.quest3VideoPrompt}</span>
                       </button>
                     )}
-                    {/* Exchange guide links for Quest 3 */}
+                    {/* Exchange selector for Quest 3 */}
                     {quest.id === "verify-exchange" && (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
-                          {t.onboarding.quest3ExchangeGuide}
+                          {t.onboarding.quest3SelectExchange}
                         </p>
                         <div className="grid grid-cols-2 gap-2">
                           {EXCHANGE_GUIDES.map((ex) => {
@@ -791,20 +792,33 @@ export default function OnboardingQuest() {
                               coinone: t.onboarding.quest3CoinoneGuide,
                               korbit: t.onboarding.quest3KorbitGuide,
                             };
+                            const isSelected = selectedExchange === ex.key;
                             return (
-                              <a
+                              <button
                                 key={ex.key}
-                                href={ex.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-white/5 border border-white/10 text-accent-cyan text-sm font-medium hover:bg-white/10 hover:border-accent-cyan/30 transition-colors"
+                                onClick={() => setSelectedExchange(isSelected ? null : ex.key)}
+                                className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
+                                  isSelected
+                                    ? "bg-accent-cyan/20 border-accent-cyan/50 border text-accent-cyan scale-[1.02]"
+                                    : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10"
+                                }`}
                               >
-                                <span>&#x2197;</span>
                                 {labelMap[ex.key]}
-                              </a>
+                              </button>
                             );
                           })}
                         </div>
+                        {selectedExchange && (
+                          <a
+                            href={EXCHANGE_GUIDES.find(e => e.key === selectedExchange)?.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors"
+                          >
+                            <span>&#x2197;</span>
+                            <span>{t.onboarding.quest3OpenGuide}</span>
+                          </a>
+                        )}
                       </div>
                     )}
                     {/* Calculator button for Quest 4 */}

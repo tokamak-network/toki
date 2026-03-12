@@ -435,6 +435,8 @@ const ko = {
     quest3Success1: "대단해! 이게 제일 어려운 단계였는데!",
     quest3Success2: "이제 거래소에서 이 주소로 바로 TON을 보낼 수 있어.",
     quest3Success3: "세 번째 퀘스트 클리어! 이 정도면 프로 아니야?",
+    quest3SelectExchange: "사용하는 거래소를 선택해줘",
+    quest3OpenGuide: "가이드 보기",
     quest3ExchangeGuide: "거래소별 지갑 등록 가이드",
     quest3UpbitGuide: "업비트 가이드",
     quest3BithumbGuide: "빗썸 가이드",

@@ -440,6 +440,8 @@ const en = {
     quest3Success1: "Amazing! That was the hardest step!",
     quest3Success2: "Now you can send TON directly to this address from your exchange.",
     quest3Success3: "Third quest cleared! You're practically a pro!",
+    quest3SelectExchange: "Which exchange do you use?",
+    quest3OpenGuide: "Open Guide",
     quest3ExchangeGuide: "Exchange Wallet Registration Guides",
     quest3UpbitGuide: "Upbit Guide",
     quest3BithumbGuide: "Bithumb Guide",
