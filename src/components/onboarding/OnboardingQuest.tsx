@@ -340,6 +340,7 @@ function getVideoComment(videoKey: string, t: Dictionary["onboarding"]): string 
     "install-metamask": t.videoCommentInstall,
     "import-key": t.videoCommentImport,
     "verify-exchange": t.videoCommentExchange,
+    "receive-ton": t.videoCommentReceiveTon,
   };
   return map[videoKey] || "";
 }
@@ -360,7 +361,7 @@ const TUTORIAL_VIDEOS: Record<string, string> = {
   "create-wallet": "https://www.youtube.com/embed/UURB7Tc7D4M?start=129",
   "install-metamask": "https://www.youtube.com/embed/KjwlrQAtdYU",
   "import-key": "https://www.youtube.com/embed/yvOie0hBr2k",
-  "verify-exchange": "https://www.youtube.com/embed/VIDEO_ID",
+  "receive-ton": "https://www.youtube.com/embed/nuib4GnYxnk",
 };
 
 // ─── Character Display (Visual Novel Style) ──────────────────────────
@@ -445,6 +446,7 @@ export default function OnboardingQuest() {
   const [showCalculator, setShowCalculator] = useState(false);
   const [stakingData, setStakingData] = useState<StakingData | null>(null);
   const [selectedExchange, setSelectedExchange] = useState<string | null>(null);
+  const [addressCopied, setAddressCopied] = useState(false);
   const [showCinematic, setShowCinematic] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_cinematicComplete, setCinematicComplete] = useState(false);
@@ -700,7 +702,7 @@ export default function OnboardingQuest() {
       if (subStepIndex === 0) return "install-metamask";
       if (subStepIndex === 2) return "import-key";
     }
-    if (quest?.id === "verify-exchange") return "verify-exchange";
+    if (quest?.id === "receive-ton") return "receive-ton";
     return null;
   })();
 
@@ -820,6 +822,29 @@ export default function OnboardingQuest() {
 
                 {quest.action.type === "confirm" && (
                   <>
+                    {/* Copy address for Quest 3 */}
+                    {quest.id === "verify-exchange" && embeddedWallet && (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(embeddedWallet.address);
+                          setAddressCopied(true);
+                          setTimeout(() => setAddressCopied(false), 2000);
+                        }}
+                        className="w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-sm font-medium hover:bg-accent-cyan/20 transition-colors flex items-center justify-center gap-2"
+                      >
+                        {addressCopied ? (
+                          <span className="text-emerald-400">✓ {t.onboarding.addressCopied}</span>
+                        ) : (
+                          <>
+                            <span className="text-accent-cyan">📋</span>
+                            <span className="text-accent-cyan">{t.onboarding.copyAddress}</span>
+                            <span className="text-accent-cyan/60 font-mono text-xs">
+                              {embeddedWallet.address.slice(0, 6)}...{embeddedWallet.address.slice(-4)}
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    )}
                     {/* Exchange selector for Quest 3 */}
                     {quest.id === "verify-exchange" && (
                       <div className="space-y-3">
