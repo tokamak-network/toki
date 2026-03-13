@@ -72,8 +72,9 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
         { text: t.quest1Intro1, mood: "welcome" },
         { text: t.quest1Intro2, mood: "thinking" },
         { text: t.quest1Intro3, mood: "explain" },
-        { text: t.quest1Intro4, mood: "excited" },
-        { text: t.quest1Intro5, mood: "cheer" },
+        { text: t.quest1Intro4, mood: "wink" },
+        { text: t.quest1Intro5, mood: "excited" },
+        { text: t.quest1Intro6, mood: "cheer" },
       ],
       action: { type: "privy-login", label: t.quest1Action },
       verify: "privy-authenticated",
@@ -501,14 +502,17 @@ export default function OnboardingQuest() {
   }, [phase, questIndex]);
 
   // Auto-detect Privy authentication for Quest 1
+  // Also handles page reload after Google login — skip intro if already authenticated
   useEffect(() => {
-    if (phase === "action" && quest?.action?.type === "privy-login") {
-      if (authenticated && embeddedWallet) {
+    if (quest?.action?.type === "privy-login" && authenticated && embeddedWallet) {
+      if (phase === "action") {
+        handleVerifySuccess();
+      } else if (phase === "intro" && quest.id === "create-wallet" && !completedQuests.has("create-wallet")) {
         handleVerifySuccess();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, embeddedWallet, phase, quest?.action?.type]);
+  }, [authenticated, embeddedWallet, phase, quest?.action?.type, quest?.id]);
 
   const handleNextDialogue = () => {
     if (!dialogues) return;
