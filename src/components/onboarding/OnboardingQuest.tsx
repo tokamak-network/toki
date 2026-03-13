@@ -8,7 +8,8 @@ import type { Dictionary } from "@/locales";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import IntroCinematic from "./IntroCinematic";
 import LaptopVideoOverlay from "./LaptopVideoOverlay";
-import SeigniorageRain from "@/components/dashboard/SeigniorageRain";
+import ProfitSimulator from "@/components/landing/ProfitSimulator";
+import { fetchStakingData, type StakingData } from "@/lib/staking";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
@@ -69,8 +70,10 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       xp: 100,
       intro: [
         { text: t.quest1Intro1, mood: "welcome" },
-        { text: t.quest1Intro2, mood: "explain" },
-        { text: t.quest1Intro3, mood: "cheer" },
+        { text: t.quest1Intro2, mood: "thinking" },
+        { text: t.quest1Intro3, mood: "explain" },
+        { text: t.quest1Intro4, mood: "excited" },
+        { text: t.quest1Intro5, mood: "cheer" },
       ],
       action: { type: "privy-login", label: t.quest1Action },
       verify: "privy-authenticated",
@@ -429,7 +432,7 @@ export default function OnboardingQuest() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoKey, setVideoKey] = useState<string>("create-wallet");
   const [showCalculator, setShowCalculator] = useState(false);
-  const [calcAmount, setCalcAmount] = useState("");
+  const [stakingData, setStakingData] = useState<StakingData | null>(null);
   const [selectedExchange, setSelectedExchange] = useState<string | null>(null);
   const [showCinematic, setShowCinematic] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -708,7 +711,7 @@ export default function OnboardingQuest() {
 
           {/* Badge Reveal */}
           {phase === "badge" && (
-            <div className="px-4 mb-2">
+            <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
               <BadgeReveal quest={quest} />
               <button
                 onClick={handleBadgeDone}
@@ -739,15 +742,6 @@ export default function OnboardingQuest() {
 
                 {quest.action.type === "privy-login" && (
                   <>
-                    {quest.id === "create-wallet" && (
-                      <button
-                        onClick={() => { setVideoKey("create-wallet"); setShowVideo(true); }}
-                        className="w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <span>▶</span>
-                        <span>{t.onboarding.quest1VideoPrompt}</span>
-                      </button>
-                    )}
                     <button
                       onClick={handleAction}
                       className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg hover:scale-[1.02] transition-transform"
@@ -824,7 +818,12 @@ export default function OnboardingQuest() {
                     {/* Calculator button for Quest 4 */}
                     {quest.id === "receive-ton" && (
                       <button
-                        onClick={() => { setCalcAmount(""); setShowCalculator(true); }}
+                        onClick={() => {
+                          setShowCalculator(true);
+                          if (!stakingData) {
+                            fetchStakingData().then(setStakingData).catch(console.error);
+                          }
+                        }}
                         className="w-full py-3 rounded-xl bg-accent-amber/10 border border-accent-amber/30 text-accent-amber text-sm font-medium hover:bg-accent-amber/20 transition-colors flex items-center justify-center gap-2"
                       >
                         <span className="text-base">&#x1F4B0;</span>
@@ -1024,25 +1023,15 @@ export default function OnboardingQuest() {
           bgImage={bgImage}
           onClose={() => setShowCalculator(false)}
         >
-          <div className="flex flex-col items-center justify-center h-full p-6 sm:p-10">
-            <div className="w-full max-w-md space-y-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-white text-center">
-                {t.onboarding.calcTitle}
-              </h2>
-              <div className="space-y-2">
-                <label className="text-sm text-gray-400">{t.onboarding.calcInputLabel}</label>
-                <input
-                  type="number"
-                  value={calcAmount}
-                  onChange={(e) => setCalcAmount(e.target.value)}
-                  placeholder={t.onboarding.calcInputPlaceholder}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white text-lg font-mono placeholder:text-gray-600 focus:outline-none focus:border-accent-amber/50 focus:ring-1 focus:ring-accent-amber/30 transition-colors"
-                  min="0"
-                  onClick={(e) => e.stopPropagation()}
-                />
+          <div className="flex flex-col items-center justify-center h-full p-4 sm:p-6">
+            {stakingData ? (
+              <ProfitSimulator data={stakingData} />
+            ) : (
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
+                <p className="text-sm text-gray-400">{t.onboarding.calcTitle}</p>
               </div>
-              <SeigniorageRain inputAmount={calcAmount} totalStaked={11_000_000} />
-            </div>
+            )}
           </div>
         </LaptopVideoOverlay>
       )}
