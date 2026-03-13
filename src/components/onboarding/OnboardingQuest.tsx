@@ -93,7 +93,9 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       intro: [
         { text: t.quest2Intro1, mood: "explain" },
         { text: t.quest2Intro2, mood: "thinking" },
-        { text: t.quest2Intro3, mood: "cheer" },
+        { text: t.quest2Intro3, mood: "explain" },
+        { text: t.quest2Intro4, mood: "excited" },
+        { text: t.quest2Intro5, mood: "cheer" },
       ],
       action: { type: "substeps", label: t.quest2Action },
       verify: "user-confirm",
@@ -346,8 +348,8 @@ const QUEST_BACKGROUNDS: Record<string, string> = {
 
 const TUTORIAL_VIDEOS: Record<string, string> = {
   "create-wallet": "https://www.youtube.com/embed/UURB7Tc7D4M?start=129&autoplay=1",
-  "install-metamask": "https://www.youtube.com/embed/gGr7GU27_e8?autoplay=1",
-  "import-key": "https://www.youtube.com/embed/gGr7GU27_e8?start=24&autoplay=1",
+  "install-metamask": "https://www.youtube.com/embed/KjwlrQAtdYU?autoplay=1",
+  "import-key": "https://www.youtube.com/embed/yvOie0hBr2k?autoplay=1",
   "verify-exchange": "https://www.youtube.com/embed/VIDEO_ID?autoplay=1",
 };
 
