@@ -6,15 +6,15 @@ import "../src/TONPaymaster.sol";
 
 contract DeployTONPaymaster is Script {
     function run() external {
-        // Sepolia addresses
-        address entryPointV08 = 0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108;
-        address tonToken = 0xa30fe40285B8f5c0457DbC3B7C8A280373c40044;
-        address deployer = msg.sender;
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address deployer = vm.addr(deployerPrivateKey);
 
-        // TON price: ~2500 TON per ETH (testnet approximate)
-        uint256 tokenPerEth = 2500e18;
+        // Load values from .env
+        address entryPointV08 = vm.envAddress("ENTRY_POINT_V08");
+        address tonToken = vm.envAddress("SEPOLIA_TON_TOKEN");
+        uint256 tokenPerEth = vm.envUint("DEFAULT_TOKEN_PER_ETH");
 
-        vm.startBroadcast();
+        vm.startBroadcast(deployerPrivateKey);
 
         // Deploy paymaster
         TONPaymaster paymaster = new TONPaymaster(
