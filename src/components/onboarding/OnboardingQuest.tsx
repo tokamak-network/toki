@@ -7,6 +7,7 @@ import { useTranslation } from "@/components/providers/LanguageProvider";
 import type { Dictionary } from "@/locales";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import IntroCinematic from "./IntroCinematic";
+import LaptopVideoOverlay from "./LaptopVideoOverlay";
 import ProfitSimulator from "@/components/landing/ProfitSimulator";
 import { fetchStakingData, type StakingData } from "@/lib/staking";
 import { useAchievement } from "@/components/providers/AchievementProvider";
@@ -725,11 +726,11 @@ export default function OnboardingQuest() {
       {/* ── Character (or inline video) + Bottom Panel ── */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
         {/* Inline video — wider container, desktop only */}
-        {autoVideoKey && TUTORIAL_VIDEOS[autoVideoKey] && !showCalculator && (
+        {autoVideoKey && TUTORIAL_VIDEOS[autoVideoKey] && (
           <>
             {/* Desktop: iframe */}
             <div className="hidden md:flex flex-col items-center px-4 mb-2">
-              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 1120, maxWidth: "100%", height: 513 }}>
+              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 1020, maxWidth: "100%", height: 574 }}>
                 <iframe
                   src={TUTORIAL_VIDEOS[autoVideoKey]}
                   className="w-full h-full"
@@ -757,53 +758,9 @@ export default function OnboardingQuest() {
           </>
         )}
 
-        {/* Calculator frame — same dimensions as video */}
-        {showCalculator && (
-          <>
-            <div className="hidden md:flex flex-col items-center px-4 mb-2">
-              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-[#0a0e17]" style={{ width: 1120, maxWidth: "100%", height: 513 }}>
-                <div className="flex flex-col items-center justify-center h-full p-6 overflow-y-auto">
-                  {stakingData ? (
-                    <ProfitSimulator data={stakingData} />
-                  ) : (
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-8 h-8 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
-                      <p className="text-sm text-gray-400">{t.onboarding.calcTitle}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => setShowCalculator(false)}
-                className="mt-2 text-xs text-gray-500 hover:text-gray-300 transition-colors"
-              >
-                ✕ {t.onboarding.closeVideo}
-              </button>
-            </div>
-            <div className="flex md:hidden flex-col items-center px-4 mb-2">
-              <div className="w-full rounded-xl border border-white/10 bg-black/60 backdrop-blur p-4 overflow-y-auto max-h-[50vh]">
-                {stakingData ? (
-                  <ProfitSimulator data={stakingData} />
-                ) : (
-                  <div className="flex flex-col items-center gap-3 py-4">
-                    <div className="w-8 h-8 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
-                    <p className="text-sm text-gray-400">{t.onboarding.calcTitle}</p>
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => setShowCalculator(false)}
-                className="mt-2 text-xs text-gray-500 hover:text-gray-300 transition-colors"
-              >
-                ✕ {t.onboarding.closeVideo}
-              </button>
-            </div>
-          </>
-        )}
-
         <div className="max-w-3xl mx-auto">
-          {/* Character — hidden when video or calculator is showing */}
-          {!(autoVideoKey && TUTORIAL_VIDEOS[autoVideoKey]) && !showCalculator && (
+          {/* Character — hidden when video is showing */}
+          {!(autoVideoKey && TUTORIAL_VIDEOS[autoVideoKey]) && (
             <div className={cinematicJustFinished ? "animate-character-entrance" : ""}>
               <TokiCharacter mood={currentLine?.mood} phase={phase} compact={quest.id === "verify-exchange" && phase === "action"} />
             </div>
@@ -1099,6 +1056,25 @@ export default function OnboardingQuest() {
           )}
         </div>
       </div>
+
+      {/* Laptop Calculator Overlay */}
+      {showCalculator && (
+        <LaptopVideoOverlay
+          bgImage={bgImage}
+          onClose={() => setShowCalculator(false)}
+        >
+          <div className="flex flex-col items-center justify-center h-full p-4 sm:p-6">
+            {stakingData ? (
+              <ProfitSimulator data={stakingData} onClose={() => setShowCalculator(false)} />
+            ) : (
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
+                <p className="text-sm text-gray-400">{t.onboarding.calcTitle}</p>
+              </div>
+            )}
+          </div>
+        </LaptopVideoOverlay>
+      )}
 
       {/* Intro Cinematic Overlay */}
       {showCinematic && <IntroCinematic onComplete={handleCinematicComplete} />}

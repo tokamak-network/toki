@@ -9,9 +9,10 @@ import type { StakingData } from "@/lib/staking";
 interface ProfitSimulatorProps {
   data: StakingData;
   show?: boolean;
+  onClose?: () => void;
 }
 
-export default function ProfitSimulator({ data, show = true }: ProfitSimulatorProps) {
+export default function ProfitSimulator({ data, show = true, onClose }: ProfitSimulatorProps) {
   const { t } = useTranslation();
   const [amount, setAmount] = useState(1000);
   const [secondsAgo, setSecondsAgo] = useState(0);
@@ -427,17 +428,31 @@ export default function ProfitSimulator({ data, show = true }: ProfitSimulatorPr
               </div>
             </div>
 
-            {/* ─ STAKING CTA ─ */}
-            <Link href="/staking"
-              className="block w-full text-center py-2.5 rounded-lg font-mono font-bold text-sm uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: "linear-gradient(135deg, #22d3ee, #06b6d4)",
-                color: "#0a0a1a",
-                boxShadow: "0 0 20px rgba(34,211,238,0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
-                textShadow: "0 1px 0 rgba(255,255,255,0.15)",
-              }}>
-              {t.hero.startStaking} →
-            </Link>
+            {/* ─ STAKING CTA or Close ─ */}
+            {onClose ? (
+              <button
+                onClick={onClose}
+                className="block w-full text-center py-2.5 rounded-lg font-mono font-bold text-sm uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+                  color: "#94a3b8",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+                }}>
+                ← {t.onboarding.closeVideo}
+              </button>
+            ) : (
+              <Link href="/staking"
+                className="block w-full text-center py-2.5 rounded-lg font-mono font-bold text-sm uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: "linear-gradient(135deg, #22d3ee, #06b6d4)",
+                  color: "#0a0a1a",
+                  boxShadow: "0 0 20px rgba(34,211,238,0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  textShadow: "0 1px 0 rgba(255,255,255,0.15)",
+                }}>
+                {t.hero.startStaking} →
+              </Link>
+            )}
           </div>
 
           {/* ── RIGHT: Launch Scene ── */}
