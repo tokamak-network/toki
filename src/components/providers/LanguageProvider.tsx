@@ -21,21 +21,20 @@ const LanguageContext = createContext<LanguageContextType>({
   t: dictionaries.en,
 });
 
+function detectInitialLocale(): Locale {
+  if (typeof window === "undefined") return "ko";
+  const saved = localStorage.getItem("toki-locale") as Locale | null;
+  if (saved === "en" || saved === "ko") return saved;
+  const browserLang = navigator.language || navigator.languages?.[0] || "en";
+  return browserLang.startsWith("ko") ? "ko" : "en";
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+  const [locale, setLocaleState] = useState<Locale>(detectInitialLocale);
 
   useEffect(() => {
-    const saved = localStorage.getItem("toki-locale") as Locale | null;
-    if (saved && (saved === "en" || saved === "ko")) {
-      setLocaleState(saved);
-      document.documentElement.lang = saved;
-    } else {
-      const browserLang = navigator.language || navigator.languages?.[0] || "en";
-      const detected: Locale = browserLang.startsWith("ko") ? "ko" : "en";
-      setLocaleState(detected);
-      document.documentElement.lang = detected;
-    }
-  }, []);
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);

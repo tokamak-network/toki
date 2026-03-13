@@ -131,7 +131,6 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       xp: 300,
       intro: [
         { text: t.quest3Intro1, mood: "excited" },
-        { text: t.quest3Intro2, mood: "explain" },
         { text: t.quest3Intro3, mood: "cheer" },
       ],
       action: { type: "confirm", label: t.quest3ActionLabel, confirmText: t.quest3Confirm },
@@ -334,6 +333,17 @@ const EXCHANGE_GUIDES = [
   },
 ];
 
+// ─── Video Comment per key ────────────────────────────────────────────
+
+function getVideoComment(videoKey: string, t: Dictionary["onboarding"]): string {
+  const map: Record<string, string> = {
+    "install-metamask": t.videoCommentInstall,
+    "import-key": t.videoCommentImport,
+    "verify-exchange": t.videoCommentExchange,
+  };
+  return map[videoKey] || "";
+}
+
 // ─── Background Image per Quest ───────────────────────────────────────
 
 const QUEST_BACKGROUNDS: Record<string, string> = {
@@ -347,10 +357,10 @@ const QUEST_BACKGROUNDS: Record<string, string> = {
 // ─── Tutorial Video URLs ──────────────────────────────────────────────
 
 const TUTORIAL_VIDEOS: Record<string, string> = {
-  "create-wallet": "https://www.youtube.com/embed/UURB7Tc7D4M?start=129&autoplay=1",
-  "install-metamask": "https://www.youtube.com/embed/KjwlrQAtdYU?autoplay=1",
-  "import-key": "https://www.youtube.com/embed/yvOie0hBr2k?autoplay=1",
-  "verify-exchange": "https://www.youtube.com/embed/VIDEO_ID?autoplay=1",
+  "create-wallet": "https://www.youtube.com/embed/UURB7Tc7D4M?start=129",
+  "install-metamask": "https://www.youtube.com/embed/KjwlrQAtdYU",
+  "import-key": "https://www.youtube.com/embed/yvOie0hBr2k",
+  "verify-exchange": "https://www.youtube.com/embed/VIDEO_ID",
 };
 
 // ─── Character Display (Visual Novel Style) ──────────────────────────
@@ -432,8 +442,6 @@ export default function OnboardingQuest() {
   );
   const [subStepIndex, setSubStepIndex] = useState(0);
   const [subStepConfirmed, setSubStepConfirmed] = useState(false);
-  const [showVideo, setShowVideo] = useState(false);
-  const [videoKey, setVideoKey] = useState<string>("create-wallet");
   const [showCalculator, setShowCalculator] = useState(false);
   const [stakingData, setStakingData] = useState<StakingData | null>(null);
   const [selectedExchange, setSelectedExchange] = useState<string | null>(null);
@@ -464,15 +472,13 @@ export default function OnboardingQuest() {
       }
     }
 
-    // Show intro cinematic on first visit
-    // TODO: Re-enable localStorage check when done developing intro
-    // const introSeen = localStorage.getItem("toki-intro-seen");
-    // if (!introSeen) {
-    //   setShowCinematic(true);
-    // } else {
-    //   setCinematicComplete(true);
-    // }
-    setShowCinematic(true);
+    // Show intro cinematic on first visit only
+    const introSeen = localStorage.getItem("toki-intro-seen");
+    if (!introSeen) {
+      setShowCinematic(true);
+    } else {
+      setCinematicComplete(true);
+    }
   }, []);
 
   // Save progress
@@ -604,8 +610,7 @@ export default function OnboardingQuest() {
     setShowCinematic(false);
     setCinematicComplete(true);
     setCinematicJustFinished(true);
-    // TODO: Re-enable when done developing intro
-    // localStorage.setItem("toki-intro-seen", "1");
+    localStorage.setItem("toki-intro-seen", "1");
   }, []);
 
   const handleBadgeDone = () => {
@@ -688,6 +693,17 @@ export default function OnboardingQuest() {
   const isSubStepQuest = quest?.action?.type === "substeps" && quest.substeps;
   const currentSubStep = isSubStepQuest ? quest.substeps![subStepIndex] : null;
 
+  // Auto-determine video key based on current quest/step
+  const autoVideoKey = (() => {
+    if (phase !== "action") return null;
+    if (quest?.id === "bridge-metamask" && quest.substeps) {
+      if (subStepIndex === 0) return "install-metamask";
+      if (subStepIndex === 2) return "import-key";
+    }
+    if (quest?.id === "verify-exchange") return "verify-exchange";
+    return null;
+  })();
+
   return (
     <div className="fixed inset-0 overflow-hidden" ref={questAreaRef}>
       <div
@@ -698,12 +714,48 @@ export default function OnboardingQuest() {
 
       {/* Top HUD removed — progress shown inside dialogue box */}
 
-      {/* ── Character + Bottom Panel ── */}
+      {/* ── Character (or inline video) + Bottom Panel ── */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
+        {/* Inline video — wider container, desktop only */}
+        {autoVideoKey && TUTORIAL_VIDEOS[autoVideoKey] && (
+          <>
+            {/* Desktop: iframe */}
+            <div className="hidden md:flex flex-col items-center px-4 mb-2">
+              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 1120, maxWidth: "100%", height: 513 }}>
+                <iframe
+                  src={TUTORIAL_VIDEOS[autoVideoKey]}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ border: "none" }}
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                {getVideoComment(autoVideoKey, t.onboarding)}
+              </p>
+            </div>
+            {/* Mobile: external link button */}
+            <div className="flex md:hidden justify-center px-4 mb-2">
+              <a
+                href={TUTORIAL_VIDEOS[autoVideoKey].replace("/embed/", "/watch?v=").replace(/\?(?!v=)/, "&")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors"
+              >
+                <span>▶</span>
+                <span>{getVideoComment(autoVideoKey, t.onboarding)}</span>
+              </a>
+            </div>
+          </>
+        )}
+
         <div className="max-w-3xl mx-auto">
-          <div className={cinematicJustFinished ? "animate-character-entrance" : ""}>
-            <TokiCharacter mood={currentLine?.mood} phase={phase} compact={quest.id === "verify-exchange" && phase === "action"} />
-          </div>
+          {/* Character — hidden when video is showing */}
+          {!(autoVideoKey && TUTORIAL_VIDEOS[autoVideoKey]) && (
+            <div className={cinematicJustFinished ? "animate-character-entrance" : ""}>
+              <TokiCharacter mood={currentLine?.mood} phase={phase} compact={quest.id === "verify-exchange" && phase === "action"} />
+            </div>
+          )}
 
           {/* Wallet Address (Quest 1 success) */}
           {embeddedWallet && phase === "success" && quest.id === "create-wallet" && (
@@ -768,16 +820,6 @@ export default function OnboardingQuest() {
 
                 {quest.action.type === "confirm" && (
                   <>
-                    {/* Video button for Quest 3 */}
-                    {quest.id === "verify-exchange" && (
-                      <button
-                        onClick={() => { setVideoKey("verify-exchange"); setShowVideo(true); }}
-                        className="w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <span>▶</span>
-                        <span>{t.onboarding.quest3VideoPrompt}</span>
-                      </button>
-                    )}
                     {/* Exchange selector for Quest 3 */}
                     {quest.id === "verify-exchange" && (
                       <div className="space-y-3">
@@ -884,39 +926,8 @@ export default function OnboardingQuest() {
                       {currentSubStep.instruction}
                     </p>
 
-                    {/* Video button for MetaMask install substep - shown as subtle link after verify area */}
-                    {quest.id === "bridge-metamask" && subStepIndex === 0 && !subStepConfirmed && (
-                      <div className="flex items-center justify-center gap-3 text-xs">
-                        <button
-                          onClick={() => handleSubStepAction(currentSubStep)}
-                          className="px-4 py-2 rounded-lg border border-white/20 bg-white/10 text-white text-xs font-medium hover:bg-white/20 transition-colors"
-                        >
-                          {currentSubStep.action.label}
-                        </button>
-                        <button
-                          onClick={() => { setVideoKey("install-metamask"); setShowVideo(true); }}
-                          className="px-4 py-2 rounded-lg border border-accent-cyan/30 bg-accent-cyan/10 text-accent-cyan text-xs font-medium hover:bg-accent-cyan/20 transition-colors flex items-center gap-1"
-                        >
-                          <span>▶</span>
-                          <span>{t.onboarding.quest2VideoPrompt}</span>
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Video button for MetaMask import key substep */}
-                    {quest.id === "bridge-metamask" && subStepIndex === 2 && (
-                      <button
-                        onClick={() => { setVideoKey("import-key"); setShowVideo(true); }}
-                        className="w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <span>▶</span>
-                        <span>{t.onboarding.quest2ImportVideoPrompt}</span>
-                      </button>
-                    )}
-
-                    {/* Action button - hide for metamask install substep (handled above) */}
-                    {(currentSubStep.action.type === "privy-login" || currentSubStep.action.type === "link") &&
-                      !(quest.id === "bridge-metamask" && subStepIndex === 0) && (
+                    {/* Action button */}
+                    {(currentSubStep.action.type === "privy-login" || currentSubStep.action.type === "link") && (
                       <button
                         onClick={() => handleSubStepAction(currentSubStep)}
                         className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue/80 to-accent-navy/80 text-white font-semibold hover:scale-[1.02] transition-transform"
@@ -1013,15 +1024,6 @@ export default function OnboardingQuest() {
           )}
         </div>
       </div>
-
-      {/* Laptop Video Overlay */}
-      {showVideo && TUTORIAL_VIDEOS[videoKey] && (
-        <LaptopVideoOverlay
-          videoUrl={TUTORIAL_VIDEOS[videoKey]}
-          bgImage={bgImage}
-          onClose={() => setShowVideo(false)}
-        />
-      )}
 
       {/* Laptop Calculator Overlay */}
       {showCalculator && (
