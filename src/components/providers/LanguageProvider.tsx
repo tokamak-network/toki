@@ -29,6 +29,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (saved && (saved === "en" || saved === "ko")) {
       setLocaleState(saved);
       document.documentElement.lang = saved;
+    } else {
+      const browserLang = navigator.language || navigator.languages?.[0] || "en";
+      const detected: Locale = browserLang.startsWith("ko") ? "ko" : "en";
+      setLocaleState(detected);
+      document.documentElement.lang = detected;
     }
   }, []);
 
