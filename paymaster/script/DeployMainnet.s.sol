@@ -45,8 +45,8 @@ contract DeployTONPaymasterMainnet is Script {
         console.log("Staked 0.1 ETH on EntryPoint");
 
         // Deposit ETH on EntryPoint (gas prepayment pool)
-        paymaster.deposit{value: 1 ether}();
-        console.log("Deposited 1 ETH on EntryPoint");
+        paymaster.deposit{value: 0.3 ether}();
+        console.log("Deposited 0.3 ETH on EntryPoint");
 
         vm.stopBroadcast();
 

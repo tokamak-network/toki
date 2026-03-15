@@ -8,6 +8,7 @@ import LobbyHotspot from "./LobbyHotspot";
 import LobbyOverlay from "./LobbyOverlay";
 import CardCollection from "./CardCollection";
 import type { UserStakingData } from "@/hooks/useStakingSubgraph";
+import type { WithdrawalStatus } from "@/hooks/useWithdrawalStatus";
 
 interface LobbyViewProps {
   balances: { eth: string; ton: string; wton: string } | null;
@@ -19,6 +20,7 @@ interface LobbyViewProps {
   isTestnet: boolean;
   subgraphData?: UserStakingData | null;
   subgraphLoading?: boolean;
+  withdrawalStatus?: WithdrawalStatus;
 }
 
 export default function LobbyView({
@@ -33,6 +35,7 @@ export default function LobbyView({
   subgraphData,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subgraphLoading,
+  withdrawalStatus,
 }: LobbyViewProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -48,16 +51,30 @@ export default function LobbyView({
     t.lobby.tokiGreeting4,
   ];
 
-  // Entrance animation + auto-greeting
+  // Entrance animation + auto-greeting (withdrawal-aware)
   useEffect(() => {
     const timer = setTimeout(() => setRoomLoaded(true), 100);
     const greetTimer = setTimeout(() => {
-      const g = [t.lobby.tokiGreeting1, t.lobby.tokiGreeting2, t.lobby.tokiGreeting3, t.lobby.tokiGreeting4];
-      showTokiMessage(g[Math.floor(Math.random() * g.length)], 5000);
+      // Prioritize withdrawal alerts
+      if (withdrawalStatus?.hasWithdrawable) {
+        showTokiMessage(t.lobby.tokiWithdrawReady, 7000);
+      } else if (
+        withdrawalStatus?.pendingRequests.length &&
+        withdrawalStatus.pendingRequests.length > 0 &&
+        withdrawalStatus.nearestWithdrawTimeFormatted
+      ) {
+        showTokiMessage(
+          t.lobby.tokiWithdrawPending.replace("{time}", withdrawalStatus.nearestWithdrawTimeFormatted),
+          6000
+        );
+      } else {
+        const g = [t.lobby.tokiGreeting1, t.lobby.tokiGreeting2, t.lobby.tokiGreeting3, t.lobby.tokiGreeting4];
+        showTokiMessage(g[Math.floor(Math.random() * g.length)], 5000);
+      }
     }, 1200);
     return () => { clearTimeout(timer); clearTimeout(greetTimer); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [withdrawalStatus?.hasWithdrawable]);
 
   const dialogueTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -260,8 +277,16 @@ export default function LobbyView({
           size={{ width: "38%", height: "35%" }}
           color="34,211,238"
           pingDelay={0}
-          onHoverEnter={() => showTokiMessage(t.lobby.tokiHoverStaking)}
+          onHoverEnter={() => {
+            if (withdrawalStatus?.hasWithdrawable) {
+              showTokiMessage(t.lobby.tokiWithdrawReady);
+            } else {
+              showTokiMessage(t.lobby.tokiHoverStaking);
+            }
+          }}
           onHoverLeave={hideTokiMessage}
+          badgeCount={withdrawalStatus?.withdrawableRequests.length}
+          badgeColor="34,197,94"
         />
 
         {/* Wallet Vault - covers the safe */}

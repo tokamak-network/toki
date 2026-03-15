@@ -2,7 +2,7 @@
 
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { formatUnits } from "viem";
 import { createPublicClient, http } from "viem";
 import { sepolia, mainnet } from "viem/chains";
@@ -10,8 +10,11 @@ import Link from "next/link";
 import Header from "@/components/layout/Header";
 import CardCollection from "./CardCollection";
 import LobbyView from "./LobbyView";
+import StakingSummaryCard from "./StakingSummaryCard";
 import { useEip7702 } from "@/hooks/useEip7702";
 import { useStakingSubgraph } from "@/hooks/useStakingSubgraph";
+import { useWithdrawalStatus } from "@/hooks/useWithdrawalStatus";
+import { usePushNotification } from "@/hooks/usePushNotification";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
@@ -83,6 +86,32 @@ export default function DashboardContent() {
 
   // Subgraph: seigniorage earnings breakdown
   const { data: subgraphData, loading: subgraphLoading, refresh: refreshSubgraph } = useStakingSubgraph(balanceAddress);
+
+  // Withdrawal status (shared between mobile dashboard + lobby)
+  const withdrawalStatus = useWithdrawalStatus(balanceAddress);
+
+  // Push notifications for withdrawal readiness
+  const { notify, permission: notifPermission, requestPermission, isSupported: notifSupported } = usePushNotification();
+  const prevWithdrawableCount = useRef(0);
+
+  useEffect(() => {
+    if (
+      withdrawalStatus.hasWithdrawable &&
+      withdrawalStatus.withdrawableRequests.length > prevWithdrawableCount.current
+    ) {
+      notify(
+        t.dashboard.notificationWithdrawTitle,
+        {
+          body: t.dashboard.notificationWithdrawBody.replace(
+            "{amount}",
+            withdrawalStatus.totalWithdrawableFormatted
+          ),
+          tag: "withdrawal-ready",
+        }
+      );
+    }
+    prevWithdrawableCount.current = withdrawalStatus.withdrawableRequests.length;
+  }, [withdrawalStatus.hasWithdrawable, withdrawalStatus.withdrawableRequests.length, withdrawalStatus.totalWithdrawableFormatted, notify, t]);
 
   const fetchBalances = useCallback(async () => {
     if (!balanceAddress) return;
@@ -181,6 +210,7 @@ export default function DashboardContent() {
           isTestnet={isTestnet}
           subgraphData={subgraphData}
           subgraphLoading={subgraphLoading}
+          withdrawalStatus={withdrawalStatus}
         />
       ) : (
         /* Mobile: Original list layout */
@@ -259,32 +289,15 @@ export default function DashboardContent() {
               />
             </div>
 
-            {/* Seigniorage Breakdown */}
-            {subgraphData && (
-              <div className="mt-4 mb-6">
-                <h3 className="text-sm text-gray-400 mb-3">{t.dashboard.staking}</h3>
-                <div className="grid sm:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-lg bg-white/5 border border-white/5">
-                    <div className="text-xs text-gray-500 mb-1">{t.dashboard.stakedPrincipal}</div>
-                    <div className="text-base font-mono-num font-semibold text-gray-300">
-                      {subgraphData.depositedFormatted} <span className="text-xs text-gray-500">WTON</span>
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-white/5 border border-accent-cyan/10">
-                    <div className="text-xs text-gray-500 mb-1">{t.dashboard.seigEarned}</div>
-                    <div className="text-base font-mono-num font-semibold text-green-400">
-                      +{subgraphData.seigEarnedFormatted} <span className="text-xs text-gray-500">WTON</span>
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-white/5 border border-accent-gold/10">
-                    <div className="text-xs text-gray-500 mb-1">{t.dashboard.totalStakedValue}</div>
-                    <div className="text-base font-mono-num font-semibold text-accent-gold">
-                      {loading ? "..." : balances?.wton || "\u2014"} <span className="text-xs text-gray-500">WTON</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Staking Summary with Withdrawal Status */}
+            <div className="mt-4 mb-6">
+              <StakingSummaryCard
+                subgraphData={subgraphData}
+                wtonBalance={balances?.wton}
+                withdrawalStatus={withdrawalStatus}
+                loading={loading}
+              />
+            </div>
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
@@ -302,6 +315,19 @@ export default function DashboardContent() {
               >
                 {t.dashboard.viewOnEtherscan}
               </a>
+              {notifSupported && notifPermission !== "granted" && (
+                <button
+                  onClick={requestPermission}
+                  className="px-4 py-2 rounded-lg bg-accent-cyan/10 text-sm text-accent-cyan hover:bg-accent-cyan/20 transition-colors"
+                >
+                  {t.dashboard.enableNotifications}
+                </button>
+              )}
+              {notifSupported && notifPermission === "granted" && (
+                <span className="px-4 py-2 rounded-lg bg-green-500/10 text-sm text-green-400/80">
+                  {t.dashboard.notificationsEnabled}
+                </span>
+              )}
             </div>
           </div>
 

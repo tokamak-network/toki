@@ -258,6 +258,8 @@ const ko = {
     tokiHoverWallet: "지갑 금고야! 잔액 확인하고 주소도 관리할 수 있어.",
     tokiHoverAchievement: "업적 보드야! 지금까지 모은 카드를 볼 수 있어~",
     tokiHoverExplore: "탐험 포탈이야! 토카막 생태계를 둘러볼 수 있어.",
+    tokiWithdrawReady: "출금할 수 있는 TON이 있어! 확인해봐~",
+    tokiWithdrawPending: "언스테이킹한 TON이 아직 대기 중이야... 약 {time} 남았어!",
   },
   dashboard: {
     loading: "로딩 중...",
@@ -374,6 +376,24 @@ const ko = {
     stakedPrincipal: "원금",
     seigEarned: "시뇨리지 수익",
     totalStakedValue: "합계 (온체인)",
+    // Staking Summary Card
+    myStaking: "내 스테이킹",
+    stakingSummary: "스테이킹 요약",
+    withdrawalStatus: "출금 상태",
+    withdrawalReady: "출금 가능",
+    withdrawalPending: "대기 중",
+    withdrawalReadyCount: "{count}건 출금 가능",
+    withdrawalPendingCount: "{count}건 대기 중",
+    nearestWithdraw: "약 {time} 후 출금 가능",
+    withdrawNow: "지금 출금",
+    manageStaking: "스테이킹 관리",
+    noActiveStaking: "아직 스테이킹이 없어요",
+    noActiveStakingDesc: "TON을 스테이킹하면 시뇨리지 보상을 받을 수 있어요!",
+    // Push Notification
+    notificationsEnabled: "알림 활성화됨",
+    enableNotifications: "알림 받기",
+    notificationWithdrawTitle: "TON 출금 가능!",
+    notificationWithdrawBody: "{amount} WTON 출금 준비 완료",
   },
   onboarding: {
     allClear: "모든 퀘스트 클리어!",

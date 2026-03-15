@@ -263,6 +263,8 @@ const en = {
     tokiHoverWallet: "Your Wallet Vault! Check your balances and manage addresses here.",
     tokiHoverAchievement: "The Achievement Board! See all the cards you've collected so far~",
     tokiHoverExplore: "The Explore Portal! Step through to discover the Tokamak ecosystem.",
+    tokiWithdrawReady: "You have TON ready to withdraw! Go check it out~",
+    tokiWithdrawPending: "Your unstaked TON is still waiting... about {time} left!",
   },
   dashboard: {
     loading: "Loading...",
@@ -379,6 +381,24 @@ const en = {
     stakedPrincipal: "Principal",
     seigEarned: "Seigniorage",
     totalStakedValue: "Total (on-chain)",
+    // Staking Summary Card
+    myStaking: "My Staking",
+    stakingSummary: "Staking Summary",
+    withdrawalStatus: "Withdrawal Status",
+    withdrawalReady: "Ready to Withdraw",
+    withdrawalPending: "Pending",
+    withdrawalReadyCount: "{count} ready to withdraw",
+    withdrawalPendingCount: "{count} pending",
+    nearestWithdraw: "Next available in ~{time}",
+    withdrawNow: "Withdraw Now",
+    manageStaking: "Manage Staking",
+    noActiveStaking: "No active staking yet",
+    noActiveStakingDesc: "Stake your TON to start earning seigniorage rewards!",
+    // Push Notification
+    notificationsEnabled: "Notifications enabled",
+    enableNotifications: "Enable Notifications",
+    notificationWithdrawTitle: "TON Withdrawal Ready!",
+    notificationWithdrawBody: "{amount} WTON is ready to withdraw",
   },
   onboarding: {
     allClear: "All Quests Clear!",

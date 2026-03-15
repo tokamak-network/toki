@@ -12,6 +12,10 @@ interface LobbyHotspotProps {
   pingDelay?: number; // stagger ping animation per hotspot (seconds)
   onHoverEnter?: () => void;
   onHoverLeave?: () => void;
+  /** Badge count to display (e.g. withdrawable items) */
+  badgeCount?: number;
+  /** Badge color override (defaults to green) */
+  badgeColor?: string;
 }
 
 export default function LobbyHotspot({
@@ -24,6 +28,8 @@ export default function LobbyHotspot({
   pingDelay = 0,
   onHoverEnter,
   onHoverLeave,
+  badgeCount,
+  badgeColor = "34,197,94",
 }: LobbyHotspotProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -74,6 +80,32 @@ export default function LobbyHotspot({
           animationDelay: `${pingDelay + 0.6}s`,
         }}
       />
+
+      {/* Notification badge */}
+      {badgeCount != null && badgeCount > 0 && (
+        <div
+          className="absolute z-20 flex items-center justify-center"
+          style={{ top: "8%", right: "8%" }}
+        >
+          <div
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white animate-bounce"
+            style={{
+              background: `rgba(${badgeColor},0.9)`,
+              boxShadow: `0 0 12px 4px rgba(${badgeColor},0.5), 0 0 24px 8px rgba(${badgeColor},0.2)`,
+            }}
+          >
+            {badgeCount}
+          </div>
+          {/* Pulse ring */}
+          <div
+            className="absolute w-8 h-8 rounded-full"
+            style={{
+              border: `2px solid rgba(${badgeColor},0.6)`,
+              animation: "hotspotPing 2s ease-out infinite",
+            }}
+          />
+        </div>
+      )}
 
       {/* Label tooltip on hover */}
       <div
