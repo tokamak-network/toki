@@ -53,11 +53,11 @@ export interface GasCostEstimate {
 }
 
 // Custom paymaster data provider for TONPaymaster
-// The paymaster doesn't require any special data — it reads price from on-chain storage
+// Mode byte 0x00 = CHARGE_IN_VALIDATE (pre-charge user, refund excess in postOp)
 function createTonPaymasterProvider(paymasterAddress: Address) {
   const stubData = {
     paymaster: paymasterAddress,
-    paymasterData: "0x" as Hex,
+    paymasterData: "0x00" as Hex, // Mode 0x00: CHARGE_IN_VALIDATE
     paymasterVerificationGasLimit: BigInt(150000),
     paymasterPostOpGasLimit: BigInt(100000),
   };

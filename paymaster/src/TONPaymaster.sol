@@ -4,6 +4,8 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 /// @notice Minimal PackedUserOperation struct (ERC-4337 v0.7/v0.8)
 struct PackedUserOperation {
@@ -183,7 +185,7 @@ library OracleHelper {
 
     /// @notice Convert tick to quote amount using FullMath and TickMath
     /// @dev For WTON/WETH pool: baseToken=WETH (token0), quoteToken=WTON (token1)
-    ///      We query "how much WTON for 1 ETH" → getQuoteAtTick(tick, 1e18, WETH, WTON)
+    ///      We query "how much WTON for 1 ETH" -> getQuoteAtTick(tick, 1e18, WETH, WTON)
     function getQuoteAtTick(
         int24 tick,
         uint128 baseAmount,
@@ -208,17 +210,35 @@ library OracleHelper {
 
 /// @title TONPaymaster
 /// @notice ERC-4337 Paymaster that accepts TON token for gas payment
-/// @dev Works with EntryPoint v0.7/v0.8. Supports two pricing modes:
-///   - Manual: owner sets tokenPerEth rate directly
-///   - Oracle: reads TWAP from Uniswap V3 WTON/WETH pool
+/// @dev Works with EntryPoint v0.7/v0.8. Supports two operation modes:
 ///
-/// The paymaster flow:
-///   1. In validatePaymasterUserOp: checks user has enough TON balance
-///   2. EntryPoint executes user's calldata (which should include approve to this paymaster)
-///   3. In postOp: transfers actual gas cost in TON from user to paymaster
-contract TONPaymaster is Ownable {
+///   Mode 0x00 (CHARGE_IN_VALIDATE):
+///     - Pre-charges maxTokenCost from user in validatePaymasterUserOp
+///     - Refunds excess in postOp
+///     - Requires user to have pre-approved this paymaster
+///
+///   Mode 0x01 (CHARGE_WITH_GUARANTOR):
+///     - Guarantor pre-pays maxTokenCost in validatePaymasterUserOp
+///     - postOp attempts to charge user; if successful, refunds guarantor
+///     - If user charge fails, guarantor absorbs the cost
+///     - Used for first tx (no approve yet) or unstaking (no TON balance)
+///
+///   Pricing modes:
+///     - Manual: owner sets tokenPerEth rate directly
+///     - Oracle: reads TWAP from Uniswap V3 WTON/WETH pool
+contract TONPaymaster is Ownable, EIP712 {
     using SafeERC20 for IERC20;
+    using ECDSA for bytes32;
 
+    // ─── Constants ────────────────────────────────────────────────
+    uint8 public constant MODE_CHARGE = 0x00;
+    uint8 public constant MODE_GUARANTOR = 0x01;
+
+    bytes32 public constant GUARANTOR_TYPEHASH = keccak256(
+        "Guarantee(address sender,uint256 maxTokenCost,uint48 validUntil,uint48 validAfter)"
+    );
+
+    // ─── Immutables ───────────────────────────────────────────────
     IEntryPoint public immutable entryPoint;
     IERC20 public immutable token;
 
@@ -250,11 +270,17 @@ contract TONPaymaster is Ownable {
     /// @notice Estimated gas for postOp (transferFrom). Added to cost calculation.
     uint256 public postOpGasOverhead;
 
+    // ─── Time range config ───────────────────────────────────────
+    /// @notice Validity window for Mode 0x00 UserOps (seconds from block.timestamp)
+    uint48 public validityWindow;
+
     event PriceUpdated(uint256 tokenPerEth);
     event MarkupUpdated(uint256 markupBps);
     event OracleConfigUpdated(address pool, address weth, address wton, uint32 twapPeriod);
     event OracleModeUpdated(bool useOracle);
     event GasPayment(address indexed sender, uint256 tonAmount, uint256 ethCost);
+    event GuarantorPayment(address indexed guarantor, address indexed sender, uint256 tonAmount);
+    event ValidityWindowUpdated(uint48 validityWindow);
 
     modifier onlyEntryPoint() {
         require(msg.sender == address(entryPoint), "Not EntryPoint");
@@ -266,43 +292,80 @@ contract TONPaymaster is Ownable {
         IERC20 _token,
         uint256 _tokenPerEth,
         address _owner
-    ) Ownable(_owner) {
+    ) Ownable(_owner) EIP712("TONPaymaster", "2") {
         entryPoint = _entryPoint;
         token = _token;
         tokenPerEth = _tokenPerEth;
         markupBps = 15000; // 150% default markup
         postOpGasOverhead = 60000; // ~60k gas for transferFrom in postOp
         twapPeriod = 1800; // 30 minutes default
+        validityWindow = 300; // 5 minutes default
     }
 
     // ─── IPaymaster interface ─────────────────────────────────────
 
     /// @notice Called by EntryPoint to validate the paymaster's willingness to pay
+    /// @dev Supports two modes based on paymasterData:
+    ///   - Empty or 0x00: Mode CHARGE_IN_VALIDATE (pre-charge user)
+    ///   - 0x01 + data:   Mode CHARGE_WITH_GUARANTOR (guarantor pre-pays)
     function validatePaymasterUserOp(
         PackedUserOperation calldata userOp,
         bytes32, /* userOpHash */
         uint256 maxCost
     ) external onlyEntryPoint returns (bytes memory context, uint256 validationData) {
         // Calculate max TON cost including postOp overhead
-        // maxCost is in wei; add postOp gas cost
         uint256 maxFeePerGas = uint128(uint256(userOp.gasFees));
         uint256 totalMaxCost = maxCost + (postOpGasOverhead * maxFeePerGas);
         uint256 maxTokenCost = _ethToToken(totalMaxCost);
 
         address sender = userOp.sender;
 
-        // NOTE: During validation, the UserOp's calldata hasn't executed yet.
-        // The user must have pre-approved this paymaster, OR the calldata
-        // includes an approve call that will execute before postOp.
-        // We check balance here; allowance is checked in postOp since
-        // the approve call in calldata hasn't executed during validation.
-        require(token.balanceOf(sender) >= maxTokenCost, "TONPaymaster: insufficient TON");
+        // Parse mode from paymasterData
+        // paymasterAndData layout: [paymaster(20B)][paymasterData...]
+        // paymasterData starts at offset 20
+        uint8 mode = MODE_CHARGE; // default
+        if (userOp.paymasterAndData.length > 20) {
+            mode = uint8(userOp.paymasterAndData[20]);
+        }
 
-        context = abi.encode(sender, maxTokenCost);
-        validationData = 0; // valid, no time range
+        if (mode == MODE_CHARGE) {
+            // Mode 0x00: Pre-charge user
+            // User must have already approved this paymaster for TON
+            token.safeTransferFrom(sender, address(this), maxTokenCost);
+
+            context = abi.encode(sender, maxTokenCost, MODE_CHARGE);
+            uint48 validUntil = uint48(block.timestamp) + validityWindow;
+            validationData = _packValidationData(false, validUntil, 0);
+        } else if (mode == MODE_GUARANTOR) {
+            // Mode 0x01: Guarantor pre-pays
+            // paymasterData layout after mode byte:
+            //   [mode(1B)][guarantor(20B)][validUntil(6B)][validAfter(6B)][signature(dynamic)]
+            require(
+                userOp.paymasterAndData.length >= 20 + 1 + 20 + 6 + 6,
+                "TONPaymaster: invalid guarantor data"
+            );
+
+            address guarantor = address(bytes20(userOp.paymasterAndData[21:41]));
+            uint48 validUntil = uint48(bytes6(userOp.paymasterAndData[41:47]));
+            uint48 validAfter = uint48(bytes6(userOp.paymasterAndData[47:53]));
+            bytes memory signature = userOp.paymasterAndData[53:];
+
+            // Verify guarantor signature (EIP-712)
+            bytes32 hash = _getGuarantorHash(sender, maxTokenCost, validUntil, validAfter);
+            address recovered = hash.recover(signature);
+            bool sigFailed = recovered != guarantor;
+
+            // Guarantor pre-pays maxTokenCost
+            token.safeTransferFrom(guarantor, address(this), maxTokenCost);
+
+            context = abi.encode(sender, maxTokenCost, MODE_GUARANTOR, guarantor);
+            validationData = _packValidationData(sigFailed, validUntil, validAfter);
+        } else {
+            revert("TONPaymaster: invalid mode");
+        }
     }
 
-    /// @notice Called by EntryPoint after UserOp execution to collect payment
+    /// @notice Called by EntryPoint after UserOp execution to settle payment
     function postOp(
         PostOpMode mode,
         bytes calldata context,
@@ -311,17 +374,52 @@ contract TONPaymaster is Ownable {
     ) external onlyEntryPoint {
         if (mode == PostOpMode.postOpReverted) return;
 
-        (address sender, ) = abi.decode(context, (address, uint256));
-
         // Calculate actual TON cost including postOp gas
         uint256 totalGasCost = actualGasCost + (postOpGasOverhead * actualUserOpFeePerGas);
         uint256 actualTokenCost = _ethToToken(totalGasCost);
 
-        // Transfer TON from user to paymaster
-        // This will revert if allowance is insufficient, reverting the entire UserOp
-        token.safeTransferFrom(sender, address(this), actualTokenCost);
+        // Decode mode to determine settlement logic
+        // First decode common fields to check the paymaster mode
+        uint8 paymasterMode;
+        assembly {
+            // context is a calldata bytes: first 32 bytes after offset are length,
+            // then data. We need the 3rd abi.encode'd field (index 2, offset 64 from data start).
+            // context.offset points to the start of the bytes data in calldata.
+            // ABI encoded: [sender(32B)][maxTokenCost(32B)][mode(32B)]...
+            paymasterMode := calldataload(add(context.offset, 64))
+        }
 
-        emit GasPayment(sender, actualTokenCost, totalGasCost);
+        if (paymasterMode == MODE_CHARGE) {
+            // Mode 0x00: Refund excess to user
+            (address sender, uint256 maxTokenCost, ) = abi.decode(context, (address, uint256, uint8));
+
+            uint256 refund = maxTokenCost - actualTokenCost;
+            if (refund > 0) {
+                token.safeTransfer(sender, refund);
+            }
+
+            emit GasPayment(sender, actualTokenCost, totalGasCost);
+        } else {
+            // Mode 0x01: Guarantor settlement
+            (address sender, uint256 maxTokenCost, , address guarantor) =
+                abi.decode(context, (address, uint256, uint8, address));
+
+            // Try to charge user for actual cost
+            bool success = _tryTransferFrom(sender, address(this), actualTokenCost);
+
+            if (success) {
+                // User paid -> refund guarantor's entire pre-payment
+                token.safeTransfer(guarantor, maxTokenCost);
+                emit GasPayment(sender, actualTokenCost, totalGasCost);
+            } else {
+                // User couldn't pay -> guarantor absorbs actual cost, refund excess
+                uint256 refund = maxTokenCost - actualTokenCost;
+                if (refund > 0) {
+                    token.safeTransfer(guarantor, refund);
+                }
+                emit GuarantorPayment(guarantor, sender, actualTokenCost);
+            }
+        }
     }
 
     // ─── Owner functions ──────────────────────────────────────────
@@ -342,11 +440,13 @@ contract TONPaymaster is Ownable {
         postOpGasOverhead = _overhead;
     }
 
+    function setValidityWindow(uint48 _validityWindow) external onlyOwner {
+        require(_validityWindow > 0, "Validity window must be > 0");
+        validityWindow = _validityWindow;
+        emit ValidityWindowUpdated(_validityWindow);
+    }
+
     /// @notice Configure the Uniswap V3 oracle pool
-    /// @param _pool WTON/WETH Uniswap V3 pool address
-    /// @param _weth WETH address (must be one of the pool tokens)
-    /// @param _wton WTON address (must be one of the pool tokens)
-    /// @param _twapPeriod TWAP observation window in seconds
     function setOracleConfig(
         address _pool,
         address _weth,
@@ -428,6 +528,8 @@ contract TONPaymaster is Ownable {
         return _ethToToken(ethAmount);
     }
 
+    // ─── Internal helpers ─────────────────────────────────────────
+
     function _ethToToken(uint256 ethAmount) internal view returns (uint256) {
         uint256 rate;
         if (useOracle && oraclePool != address(0)) {
@@ -445,8 +547,6 @@ contract TONPaymaster is Ownable {
     function _getOracleTokenPerEth() internal view returns (uint256) {
         int24 meanTick = OracleHelper.consult(oraclePool, twapPeriod);
 
-        // Get WTON amount for 1 ETH (1e18 wei)
-        // weth < wton address-wise (WETH is token0, WTON is token1)
         uint256 wtonPerEth = OracleHelper.getQuoteAtTick(
             meanTick,
             1e18, // 1 ETH in wei
@@ -455,10 +555,41 @@ contract TONPaymaster is Ownable {
         );
 
         // WTON has 27 decimals, TON has 18 decimals (1:1 value)
-        // wtonPerEth is in 27-decimal WTON units
-        // Convert to 18-decimal TON: divide by 1e9
-        // Result is in 18 decimals (same scale as tokenPerEth)
         return wtonPerEth / 1e9;
+    }
+
+    /// @notice Pack ERC-4337 validation data
+    /// @dev Format: [sigFailed(1bit)][validUntil(48bit)][validAfter(48bit)] packed into uint256
+    ///      Bit layout: sigFailed at bit 0, validUntil at bits 160-207, validAfter at bits 208-255
+    function _packValidationData(
+        bool sigFailed,
+        uint48 validUntil,
+        uint48 validAfter
+    ) internal pure returns (uint256) {
+        return (sigFailed ? 1 : 0)
+            | (uint256(validUntil) << 160)
+            | (uint256(validAfter) << 208);
+    }
+
+    /// @notice Compute EIP-712 hash for guarantor signature verification
+    function _getGuarantorHash(
+        address sender,
+        uint256 maxTokenCost,
+        uint48 validUntil,
+        uint48 validAfter
+    ) internal view returns (bytes32) {
+        return _hashTypedDataV4(keccak256(abi.encode(
+            GUARANTOR_TYPEHASH, sender, maxTokenCost, validUntil, validAfter
+        )));
+    }
+
+    /// @notice Try transferFrom without reverting
+    /// @return success True if transfer succeeded
+    function _tryTransferFrom(address from, address to, uint256 amount) internal returns (bool success) {
+        (bool ok, bytes memory data) = address(token).call(
+            abi.encodeWithSelector(IERC20.transferFrom.selector, from, to, amount)
+        );
+        return ok && (data.length == 0 || abi.decode(data, (bool)));
     }
 
     /// @notice Required to receive ETH for staking

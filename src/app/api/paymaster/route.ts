@@ -5,7 +5,7 @@ const TON_PAYMASTER = CONTRACTS.TON_PAYMASTER;
 
 const paymasterStubData = {
   paymaster: TON_PAYMASTER,
-  paymasterData: "0x",
+  paymasterData: "0x00", // Mode 0x00: CHARGE_IN_VALIDATE (pre-charge user)
   paymasterVerificationGasLimit: "0x24900", // 150,000
   paymasterPostOpGasLimit: "0x186a0", // 100,000
 };
