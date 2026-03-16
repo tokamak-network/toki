@@ -1125,23 +1125,47 @@ export default function OnboardingQuest() {
         </div>
       </div>
 
-      {/* Laptop Calculator Overlay */}
+      {/* Calculator Overlay — full screen on mobile, laptop frame on desktop */}
       {showCalculator && (
-        <LaptopVideoOverlay
-          bgImage={bgImage}
-          onClose={() => setShowCalculator(false)}
-        >
-          <div className="flex flex-col items-center justify-center h-full p-4 sm:p-6">
-            {stakingData ? (
-              <ProfitSimulator data={stakingData} onClose={() => setShowCalculator(false)} />
-            ) : (
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
-                <p className="text-sm text-gray-400">{t.onboarding.calcTitle}</p>
-              </div>
-            )}
+        <>
+          {/* Mobile: full-screen overlay */}
+          <div className="sm:hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md overflow-y-auto">
+            <div className="min-h-full flex flex-col items-center justify-start p-4 pt-6">
+              <button
+                onClick={() => setShowCalculator(false)}
+                className="self-end mb-3 px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 text-gray-400 text-xs"
+              >
+                ✕ Close
+              </button>
+              {stakingData ? (
+                <ProfitSimulator data={stakingData} onClose={() => setShowCalculator(false)} />
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
+                  <p className="text-sm text-gray-400">{t.onboarding.calcTitle}</p>
+                </div>
+              )}
+            </div>
           </div>
-        </LaptopVideoOverlay>
+          {/* Desktop: laptop frame */}
+          <div className="hidden sm:block">
+            <LaptopVideoOverlay
+              bgImage={bgImage}
+              onClose={() => setShowCalculator(false)}
+            >
+              <div className="flex flex-col items-center justify-center h-full p-4 sm:p-6">
+                {stakingData ? (
+                  <ProfitSimulator data={stakingData} onClose={() => setShowCalculator(false)} />
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
+                    <p className="text-sm text-gray-400">{t.onboarding.calcTitle}</p>
+                  </div>
+                )}
+              </div>
+            </LaptopVideoOverlay>
+          </div>
+        </>
       )}
 
       {/* Intro Cinematic Overlay */}
