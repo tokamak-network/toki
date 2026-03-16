@@ -82,7 +82,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       intro: [
         { text: t.quest1Intro1, mood: "welcome" },
         { text: t.quest1Intro2, mood: "neutral" },
-        { text: t.quest1Intro3, mood: "reading" },
+        { text: t.quest1Intro3, mood: "explain" },
         { text: t.quest1Intro4, mood: "pointing" },
         { text: t.quest1Intro5, mood: "excited" },
         { text: t.quest1Intro6, mood: "cheer" },
@@ -102,7 +102,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       badgeIcon: "B",
       xp: 200,
       intro: [
-        { text: t.quest2Intro1, mood: "reading" },
+        { text: t.quest2Intro1, mood: "thinking" },
         { text: t.quest2Intro2, mood: "neutral" },
         { text: t.quest2Intro3, mood: "pointing" },
         { text: t.quest2Intro4, mood: "worried" },
@@ -161,7 +161,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       xp: 250,
       intro: [
         { text: t.quest4Intro1, mood: "excited" },
-        { text: t.quest4Intro2, mood: "reading" },
+        { text: t.quest4Intro2, mood: "pointing" },
         { text: t.quest4Intro3, mood: "surprised" },
         { text: t.quest4Intro4, mood: "wink" },
       ],
@@ -190,7 +190,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       success: [
         { text: t.quest5Success1, mood: "surprised" },
         { text: t.quest5Success2, mood: "shy" },
-        { text: t.quest5Success3, mood: "reading" },
+        { text: t.quest5Success3, mood: "explain" },
         { text: t.quest5Success4, mood: "peace" },
       ],
     },
