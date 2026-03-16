@@ -152,12 +152,10 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
             const amount = Number(meta?.amount) || 0;
             next.metadata.totalStaked += amount;
             const paymasterMode = meta?.paymasterMode as string;
-            const stakingMode = meta?.stakingMode as string;
             if (paymasterMode === "sponsor" && !next.unlocked.includes("stake-gasless")) {
-              // Mark gasless used — condition check below will handle unlock
               next.unlocked.push("stake-gasless");
             }
-            if (stakingMode === "delegation" && !next.unlocked.includes("stake-delegation")) {
+            if (!next.unlocked.includes("stake-delegation")) {
               next.unlocked.push("stake-delegation");
             }
             break;

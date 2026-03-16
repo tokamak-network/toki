@@ -23,6 +23,16 @@ const MOOD_IMAGES: Record<Mood, string> = {
   proud: "/toki-proud.png",
   cheer: "/toki-cheer.png",
   wink: "/toki-wink.png",
+  surprised: "/toki-surprised.png",
+  confused: "/toki-confused.png",
+  shy: "/toki-shy.png",
+  determined: "/toki-determined.png",
+  pointing: "/toki-pointing.png",
+  reading: "/toki-reading.png",
+  "crying-happy": "/toki-crying-happy.png",
+  peace: "/toki-peace.png",
+  worried: "/toki-worried.png",
+  laughing: "/toki-laughing.png",
 };
 
 const MOOD_GLOW: Record<Mood, string> = {
@@ -33,6 +43,16 @@ const MOOD_GLOW: Record<Mood, string> = {
   proud: "rgba(34, 211, 238, 0.45)",
   cheer: "rgba(168, 85, 247, 0.4)",
   wink: "rgba(236, 72, 153, 0.4)",
+  surprised: "rgba(245, 158, 11, 0.40)",
+  confused: "rgba(99, 102, 241, 0.30)",
+  shy: "rgba(236, 72, 153, 0.40)",
+  determined: "rgba(239, 68, 68, 0.35)",
+  pointing: "rgba(34, 211, 238, 0.35)",
+  reading: "rgba(96, 165, 250, 0.30)",
+  "crying-happy": "rgba(245, 158, 11, 0.40)",
+  peace: "rgba(168, 85, 247, 0.35)",
+  worried: "rgba(239, 68, 68, 0.30)",
+  laughing: "rgba(245, 158, 11, 0.45)",
 };
 
 // Navigation node IDs → routes

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
-type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink";
+type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "surprised" | "confused" | "shy" | "determined" | "pointing" | "reading" | "crying-happy" | "peace" | "worried" | "laughing";
 
 const MOOD_IMAGES: Record<Mood, string> = {
   welcome: "/toki-welcome.png",
@@ -13,6 +13,16 @@ const MOOD_IMAGES: Record<Mood, string> = {
   proud: "/toki-proud.png",
   cheer: "/toki-cheer.png",
   wink: "/toki-wink.png",
+  surprised: "/toki-surprised.png",
+  confused: "/toki-confused.png",
+  shy: "/toki-shy.png",
+  determined: "/toki-determined.png",
+  pointing: "/toki-pointing.png",
+  reading: "/toki-reading.png",
+  "crying-happy": "/toki-crying-happy.png",
+  peace: "/toki-peace.png",
+  worried: "/toki-worried.png",
+  laughing: "/toki-laughing.png",
 };
 
 export type CoachState = "idle" | "idle_no_balance" | "staking" | "success" | "error" | "earnings";

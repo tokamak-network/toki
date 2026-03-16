@@ -1,6 +1,6 @@
 // ─── Toki Visual Novel Chat Dialogue Tree ────────────────────────────
 
-export type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink";
+export type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "surprised" | "confused" | "shy" | "determined" | "pointing" | "reading" | "crying-happy" | "peace" | "worried" | "laughing";
 
 export interface DialogueChoice {
   labelKo: string;
@@ -98,7 +98,7 @@ export const DIALOGUE_TREE: DialogueNode[] = [
   },
   {
     id: "how-to-stake",
-    mood: "cheer",
+    mood: "determined",
     textKo: "Toki에서는 3단계면 끝! 로그인 → TON 입금 → 스테이킹 버튼 클릭. 가스비도 TON으로 내니까 ETH 없어도 돼!",
     textEn: "With Toki, it's just 3 steps! Login → Deposit TON → Click stake. Gas is paid in TON, so no ETH needed!",
     choices: [
@@ -122,7 +122,7 @@ export const DIALOGUE_TREE: DialogueNode[] = [
   },
   {
     id: "seigniorage",
-    mood: "explain",
+    mood: "reading",
     textKo: "시뇨리지는 토카막 네트워크가 블록마다 새로 만드는 TON이야. 스테이킹한 사람들한테 나눠주는 거지. 은행 이자처럼 생각하면 돼!",
     textEn: "Seigniorage is new TON minted by the network every block. It's distributed to stakers — think of it like bank interest!",
     choices: [
@@ -145,7 +145,7 @@ export const DIALOGUE_TREE: DialogueNode[] = [
   },
   {
     id: "withdraw-guide",
-    mood: "explain",
+    mood: "pointing",
     textKo: "거래소 앱에서 '출금' → 네트워크는 'Ethereum(ERC20)' 선택 → Toki 대시보드에 있는 지갑 주소 복사해서 붙여넣기! 온보딩 튜토리얼에서 자세히 알려줄게.",
     textEn: "In the exchange app: 'Withdraw' → Select 'Ethereum(ERC20)' network → Paste your wallet address from the Toki dashboard! The onboarding tutorial walks you through it.",
     choices: [
@@ -181,7 +181,7 @@ export const DIALOGUE_TREE: DialogueNode[] = [
   },
   {
     id: "gasless-detail",
-    mood: "thinking",
+    mood: "reading",
     textKo: "Toki는 Paymaster라는 기술을 써서, 네가 내야 할 ETH 가스비를 TON으로 대납해주는 거야. EIP-7702 같은 최신 기술 덕분이지!",
     textEn: "Toki uses a Paymaster that covers your ETH gas fees using TON instead. It's powered by cutting-edge tech like EIP-7702!",
     choices: [
@@ -215,7 +215,7 @@ export const DIALOGUE_TREE: DialogueNode[] = [
   },
   {
     id: "private-key",
-    mood: "thinking",
+    mood: "worried",
     textKo: "비밀키는 지갑의 진짜 열쇠야. 이걸 가진 사람만 자산을 옮길 수 있어. Toki에서는 Privy가 안전하게 보관해주지만, 원하면 MetaMask로 내보낼 수도 있어!",
     textEn: "A private key is the real key to your wallet. Only whoever has it can move assets. In Toki, Privy keeps it safe — but you can export it to MetaMask if you want!",
     choices: [
@@ -237,7 +237,7 @@ export const DIALOGUE_TREE: DialogueNode[] = [
   // ─── Unstaking ───
   {
     id: "unstaking",
-    mood: "thinking",
+    mood: "explain",
     textKo: "언스테이킹은 맡긴 TON을 다시 돌려받는 거야. 출금 요청을 하면 일정 기간 후에 인출할 수 있어. 대시보드에서 할 수 있어!",
     textEn: "Unstaking means getting your staked TON back. After requesting withdrawal, you can claim it after a delay period. You can do it from the dashboard!",
     choices: [
@@ -249,7 +249,7 @@ export const DIALOGUE_TREE: DialogueNode[] = [
   // ─── Navigation nodes ───
   {
     id: "go-dashboard",
-    mood: "cheer",
+    mood: "peace",
     textKo: "좋아! 대시보드로 이동할게. 화이팅!",
     textEn: "Great! Let's head to the dashboard. Good luck!",
   },
@@ -269,7 +269,7 @@ export const DIALOGUE_TREE: DialogueNode[] = [
   // ─── Fallback ───
   {
     id: "fallback",
-    mood: "thinking",
+    mood: "confused",
     textKo: "음... 그건 아직 잘 모르겠어. 다른 거 물어볼래?",
     textEn: "Hmm... I'm not sure about that yet. Want to ask something else?",
     choices: [
