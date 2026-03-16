@@ -193,7 +193,7 @@ export default function LobbyPreview() {
           <div className={`relative flex-shrink-0 transition-all duration-500 delay-100 ${
             showDialogue ? "translate-x-0 opacity-100" : "-translate-x-12 opacity-0"
           }`}>
-            <Image src="/toki-welcome.png" alt="Toki" width={140} height={180}
+            <Image src="/characters/toki-welcome.png" alt="Toki" width={140} height={180}
               className="object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]" />
           </div>
           <div className={`flex-1 ml-2 mb-4 transition-all duration-400 delay-200 ${
@@ -218,7 +218,7 @@ export default function LobbyPreview() {
         } ${roomLoaded ? "translate-y-0" : "translate-y-8 opacity-0"}`}
         aria-label="Talk to Toki"
       >
-        <Image src="/toki-welcome.png" alt="Chat with Toki" width={48} height={48}
+        <Image src="/characters/toki-welcome.png" alt="Chat with Toki" width={48} height={48}
           className="object-cover object-top scale-150" />
       </button>
     </div>

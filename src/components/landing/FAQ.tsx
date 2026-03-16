@@ -68,9 +68,9 @@ export default function FAQ() {
 
   // Toki sprites for different question types
   const getSprite = (i: number) => {
-    if (i <= 1) return "/toki-explain.png";
-    if (i <= 3) return "/toki-thinking.png";
-    return "/toki-wink.png";
+    if (i <= 1) return "/characters/toki-explain.png";
+    if (i <= 3) return "/characters/toki-thinking.png";
+    return "/characters/toki-wink.png";
   };
 
   return (
@@ -88,7 +88,7 @@ export default function FAQ() {
           {/* Chat header */}
           <div className="flex items-center gap-3 px-5 py-3 border-b border-white/10 bg-white/5">
             <div className="w-8 h-8 rounded-full overflow-hidden border border-cyan-400/50">
-              <Image src="/toki-welcome.png" alt="Toki" width={32} height={32} className="object-cover" />
+              <Image src="/characters/toki-welcome.png" alt="Toki" width={32} height={32} className="object-cover" />
             </div>
             <div>
               <div className="text-sm font-semibold text-white">Toki</div>
@@ -104,7 +104,7 @@ export default function FAQ() {
             {/* Toki greeting */}
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/20">
-                <Image src="/toki-welcome.png" alt="Toki" width={32} height={32} className="object-cover" />
+                <Image src="/characters/toki-welcome.png" alt="Toki" width={32} height={32} className="object-cover" />
               </div>
               <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[80%]">
                 <p className="text-sm text-gray-200">{t.faqChat.placeholder}</p>
@@ -125,7 +125,7 @@ export default function FAQ() {
                 {!showAnswer ? (
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/20">
-                      <Image src="/toki-thinking.png" alt="Toki thinking" width={32} height={32} className="object-cover" />
+                      <Image src="/characters/toki-thinking.png" alt="Toki thinking" width={32} height={32} className="object-cover" />
                     </div>
                     <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-3">
                       <div className="flex items-center gap-1.5">

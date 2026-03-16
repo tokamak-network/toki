@@ -9,7 +9,7 @@ const CARDS = [
     description: "Complete your first steps",
     achievements: "5/5 Achievements",
     rarity: "SR",
-    sprite: "/toki-cheer.png",
+    sprite: "/characters/toki-cheer.png",
     gradient: "from-amber-900/30 to-yellow-600/20",
     borderColor: "border-yellow-500",
     rarityColor: "text-yellow-300",
@@ -21,7 +21,7 @@ const CARDS = [
     description: "Become a staking expert",
     achievements: "6/6 Achievements",
     rarity: "SSR",
-    sprite: "/toki-proud.png",
+    sprite: "/characters/toki-proud.png",
     gradient: "from-cyan-900/30 to-blue-600/20",
     borderColor: "border-cyan-400",
     rarityColor: "text-cyan-300",
@@ -33,7 +33,7 @@ const CARDS = [
     description: "Discover the ecosystem",
     achievements: "3/3 Achievements",
     rarity: "SR",
-    sprite: "/toki-excited.png",
+    sprite: "/characters/toki-excited.png",
     gradient: "from-purple-900/30 to-indigo-600/20",
     borderColor: "border-purple-500",
     rarityColor: "text-purple-300",
@@ -45,7 +45,7 @@ const CARDS = [
     description: "Connect with Toki",
     achievements: "3/3 Achievements",
     rarity: "R",
-    sprite: "/toki-wink.png",
+    sprite: "/characters/toki-wink.png",
     gradient: "from-pink-900/30 to-rose-600/20",
     borderColor: "border-pink-500",
     rarityColor: "text-pink-300",
@@ -57,7 +57,7 @@ const CARDS = [
     description: "Complete everything",
     achievements: "2/2 Achievements",
     rarity: "UR+",
-    sprite: "/toki-proud.png",
+    sprite: "/characters/toki-proud.png",
     gradient: "from-emerald-900/30 to-teal-600/20",
     borderColor: "",
     rarityColor: "text-emerald-300",
@@ -73,7 +73,7 @@ export default function TokiTradingCards() {
         <div className="flex items-center justify-center gap-6 mb-4">
           <div className="relative w-24 h-24 flex-shrink-0">
             <Image
-              src="/toki-excited.png"
+              src="/characters/toki-excited.png"
               alt="Toki"
               fill
               className="object-contain drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]"

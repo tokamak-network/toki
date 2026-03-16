@@ -131,7 +131,7 @@ export default function WhyToki() {
           <div className="flex items-center gap-3">
             <span className="text-cyan-400 font-bold text-lg">{t.whyTokiVs.tokiWay}</span>
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-cyan-400/50">
-              <Image src="/toki-proud.png" alt="Toki" width={40} height={40} className="object-cover" />
+              <Image src="/characters/toki-proud.png" alt="Toki" width={40} height={40} className="object-cover" />
             </div>
           </div>
         </div>

@@ -46,7 +46,7 @@ function SimulatorVariant({ data, show }: { data: StakingData; show: boolean }) 
             <div className="shrink-0 flex flex-col items-center gap-3">
               <div className="relative">
                 <div className="absolute inset-0 rounded-full bg-accent-cyan/10 blur-2xl" />
-                <Image src="/toki-proud.png" alt="Toki" width={120} height={120} className="relative z-10 drop-shadow-[0_0_20px_rgba(34,211,238,0.25)]" />
+                <Image src="/characters/toki-proud.png" alt="Toki" width={120} height={120} className="relative z-10 drop-shadow-[0_0_20px_rgba(34,211,238,0.25)]" />
               </div>
               <div className="relative bg-black/40 backdrop-blur-sm rounded-xl border border-white/10 p-3 max-w-[200px]">
                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-black/40 border-l border-t border-white/10 rotate-45" />
@@ -179,7 +179,7 @@ function BankVsVariant({ data, show }: { data: StakingData; show: boolean }) {
 
           {/* Toki */}
           <div className="flex items-center gap-3 mt-6">
-            <Image src="/toki-proud.png" alt="Toki" width={48} height={48} className="drop-shadow-lg" />
+            <Image src="/characters/toki-proud.png" alt="Toki" width={48} height={48} className="drop-shadow-lg" />
             <div className="bg-black/40 backdrop-blur-sm rounded-xl border border-white/10 px-3 py-2">
               <p className="text-xs text-gray-300">{t.statsCard.vsTokiReaction}</p>
             </div>
@@ -268,7 +268,7 @@ function LiveCounterVariant({ data, show }: { data: StakingData; show: boolean }
 
           {/* Toki */}
           <div className="flex items-center gap-3">
-            <Image src="/toki-proud.png" alt="Toki" width={48} height={48} className="drop-shadow-lg" />
+            <Image src="/characters/toki-proud.png" alt="Toki" width={48} height={48} className="drop-shadow-lg" />
             <div className="bg-black/40 backdrop-blur-sm rounded-xl border border-white/10 px-3 py-2">
               <p className="text-xs text-gray-300">{t.statsCard.liveTokiReaction}</p>
             </div>
@@ -307,7 +307,7 @@ function SummaryVariant({ data, show }: { data: StakingData; show: boolean }) {
             <div className="shrink-0 flex flex-col items-center gap-3">
               <div className="relative">
                 <div className="absolute inset-0 rounded-full bg-accent-blue/10 blur-2xl" />
-                <Image src="/toki-proud.png" alt="Toki" width={120} height={120} className="relative z-10 drop-shadow-[0_0_20px_rgba(74,144,217,0.25)]" />
+                <Image src="/characters/toki-proud.png" alt="Toki" width={120} height={120} className="relative z-10 drop-shadow-[0_0_20px_rgba(74,144,217,0.25)]" />
               </div>
               <div className="relative bg-black/40 backdrop-blur-sm rounded-xl border border-white/10 p-3 max-w-[200px]">
                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-black/40 border-l border-t border-white/10 rotate-45" />

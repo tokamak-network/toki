@@ -377,7 +377,7 @@ export default function LobbyView({
           onClick={handleTokiClick}
         >
           <Image
-            src="/toki-holo-chibi.png"
+            src="/characters/toki-holo-chibi.png"
             alt="Toki Hologram"
             width={120}
             height={120}
