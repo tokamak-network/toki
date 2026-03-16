@@ -457,28 +457,11 @@ type Phase = "intro" | "action" | "verifying" | "success" | "badge";
 // Old quest IDs for localStorage migration
 const OLD_QUEST_IDS = ["install-metamask", "connect-toki", "verify-upbit"];
 
-// Safe wrappers — PrivyClientProvider lazy-loads the real PrivyProvider.
-// Until it loads, hooks run outside the provider and may return defaults.
-function usePrivySafe() {
-  try {
-    return usePrivy();
-  } catch {
-    return { ready: false, authenticated: false, login: () => {}, exportWallet: async () => {} } as ReturnType<typeof usePrivy>;
-  }
-}
-function useWalletsSafe() {
-  try {
-    return useWallets();
-  } catch {
-    return { wallets: [], ready: false } as ReturnType<typeof useWallets>;
-  }
-}
-
 export default function OnboardingQuest() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { ready, authenticated, login, exportWallet } = usePrivySafe();
-  const { wallets } = useWalletsSafe();
+  const { ready, authenticated, login, exportWallet } = usePrivy();
+  const { wallets } = useWallets();
   const embeddedWallet = wallets.find(w => w.walletClientType === "privy");
 
   const { trackActivity } = useAchievement();
