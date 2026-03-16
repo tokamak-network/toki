@@ -689,14 +689,19 @@ export default function OnboardingQuest() {
 
   if (isAllComplete) {
     return (
-      <div className="fixed inset-0 overflow-hidden">
+      <div className="fixed inset-0 overflow-hidden flex flex-col">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url('/vn-bg-default.png')` }}
         />
         <div className="absolute inset-0 bg-black/40" />
-        <TokiCharacter mood="proud" phase="badge" />
-        <div className="absolute bottom-0 left-0 right-0 z-20">
+        {/* Spacer pushes content to bottom */}
+        <div className="flex-1" />
+        {/* Character sits directly above the panel */}
+        <div className="relative z-10">
+          <TokiCharacter mood="proud" phase="badge" />
+        </div>
+        <div className="relative z-20">
           <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-8 sm:px-8">
             <div className="max-w-2xl mx-auto text-center animate-fade-in">
               <h1 className="text-3xl font-bold text-gradient mb-3">
