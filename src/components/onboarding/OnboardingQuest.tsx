@@ -391,7 +391,7 @@ const TUTORIAL_VIDEOS: Record<string, { embed: string; mobileUrl?: string }> = {
   "create-wallet": { embed: "https://www.youtube.com/embed/UURB7Tc7D4M?start=129" },
   "install-metamask": { embed: "https://www.youtube.com/embed/KjwlrQAtdYU", mobileUrl: "https://www.youtube.com/shorts/stRSJxS2kyY" },
   "import-key": { embed: "https://www.youtube.com/embed/yvOie0hBr2k", mobileUrl: "https://www.youtube.com/watch?v=O8R6V2fvwKs&t=173" },
-  "receive-ton": { embed: "https://www.youtube.com/embed/nuib4GnYxnk" },
+  "receive-ton": { embed: "https://www.youtube.com/embed/D-6tFe_KBZs" },
 };
 
 // ─── Character Display (Visual Novel Style) ──────────────────────────
