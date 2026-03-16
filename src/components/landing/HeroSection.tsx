@@ -22,13 +22,16 @@ export default function HeroSection({ apr }: { apr: number | null }) {
       {/* Background video */}
       <video
         ref={videoRef}
-        src="/toki-promo.mp4"
         autoPlay
         loop
         muted
         playsInline
+        poster="/toki-promo-poster.jpg"
         className="absolute inset-0 w-full h-full object-cover"
-      />
+      >
+        <source src="/toki-promo.webm" type="video/webm" />
+        <source src="/toki-promo.mp4" type="video/mp4" />
+      </video>
 
       {/* Unmute button */}
       <button

@@ -35,12 +35,15 @@ export default function CTASection() {
       {/* Background video */}
       <video
         ref={videoRef}
-        src="/toki-cta.mp4"
         muted
         loop
         playsInline
+        preload="none"
         className="absolute inset-0 w-full h-full object-cover"
-      />
+      >
+        <source src="/toki-cta.webm" type="video/webm" />
+        <source src="/toki-cta.mp4" type="video/mp4" />
+      </video>
 
       {/* Dark overlay for text readability */}
       <div className="absolute inset-0 bg-black/50" />
