@@ -631,6 +631,13 @@ export default function OnboardingQuest() {
 
   const handleVerify = async () => {
     if (quest?.verify === "metamask-installed") {
+      // On mobile, window.ethereum is only available inside MetaMask's in-app browser,
+      // not in Safari/Chrome even when the app is installed. Trust user confirmation.
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        handleVerifySuccess();
+        return;
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ethereum = (window as any).ethereum;
       if (ethereum) {
