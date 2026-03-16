@@ -351,6 +351,7 @@ const EXCHANGE_GUIDES = [
   {
     key: "upbit" as const,
     url: "https://support.upbit.com/hc/ko/articles/6713306957977-%EA%B0%9C%EC%9D%B8%EC%A7%80%EA%B0%91%EC%A3%BC%EC%86%8C-%EB%93%B1%EB%A1%9D-%EB%B0%A9%EB%B2%95",
+    mobileUrl: "https://support.upbit.com/hc/ko/articles/5077672491801-%EB%AA%A8%EB%B0%94%EC%9D%BC%EC%97%90%EC%84%9C-%EA%B0%9C%EC%9D%B8%EC%A7%80%EA%B0%91-%EC%A3%BC%EC%86%8C-%EB%93%B1%EB%A1%9D%EC%9D%B4-%EA%B0%80%EB%8A%A5%ED%95%9C%EA%B0%80%EC%9A%94",
   },
   {
     key: "bithumb" as const,
@@ -931,17 +932,22 @@ export default function OnboardingQuest() {
                             );
                           })}
                         </div>
-                        {selectedExchange && (
-                          <a
-                            href={EXCHANGE_GUIDES.find(e => e.key === selectedExchange)?.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors"
-                          >
-                            <span>&#x2197;</span>
-                            <span>{t.onboarding.quest3OpenGuide}</span>
-                          </a>
-                        )}
+                        {selectedExchange && (() => {
+                          const guide = EXCHANGE_GUIDES.find(e => e.key === selectedExchange);
+                          const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+                          const href = isMobile && guide?.mobileUrl ? guide.mobileUrl : guide?.url;
+                          return (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors"
+                            >
+                              <span>&#x2197;</span>
+                              <span>{t.onboarding.quest3OpenGuide}</span>
+                            </a>
+                          );
+                        })()}
                       </div>
                     )}
                     {/* Calculator button for Quest 4 */}
