@@ -97,7 +97,13 @@ export default function Header() {
           <button
             onClick={() => {
               if (confirm("Clear all local data and reload?")) {
-                localStorage.clear();
+                // Preserve Privy keys to avoid SDK crash, clear only app data
+                const keys = Object.keys(localStorage);
+                keys.forEach((key) => {
+                  if (!key.startsWith("privy")) {
+                    localStorage.removeItem(key);
+                  }
+                });
                 window.location.reload();
               }
             }}
