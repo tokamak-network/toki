@@ -106,12 +106,15 @@ export default function ConnectButton() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          {/* Mobile: just the green dot button */}
+          {/* Mobile: green dot + short name */}
           <button
             onClick={() => setOpen((v) => !v)}
             className="sm:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10"
           >
             <div className="w-2 h-2 rounded-full bg-green-400" />
+            <span className="text-xs text-gray-300">
+              Account
+            </span>
             <svg
               className={`w-3 h-3 text-gray-500 transition-transform ${open ? "rotate-180" : ""}`}
               fill="none"
