@@ -6,7 +6,6 @@ import {
   privateKeyToAccount,
 } from "viem/accounts";
 import {
-  createPublicClient,
   http,
   type Address,
   type Hex,
@@ -16,7 +15,6 @@ import {
   maxUint256,
   erc20Abi,
 } from "viem";
-import { sepolia, mainnet } from "viem/chains";
 import { createBundlerClient } from "viem/account-abstraction";
 import {
   toMetaMaskSmartAccount,
@@ -28,21 +26,7 @@ import { encodeDelegations } from "@metamask/delegation-toolkit/utils";
 import { erc7710BundlerActions } from "@metamask/delegation-toolkit/experimental";
 import { CONTRACTS } from "@/constants/contracts";
 import { tonTokenAbi } from "@/lib/abi";
-
-const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
-const chain = isTestnet ? sepolia : mainnet;
-
-const publicClient = createPublicClient({
-  chain,
-  transport: http(process.env.NEXT_PUBLIC_RPC_URL || undefined, {
-    timeout: 15_000,
-  }),
-});
-
-const pimlicoApiKey = process.env.NEXT_PUBLIC_PIMLICO_API_KEY;
-const pimlicoUrl = pimlicoApiKey
-  ? `https://api.pimlico.io/v2/${chain.id}/rpc?apikey=${pimlicoApiKey}`
-  : null;
+import { chain, publicClient, pimlicoUrl } from "@/lib/chain";
 
 // LocalStorage keys
 const SESSION_KEY_STORAGE = "ttoni_session_key";

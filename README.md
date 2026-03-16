@@ -37,7 +37,7 @@ Staking TON currently requires installing MetaMask, managing seed phrases, regis
 <table><tr>
 <td width="80"><img src="public/toki-excited.png" width="80"/></td>
 <td><b>Toki's Solution</b><br/>
-Sign in with Google/Kakao. Send TON. Click stake. That's it. Gas is paid in TON via EIP-7702 + Paymaster.</td>
+Sign in with Google. Send TON. Click stake. That's it. Gas is paid in TON via EIP-7702 + Paymaster.</td>
 </tr></table>
 
 ---
@@ -216,7 +216,7 @@ User (Social Login)
 | Layer | Technology |
 |-------|-----------|
 | Frontend | Next.js 14, TypeScript, Tailwind CSS |
-| Auth | Privy SDK (Kakao, Google OAuth) |
+| Auth | Privy SDK (Google OAuth) |
 | Web3 | viem (EIP-7702 + UserOperation signing) |
 | Bundler | Pimlico (EntryPoint v0.8) |
 | Paymaster | Custom TonPaymaster (TON → ETH swap) |

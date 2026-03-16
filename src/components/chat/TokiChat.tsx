@@ -66,6 +66,7 @@ const TUTORIAL_VIDEOS: Record<string, { url: string; mobileUrl?: string; labelKo
 const NAV_ROUTES: Record<string, string> = {
   "go-dashboard": "/dashboard",
   "go-onboarding": "/onboarding",
+  "go-staking": "/staking",
   "go-explore": "/explore",
 };
 

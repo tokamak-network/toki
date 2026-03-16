@@ -2,10 +2,7 @@
 
 import React from "react";
 import { PrivyProvider as Provider } from "@privy-io/react-auth";
-import { sepolia, mainnet } from "viem/chains";
-
-const chain =
-  process.env.NEXT_PUBLIC_NETWORK === "sepolia" ? sepolia : mainnet;
+import { chain } from "@/lib/chain";
 
 export default function PrivyProvider({
   children,

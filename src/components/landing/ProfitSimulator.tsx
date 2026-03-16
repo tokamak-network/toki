@@ -311,7 +311,7 @@ export default function ProfitSimulator({ data, show = true, onClose }: ProfitSi
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 {/* 1P — Exchange (B: muted, small) */}
                 <div className="flex-1 text-center py-2 rounded-md"
                   style={{ background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.1)" }}>
@@ -327,7 +327,7 @@ export default function ProfitSimulator({ data, show = true, onClose }: ProfitSi
                 </div>
 
                 {/* VS badge */}
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 relative"
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 relative self-center"
                   style={{
                     background: "linear-gradient(135deg, #f59e0b, #ef4444)",
                     color: "white",

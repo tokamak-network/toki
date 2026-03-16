@@ -19,8 +19,21 @@ export interface DialogueNode {
 }
 
 // Keyword → node id mapping for free-text input
+// Order matters: more specific patterns are checked first
 export const KEYWORD_MAP: Record<string, string> = {
-  // Korean keywords
+  // Korean keywords — intent to stake (must come before generic "스테이킹")
+  "스테이킹 하고": "want-to-stake",
+  "스테이킹하고": "want-to-stake",
+  "스테이킹 시작": "want-to-stake",
+  "스테이킹 해보": "want-to-stake",
+  "스테이킹해보": "want-to-stake",
+  "스테이킹 할래": "want-to-stake",
+  "스테이킹할래": "want-to-stake",
+  "스테이킹 바로": "want-to-stake",
+  "바로 스테이킹": "want-to-stake",
+  "스테이킹 하러": "want-to-stake",
+  "지금 스테이킹": "want-to-stake",
+  // Korean keywords — general staking info
   "스테이킹": "what-is-staking",
   "스테이크": "what-is-staking",
   "수익": "apr-info",
@@ -47,7 +60,17 @@ export const KEYWORD_MAP: Record<string, string> = {
   "언스테이킹": "unstaking",
   "출금": "unstaking",
   "인출": "unstaking",
-  // English keywords
+  // English keywords — intent to stake (must come before generic "staking")
+  "want to stake": "want-to-stake",
+  "start staking": "want-to-stake",
+  "stake now": "want-to-stake",
+  "begin staking": "want-to-stake",
+  "try staking": "want-to-stake",
+  "do staking": "want-to-stake",
+  "let me stake": "want-to-stake",
+  "ready to stake": "want-to-stake",
+  "i want to stake": "want-to-stake",
+  // English keywords — general staking info
   "staking": "what-is-staking",
   "stake": "what-is-staking",
   "yield": "apr-info",
@@ -81,6 +104,18 @@ export const DIALOGUE_TREE: DialogueNode[] = [
       { labelKo: "수익률 알려줘", labelEn: "Tell me about APR", next: "apr-info" },
       { labelKo: "TON 어디서 사?", labelEn: "Where to buy TON?", next: "buy-ton" },
       { labelKo: "생태계 둘러보기", labelEn: "Explore ecosystem", next: "ecosystem" },
+    ],
+  },
+
+  // ─── Want to Stake (intent flow) ───
+  {
+    id: "want-to-stake",
+    mood: "excited",
+    textKo: "오! 스테이킹 하고 싶구나! 혹시 스테이킹 해본 적 있어?",
+    textEn: "Oh! You want to stake! Have you staked before?",
+    choices: [
+      { labelKo: "처음이야, 알려줘!", labelEn: "First time, teach me!", next: "go-onboarding" },
+      { labelKo: "해봤어, 바로 할래", labelEn: "Done it before, let's go", next: "go-staking" },
     ],
   },
 
@@ -258,6 +293,12 @@ export const DIALOGUE_TREE: DialogueNode[] = [
     mood: "excited",
     textKo: "온보딩 튜토리얼을 시작할게! 내가 하나씩 알려줄 테니 걱정 마!",
     textEn: "Let's start the onboarding tutorial! I'll guide you step by step, don't worry!",
+  },
+  {
+    id: "go-staking",
+    mood: "determined",
+    textKo: "좋아! 스테이킹 페이지로 바로 이동할게. 화이팅!",
+    textEn: "Let's go! Taking you straight to the staking page. Good luck!",
   },
   {
     id: "go-explore",

@@ -1,6 +1,6 @@
 // Tokamak Network Contract Addresses
 
-const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
+import { isTestnet } from "@/lib/chain";
 
 const MAINNET_CONTRACTS = {
   TON: "0x2be5e8c109e2197D077D13A82dAead6a9b3433C5",

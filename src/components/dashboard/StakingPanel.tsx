@@ -2,16 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  createPublicClient,
   createWalletClient,
-  http,
   formatUnits,
   parseUnits,
   encodeAbiParameters,
   encodeFunctionData,
   custom,
 } from "viem";
-import { sepolia, mainnet } from "viem/chains";
 import { CONTRACTS } from "@/constants/contracts";
 import {
   seigManagerAbi,
@@ -22,16 +19,7 @@ import {
 } from "@/lib/abi";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
-
-const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
-const chain = isTestnet ? sepolia : mainnet;
-
-const publicClient = createPublicClient({
-  chain,
-  transport: http(process.env.NEXT_PUBLIC_RPC_URL || undefined, {
-    timeout: 15_000,
-  }),
-});
+import { chain, publicClient, isTestnet } from "@/lib/chain";
 
 interface Operator {
   address: string;

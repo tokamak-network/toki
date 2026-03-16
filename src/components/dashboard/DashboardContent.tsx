@@ -4,8 +4,6 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { formatUnits } from "viem";
-import { createPublicClient, http } from "viem";
-import { sepolia, mainnet } from "viem/chains";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import CardCollection from "./CardCollection";
@@ -16,16 +14,11 @@ import { useStakingSubgraph } from "@/hooks/useStakingSubgraph";
 import { useWithdrawalStatus } from "@/hooks/useWithdrawalStatus";
 import { usePushNotification } from "@/hooks/usePushNotification";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { publicClient as client, isTestnet } from "@/lib/chain";
+import { CONTRACTS } from "@/constants/contracts";
 
-const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
-const chain = isTestnet ? sepolia : mainnet;
-
-const TON_ADDRESS = isTestnet
-  ? "0xa30fe40285b8f5c0457dbc3b7c8a280373c40044"
-  : "0x2be5e8c109e2197D077D13A82dAead6a9b3433C5";
-const WTON_ADDRESS = isTestnet
-  ? "0x79e0d92670106c85e9067b56b8f674340dca0bbd"
-  : "0xc4A11aaf6ea915Ed7Ac194161d2fC9384F15bff2";
+const TON_ADDRESS = CONTRACTS.TON;
+const WTON_ADDRESS = CONTRACTS.WTON;
 
 const erc20Abi = [
   {
@@ -36,13 +29,6 @@ const erc20Abi = [
     type: "function",
   },
 ] as const;
-
-const client = createPublicClient({
-  chain,
-  transport: http(process.env.NEXT_PUBLIC_RPC_URL || undefined, {
-    timeout: 15_000,
-  }),
-});
 
 interface Balances {
   eth: string;

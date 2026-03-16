@@ -2,16 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  createPublicClient,
   createWalletClient,
-  http,
   formatUnits,
   parseUnits,
   encodeAbiParameters,
   encodeFunctionData,
   custom,
 } from "viem";
-import { sepolia, mainnet } from "viem/chains";
 import { CONTRACTS } from "@/constants/contracts";
 import {
   seigManagerAbi,
@@ -27,18 +24,9 @@ import SeigniorageRain from "./SeigniorageRain";
 
 import type { PaymasterMode, StakingMode } from "@/hooks/useEip7702";
 import type { useSessionKey } from "@/hooks/useSessionKey";
+import { chain, publicClient, isTestnet } from "@/lib/chain";
 
 type SessionKeyReturn = ReturnType<typeof useSessionKey>;
-
-const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
-const chain = isTestnet ? sepolia : mainnet;
-
-const publicClient = createPublicClient({
-  chain,
-  transport: http(process.env.NEXT_PUBLIC_RPC_URL || undefined, {
-    timeout: 15_000,
-  }),
-});
 
 interface Operator {
   address: string;

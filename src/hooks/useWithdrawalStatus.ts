@@ -1,24 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { createPublicClient, http, formatUnits } from "viem";
-import { sepolia, mainnet } from "viem/chains";
+import { formatUnits } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
 import {
   layer2RegistryAbi,
   depositManagerAbi,
 } from "@/lib/abi";
+import { publicClient } from "@/lib/chain";
 
-const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
-const chain = isTestnet ? sepolia : mainnet;
 const BLOCK_TIME_SECONDS = 12;
-
-const publicClient = createPublicClient({
-  chain,
-  transport: http(process.env.NEXT_PUBLIC_RPC_URL || undefined, {
-    timeout: 15_000,
-  }),
-});
 
 export interface WithdrawalRequest {
   index: number;

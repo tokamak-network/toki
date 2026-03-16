@@ -40,10 +40,10 @@ const miniCharacters: ({ src: string; position: string } | null)[] = [
     src: "/toki-mini-step2.png",
     position: "left-[5px] md:left-[13px] bottom-[-20px] md:bottom-[-24px] w-[90px] h-[108px] md:w-[105px] md:h-[126px]",
   },
-  // Step 3: Victory celebration, jumping — centered on card top
+  // Step 3: Victory celebration, jumping — mobile: inside card top-right, desktop: above card
   {
     src: "/toki-mini-step3.png",
-    position: "left-1/2 -translate-x-1/2 top-[-78px] md:top-[-92px] w-[80px] h-[120px] md:w-[95px] md:h-[142px]",
+    position: "right-2 top-2 md:right-auto md:top-auto md:left-1/2 md:-translate-x-1/2 md:top-[-92px] w-[60px] h-[90px] md:w-[95px] md:h-[142px]",
   },
 ];
 

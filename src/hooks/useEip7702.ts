@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { toViemAccount } from "@privy-io/react-auth";
 import {
-  createPublicClient,
   http,
   type Address,
   type Hex,
@@ -13,28 +12,13 @@ import {
   erc20Abi,
   maxUint256,
 } from "viem";
-import { sepolia, mainnet } from "viem/chains";
 import { createBundlerClient, toSimple7702SmartAccount } from "viem/account-abstraction";
 import {
   toMetaMaskSmartAccount,
   Implementation,
 } from "@metamask/delegation-toolkit";
 import { CONTRACTS } from "@/constants/contracts";
-
-const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
-const chain = isTestnet ? sepolia : mainnet;
-
-const publicClient = createPublicClient({
-  chain,
-  transport: http(process.env.NEXT_PUBLIC_RPC_URL || undefined, {
-    timeout: 15_000,
-  }),
-});
-
-const pimlicoApiKey = process.env.NEXT_PUBLIC_PIMLICO_API_KEY;
-const pimlicoUrl = pimlicoApiKey
-  ? `https://api.pimlico.io/v2/${chain.id}/rpc?apikey=${pimlicoApiKey}`
-  : null;
+import { chain, publicClient, pimlicoUrl } from "@/lib/chain";
 
 type WalletType = "embedded" | "external" | null;
 export type PaymasterMode = "erc20" | "sponsor" | "none";

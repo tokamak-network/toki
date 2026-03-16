@@ -4,16 +4,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  createPublicClient,
   createWalletClient,
-  http,
   formatUnits,
   parseUnits,
   encodeAbiParameters,
   encodeFunctionData,
   custom,
 } from "viem";
-import { sepolia, mainnet } from "viem/chains";
 import { CONTRACTS } from "@/constants/contracts";
 import {
   seigManagerAbi,
@@ -29,18 +26,7 @@ import { useEip7702 } from "@/hooks/useEip7702";
 import { useSessionKey } from "@/hooks/useSessionKey";
 import { calculateLevel, CARD_TIERS, type CardTier } from "@/lib/achievements";
 import OperatorCard from "@/components/dashboard/OperatorCard";
-
-// ─── Config ──────────────────────────────────────────────────────────
-
-const isTestnet = process.env.NEXT_PUBLIC_NETWORK === "sepolia";
-const chain = isTestnet ? sepolia : mainnet;
-
-const publicClient = createPublicClient({
-  chain,
-  transport: http(process.env.NEXT_PUBLIC_RPC_URL || undefined, {
-    timeout: 15_000,
-  }),
-});
+import { chain, publicClient, isTestnet } from "@/lib/chain";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
