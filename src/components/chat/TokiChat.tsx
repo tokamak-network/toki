@@ -58,7 +58,7 @@ const MOOD_GLOW: Record<Mood, string> = {
 const TUTORIAL_VIDEOS: Record<string, { url: string; mobileUrl?: string; labelKo: string; labelEn: string }> = {
   "create-wallet": { url: "https://www.youtube.com/watch?v=UURB7Tc7D4M&t=129", labelKo: "지갑 만들기 영상 보기", labelEn: "Watch: Create a Wallet" },
   "install-metamask": { url: "https://www.youtube.com/watch?v=KjwlrQAtdYU", mobileUrl: "https://www.youtube.com/shorts/stRSJxS2kyY", labelKo: "MetaMask 설치 영상 보기", labelEn: "Watch: Install MetaMask" },
-  "import-key": { url: "https://www.youtube.com/watch?v=yvOie0hBr2k", labelKo: "비밀키 가져오기 영상 보기", labelEn: "Watch: Import Private Key" },
+  "import-key": { url: "https://www.youtube.com/watch?v=yvOie0hBr2k", mobileUrl: "https://www.youtube.com/watch?v=O8R6V2fvwKs&t=173", labelKo: "비밀키 가져오기 영상 보기", labelEn: "Watch: Import Private Key" },
   "receive-ton": { url: "https://www.youtube.com/watch?v=nuib4GnYxnk", labelKo: "TON 출금 방법 영상 보기", labelEn: "Watch: Withdraw TON" },
 };
 
