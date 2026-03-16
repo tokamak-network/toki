@@ -458,7 +458,7 @@ export default function AchievementToast() {
   }
 
   return (
-    <div className="fixed bottom-6 right-4 z-[60] w-[380px] max-w-[calc(100%-2rem)]">
+    <div className="fixed top-16 md:top-auto md:bottom-6 right-4 z-[60] w-[380px] max-w-[calc(100%-2rem)]">
       <MiniToast
         key={current.id}
         achievement={current}

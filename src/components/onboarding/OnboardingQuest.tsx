@@ -504,12 +504,16 @@ export default function OnboardingQuest() {
       }
     }
 
-    // Show intro cinematic on first visit only
+    // Show intro cinematic on first visit only (skip on mobile)
     const introSeen = localStorage.getItem("toki-intro-seen");
-    if (!introSeen) {
+    const isMobile = window.innerWidth < 768;
+    if (!introSeen && !isMobile) {
       setShowCinematic(true);
     } else {
       setCinematicComplete(true);
+      if (!introSeen && isMobile) {
+        localStorage.setItem("toki-intro-seen", "1");
+      }
     }
   }, []);
 
