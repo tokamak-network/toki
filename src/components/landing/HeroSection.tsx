@@ -64,8 +64,8 @@ export default function HeroSection({ apr }: { apr: number | null }) {
       {/* Content — left bottom */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 animate-fade-in" style={{ marginTop: 500 }}>
         <div className="max-w-lg">
-          {/* Stats */}
-          <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-10">
+          {/* Stats — hidden on mobile, show only buttons */}
+          <div className="hidden sm:flex flex-row flex-wrap gap-4 mb-10">
             <div className="px-4 py-3 rounded-xl bg-black/40 backdrop-blur-sm border border-white/10">
               <div className="text-2xl sm:text-3xl font-bold text-accent-amber font-mono-num">
                 {displayApr}
