@@ -387,11 +387,11 @@ const QUEST_BACKGROUNDS: Record<string, string> = {
 
 // ─── Tutorial Video URLs ──────────────────────────────────────────────
 
-const TUTORIAL_VIDEOS: Record<string, string> = {
-  "create-wallet": "https://www.youtube.com/embed/UURB7Tc7D4M?start=129",
-  "install-metamask": "https://www.youtube.com/embed/KjwlrQAtdYU",
-  "import-key": "https://www.youtube.com/embed/yvOie0hBr2k",
-  "receive-ton": "https://www.youtube.com/embed/nuib4GnYxnk",
+const TUTORIAL_VIDEOS: Record<string, { embed: string; mobileUrl?: string }> = {
+  "create-wallet": { embed: "https://www.youtube.com/embed/UURB7Tc7D4M?start=129" },
+  "install-metamask": { embed: "https://www.youtube.com/embed/KjwlrQAtdYU", mobileUrl: "https://www.youtube.com/shorts/stRSJxS2kyY" },
+  "import-key": { embed: "https://www.youtube.com/embed/yvOie0hBr2k" },
+  "receive-ton": { embed: "https://www.youtube.com/embed/nuib4GnYxnk" },
 };
 
 // ─── Character Display (Visual Novel Style) ──────────────────────────
@@ -762,7 +762,7 @@ export default function OnboardingQuest() {
             <div className="hidden md:flex flex-col items-center px-4 mb-2">
               <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 1020, maxWidth: "100%", height: 574 }}>
                 <iframe
-                  src={TUTORIAL_VIDEOS[autoVideoKey]}
+                  src={TUTORIAL_VIDEOS[autoVideoKey].embed}
                   className="w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -773,10 +773,10 @@ export default function OnboardingQuest() {
                 {getVideoComment(autoVideoKey, t.onboarding)}
               </p>
             </div>
-            {/* Mobile: external link button */}
+            {/* Mobile: external link button (use mobileUrl if available) */}
             <div className="flex md:hidden justify-center px-4 mb-2">
               <a
-                href={TUTORIAL_VIDEOS[autoVideoKey].replace("/embed/", "/watch?v=").replace(/\?(?!v=)/, "&")}
+                href={TUTORIAL_VIDEOS[autoVideoKey].mobileUrl ?? TUTORIAL_VIDEOS[autoVideoKey].embed.replace("/embed/", "/watch?v=").replace(/\?(?!v=)/, "&")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-5 py-3 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/20 transition-colors"

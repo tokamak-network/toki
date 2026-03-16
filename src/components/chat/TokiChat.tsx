@@ -55,6 +55,13 @@ const MOOD_GLOW: Record<Mood, string> = {
   laughing: "rgba(245, 158, 11, 0.45)",
 };
 
+const TUTORIAL_VIDEOS: Record<string, { url: string; mobileUrl?: string; labelKo: string; labelEn: string }> = {
+  "create-wallet": { url: "https://www.youtube.com/watch?v=UURB7Tc7D4M&t=129", labelKo: "지갑 만들기 영상 보기", labelEn: "Watch: Create a Wallet" },
+  "install-metamask": { url: "https://www.youtube.com/watch?v=KjwlrQAtdYU", mobileUrl: "https://www.youtube.com/shorts/stRSJxS2kyY", labelKo: "MetaMask 설치 영상 보기", labelEn: "Watch: Install MetaMask" },
+  "import-key": { url: "https://www.youtube.com/watch?v=yvOie0hBr2k", labelKo: "비밀키 가져오기 영상 보기", labelEn: "Watch: Import Private Key" },
+  "receive-ton": { url: "https://www.youtube.com/watch?v=nuib4GnYxnk", labelKo: "TON 출금 방법 영상 보기", labelEn: "Watch: Withdraw TON" },
+};
+
 // Navigation node IDs → routes
 const NAV_ROUTES: Record<string, string> = {
   "go-dashboard": "/dashboard",
@@ -258,6 +265,43 @@ function TextInput({
   );
 }
 
+// ─── Video Suggestion ─────────────────────────────────────────────────
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+}
+
+function VideoSuggestion({ videoKey, locale }: { videoKey: string; locale: string }) {
+  const video = TUTORIAL_VIDEOS[videoKey];
+  const isMobile = useIsMobile();
+  if (!video) return null;
+
+  const href = isMobile && video.mobileUrl ? video.mobileUrl : video.url;
+
+  return (
+    <div className="px-4 pb-2 animate-slide-up-fade">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400 hover:bg-red-500/20 hover:border-red-500/30 transition-all"
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 shrink-0">
+          <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.546 12 3.546 12 3.546s-7.505 0-9.377.504A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.504 9.376.504 9.376.504s7.505 0 9.377-.504a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+        </svg>
+        <span>{locale === "ko" ? video.labelKo : video.labelEn}</span>
+      </a>
+    </div>
+  );
+}
+
 // ─── Chat Window ─────────────────────────────────────────────────────
 
 function ChatWindow({
@@ -269,10 +313,13 @@ function ChatWindow({
 }) {
   const router = useRouter();
   const { trackActivity } = useAchievement();
+  const { t } = useTranslation();
   const { apr } = useStakingData();
   const [currentNodeId, setCurrentNodeId] = useState("root");
   const [typingDone, setTypingDone] = useState(false);
   const [key, setKey] = useState(0); // force re-render on node change
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState<{ text: string; mood: Mood; videoKey?: string } | null>(null);
 
   const handleTypingComplete = useCallback(() => {
     setTypingDone(true);
@@ -281,10 +328,20 @@ function ChatWindow({
   const node = getNode(currentNodeId);
   if (!node) return null;
 
-  const text = replaceApr(locale === "ko" ? node.textKo : node.textEn, apr);
+  const rootNode = getNode("root");
+
+  // Determine what to display: AI response overrides node text
+  const displayMood = aiLoading ? "thinking" : aiResponse ? aiResponse.mood : node.mood;
+  const displayText = aiLoading
+    ? t.chat.aiThinking
+    : aiResponse
+      ? aiResponse.text
+      : replaceApr(locale === "ko" ? node.textKo : node.textEn, apr);
   const isNavNode = currentNodeId in NAV_ROUTES;
 
   const navigateTo = (nodeId: string) => {
+    setAiResponse(null);
+    setAiLoading(false);
     setTypingDone(false);
     setKey((k) => k + 1);
     setCurrentNodeId(nodeId);
@@ -292,7 +349,8 @@ function ChatWindow({
   };
 
   const handleChoiceSelect = (nextId: string) => {
-    // Check if it's a navigation node
+    // Clear any AI response when selecting a choice
+    setAiResponse(null);
     if (nextId in NAV_ROUTES) {
       navigateTo(nextId);
       setTimeout(() => {
@@ -303,15 +361,36 @@ function ChatWindow({
     }
   };
 
-  const handleFreeText = (input: string) => {
+  const handleFreeText = async (input: string) => {
     trackActivity("chat-freetext");
     const matched = matchKeyword(input);
     if (matched) {
       handleChoiceSelect(matched);
-    } else {
+      return;
+    }
+    // AI call
+    setAiLoading(true);
+    setAiResponse(null);
+    setTypingDone(false);
+    setKey((k) => k + 1);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input, locale }),
+      });
+      const data = await res.json();
+      setAiLoading(false);
+      setAiResponse({ text: data.reply, mood: data.mood as Mood, videoKey: data.videoKey });
+      setKey((k) => k + 1);
+    } catch {
+      setAiLoading(false);
       navigateTo("fallback");
     }
   };
+
+  // When showing AI response, use root node choices for navigation
+  const showAiChoices = aiResponse && !aiLoading && rootNode?.choices;
 
   return (
     <div className="w-80 sm:w-96 rounded-2xl overflow-hidden border border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/50 animate-slide-up-fade flex flex-col max-h-[520px]">
@@ -336,15 +415,20 @@ function ChatWindow({
 
       {/* Character */}
       <div className="bg-gradient-to-b from-black/40 to-transparent">
-        <ChatCharacter mood={node.mood} />
+        <ChatCharacter mood={displayMood} />
       </div>
 
       {/* Dialogue */}
       <div className="border-t border-white/5 bg-black/30 flex-1 overflow-y-auto">
-        <DialogueDisplay key={key} text={text} onComplete={handleTypingComplete} />
+        <DialogueDisplay key={key} text={displayText} onComplete={handleTypingComplete} />
 
-        {/* Choices */}
-        {!isNavNode && (
+        {/* Video suggestion — show after AI typing completes */}
+        {aiResponse?.videoKey && typingDone && (
+          <VideoSuggestion videoKey={aiResponse.videoKey} locale={locale} />
+        )}
+
+        {/* Choices — show root choices when AI responded, or normal choices otherwise */}
+        {!isNavNode && !aiLoading && !aiResponse && (
           <ChoiceButtons
             node={node}
             locale={locale}
@@ -352,9 +436,17 @@ function ChatWindow({
             visible={typingDone}
           />
         )}
+        {showAiChoices && rootNode && (
+          <ChoiceButtons
+            node={rootNode}
+            locale={locale}
+            onSelect={handleChoiceSelect}
+            visible={typingDone}
+          />
+        )}
 
         {/* Free text input — show when choices are visible */}
-        {!isNavNode && (
+        {!isNavNode && !aiLoading && (
           <TextInput locale={locale} onSubmit={handleFreeText} visible={typingDone} />
         )}
       </div>

@@ -202,6 +202,11 @@ const ko = {
     typing: "토키가 답변 중...",
     placeholder: "질문을 선택하세요",
   },
+  chat: {
+    aiThinking: "생각 중...",
+    aiError: "앗, 잠시 문제가 생겼어. 다시 물어봐!",
+    watchVideo: "관련 영상 보기",
+  },
   stakingPreview: {
     title: "실시간 스테이킹 통계",
     subtitle: "토카막 네트워크 컨트랙트의 실시간 데이터",

@@ -207,6 +207,11 @@ const en = {
     typing: "Toki is typing...",
     placeholder: "Select a question",
   },
+  chat: {
+    aiThinking: "Thinking...",
+    aiError: "Oops, something went wrong. Ask me again!",
+    watchVideo: "Watch related video",
+  },
   stakingPreview: {
     title: "Live Staking Stats",
     subtitle: "Real-time data from Tokamak Network contracts",
