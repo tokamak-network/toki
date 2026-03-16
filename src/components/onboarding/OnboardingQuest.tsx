@@ -1041,6 +1041,11 @@ export default function OnboardingQuest() {
                         </p>
                         <button
                           onClick={() => {
+                            const isMobile = window.innerWidth < 768;
+                            if (isMobile) {
+                              setSubStepConfirmed(true);
+                              return;
+                            }
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const ethereum = (window as any).ethereum;
                             if (ethereum) {
