@@ -34,7 +34,7 @@ const MOOD_IMAGES: Record<Mood, string> = {
   peace: "/toki-peace.png",
   worried: "/toki-worried.png",
   laughing: "/toki-laughing.png",
-  neutral: "/toki.png",
+  neutral: "/toni.png",
 };
 
 interface DialogueLine {
@@ -684,6 +684,21 @@ export default function OnboardingQuest() {
       router.push(quest.action.route);
     }
   };
+
+  // ─── Guard: wait for Privy provider to initialize ────────────────
+  // PrivyClientProvider lazy-loads PrivyProvider; until loaded, hooks
+  // return default/empty values. On slower mobile devices this race
+  // condition can cause render errors. Show a loading state until ready.
+  if (!ready && !authenticated) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
+          <div className="text-gray-400 text-sm">Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   // ─── Render: All Complete ──────────────────────────────────────────
 
