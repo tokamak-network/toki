@@ -16,21 +16,27 @@ interface LanguageContextType {
 }
 
 const LanguageContext = createContext<LanguageContextType>({
-  locale: "en",
+  locale: "ko",
   setLocale: () => {},
-  t: dictionaries.en,
+  t: dictionaries.ko,
 });
 
-function detectInitialLocale(): Locale {
-  if (typeof window === "undefined") return "ko";
-  const saved = localStorage.getItem("toki-locale") as Locale | null;
-  if (saved === "en" || saved === "ko") return saved;
-  const browserLang = navigator.language || navigator.languages?.[0] || "en";
-  return browserLang.startsWith("ko") ? "ko" : "en";
-}
-
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(detectInitialLocale);
+  // SSR default: "ko", then sync from localStorage/browser on mount
+  const [locale, setLocaleState] = useState<Locale>("ko");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("toki-locale") as Locale | null;
+    let detected: Locale;
+    if (saved === "en" || saved === "ko") {
+      detected = saved;
+    } else {
+      const browserLang = navigator.language || navigator.languages?.[0] || "en";
+      detected = browserLang.startsWith("ko") ? "ko" : "en";
+    }
+    setLocaleState(detected);
+    document.documentElement.lang = detected;
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = locale;

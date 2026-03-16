@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect, MouseEvent } from "react";
 import Image from "next/image";
 import { ACHIEVEMENTS } from "@/lib/achievements";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 const CARD_IMAGES: Record<string, string> = {
   "onboarding-wallet": "/cards/onboarding-wallet.png",
@@ -378,6 +379,7 @@ function FocusCardModal({
 /* ─── Main ─────────────────────────────────────────────────────────────────── */
 
 export default function GachaIntoWall() {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>("idle");
   const [flyStyle, setFlyStyle] = useState<React.CSSProperties>({});
   const [focusedCard, setFocusedCard] = useState<AchievementItem | null>(null);
@@ -579,21 +581,21 @@ export default function GachaIntoWall() {
         {/* Header */}
         <div className="text-center mb-14 px-4">
           <div className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400 tracking-widest mb-6">
-            {showWall ? `${CARDS_WITH_IMAGES.length} UNIQUE CARDS` : "TAP TO REVEAL"}
+            {showWall ? `${CARDS_WITH_IMAGES.length} ${t.cardSection.uniqueCards}` : t.cardSection.tapToReveal}
           </div>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight uppercase">
             {showWall ? (
               <>
-                ACHIEVEMENT{" "}
+                {t.cardSection.achievement}{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-amber-400">
-                  CARDS
+                  {t.cardSection.cards}
                 </span>
               </>
             ) : (
               <>
-                COLLECT YOUR{" "}
+                {t.cardSection.collectYour}{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-amber-400">
-                  TOKI CARDS
+                  {t.cardSection.tokiCards}
                 </span>
               </>
             )}
@@ -601,12 +603,12 @@ export default function GachaIntoWall() {
           <p className="text-lg text-gray-400 max-w-xl mx-auto">
             {showWall ? (
               <>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-300 font-semibold">Stake</span>.{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-300 font-semibold">Explore</span>.{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300 font-semibold">Collect</span> them all.
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-300 font-semibold">{t.cardSection.stake}</span>.{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-300 font-semibold">{t.cardSection.explore}</span>.{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300 font-semibold">{t.cardSection.collect}</span> {t.cardSection.themAll}
               </>
             ) : (
-              "Complete quests to unlock exclusive cards."
+              t.cardSection.completeQuests
             )}
           </p>
         </div>
