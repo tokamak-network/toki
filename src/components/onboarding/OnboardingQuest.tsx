@@ -521,6 +521,14 @@ export default function OnboardingQuest() {
     }
   }, []);
 
+  // Preload all mood images so character appears instantly on mobile
+  useEffect(() => {
+    Object.values(MOOD_IMAGES).forEach((src) => {
+      const img = new window.Image();
+      img.src = src;
+    });
+  }, []);
+
   // Save progress
   const saveProgress = useCallback(
     (qi: number, xp: number, completed: Set<string>) => {
