@@ -14,7 +14,7 @@ import { useAchievement } from "@/components/providers/AchievementProvider";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
 
-type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "surprised" | "confused" | "shy" | "determined" | "pointing" | "reading" | "crying-happy" | "peace" | "worried" | "laughing";
+type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "surprised" | "confused" | "shy" | "determined" | "pointing" | "reading" | "crying-happy" | "peace" | "worried" | "laughing" | "neutral";
 
 const MOOD_IMAGES: Record<Mood, string> = {
   welcome: "/toki-welcome.png",
@@ -34,6 +34,7 @@ const MOOD_IMAGES: Record<Mood, string> = {
   peace: "/toki-peace.png",
   worried: "/toki-worried.png",
   laughing: "/toki-laughing.png",
+  neutral: "/toki.png",
 };
 
 interface DialogueLine {
@@ -80,17 +81,17 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       xp: 100,
       intro: [
         { text: t.quest1Intro1, mood: "welcome" },
-        { text: t.quest1Intro2, mood: "thinking" },
-        { text: t.quest1Intro3, mood: "explain" },
-        { text: t.quest1Intro4, mood: "wink" },
+        { text: t.quest1Intro2, mood: "neutral" },
+        { text: t.quest1Intro3, mood: "reading" },
+        { text: t.quest1Intro4, mood: "pointing" },
         { text: t.quest1Intro5, mood: "excited" },
         { text: t.quest1Intro6, mood: "cheer" },
       ],
       action: { type: "privy-login", label: t.quest1Action },
       verify: "privy-authenticated",
       success: [
-        { text: t.quest1Success1, mood: "excited" },
-        { text: t.quest1Success2, mood: "wink" },
+        { text: t.quest1Success1, mood: "surprised" },
+        { text: t.quest1Success2, mood: "peace" },
       ],
     },
     {
@@ -101,18 +102,18 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       badgeIcon: "B",
       xp: 200,
       intro: [
-        { text: t.quest2Intro1, mood: "explain" },
-        { text: t.quest2Intro2, mood: "thinking" },
-        { text: t.quest2Intro3, mood: "explain" },
-        { text: t.quest2Intro4, mood: "excited" },
-        { text: t.quest2Intro5, mood: "cheer" },
+        { text: t.quest2Intro1, mood: "reading" },
+        { text: t.quest2Intro2, mood: "neutral" },
+        { text: t.quest2Intro3, mood: "pointing" },
+        { text: t.quest2Intro4, mood: "worried" },
+        { text: t.quest2Intro5, mood: "determined" },
       ],
       action: { type: "substeps", label: t.quest2Action },
       verify: "user-confirm",
       success: [
-        { text: t.quest2Success1, mood: "excited" },
+        { text: t.quest2Success1, mood: "laughing" },
         { text: t.quest2Success2, mood: "explain" },
-        { text: t.quest2Success3, mood: "wink" },
+        { text: t.quest2Success3, mood: "shy" },
       ],
       substeps: [
         {
@@ -140,15 +141,15 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       badgeIcon: "E",
       xp: 300,
       intro: [
-        { text: t.quest3Intro1, mood: "excited" },
-        { text: t.quest3Intro3, mood: "cheer" },
+        { text: t.quest3Intro1, mood: "determined" },
+        { text: t.quest3Intro3, mood: "pointing" },
       ],
       action: { type: "confirm", label: t.quest3ActionLabel, confirmText: t.quest3Confirm },
       verify: "user-confirm",
       success: [
-        { text: t.quest3Success1, mood: "excited" },
-        { text: t.quest3Success2, mood: "welcome" },
-        { text: t.quest3Success3, mood: "proud" },
+        { text: t.quest3Success1, mood: "crying-happy" },
+        { text: t.quest3Success2, mood: "peace" },
+        { text: t.quest3Success3, mood: "laughing" },
       ],
     },
     {
@@ -160,14 +161,14 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       xp: 250,
       intro: [
         { text: t.quest4Intro1, mood: "excited" },
-        { text: t.quest4Intro2, mood: "explain" },
-        { text: t.quest4Intro3, mood: "excited" },
+        { text: t.quest4Intro2, mood: "reading" },
+        { text: t.quest4Intro3, mood: "surprised" },
         { text: t.quest4Intro4, mood: "wink" },
       ],
       action: { type: "confirm", label: t.quest4ActionLabel, confirmText: t.quest4Confirm },
       verify: "user-confirm",
       success: [
-        { text: t.quest4Success1, mood: "excited" },
+        { text: t.quest4Success1, mood: "laughing" },
         { text: t.quest4Success2, mood: "proud" },
       ],
     },
@@ -180,17 +181,17 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       xp: 500,
       intro: [
         { text: t.quest5Intro1, mood: "excited" },
-        { text: t.quest5Intro2, mood: "proud" },
-        { text: t.quest5Intro3, mood: "explain" },
-        { text: t.quest5Intro4, mood: "cheer" },
+        { text: t.quest5Intro2, mood: "crying-happy" },
+        { text: t.quest5Intro3, mood: "pointing" },
+        { text: t.quest5Intro4, mood: "determined" },
       ],
       action: { type: "navigate", label: t.quest5Action, route: "/dashboard" },
       verify: "user-confirm",
       success: [
-        { text: t.quest5Success1, mood: "excited" },
-        { text: t.quest5Success2, mood: "proud" },
-        { text: t.quest5Success3, mood: "explain" },
-        { text: t.quest5Success4, mood: "wink" },
+        { text: t.quest5Success1, mood: "surprised" },
+        { text: t.quest5Success2, mood: "shy" },
+        { text: t.quest5Success3, mood: "reading" },
+        { text: t.quest5Success4, mood: "peace" },
       ],
     },
   ];
@@ -215,6 +216,7 @@ function getMoodLabel(mood: Mood, t: Dictionary["onboarding"]): string {
     peace: t.moodPeace,
     worried: t.moodWorried,
     laughing: t.moodLaughing,
+    neutral: t.moodNeutral,
   };
   return map[mood];
 }
@@ -340,6 +342,7 @@ const MOOD_GLOW: Record<Mood, string> = {
   peace: "rgba(168, 85, 247, 0.35)",
   worried: "rgba(239, 68, 68, 0.30)",
   laughing: "rgba(245, 158, 11, 0.45)",
+  neutral: "rgba(148, 163, 184, 0.30)",
 };
 
 // ─── Exchange Guide Links ─────────────────────────────────────────────

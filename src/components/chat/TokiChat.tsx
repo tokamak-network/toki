@@ -33,6 +33,7 @@ const MOOD_IMAGES: Record<Mood, string> = {
   peace: "/toki-peace.png",
   worried: "/toki-worried.png",
   laughing: "/toki-laughing.png",
+  neutral: "/toki.png",
 };
 
 const MOOD_GLOW: Record<Mood, string> = {
@@ -53,6 +54,7 @@ const MOOD_GLOW: Record<Mood, string> = {
   peace: "rgba(168, 85, 247, 0.35)",
   worried: "rgba(239, 68, 68, 0.30)",
   laughing: "rgba(245, 158, 11, 0.45)",
+  neutral: "rgba(148, 163, 184, 0.30)",
 };
 
 const TUTORIAL_VIDEOS: Record<string, { url: string; mobileUrl?: string; labelKo: string; labelEn: string }> = {

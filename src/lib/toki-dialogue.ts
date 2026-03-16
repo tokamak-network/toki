@@ -1,6 +1,6 @@
 // ─── Toki Visual Novel Chat Dialogue Tree ────────────────────────────
 
-export type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "surprised" | "confused" | "shy" | "determined" | "pointing" | "reading" | "crying-happy" | "peace" | "worried" | "laughing";
+export type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "surprised" | "confused" | "shy" | "determined" | "pointing" | "reading" | "crying-happy" | "peace" | "worried" | "laughing" | "neutral";
 
 export interface DialogueChoice {
   labelKo: string;

@@ -535,6 +535,7 @@ const en = {
     moodPeace: "-- victory",
     moodWorried: "-- worried",
     moodLaughing: "-- laughing",
+    moodNeutral: "-- calm",
     // Intro cinematic
     introTerminal1: "> connecting to tokamak network...",
     introTerminal2: "> protocol: layer-2 on ethereum",

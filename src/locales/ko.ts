@@ -530,6 +530,7 @@ const ko = {
     moodPeace: "-- 브이",
     moodWorried: "-- 걱정하는",
     moodLaughing: "-- 웃는",
+    moodNeutral: "-- 평온한",
     // Intro cinematic
     introTerminal1: "> 토카막 네트워크에 연결 중...",
     introTerminal2: "> 프로토콜: 이더리움 레이어-2",
