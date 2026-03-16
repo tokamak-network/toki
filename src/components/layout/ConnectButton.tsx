@@ -13,9 +13,26 @@ import {
   getCardTier,
 } from "@/lib/achievements";
 
+// Safe wrappers — PrivyClientProvider lazy-loads the real PrivyProvider.
+// Until it loads, hooks run outside the provider and may throw on some browsers.
+function usePrivySafe() {
+  try {
+    return usePrivy();
+  } catch {
+    return { ready: false, authenticated: false, login: () => {}, logout: async () => {}, user: null } as ReturnType<typeof usePrivy>;
+  }
+}
+function useWalletsSafe() {
+  try {
+    return useWallets();
+  } catch {
+    return { wallets: [], ready: false } as ReturnType<typeof useWallets>;
+  }
+}
+
 export default function ConnectButton() {
-  const { ready, authenticated, login, logout, user } = usePrivy();
-  const { wallets } = useWallets();
+  const { ready, authenticated, login, logout, user } = usePrivySafe();
+  const { wallets } = useWalletsSafe();
   const { t } = useTranslation();
   const { storage } = useAchievement();
   const [open, setOpen] = useState(false);

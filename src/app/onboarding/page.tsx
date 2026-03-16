@@ -55,11 +55,9 @@ class OnboardingErrorBoundary extends Component<
 
 export default function OnboardingPage() {
   return (
-    <>
+    <OnboardingErrorBoundary>
       <Header />
-      <OnboardingErrorBoundary>
-        <OnboardingQuest />
-      </OnboardingErrorBoundary>
-    </>
+      <OnboardingQuest />
+    </OnboardingErrorBoundary>
   );
 }

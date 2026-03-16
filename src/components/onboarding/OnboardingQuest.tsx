@@ -457,11 +457,28 @@ type Phase = "intro" | "action" | "verifying" | "success" | "badge";
 // Old quest IDs for localStorage migration
 const OLD_QUEST_IDS = ["install-metamask", "connect-toki", "verify-upbit"];
 
+// Safe wrappers — PrivyClientProvider lazy-loads the real PrivyProvider.
+// Until it loads, hooks run outside the provider and may return defaults.
+function usePrivySafe() {
+  try {
+    return usePrivy();
+  } catch {
+    return { ready: false, authenticated: false, login: () => {}, exportWallet: async () => {} } as ReturnType<typeof usePrivy>;
+  }
+}
+function useWalletsSafe() {
+  try {
+    return useWallets();
+  } catch {
+    return { wallets: [], ready: false } as ReturnType<typeof useWallets>;
+  }
+}
+
 export default function OnboardingQuest() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { ready, authenticated, login, exportWallet } = usePrivy();
-  const { wallets } = useWallets();
+  const { ready, authenticated, login, exportWallet } = usePrivySafe();
+  const { wallets } = useWalletsSafe();
   const embeddedWallet = wallets.find(w => w.walletClientType === "privy");
 
   const { trackActivity } = useAchievement();
@@ -684,21 +701,6 @@ export default function OnboardingQuest() {
       router.push(quest.action.route);
     }
   };
-
-  // ─── Guard: wait for Privy provider to initialize ────────────────
-  // PrivyClientProvider lazy-loads PrivyProvider; until loaded, hooks
-  // return default/empty values. On slower mobile devices this race
-  // condition can cause render errors. Show a loading state until ready.
-  if (!ready && !authenticated) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
-          <div className="text-gray-400 text-sm">Loading...</div>
-        </div>
-      </div>
-    );
-  }
 
   // ─── Render: All Complete ──────────────────────────────────────────
 
