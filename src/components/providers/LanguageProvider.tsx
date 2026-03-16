@@ -26,16 +26,20 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("ko");
 
   useEffect(() => {
-    const saved = localStorage.getItem("toki-locale") as Locale | null;
-    let detected: Locale;
-    if (saved === "en" || saved === "ko") {
-      detected = saved;
-    } else {
-      const browserLang = navigator.language || navigator.languages?.[0] || "en";
-      detected = browserLang.startsWith("ko") ? "ko" : "en";
+    try {
+      const saved = localStorage.getItem("toki-locale") as Locale | null;
+      let detected: Locale;
+      if (saved === "en" || saved === "ko") {
+        detected = saved;
+      } else {
+        const browserLang = navigator.language || navigator.languages?.[0] || "en";
+        detected = browserLang.startsWith("ko") ? "ko" : "en";
+      }
+      setLocaleState(detected);
+      document.documentElement.lang = detected;
+    } catch {
+      // iOS may throw SecurityError on localStorage after background termination
     }
-    setLocaleState(detected);
-    document.documentElement.lang = detected;
   }, []);
 
   useEffect(() => {
@@ -44,7 +48,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
-    localStorage.setItem("toki-locale", newLocale);
+    try {
+      localStorage.setItem("toki-locale", newLocale);
+    } catch {
+      // iOS private browsing or quota exceeded
+    }
     document.documentElement.lang = newLocale;
   };
 

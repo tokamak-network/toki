@@ -7,26 +7,26 @@
   return this.toString();
 };
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
-// Lazy load PrivyProvider to avoid SSR "React is not defined" from @privy-io/react-auth
-let PrivyProviderModule: React.ComponentType<{ children: ReactNode }> | null =
-  null;
+type ProviderComponent = React.ComponentType<{ children: ReactNode }>;
 
 export default function PrivyClientProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [Provider, setProvider] = useState<React.ComponentType<{
-    children: ReactNode;
-  }> | null>(PrivyProviderModule);
+  const [Provider, setProvider] = useState<ProviderComponent | null>(null);
+  const providerRef = useRef<ProviderComponent | null>(null);
   const [, setEthereumReady] = useState(!!globalThis.window?.ethereum);
 
   useEffect(() => {
-    if (PrivyProviderModule) return;
+    if (providerRef.current) {
+      setProvider(() => providerRef.current);
+      return;
+    }
     import("./PrivyProvider").then((mod) => {
-      PrivyProviderModule = mod.default;
+      providerRef.current = mod.default;
       setProvider(() => mod.default);
     });
   }, []);
@@ -38,9 +38,9 @@ export default function PrivyClientProvider({
     const onEthereum = () => {
       setEthereumReady(true);
       // Force Privy to re-initialize with the new provider
-      if (PrivyProviderModule) {
+      if (providerRef.current) {
         setProvider(null);
-        requestAnimationFrame(() => setProvider(() => PrivyProviderModule));
+        requestAnimationFrame(() => setProvider(() => providerRef.current));
       }
     };
 
