@@ -141,7 +141,7 @@ function ChatCharacter({ mood }: { mood: Mood }) {
   }, [mood, prevMood]);
 
   return (
-    <div className="relative flex justify-center h-44 overflow-hidden">
+    <div className="relative flex justify-center items-end h-44 overflow-hidden">
       <div
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-16 rounded-full blur-2xl opacity-50 transition-colors duration-500"
         style={{ backgroundColor: MOOD_GLOW[mood] }}
@@ -151,7 +151,7 @@ function ChatCharacter({ mood }: { mood: Mood }) {
         alt="Toki"
         width={256}
         height={256}
-        className={`relative z-10 w-40 h-40 object-cover object-top drop-shadow-lg transition-opacity duration-150 ${
+        className={`relative z-10 w-40 h-44 object-contain object-bottom drop-shadow-lg transition-opacity duration-150 ${
           transitioning ? "opacity-0" : "opacity-100"
         }`}
       />

@@ -5,6 +5,11 @@
 - Foundry 설치 (`forge`, `cast`)
 - 배포자 지갑에 충분한 ETH (배포 가스비 + stake + deposit)
 - 배포자 private key
+- Etherscan API key (`ETHERSCAN_API_KEY` 환경변수 설정)
+
+```bash
+export ETHERSCAN_API_KEY=<YOUR_ETHERSCAN_API_KEY>
+```
 
 ## Sepolia 테스트넷 배포
 
@@ -26,11 +31,13 @@ forge script script/Deploy.s.sol:DeployTONPaymaster \
   --rpc-url https://eth-sepolia.g.alchemy.com/v2/<ALCHEMY_KEY> \
   --private-key <PRIVATE_KEY> \
   --broadcast \
-  --slow
+  --slow \
+  --verify
 ```
 
 - `--slow`: 트랜잭션을 하나씩 순차 전송 (rate limit 방지)
 - `--broadcast`: 실제 전송 (없으면 시뮬레이션만)
+- `--verify`: Etherscan에 소스코드 자동 검증 (`foundry.toml`의 `[etherscan]` 키 사용)
 
 ### 배포 후 확인
 
@@ -72,12 +79,10 @@ forge script script/DeployMainnet.s.sol:DeployTONPaymasterMainnet \
   --private-key <PRIVATE_KEY> \
   --broadcast \
   --slow \
-  --verify \
-  --etherscan-api-key <ETHERSCAN_KEY>
+  --verify
 ```
 
-- `--verify`: Etherscan에 소스코드 자동 검증
-- `--etherscan-api-key`: Etherscan API 키 (소스 검증용)
+- `--verify`: Etherscan에 소스코드 자동 검증 (`foundry.toml`의 `[etherscan]` 키 사용)
 
 ### 메인넷 배포 스크립트가 하는 일
 
