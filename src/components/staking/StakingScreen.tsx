@@ -25,6 +25,7 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEip7702 } from "@/hooks/useEip7702";
 import { useSessionKey } from "@/hooks/useSessionKey";
 import { calculateLevel, CARD_TIERS, type CardTier } from "@/lib/achievements";
+import { fetchStakingData } from "@/lib/staking";
 import OperatorCard from "@/components/dashboard/OperatorCard";
 import { chain, publicClient, isTestnet } from "@/lib/chain";
 
@@ -157,16 +158,17 @@ export default function StakingScreen() {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tonBalance, setTonBalance] = useState<string>("0");
-  const [shuffling, setShuffling] = useState(false);
   const [autoSelectedIndex, setAutoSelectedIndex] = useState<number | undefined>(undefined);
   const [showOnboardingPrompt, setShowOnboardingPrompt] = useState(false);
+  const [showManualSelect, setShowManualSelect] = useState(false);
+  const [apr, setApr] = useState<number | null>(null);
   const selectedOpRef = useRef(selectedOp);
   selectedOpRef.current = selectedOp;
 
   // VN state
   const [step, setStep] = useState<Step>(1);
   const [cardRevealed, setCardRevealed] = useState(false);
-  const [hoverDialogue, setHoverDialogue] = useState<string | null>(null);
+  const [hoverDialogue] = useState<string | null>(null);
 
   const walletAddress = primaryWallet?.address || "";
   const addr = walletAddress as `0x${string}`;
@@ -255,6 +257,19 @@ export default function StakingScreen() {
       const topOps = ops.slice(0, 10);
       setOperators(topOps);
 
+      // Auto-select best operator (lowest fee → highest staked)
+      if (!selectedOpRef.current) {
+        const best = [...topOps].sort((a, b) => {
+          if (a.commissionRate !== b.commissionRate) return a.commissionRate - b.commissionRate;
+          return Number(b.totalStaked) - Number(a.totalStaked);
+        })[0];
+        if (best) {
+          const idx = topOps.findIndex((o) => o.address === best.address);
+          setSelectedOp(best.address);
+          setAutoSelectedIndex(idx);
+        }
+      }
+
       const tonBal = await publicClient.readContract({
         address: tonAddr, abi: tonTokenAbi, functionName: "balanceOf", args: [addr],
       });
@@ -317,6 +332,12 @@ export default function StakingScreen() {
     return () => { cancelled = true; };
   }, [smartAccountClient]);
 
+  // ─── Fetch APR ────────────────────────────────────────────────────
+
+  useEffect(() => {
+    fetchStakingData().then((data) => setApr(data.apr)).catch(console.error);
+  }, []);
+
   // ─── New user onboarding prompt ────────────────────────────────────
 
   useEffect(() => {
@@ -326,22 +347,6 @@ export default function StakingScreen() {
   }, [loading, storage.unlocked.length, tonBalance]);
 
   // ─── Handlers ──────────────────────────────────────────────────────
-
-  const handleAutoSelect = () => {
-    if (operators.length === 0) return;
-    setShuffling(true);
-    setTimeout(() => {
-      // Pick the operator with lowest commission, then highest staked
-      const best = [...operators].sort((a, b) => {
-        if (a.commissionRate !== b.commissionRate) return a.commissionRate - b.commissionRate;
-        return Number(b.totalStaked) - Number(a.totalStaked);
-      })[0];
-      const idx = operators.findIndex((o) => o.address === best.address);
-      setSelectedOp(best.address);
-      setAutoSelectedIndex(idx);
-      setShuffling(false);
-    }, 500);
-  };
 
   const handleStake = async () => {
     if (!amount || !selectedOp) return;
@@ -424,6 +429,11 @@ export default function StakingScreen() {
   function getDialogue(): string {
     const s = t.stakingScreen;
     if (step === 1) {
+      if (autoSelectedIndex !== undefined && !showManualSelect) {
+        return apr !== null
+          ? s.step1AutoSelected.replace("{apr}", apr.toFixed(1))
+          : s.step1TokiPick;
+      }
       if (autoSelectedIndex !== undefined) return s.step1TokiPick;
       if (selectedOperator) {
         return s.step1OperatorSelected
@@ -534,35 +544,93 @@ export default function StakingScreen() {
                   {/* Step 1: Operator Selection */}
                   {step === 1 && (
                     <>
-                      <OperatorCard
-                        operators={operators}
-                        selectedOp={selectedOp}
-                        onSelect={(address) => {
-                          setSelectedOp(address);
-                          setAutoSelectedIndex(undefined);
-                        }}
-                        shuffling={shuffling}
-                        autoSelectedIndex={autoSelectedIndex}
-                      />
+                      {!showManualSelect ? (
+                        /* Simplified: Toki auto-selected */
+                        <>
+                          {selectedOperator && (
+                            <div className="space-y-3">
+                              <div className="p-4 rounded-xl bg-white/5 border border-accent-cyan/20">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-accent-cyan/10 border border-accent-cyan/30 flex items-center justify-center text-sm font-bold text-accent-cyan">
+                                    {selectedOperator.name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-white font-medium text-sm">{selectedOperator.name}</div>
+                                    <div className="text-xs text-gray-500">
+                                      {Number(selectedOperator.totalStaked).toLocaleString("en-US", { maximumFractionDigits: 0 })} TON
+                                    </div>
+                                  </div>
+                                  <div className="text-accent-cyan text-xs font-semibold px-2 py-1 rounded-full bg-accent-cyan/10 border border-accent-cyan/20 shrink-0">
+                                    {t.dashboard.tokiAutoSelected}
+                                  </div>
+                                </div>
+                              </div>
 
-                      <div className="flex gap-3">
-                        <button
-                          onClick={handleAutoSelect}
-                          onMouseEnter={() => setHoverDialogue(t.stakingScreen.tokiPickHover)}
-                          onMouseLeave={() => setHoverDialogue(null)}
-                          className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-accent-amber/20 to-yellow-500/20 border border-accent-amber/30 text-accent-amber text-sm font-semibold hover:border-accent-amber/50 hover:scale-[1.02] transition-all"
-                        >
-                          {t.stakingScreen.tokiPickButton}
-                        </button>
-                        {selectedOp && (
+                              {apr !== null && (
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-accent-amber/5 border border-accent-amber/15">
+                                  <span className="text-gray-400 text-sm">{t.stakingScreen.currentApr}</span>
+                                  <span className="text-accent-amber font-bold text-lg font-mono-num">~{apr.toFixed(1)}%</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           <button
                             onClick={() => setStep(2)}
-                            className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
                           >
                             {t.stakingScreen.nextStep} →
                           </button>
-                        )}
-                      </div>
+                          <button
+                            onClick={() => setShowManualSelect(true)}
+                            className="w-full text-center text-xs text-gray-500 hover:text-gray-300 transition-colors py-1"
+                          >
+                            {t.stakingScreen.manualSelectButton}
+                          </button>
+                        </>
+                      ) : (
+                        /* Manual: full operator list */
+                        <>
+                          <OperatorCard
+                            operators={operators}
+                            selectedOp={selectedOp}
+                            onSelect={(address) => {
+                              setSelectedOp(address);
+                              setAutoSelectedIndex(undefined);
+                            }}
+                            shuffling={false}
+                            autoSelectedIndex={autoSelectedIndex}
+                          />
+
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => {
+                                const best = [...operators].sort((a, b) => {
+                                  if (a.commissionRate !== b.commissionRate) return a.commissionRate - b.commissionRate;
+                                  return Number(b.totalStaked) - Number(a.totalStaked);
+                                })[0];
+                                if (best) {
+                                  const idx = operators.findIndex((o) => o.address === best.address);
+                                  setSelectedOp(best.address);
+                                  setAutoSelectedIndex(idx);
+                                }
+                                setShowManualSelect(false);
+                              }}
+                              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-accent-amber/20 to-yellow-500/20 border border-accent-amber/30 text-accent-amber text-sm font-semibold hover:border-accent-amber/50 hover:scale-[1.02] transition-all"
+                            >
+                              {t.stakingScreen.backToAutoSelect}
+                            </button>
+                            {selectedOp && (
+                              <button
+                                onClick={() => setStep(2)}
+                                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
+                              >
+                                {t.stakingScreen.nextStep} →
+                              </button>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </>
                   )}
 
@@ -709,12 +777,20 @@ export default function StakingScreen() {
                       </div>
 
                       {cardRevealed && (
-                        <button
-                          onClick={() => router.push("/dashboard")}
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm glow-blue hover:scale-[1.02] transition-transform animate-fade-in"
-                        >
-                          {t.stakingScreen.goToDashboard} →
-                        </button>
+                        <div className="space-y-2 animate-fade-in">
+                          <button
+                            onClick={() => router.push("/dashboard")}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm glow-blue hover:scale-[1.02] transition-transform"
+                          >
+                            {t.stakingScreen.goToDashboard}
+                          </button>
+                          <button
+                            onClick={() => router.push("/explore")}
+                            className="w-full py-3 rounded-xl bg-white/10 border border-white/10 text-gray-300 font-medium text-sm hover:bg-white/15 hover:scale-[1.02] transition-all"
+                          >
+                            {t.stakingScreen.goToExplore}
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
