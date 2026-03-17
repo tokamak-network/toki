@@ -52,15 +52,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-grid min-h-screen`}
       >
         <LanguageProvider>
-          <AchievementProvider>
-            <AudioProvider>
-              <PrivyClientProvider>
+          <AudioProvider>
+            <PrivyClientProvider>
+              <AchievementProvider>
                 {children}
                 <TokiChat />
                 <AchievementToast />
-              </PrivyClientProvider>
-            </AudioProvider>
-          </AchievementProvider>
+              </AchievementProvider>
+            </PrivyClientProvider>
+          </AudioProvider>
         </LanguageProvider>
       </body>
     </html>

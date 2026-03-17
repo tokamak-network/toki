@@ -8,6 +8,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import {
   ACHIEVEMENTS,
   EMPTY_STORAGE,
@@ -39,17 +40,43 @@ interface AchievementContextValue {
 
 const AchievementContext = createContext<AchievementContextValue | null>(null);
 
-const STORAGE_KEY = "toki-achievements";
-const ONBOARDING_KEY = "toki-onboarding";
+const STORAGE_PREFIX = "toki-achievements";
+const ONBOARDING_PREFIX = "toki-onboarding";
+
+function storageKey(userId: string) {
+  return `${STORAGE_PREFIX}-${userId}`;
+}
+
+function onboardingKey(userId: string) {
+  return `${ONBOARDING_PREFIX}-${userId}`;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function loadStorage(): AchievementStorage {
+function loadStorage(userId: string): AchievementStorage {
   if (typeof window === "undefined") return EMPTY_STORAGE;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(userId));
     if (raw) {
       const parsed = JSON.parse(raw);
+      return {
+        score: parsed.score ?? 0,
+        level: parsed.level ?? 1,
+        unlocked: parsed.unlocked ?? [],
+        metadata: {
+          totalStaked: parsed.metadata?.totalStaked ?? 0,
+          servicesClicked: parsed.metadata?.servicesClicked ?? [],
+          dialoguesSeen: parsed.metadata?.dialoguesSeen ?? [],
+          freetextCount: parsed.metadata?.freetextCount ?? 0,
+          categoriesViewed: parsed.metadata?.categoriesViewed ?? [],
+          questsCompleted: parsed.metadata?.questsCompleted ?? [],
+        },
+      };
+    }
+    // Migrate from legacy global key on first load for this user
+    const legacy = localStorage.getItem(STORAGE_PREFIX);
+    if (legacy) {
+      const parsed = JSON.parse(legacy);
       return {
         score: parsed.score ?? 0,
         level: parsed.level ?? 1,
@@ -70,15 +97,21 @@ function loadStorage(): AchievementStorage {
   return EMPTY_STORAGE;
 }
 
-function saveStorage(storage: AchievementStorage) {
+function saveStorage(userId: string, storage: AchievementStorage) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
+  try {
+    localStorage.setItem(storageKey(userId), JSON.stringify(storage));
+  } catch {
+    // iOS private browsing or quota exceeded
+  }
 }
 
-function migrateOnboarding(storage: AchievementStorage): AchievementStorage {
+function migrateOnboarding(userId: string, storage: AchievementStorage): AchievementStorage {
   if (typeof window === "undefined") return storage;
   try {
-    const raw = localStorage.getItem(ONBOARDING_KEY);
+    // Check per-user key first, then legacy global key
+    const raw = localStorage.getItem(onboardingKey(userId))
+      || localStorage.getItem(ONBOARDING_PREFIX);
     if (!raw) return storage;
     const data = JSON.parse(raw);
     const completed: string[] = data.completed || [];
@@ -107,14 +140,32 @@ function migrateOnboarding(storage: AchievementStorage): AchievementStorage {
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function AchievementProvider({ children }: { children: ReactNode }) {
+  const { ready, authenticated, user } = usePrivy();
   const [storage, setStorage] = useState<AchievementStorage>(EMPTY_STORAGE);
   const [unlockQueue, setUnlockQueue] = useState<Achievement[]>([]);
   const [initialized, setInitialized] = useState(false);
+  const [activeUserId, setActiveUserId] = useState<string | null>(null);
 
-  // Load + migrate on mount
+  // Resolve current user ID
+  const userId = authenticated && user?.id ? user.id : null;
+
+  // Load + migrate when user changes
   useEffect(() => {
-    let loaded = loadStorage();
-    loaded = migrateOnboarding(loaded);
+    if (!ready) return;
+
+    // Not logged in — reset to empty
+    if (!userId) {
+      setStorage(EMPTY_STORAGE);
+      setActiveUserId(null);
+      setInitialized(true);
+      return;
+    }
+
+    // Same user already loaded
+    if (userId === activeUserId) return;
+
+    let loaded = loadStorage(userId);
+    loaded = migrateOnboarding(userId, loaded);
 
     // Check achievements from migrated data
     const newUnlocks: Achievement[] = [];
@@ -126,16 +177,19 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
       }
     }
     loaded.level = calculateLevel(loaded.score);
-    saveStorage(loaded);
+    saveStorage(userId, loaded);
     setStorage(loaded);
+    setActiveUserId(userId);
     if (newUnlocks.length > 0) {
       setUnlockQueue(newUnlocks);
     }
     setInitialized(true);
-  }, []);
+  }, [ready, userId, activeUserId]);
 
   const trackActivity = useCallback(
     (type: ActivityType, meta?: Record<string, unknown>) => {
+      if (!userId) return; // Not logged in — ignore activity
+      const currentUserId = userId;
       setStorage((prev) => {
         const next = structuredClone(prev);
 
@@ -216,7 +270,7 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
         }
 
         next.level = calculateLevel(next.score);
-        saveStorage(next);
+        saveStorage(currentUserId, next);
 
         if (newUnlocks.length > 0) {
           setUnlockQueue((q) => [...q, ...newUnlocks]);
@@ -225,7 +279,7 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
         return next;
       });
     },
-    []
+    [userId]
   );
 
   const dismissToast = useCallback(() => {

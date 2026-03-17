@@ -461,7 +461,7 @@ const OLD_QUEST_IDS = ["install-metamask", "connect-toki", "verify-upbit"];
 export default function OnboardingQuest() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { ready, authenticated, login, exportWallet } = usePrivy();
+  const { ready, authenticated, login, exportWallet, user } = usePrivy();
   const { wallets } = useWallets();
   const embeddedWallet = wallets.find(w => w.walletClientType === "privy");
 
@@ -487,39 +487,47 @@ export default function OnboardingQuest() {
   const [cinematicJustFinished, setCinematicJustFinished] = useState(false);
   const questAreaRef = useRef<HTMLDivElement>(null);
 
+  // Per-account localStorage keys
+  const userId = user?.id;
+  const obKey = userId ? `toki-onboarding-${userId}` : null;
+  const introKey = userId ? `toki-intro-seen-${userId}` : null;
+
   // Load progress from localStorage (with migration) + cinematic check
   useEffect(() => {
-    const saved = localStorage.getItem("toki-onboarding");
-    if (saved) {
-      try {
+    if (!obKey || !introKey) return;
+
+    try {
+      // Try per-user key first, then legacy global key for migration
+      const saved = localStorage.getItem(obKey) || localStorage.getItem("toki-onboarding");
+      if (saved) {
         const data = JSON.parse(saved);
         const completed: string[] = data.completed || [];
         // Migrate: if old quest IDs detected, reset progress
         const hasOldIds = completed.some((id: string) => OLD_QUEST_IDS.includes(id));
         if (hasOldIds) {
-          localStorage.removeItem("toki-onboarding");
+          localStorage.removeItem(obKey);
           return;
         }
         setQuestIndex(data.questIndex || 0);
         setTotalXp(data.totalXp || 0);
         setCompletedQuests(new Set(completed));
-      } catch {
-        // ignore
       }
+    } catch {
+      // ignore
     }
 
     // Show intro cinematic on first visit only (skip on mobile)
-    const introSeen = localStorage.getItem("toki-intro-seen");
+    const introSeen = localStorage.getItem(introKey) || localStorage.getItem("toki-intro-seen");
     const isMobile = window.innerWidth < 768;
     if (!introSeen && !isMobile) {
       setShowCinematic(true);
     } else {
       setCinematicComplete(true);
       if (!introSeen && isMobile) {
-        localStorage.setItem("toki-intro-seen", "1");
+        localStorage.setItem(introKey, "1");
       }
     }
-  }, []);
+  }, [obKey, introKey]);
 
   // Preload all mood images so character appears instantly on mobile
   useEffect(() => {
@@ -532,16 +540,21 @@ export default function OnboardingQuest() {
   // Save progress
   const saveProgress = useCallback(
     (qi: number, xp: number, completed: Set<string>) => {
-      localStorage.setItem(
-        "toki-onboarding",
-        JSON.stringify({
-          questIndex: qi,
-          totalXp: xp,
-          completed: Array.from(completed),
-        })
-      );
+      if (!obKey) return;
+      try {
+        localStorage.setItem(
+          obKey,
+          JSON.stringify({
+            questIndex: qi,
+            totalXp: xp,
+            completed: Array.from(completed),
+          })
+        );
+      } catch {
+        // iOS private browsing or quota exceeded
+      }
     },
-    []
+    [obKey]
   );
 
   const quest = QUESTS[questIndex];
@@ -672,8 +685,8 @@ export default function OnboardingQuest() {
     setShowCinematic(false);
     setCinematicComplete(true);
     setCinematicJustFinished(true);
-    localStorage.setItem("toki-intro-seen", "1");
-  }, []);
+    if (introKey) localStorage.setItem(introKey, "1");
+  }, [introKey]);
 
   const handleBadgeDone = () => {
     if (!quest) return;
