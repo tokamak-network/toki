@@ -41,7 +41,7 @@ interface Operator {
 
 type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "presenting" | "celebrate" | "card-reveal" | "surprised" | "confused" | "shy" | "determined" | "pointing" | "reading" | "crying-happy" | "peace" | "worried" | "laughing";
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 0 | 1 | 2 | 3 | 4;
 
 const MOOD_IMAGES: Record<Mood, string> = {
   welcome: "/characters/toki-welcome.png",
@@ -58,7 +58,7 @@ const MOOD_IMAGES: Record<Mood, string> = {
   confused: "/characters/toki-confused.png",
   shy: "/characters/toki-shy.png",
   determined: "/characters/toki-determined.png",
-  pointing: "/characters/toki-pointing.png",
+  pointing: "/characters/toki-explain.png",
   reading: "/characters/toki-reading.png",
   "crying-happy": "/characters/toki-crying-happy.png",
   peace: "/characters/toki-peace.png",
@@ -90,6 +90,7 @@ const MOOD_GLOW: Record<Mood, string> = {
 };
 
 const STEP_BACKGROUNDS: Record<Step, string> = {
+  0: "/backgrounds/staking-night.png",
   1: "/backgrounds/staking-night.png",
   2: "/backgrounds/staking-dawn.png",
   3: "/backgrounds/staking-dawn.png",
@@ -159,8 +160,9 @@ export default function StakingScreen() {
   const [error, setError] = useState<string | null>(null);
   const [tonBalance, setTonBalance] = useState<string>("0");
   const [autoSelectedIndex, setAutoSelectedIndex] = useState<number | undefined>(undefined);
-  const [showOnboardingPrompt, setShowOnboardingPrompt] = useState(false);
+  const [guidanceType, setGuidanceType] = useState<"none" | "new-user" | "no-ton">("none");
   const [showManualSelect, setShowManualSelect] = useState(false);
+  const [showGasExplain, setShowGasExplain] = useState(false);
   const [apr, setApr] = useState<number | null>(null);
   const selectedOpRef = useRef(selectedOp);
   selectedOpRef.current = selectedOp;
@@ -201,7 +203,7 @@ export default function StakingScreen() {
         functionName: "numLayer2s",
       });
 
-      const count = Math.min(Number(numLayer2s), 10);
+      const count = Number(numLayer2s);
       const addresses = await Promise.all(
         Array.from({ length: count }, (_, i) =>
           publicClient.readContract({
@@ -338,11 +340,19 @@ export default function StakingScreen() {
     fetchStakingData().then((data) => setApr(data.apr)).catch(console.error);
   }, []);
 
-  // ─── New user onboarding prompt ────────────────────────────────────
+  // ─── New user / no-TON guidance ────────────────────────────────────
 
   useEffect(() => {
-    if (!loading && storage.unlocked.length === 0 && Number(tonBalance) === 0) {
-      setShowOnboardingPrompt(true);
+    if (loading) return;
+    const hasTon = Number(tonBalance) > 0;
+    const isNewUser = storage.unlocked.length === 0;
+
+    if (isNewUser && !hasTon) {
+      setGuidanceType("new-user");
+      setStep(0);
+    } else if (!isNewUser && !hasTon) {
+      setGuidanceType("no-ton");
+      setStep(0);
     }
   }, [loading, storage.unlocked.length, tonBalance]);
 
@@ -416,18 +426,23 @@ export default function StakingScreen() {
   const cardTier = CARD_TIERS[Math.min(currentLevel, 5) - 1];
 
   function getMood(): Mood {
+    if (step === 0) return "welcome";
     if (step === 4) return cardRevealed ? "celebrate" : "card-reveal";
+    // Only change for meaningful state transitions
     if (staking) return "excited";
     if (error) return "thinking";
-    if (step === 3) return "excited";
+    // Each step gets one stable mood — no flicker on sub-state changes
+    if (step === 3) return "cheer";
     if (step === 2) return "cheer";
-    if (autoSelectedIndex !== undefined && step === 1) return "proud";
-    if (selectedOp && step === 1) return "explain";
-    return "presenting";
+    if (step === 1) return "welcome";
+    return "welcome";
   }
 
   function getDialogue(): string {
     const s = t.stakingScreen;
+    if (step === 0) {
+      return guidanceType === "no-ton" ? s.noTonDesc : s.onboardingPromptDesc;
+    }
     if (step === 1) {
       if (autoSelectedIndex !== undefined && !showManualSelect) {
         return apr !== null
@@ -485,7 +500,7 @@ export default function StakingScreen() {
   return (
     <div className="fixed inset-0 overflow-hidden">
       {/* Background - transitions between stages */}
-      {([1, 2, 3, 4] as Step[]).map((s) => (
+      {([0, 1, 2, 3, 4] as Step[]).map((s) => (
         <div
           key={s}
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
@@ -509,8 +524,8 @@ export default function StakingScreen() {
           <div className="w-[60%] flex items-end justify-center pb-4">
             <div className="w-full max-w-sm animate-slide-up">
             <div className="bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
-                {/* Step indicator + back button (hidden on step 4) */}
-                {step < 4 && (
+                {/* Step indicator + back button (hidden on step 0 and 4) */}
+                {step >= 1 && step < 4 && (
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     {[1, 2, 3].map((s) => (
@@ -541,6 +556,39 @@ export default function StakingScreen() {
 
                 {/* Step content */}
                 <div className="space-y-3">
+                  {/* Step 0: Guidance (new user or no TON) */}
+                  {step === 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-white text-lg font-bold text-center">
+                        {guidanceType === "no-ton"
+                          ? t.stakingScreen.noTonTitle
+                          : t.stakingScreen.onboardingPromptTitle}
+                      </h3>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => router.push("/onboarding")}
+                          className={`w-full py-3 rounded-xl font-semibold text-sm hover:scale-[1.02] transition-transform shadow-lg ${
+                            guidanceType === "no-ton"
+                              ? "bg-gradient-to-r from-accent-amber to-orange-500 text-white shadow-accent-amber/20"
+                              : "bg-gradient-to-r from-accent-blue to-accent-cyan text-white shadow-accent-cyan/20"
+                          }`}
+                        >
+                          {guidanceType === "no-ton"
+                            ? t.stakingScreen.noTonGoQuest
+                            : t.stakingScreen.onboardingPromptYes}
+                        </button>
+                        {guidanceType !== "no-ton" && (
+                          <button
+                            onClick={() => setStep(1)}
+                            className="w-full py-3 rounded-xl bg-white/10 text-gray-400 font-medium text-sm hover:bg-white/15 transition-colors"
+                          >
+                            {t.stakingScreen.onboardingPromptNo}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Step 1: Operator Selection */}
                   {step === 1 && (
                     <>
@@ -600,6 +648,7 @@ export default function StakingScreen() {
                             }}
                             shuffling={false}
                             autoSelectedIndex={autoSelectedIndex}
+                            apr={apr}
                           />
 
                           <div className="flex gap-3">
@@ -653,11 +702,36 @@ export default function StakingScreen() {
 
                       {/* Gas estimate info */}
                       {gasReserveTon > 0 && (
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent-amber/10 border border-accent-amber/20">
-                          <span className="text-accent-amber text-sm">⛽</span>
-                          <span className="text-xs text-accent-amber/80">
-                            {t.stakingScreen.estimatedGasCost.replace("{amount}", String(gasReserveTon))}
-                          </span>
+                        <div className="space-y-0">
+                          <button
+                            onClick={() => setShowGasExplain(!showGasExplain)}
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-accent-amber/10 border border-accent-amber/20 hover:bg-accent-amber/15 transition-colors text-left"
+                          >
+                            <span className="text-accent-amber text-sm">⛽</span>
+                            <span className="text-xs text-accent-amber/80 flex-1">
+                              {t.stakingScreen.estimatedGasCost.replace("{amount}", String(gasReserveTon))}
+                            </span>
+                            <span className={`text-accent-amber/50 text-[10px] transition-transform ${showGasExplain ? "rotate-180" : ""}`}>▼</span>
+                          </button>
+                          {!showGasExplain && (
+                            <button
+                              onClick={() => setShowGasExplain(true)}
+                              className="text-[10px] text-gray-600 hover:text-gray-400 transition-colors px-3 pt-1"
+                            >
+                              {t.stakingScreen.gasExplainToggle}
+                            </button>
+                          )}
+                          {showGasExplain && (
+                            <div className="mt-2 p-3 rounded-lg bg-white/5 border border-white/10 space-y-2 animate-fade-in">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Image src="/characters/toki-explain.png" alt="Toki" width={28} height={28} className="rounded-full" />
+                                <span className="text-accent-cyan text-xs font-bold">{t.stakingScreen.gasExplainTitle}</span>
+                              </div>
+                              <p className="text-xs text-gray-400 leading-relaxed">{t.stakingScreen.gasExplainBody1}</p>
+                              <p className="text-xs text-gray-400 leading-relaxed">{t.stakingScreen.gasExplainBody2}</p>
+                              <p className="text-xs text-gray-500 leading-relaxed">{t.stakingScreen.gasExplainBody3}</p>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -807,7 +881,9 @@ export default function StakingScreen() {
           <DialogueBar
             text={dialogue}
             mood={mood}
-            stepProgress={step === 4
+            stepProgress={step === 0
+              ? ""
+              : step === 4
               ? "Complete!"
               : t.stakingScreen.stepLabel.replace("{current}", String(step)).replace("{total}", "3")
             }
@@ -815,62 +891,6 @@ export default function StakingScreen() {
         </div>
       </div>
 
-      {/* New user onboarding prompt */}
-      {showOnboardingPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
-          <div className="relative z-10 max-w-sm w-full mx-4 animate-slide-up">
-            <div className="bg-black/70 backdrop-blur-2xl rounded-2xl border border-white/10 p-6 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
-              {/* Toki character */}
-              <div className="flex justify-center mb-4">
-                <div className="relative w-28 h-28">
-                  <div
-                    className="absolute inset-[10%] rounded-full blur-2xl opacity-40"
-                    style={{ backgroundColor: "rgba(74, 144, 217, 0.35)" }}
-                  />
-                  <Image
-                    src="/characters/toki-welcome.png"
-                    alt="Toki"
-                    width={112}
-                    height={112}
-                    className="relative z-10 drop-shadow-2xl w-full h-full object-contain"
-                  />
-                </div>
-              </div>
-
-              {/* Dialogue */}
-              <div className="text-center mb-5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cyan/10 border border-accent-cyan/30 mb-3">
-                  <span className="text-accent-cyan font-bold text-sm">Toki</span>
-                  <span className="text-xs text-accent-cyan/60">welcome</span>
-                </div>
-                <h3 className="text-white text-lg font-bold mb-2">
-                  {t.stakingScreen.onboardingPromptTitle}
-                </h3>
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  {t.stakingScreen.onboardingPromptDesc}
-                </p>
-              </div>
-
-              {/* Buttons */}
-              <div className="space-y-2">
-                <button
-                  onClick={() => router.push("/onboarding")}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-semibold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-accent-cyan/20"
-                >
-                  {t.stakingScreen.onboardingPromptYes}
-                </button>
-                <button
-                  onClick={() => setShowOnboardingPrompt(false)}
-                  className="w-full py-3 rounded-xl bg-white/10 text-gray-400 font-medium text-sm hover:bg-white/15 transition-colors"
-                >
-                  {t.stakingScreen.onboardingPromptNo}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -897,7 +917,7 @@ function TokiCharacter({ mood }: { mood: Mood }) {
 
   return (
     <div className="flex justify-center z-10">
-      <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] overflow-visible">
+      <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] aspect-[3/4] overflow-visible">
         <div
           className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 animate-glow-pulse transition-colors duration-700 opacity-40"
           style={{ backgroundColor: glowColor }}
@@ -907,7 +927,7 @@ function TokiCharacter({ mood }: { mood: Mood }) {
           alt="Toki"
           width={512}
           height={512}
-          className={`relative z-10 drop-shadow-2xl transition-opacity duration-200 w-full h-auto ${
+          className={`relative z-10 drop-shadow-2xl transition-opacity duration-200 w-full h-full object-contain object-bottom ${
             transitioning ? "opacity-0" : "opacity-100"
           }`}
           priority

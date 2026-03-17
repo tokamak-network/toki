@@ -56,6 +56,7 @@ interface OperatorCardProps {
   onSelect: (address: string) => void;
   shuffling?: boolean;
   autoSelectedIndex?: number;
+  apr?: number | null;
 }
 
 function formatStaked(value: string): string {
@@ -71,6 +72,7 @@ export default function OperatorCard({
   onSelect,
   shuffling = false,
   autoSelectedIndex,
+  apr,
 }: OperatorCardProps) {
   const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -157,12 +159,10 @@ export default function OperatorCard({
                   {formatStaked(op.totalStaked)} TON
                 </div>
 
-                {/* Commission rate */}
-                {op.commissionRate !== undefined && (
-                  <div className={`text-[10px] font-mono-num text-center ${
-                    op.commissionRate < 0 ? "text-green-400" : op.commissionRate === 0 ? "text-gray-400" : "text-amber-400"
-                  }`}>
-                    {op.commissionRate < 0 ? "" : op.commissionRate > 0 ? "+" : ""}{op.commissionRate.toFixed(1)}%
+                {/* Net yield (APR - commission) */}
+                {apr != null && op.commissionRate !== undefined && (
+                  <div className="text-[10px] font-mono-num text-center text-accent-cyan font-semibold">
+                    ~{(apr - op.commissionRate).toFixed(1)}% APR
                   </div>
                 )}
 

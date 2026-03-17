@@ -11,6 +11,9 @@ import LaptopVideoOverlay from "./LaptopVideoOverlay";
 import ProfitSimulator from "@/components/landing/ProfitSimulator";
 import { fetchStakingData, type StakingData } from "@/lib/staking";
 import { useAchievement } from "@/components/providers/AchievementProvider";
+import { publicClient } from "@/lib/chain";
+import { CONTRACTS } from "@/constants/contracts";
+import { erc20Abi, formatUnits } from "viem";
 
 // ─── Quest Data ───────────────────────────────────────────────────────
 
@@ -43,7 +46,7 @@ interface DialogueLine {
 }
 
 interface QuestAction {
-  type: "link" | "privy-login" | "confirm" | "navigate" | "substeps";
+  type: "link" | "privy-login" | "confirm" | "navigate" | "substeps" | "balance-check";
   label: string;
   url?: string;
   route?: string;
@@ -165,7 +168,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
         { text: t.quest4Intro3, mood: "surprised" },
         { text: t.quest4Intro4, mood: "wink" },
       ],
-      action: { type: "confirm", label: t.quest4ActionLabel, confirmText: t.quest4Confirm },
+      action: { type: "balance-check", label: t.quest4ActionLabel },
       verify: "user-confirm",
       success: [
         { text: t.quest4Success1, mood: "laughing" },
@@ -480,6 +483,9 @@ export default function OnboardingQuest() {
   const [showCalculator, setShowCalculator] = useState(false);
   const [stakingData, setStakingData] = useState<StakingData | null>(null);
   const [selectedExchange, setSelectedExchange] = useState<string | null>(null);
+  const [tonBalance, setTonBalance] = useState<number | null>(null);
+  const [balanceConfirmed, setBalanceConfirmed] = useState(false);
+  const [balanceWaiting, setBalanceWaiting] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
   const [showCinematic, setShowCinematic] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -572,6 +578,31 @@ export default function OnboardingQuest() {
     }
   }, [quest?.id, phase, stakingData]);
 
+  // Balance check polling for Quest 4
+  const checkTonBalance = useCallback(async () => {
+    const addr = embeddedWallet?.address;
+    if (!addr) return;
+    try {
+      const bal = await publicClient.readContract({
+        address: CONTRACTS.TON as `0x${string}`,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [addr as `0x${string}`],
+      });
+      setTonBalance(Number(formatUnits(bal, 18)));
+    } catch {
+      // ignore
+    }
+  }, [embeddedWallet?.address]);
+
+  useEffect(() => {
+    if (quest?.id !== "receive-ton" || phase !== "action") return;
+    if (balanceConfirmed) return;
+    checkTonBalance();
+    const interval = setInterval(checkTonBalance, 10000); // 10초마다 폴링
+    return () => clearInterval(interval);
+  }, [quest?.id, phase, balanceConfirmed, checkTonBalance]);
+
   // Auto-scroll to quest area
   useEffect(() => {
     questAreaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -623,6 +654,9 @@ export default function OnboardingQuest() {
       setPhase("verifying");
     } else if (quest.action.type === "confirm") {
       if (!confirmed) return;
+      handleVerifySuccess();
+    } else if (quest.action.type === "balance-check") {
+      if (!balanceConfirmed) return;
       handleVerifySuccess();
     } else if (quest.action.type === "navigate") {
       handleVerifySuccess();
@@ -952,21 +986,6 @@ export default function OnboardingQuest() {
                         })()}
                       </div>
                     )}
-                    {/* Calculator button for Quest 4 */}
-                    {quest.id === "receive-ton" && (
-                      <button
-                        onClick={() => {
-                          setShowCalculator(true);
-                          if (!stakingData) {
-                            fetchStakingData().then(setStakingData).catch(console.error);
-                          }
-                        }}
-                        className="w-full py-3 rounded-xl bg-accent-amber/10 border border-accent-amber/30 text-accent-amber text-sm font-medium hover:bg-accent-amber/20 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <span className="text-base">&#x1F4B0;</span>
-                        <span>{t.onboarding.openCalculator}</span>
-                      </button>
-                    )}
                     <label className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
                       <input
                         type="checkbox"
@@ -986,6 +1005,99 @@ export default function OnboardingQuest() {
                       {quest.action.label}
                     </button>
                   </>
+                )}
+
+                {/* Balance check (Quest 4: Receive TON) */}
+                {quest.action.type === "balance-check" && (
+                  <div className="space-y-4">
+                    {/* Calculator button */}
+                    <button
+                      onClick={() => {
+                        setShowCalculator(true);
+                        if (!stakingData) {
+                          fetchStakingData().then(setStakingData).catch(console.error);
+                        }
+                      }}
+                      className="w-full py-3 rounded-xl bg-accent-amber/10 border border-accent-amber/30 text-accent-amber text-sm font-medium hover:bg-accent-amber/20 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <span className="text-base">&#x1F4B0;</span>
+                      <span>{t.onboarding.openCalculator}</span>
+                    </button>
+
+                    {/* Balance status */}
+                    {tonBalance === null ? (
+                      <div className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
+                        <div className="w-4 h-4 border-2 border-accent-cyan/50 border-t-accent-cyan rounded-full animate-spin" />
+                        <span className="text-gray-400 text-sm">{t.onboarding.balanceChecking}</span>
+                      </div>
+                    ) : tonBalance === 0 && !balanceWaiting ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 p-4 rounded-xl bg-accent-amber/10 border border-accent-amber/30">
+                          <span className="text-lg">&#x23F3;</span>
+                          <span className="text-accent-amber text-sm">{t.onboarding.balanceZero}</span>
+                        </div>
+                        <button
+                          onClick={() => checkTonBalance()}
+                          className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/10 transition-colors"
+                        >
+                          {t.onboarding.balanceRefresh}
+                        </button>
+                      </div>
+                    ) : balanceConfirmed ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                          <span className="text-lg">&#x2705;</span>
+                          <span className="text-emerald-400 text-sm">
+                            {t.onboarding.balanceConfirmed.replace("{amount}", tonBalance!.toLocaleString("en-US", { maximumFractionDigits: 2 }))}
+                          </span>
+                        </div>
+                        <button
+                          onClick={handleAction}
+                          className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg hover:scale-[1.02] transition-transform"
+                        >
+                          {quest.action.label}
+                        </button>
+                      </div>
+                    ) : balanceWaiting ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 p-4 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30">
+                          <div className="w-4 h-4 border-2 border-accent-cyan/50 border-t-accent-cyan rounded-full animate-spin" />
+                          <span className="text-accent-cyan text-sm">{t.onboarding.balanceWaiting}</span>
+                        </div>
+                        <button
+                          onClick={() => checkTonBalance()}
+                          className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/10 transition-colors"
+                        >
+                          {t.onboarding.balanceRefresh}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="p-4 rounded-xl bg-accent-cyan/10 border border-accent-cyan/30">
+                          <div className="text-accent-cyan text-sm font-semibold mb-1">
+                            {t.onboarding.balanceFound.replace("{amount}", tonBalance.toLocaleString("en-US", { maximumFractionDigits: 2 }))} TON
+                          </div>
+                          <div className="text-gray-400 text-xs">
+                            {t.onboarding.balanceAsk}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setBalanceConfirmed(true)}
+                            className="flex-1 py-3 rounded-xl bg-accent-cyan/20 border border-accent-cyan/30 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/30 transition-colors"
+                          >
+                            {t.onboarding.balanceYes}
+                          </button>
+                          <button
+                            onClick={() => setBalanceWaiting(true)}
+                            className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium hover:bg-white/10 transition-colors"
+                          >
+                            {t.onboarding.balanceNo}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Substeps (Quest 2: Bridge to MetaMask) */}

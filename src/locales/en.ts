@@ -566,6 +566,15 @@ const en = {
     calcInputLabel: "TON to stake",
     calcInputPlaceholder: "e.g. 100",
     exploreEcosystem: "Explore Ecosystem",
+    balanceChecking: "Checking your TON balance...",
+    balanceZero: "No TON has arrived yet. If you've withdrawn from the exchange, please wait a moment!",
+    balanceRefresh: "Check Again",
+    balanceFound: "{amount}",
+    balanceAsk: "Is this the TON you withdrew from the exchange?",
+    balanceYes: "Yes, that's right!",
+    balanceNo: "No, it's still being transferred",
+    balanceConfirmed: "{amount} TON confirmed!",
+    balanceWaiting: "Transfer in progress. It should arrive shortly! Checking automatically every 10 seconds.",
   },
   explore: {
     title: "Tokamak Ecosystem",
@@ -656,6 +665,11 @@ const en = {
     nextStep: "Next",
     gasReserve: "~{amount} TON reserved for gas",
     estimatedGasCost: "Estimated gas fee: ~{amount} TON (auto-deducted from MAX)",
+    gasExplainToggle: "What's gas? Tap to learn",
+    gasExplainTitle: "What is gas?",
+    gasExplainBody1: "Gas is a small fee paid to process your transaction on the blockchain. Think of it like a delivery fee!",
+    gasExplainBody2: "Normally you need ETH to pay gas, but Toki's gasless system lets you pay with TON instead — no ETH needed!",
+    gasExplainBody3: "The amount shown is an estimate. The actual fee is usually lower, and any unused portion stays in your wallet.",
     // Step 2: Amount
     step2Title: "Staking Amount",
     step2Dialogue: "How much do you want to stake? You have {balance} TON in your wallet!",
@@ -681,6 +695,11 @@ const en = {
     onboardingPromptDesc: "Want to learn the basics with Quest Guide before staking?",
     onboardingPromptYes: "Sure, show me!",
     onboardingPromptNo: "No thanks, let me stake",
+    // No TON prompt
+    noTonTitle: "No TON yet!",
+    noTonDesc: "You need TON to start staking. Follow the guide to withdraw TON from your exchange — it's easy!",
+    noTonGoQuest: "Get TON from Exchange",
+    noTonSkip: "I'll do it later",
   },
 } as const;
 
