@@ -143,7 +143,6 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
   const { ready, authenticated, user } = usePrivy();
   const [storage, setStorage] = useState<AchievementStorage>(EMPTY_STORAGE);
   const [unlockQueue, setUnlockQueue] = useState<Achievement[]>([]);
-  const [initialized, setInitialized] = useState(false);
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
 
   // Resolve current user ID
@@ -157,7 +156,7 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     if (!userId) {
       setStorage(EMPTY_STORAGE);
       setActiveUserId(null);
-      setInitialized(true);
+
       return;
     }
 
@@ -183,7 +182,6 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     if (newUnlocks.length > 0) {
       setUnlockQueue(newUnlocks);
     }
-    setInitialized(true);
   }, [ready, userId, activeUserId]);
 
   const trackActivity = useCallback(
@@ -285,8 +283,6 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
   const dismissToast = useCallback(() => {
     setUnlockQueue((q) => q.slice(1));
   }, []);
-
-  if (!initialized) return <>{children}</>;
 
   return (
     <AchievementContext.Provider

@@ -29,6 +29,7 @@ const en = {
     startStaking: "Start Staking",
     learnMore: "Learn More",
     stakingQuest: "Staking Quest Guide",
+    questSub: "New here? Start with this",
   },
   howItWorks: {
     title: "STAKING IN",

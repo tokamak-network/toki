@@ -29,6 +29,7 @@ const ko = {
     startStaking: "스테이킹 시작",
     learnMore: "자세히 보기",
     stakingQuest: "스테이킹 퀘스트 가이드",
+    questSub: "처음이라면 여기부터",
   },
   howItWorks: {
     title: "스테이킹까지",
