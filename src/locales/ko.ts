@@ -663,6 +663,11 @@ const ko = {
     goToDashboard: "대시보드에서 확인하기",
     // Common
     stepLabel: "STEP {current}/{total}",
+    // Onboarding prompt for new users
+    onboardingPromptTitle: "처음 오셨군요!",
+    onboardingPromptDesc: "스테이킹 전에 퀘스트 가이드로 기본을 배워볼래요?",
+    onboardingPromptYes: "좋아, 가이드 볼게!",
+    onboardingPromptNo: "아니야, 바로 스테이킹할래",
   },
 } as const;
 

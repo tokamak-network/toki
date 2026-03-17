@@ -668,6 +668,11 @@ const en = {
     goToDashboard: "Check on Dashboard",
     // Common
     stepLabel: "STEP {current}/{total}",
+    // Onboarding prompt for new users
+    onboardingPromptTitle: "Welcome, newcomer!",
+    onboardingPromptDesc: "Want to learn the basics with Quest Guide before staking?",
+    onboardingPromptYes: "Sure, show me!",
+    onboardingPromptNo: "No thanks, let me stake",
   },
 } as const;
 

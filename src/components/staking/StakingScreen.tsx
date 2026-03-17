@@ -159,6 +159,7 @@ export default function StakingScreen() {
   const [tonBalance, setTonBalance] = useState<string>("0");
   const [shuffling, setShuffling] = useState(false);
   const [autoSelectedIndex, setAutoSelectedIndex] = useState<number | undefined>(undefined);
+  const [showOnboardingPrompt, setShowOnboardingPrompt] = useState(false);
   const selectedOpRef = useRef(selectedOp);
   selectedOpRef.current = selectedOp;
 
@@ -315,6 +316,14 @@ export default function StakingScreen() {
     estimateGasReserve();
     return () => { cancelled = true; };
   }, [smartAccountClient]);
+
+  // ─── New user onboarding prompt ────────────────────────────────────
+
+  useEffect(() => {
+    if (!loading && storage.unlocked.length === 0 && Number(tonBalance) === 0) {
+      setShowOnboardingPrompt(true);
+    }
+  }, [loading, storage.unlocked.length, tonBalance]);
 
   // ─── Handlers ──────────────────────────────────────────────────────
 
@@ -729,6 +738,63 @@ export default function StakingScreen() {
           />
         </div>
       </div>
+
+      {/* New user onboarding prompt */}
+      {showOnboardingPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+          <div className="relative z-10 max-w-sm w-full mx-4 animate-slide-up">
+            <div className="bg-black/70 backdrop-blur-2xl rounded-2xl border border-white/10 p-6 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
+              {/* Toki character */}
+              <div className="flex justify-center mb-4">
+                <div className="relative w-28 h-28">
+                  <div
+                    className="absolute inset-[10%] rounded-full blur-2xl opacity-40"
+                    style={{ backgroundColor: "rgba(74, 144, 217, 0.35)" }}
+                  />
+                  <Image
+                    src="/characters/toki-welcome.png"
+                    alt="Toki"
+                    width={112}
+                    height={112}
+                    className="relative z-10 drop-shadow-2xl w-full h-full object-contain"
+                  />
+                </div>
+              </div>
+
+              {/* Dialogue */}
+              <div className="text-center mb-5">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cyan/10 border border-accent-cyan/30 mb-3">
+                  <span className="text-accent-cyan font-bold text-sm">Toki</span>
+                  <span className="text-xs text-accent-cyan/60">welcome</span>
+                </div>
+                <h3 className="text-white text-lg font-bold mb-2">
+                  {t.stakingScreen.onboardingPromptTitle}
+                </h3>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  {t.stakingScreen.onboardingPromptDesc}
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => router.push("/onboarding")}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-semibold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-accent-cyan/20"
+                >
+                  {t.stakingScreen.onboardingPromptYes}
+                </button>
+                <button
+                  onClick={() => setShowOnboardingPrompt(false)}
+                  className="w-full py-3 rounded-xl bg-white/10 text-gray-400 font-medium text-sm hover:bg-white/15 transition-colors"
+                >
+                  {t.stakingScreen.onboardingPromptNo}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
