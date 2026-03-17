@@ -151,7 +151,7 @@ function ChatCharacter({ mood }: { mood: Mood }) {
         alt="Toki"
         width={256}
         height={256}
-        className={`relative z-10 w-40 h-auto drop-shadow-lg transition-opacity duration-150 ${
+        className={`relative z-10 w-40 h-40 object-cover object-top drop-shadow-lg transition-opacity duration-150 ${
           transitioning ? "opacity-0" : "opacity-100"
         }`}
       />

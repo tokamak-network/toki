@@ -185,7 +185,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
         { text: t.quest5Intro3, mood: "pointing" },
         { text: t.quest5Intro4, mood: "determined" },
       ],
-      action: { type: "navigate", label: t.quest5Action, route: "/dashboard" },
+      action: { type: "navigate", label: t.quest5Action, route: "/staking" },
       verify: "user-confirm",
       success: [
         { text: t.quest5Success1, mood: "surprised" },
@@ -427,10 +427,10 @@ function TokiCharacter({ mood, phase, compact }: { mood?: Mood; phase?: Phase; c
 
   return (
     <div className="flex justify-center z-10">
-      <div className={`relative overflow-visible ${
+      <div className={`relative overflow-hidden ${
         compact
-          ? "w-40 sm:w-48 md:w-56 lg:w-64"
-          : "w-64 sm:w-80 md:w-96 lg:w-[28rem]"
+          ? "w-40 sm:w-48 md:w-56 lg:w-64 h-40 sm:h-48 md:h-56 lg:h-64"
+          : "w-64 sm:w-80 md:w-96 lg:w-[28rem] h-64 sm:h-80 md:h-96 lg:h-[28rem]"
       }`}>
         <div
           className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 animate-glow-pulse transition-colors duration-700 opacity-40"
@@ -441,7 +441,7 @@ function TokiCharacter({ mood, phase, compact }: { mood?: Mood; phase?: Phase; c
           alt="Toki"
           width={512}
           height={512}
-          className={`relative z-10 drop-shadow-2xl transition-opacity duration-200 w-full h-auto ${
+          className={`relative z-10 drop-shadow-2xl transition-opacity duration-200 w-full h-full object-cover object-top ${
             transitioning ? "opacity-0" : "opacity-100"
           }`}
           priority
@@ -719,10 +719,6 @@ export default function OnboardingQuest() {
         <div className="absolute inset-0 bg-black/40" />
         {/* Spacer pushes content to bottom */}
         <div className="flex-1" />
-        {/* Character sits directly above the panel */}
-        <div className="relative z-10">
-          <TokiCharacter mood="proud" phase="badge" />
-        </div>
         <div className="relative z-20">
           <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-8 sm:px-8">
             <div className="max-w-2xl mx-auto text-center animate-fade-in">
@@ -735,29 +731,14 @@ export default function OnboardingQuest() {
               <p className="text-accent-amber font-mono-num text-xl mb-6">
                 {t.onboarding.totalXp.replace("{xp}", String(totalXp))}
               </p>
-              <div className="flex flex-wrap gap-3 justify-center mb-6">
-                {QUESTS.map((q) => (
-                  <div
-                    key={q.id}
-                    className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue to-accent-cyan flex items-center justify-center text-lg font-bold text-white"
-                    title={q.badge}
-                  >
-                    {q.badgeIcon}
-                  </div>
-                ))}
-              </div>
+
+
               <div className="flex gap-3 justify-center">
                 <button
-                  onClick={() => router.push("/dashboard")}
-                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
+                  onClick={() => router.push("/staking")}
+                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
                 >
-                  {t.onboarding.goToDashboard}
-                </button>
-                <button
-                  onClick={() => router.push("/explore")}
-                  className="px-8 py-4 rounded-xl bg-white/10 border border-white/20 text-white font-semibold text-lg hover:bg-white/15 hover:scale-105 transition-all"
-                >
-                  {t.onboarding.exploreEcosystem}
+                  {t.onboarding.goToStaking}
                 </button>
               </div>
             </div>
@@ -1049,6 +1030,22 @@ export default function OnboardingQuest() {
                       <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-accent-amber/10 border border-accent-amber/30 text-accent-amber text-sm">
                         <span className="text-base">&#x1F511;</span>
                         <span>{t.onboarding.keyCopyReminder}</span>
+                      </div>
+                    )}
+
+                    {/* Re-export key button on substep 3 (import key into MetaMask) */}
+                    {quest.id === "bridge-metamask" && subStepIndex === 2 && embeddedWallet && (
+                      <div className="space-y-1.5">
+                        <p className="text-xs text-gray-500">{t.onboarding.exportKeyAgainHint}</p>
+                        <button
+                          onClick={async () => {
+                            await exportWallet({ address: embeddedWallet.address });
+                          }}
+                          className="w-full py-3 rounded-xl bg-accent-amber/10 border border-accent-amber/30 text-accent-amber text-sm font-medium hover:bg-accent-amber/20 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <span className="text-base">&#x1F511;</span>
+                          <span>{t.onboarding.exportKeyAgain}</span>
+                        </button>
                       </div>
                     )}
 
