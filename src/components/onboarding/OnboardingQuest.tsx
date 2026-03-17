@@ -412,6 +412,7 @@ const TUTORIAL_VIDEOS: Record<string, { embed: string; mobileUrl?: string }> = {
   "create-wallet": { embed: "https://www.youtube.com/embed/UURB7Tc7D4M?start=129" },
   "install-metamask": { embed: "https://www.youtube.com/embed/KjwlrQAtdYU", mobileUrl: "https://www.youtube.com/shorts/stRSJxS2kyY" },
   "import-key": { embed: "https://www.youtube.com/embed/yvOie0hBr2k", mobileUrl: "https://www.youtube.com/watch?v=O8R6V2fvwKs&t=173" },
+  "verify-exchange": { embed: "https://www.youtube.com/embed/vr858w78q2Y" },
   "receive-ton": { embed: "https://www.youtube.com/embed/D-6tFe_KBZs" },
 };
 
@@ -815,6 +816,7 @@ export default function OnboardingQuest() {
       if (subStepIndex === 0) return "install-metamask";
       if (subStepIndex === 2) return "import-key";
     }
+    if (quest?.id === "verify-exchange") return "verify-exchange";
     if (quest?.id === "receive-ton") return "receive-ton";
     return null;
   })();
