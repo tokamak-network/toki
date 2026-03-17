@@ -515,9 +515,11 @@ export default function StakingScreen() {
       {/* Middle area: Character left + Interactive panel right */}
       <div className="absolute inset-x-0 top-16 bottom-[176px] z-10 flex items-center justify-center">
         <div className="max-w-3xl w-full mx-auto flex items-end h-full">
-          {/* Left: Toki Character */}
+          {/* Left: Toki Character — fixed size, anchored to bottom */}
           <div className="w-[40%] flex items-end justify-center">
-            <TokiCharacter mood={mood} />
+            <div className="w-full max-h-[50vh]">
+              <TokiCharacter mood={mood} />
+            </div>
           </div>
 
           {/* Right: Interactive Panel */}
@@ -916,8 +918,8 @@ function TokiCharacter({ mood }: { mood: Mood }) {
   const glowColor = MOOD_GLOW[mood];
 
   return (
-    <div className="flex justify-center z-10">
-      <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] aspect-[3/4] overflow-visible">
+    <div className="flex justify-center items-end z-10 h-full">
+      <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] max-h-full aspect-[3/4] overflow-visible">
         <div
           className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 animate-glow-pulse transition-colors duration-700 opacity-40"
           style={{ backgroundColor: glowColor }}
