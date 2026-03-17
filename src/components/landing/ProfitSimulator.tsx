@@ -22,15 +22,11 @@ export default function ProfitSimulator({ data, show = true, onClose }: ProfitSi
   const nextId = useRef(0);
   const exhaustId = useRef(0);
   const [vsCountUp, setVsCountUp] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _apr = data.apr / 100;
-
-  // Per-user seigniorage (single source of truth for all earnings)
-  const userSeigPerBlock = data.totalStakedRaw > 0
-    ? (amount / data.totalStakedRaw) * data.seigPerBlockRaw : 0;
+  // Per-user earnings based on APR (accounts for 74% staker share)
+  const apr = data.apr / 100; // decimal
   const BLOCKS_PER_DAY = 7200;
+  const userSeigPerBlock = (amount * apr) / (BLOCKS_PER_DAY * 365);
   const userSeigPerDay = userSeigPerBlock * BLOCKS_PER_DAY;
-
   const tokiEarn1y = Math.round(userSeigPerDay * 365);
 
   // Rocket height: 10% at min (100 TON), 68% at max (100K TON)
