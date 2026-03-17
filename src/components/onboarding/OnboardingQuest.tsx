@@ -274,13 +274,17 @@ function BadgeReveal({ quest }: { quest: Quest }) {
 function DialogueBox({
   line,
   onNext,
+  onPrev,
   isLast,
+  canGoBack,
   moodLabel,
   questProgress,
 }: {
   line: DialogueLine;
   onNext: () => void;
+  onPrev?: () => void;
   isLast: boolean;
+  canGoBack?: boolean;
   moodLabel?: string;
   questProgress?: string;
 }) {
@@ -303,9 +307,19 @@ function DialogueBox({
               </span>
             )}
           </div>
-          {questProgress && (
-            <span className="text-xs text-gray-500 tabular-nums">{questProgress}</span>
-          )}
+          <div className="flex items-center gap-3">
+            {canGoBack && onPrev && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onPrev(); }}
+                className="text-xs text-gray-500 hover:text-gray-300 transition-colors px-2 py-0.5 rounded hover:bg-white/5"
+              >
+                ◀ {t.onboarding.clickToPrev}
+              </button>
+            )}
+            {questProgress && (
+              <span className="text-xs text-gray-500 tabular-nums">{questProgress}</span>
+            )}
+          </div>
         </div>
         <p className="text-gray-100 text-base sm:text-lg leading-relaxed flex-1">
           {displayed}
@@ -636,6 +650,12 @@ export default function OnboardingQuest() {
     }
   };
 
+  const handlePrevDialogue = () => {
+    if (dialogueIndex > 0) {
+      setDialogueIndex(dialogueIndex - 1);
+    }
+  };
+
   const handleAction = async () => {
     if (!quest?.action) return;
 
@@ -882,6 +902,8 @@ export default function OnboardingQuest() {
             <DialogueBox
               line={currentLine}
               onNext={handleNextDialogue}
+              onPrev={handlePrevDialogue}
+              canGoBack={dialogueIndex > 0}
               isLast={dialogueIndex === dialogues.length - 1}
               moodLabel={currentLine.mood ? getMoodLabel(currentLine.mood, t.onboarding) : undefined}
               questProgress={`${questIndex + 1} / ${QUESTS.length}`}
@@ -891,6 +913,18 @@ export default function OnboardingQuest() {
           {/* Action Phase */}
           {phase === "action" && quest.action && (
             <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-gray-500 tabular-nums">{questIndex + 1} / {QUESTS.length}</span>
+                <button
+                  onClick={() => {
+                    setPhase("intro");
+                    setDialogueIndex(quest.intro.length - 1);
+                  }}
+                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors px-2 py-0.5 rounded hover:bg-white/5"
+                >
+                  ◀ {t.onboarding.clickToPrev}
+                </button>
+              </div>
               <div className="space-y-4">
 
                 {quest.action.type === "privy-login" && (

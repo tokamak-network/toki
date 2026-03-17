@@ -429,6 +429,7 @@ const en = {
     quest: "Quest",
     clickToContinue: "Click to continue",
     clickToNext: "Click to next",
+    clickToPrev: "Back",
     nextQuest: "Next Quest",
     complete: "Complete!",
     yourAddress: "Your Address",

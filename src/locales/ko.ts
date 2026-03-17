@@ -424,6 +424,7 @@ const ko = {
     quest: "퀘스트",
     clickToContinue: "클릭하여 계속",
     clickToNext: "클릭하여 다음",
+    clickToPrev: "이전",
     nextQuest: "다음 퀘스트",
     complete: "완료!",
     yourAddress: "내 주소",
