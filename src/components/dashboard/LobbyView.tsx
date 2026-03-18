@@ -622,6 +622,12 @@ export default function LobbyView({
                       <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_2px_rgba(34,197,94,0.5)] animate-pulse" />
                       <span className="text-xs font-medium text-green-400">{t.dashboard.withdrawalReady}</span>
                     </div>
+                    {!withdrawProcessing && (
+                      <div className="mx-3 mt-2 flex items-center gap-2 p-2 rounded-md bg-blue-500/5 border border-blue-500/10">
+                        <span className="text-blue-400 text-xs shrink-0">✍️</span>
+                        <span className="text-[11px] text-blue-400/80">{t.dashboard.signatureNotice}</span>
+                      </div>
+                    )}
                     <div className="p-3 space-y-2">
                       {withdrawalStatus.withdrawableRequests.map((req) => {
                         const formatted = Number(formatUnits(req.amount, 27)).toLocaleString("en-US", { maximumFractionDigits: 2 });

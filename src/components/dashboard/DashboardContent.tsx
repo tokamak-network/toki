@@ -390,6 +390,12 @@ export default function DashboardContent() {
                   <span>{t.dashboard.vaultWithdrawalTitle}</span>
                 </h3>
                 <div className="space-y-3">
+                  {!mobileWithdrawProcessing && (
+                    <div className="flex items-center gap-2 p-2 rounded-md bg-blue-500/5 border border-blue-500/10">
+                      <span className="text-blue-400 text-xs shrink-0">✍️</span>
+                      <span className="text-[11px] text-blue-400/80">{t.dashboard.signatureNotice}</span>
+                    </div>
+                  )}
                   {withdrawalStatus.withdrawableRequests.map((req) => {
                     const formatted = Number(formatUnits(req.amount, 27)).toLocaleString("en-US", { maximumFractionDigits: 2 });
                     return (

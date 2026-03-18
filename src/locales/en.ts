@@ -320,6 +320,7 @@ const en = {
     requesting: "Requesting...",
     txSubmitted: "Transaction submitted!",
     noStakedBalance: "No staked balance on this operator",
+    signatureNotice: "Hold on! Tap 'Sign' in the popup to confirm",
     txRejected: "Transaction rejected by user",
     insufficientTonForGas: "Insufficient TON balance. You need enough TON to cover both the staking amount and gas fee.",
     paymasterValidationFailed: "Gas payment validation failed. Please check your TON balance and try again.",

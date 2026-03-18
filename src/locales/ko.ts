@@ -323,6 +323,7 @@ const ko = {
     requesting: "요청 중...",
     txSubmitted: "트랜잭션이 제출되었습니다!",
     noStakedBalance: "이 오퍼레이터에 스테이킹된 잔액이 없습니다",
+    signatureNotice: "잠깐! 팝업에서 '서명' 버튼을 눌러야 처리가 완료돼요",
     txRejected: "사용자가 트랜잭션을 거부했습니다",
     insufficientTonForGas:
       "TON 잔액이 부족합니다. 스테이킹 금액과 가스비를 합산한 TON이 필요합니다.",

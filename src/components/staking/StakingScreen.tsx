@@ -969,6 +969,14 @@ export default function StakingScreen() {
                         </div>
                       </div>
 
+                      {/* Signature notice */}
+                      {!staking && !error && !txHash && (
+                        <div className="flex items-center gap-2 p-3 rounded-lg bg-accent-blue/5 border border-accent-blue/15">
+                          <span className="text-accent-blue text-sm shrink-0">✍️</span>
+                          <span className="text-xs text-accent-blue/80">{t.dashboard.signatureNotice}</span>
+                        </div>
+                      )}
+
                       {!error ? (
                         <button
                           onClick={handleStake}
@@ -1253,6 +1261,14 @@ export default function StakingScreen() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Signature notice */}
+                      {!unstaking && !unstakeError && !unstakeTxHash && (
+                        <div className="flex items-center gap-2 p-3 rounded-lg bg-accent-blue/5 border border-accent-blue/15">
+                          <span className="text-accent-blue text-sm shrink-0">✍️</span>
+                          <span className="text-xs text-accent-blue/80">{t.dashboard.signatureNotice}</span>
+                        </div>
+                      )}
 
                       {!unstakeError ? (
                         <button
