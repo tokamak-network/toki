@@ -886,7 +886,7 @@ export default function OnboardingQuest() {
           <>
             {/* Desktop: iframe */}
             <div className="hidden md:flex flex-col items-center px-4 mb-2">
-              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 860, maxWidth: "100%", height: 484 }}>
+              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 860, maxWidth: "100%", height: 440 }}>
                 <iframe
                   src={TUTORIAL_VIDEOS[autoVideoKey].embed}
                   className="w-full h-full"

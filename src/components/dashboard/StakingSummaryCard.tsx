@@ -57,7 +57,7 @@ export default function StakingSummaryCard({
       </div>
 
       {/* Staking Amounts */}
-      {subgraphData && (
+      {subgraphData ? (
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="p-3 rounded-lg bg-white/5">
             <div className="text-xs text-gray-500 mb-1">{t.dashboard.stakedPrincipal}</div>
@@ -81,7 +81,16 @@ export default function StakingSummaryCard({
             <div className="text-[10px] text-gray-600">WTON</div>
           </div>
         </div>
-      )}
+      ) : stakedBalance && Number(stakedBalance.replace(/,/g, "")) > 0 ? (
+        <div className="mb-4">
+          <div className="p-3 rounded-lg bg-white/5 border border-accent-gold/10">
+            <div className="text-xs text-gray-500 mb-1">{t.dashboard.totalStakedValue}</div>
+            <div className="text-lg font-mono-num font-semibold text-accent-gold">
+              {loading ? "..." : stakedBalance} TON
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Withdrawal Status */}
       {hasWithdrawalActivity && (

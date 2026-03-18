@@ -132,6 +132,10 @@ contract TONPaymasterTest is Test {
         paymaster.depositToken(INITIAL_BALANCE);
         vm.stopPrank();
 
+        // Whitelist the test guarantor
+        vm.prank(owner);
+        paymaster.setTrustedGuarantor(guarantor, true);
+
         // Stake paymaster
         vm.deal(owner, 1 ether);
         vm.prank(owner);
@@ -868,5 +872,77 @@ contract TONPaymasterTest is Test {
 
         vm.expectRevert("TONPaymaster: insufficient token pool");
         entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // v4: Guarantor Whitelist tests
+    // ═══════════════════════════════════════════════════════════════
+
+    function test_setTrustedGuarantor() public {
+        address newGuarantor = address(0xAAAA);
+        assertFalse(paymaster.trustedGuarantors(newGuarantor), "should not be trusted initially");
+
+        vm.prank(owner);
+        paymaster.setTrustedGuarantor(newGuarantor, true);
+        assertTrue(paymaster.trustedGuarantors(newGuarantor), "should be trusted after adding");
+    }
+
+    function test_removeTrustedGuarantor() public {
+        // Guarantor is already whitelisted in setUp
+        assertTrue(paymaster.trustedGuarantors(guarantor), "should be trusted from setUp");
+
+        vm.prank(owner);
+        paymaster.setTrustedGuarantor(guarantor, false);
+        assertFalse(paymaster.trustedGuarantors(guarantor), "should not be trusted after removal");
+    }
+
+    function test_setTrustedGuarantor_nonOwner_reverts() public {
+        vm.prank(user);
+        vm.expectRevert();
+        paymaster.setTrustedGuarantor(address(0xBBBB), true);
+    }
+
+    function test_setTrustedGuarantor_zeroAddress_reverts() public {
+        vm.prank(owner);
+        vm.expectRevert("Invalid guarantor");
+        paymaster.setTrustedGuarantor(address(0), true);
+    }
+
+    function test_mode1_untrustedGuarantor_reverts() public {
+        // Remove guarantor from whitelist
+        vm.prank(owner);
+        paymaster.setTrustedGuarantor(guarantor, false);
+
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
+            user, maxTokenCost, validUntil, validAfter
+        );
+
+        vm.expectRevert("TONPaymaster: untrusted guarantor");
+        entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
+    }
+
+    function test_mode1_removedGuarantor_reverts() public {
+        // Use guarantor once successfully
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        bytes memory pd1 = _buildGuarantorPaymasterAndData(user, maxTokenCost, validUntil, validAfter);
+        entryPoint.simulateValidation(paymaster, _buildUserOp(user, pd1), maxCost);
+
+        // Remove guarantor
+        vm.prank(owner);
+        paymaster.setTrustedGuarantor(guarantor, false);
+
+        // Second attempt should fail
+        bytes memory pd2 = _buildGuarantorPaymasterAndData(user, maxTokenCost, validUntil, validAfter);
+        vm.expectRevert("TONPaymaster: untrusted guarantor");
+        entryPoint.simulateValidation(paymaster, _buildUserOp(user, pd2), maxCost);
     }
 }

@@ -124,37 +124,50 @@ export default function DashboardContent() {
     setLoading(true);
     try {
       const addr = balanceAddress as `0x${string}`;
-      const [ethBal, tonBal, wtonBal, stakedBal, pendingBal] = await Promise.all([
-        client.getBalance({ address: addr }),
-        client.readContract({
-          address: TON_ADDRESS as `0x${string}`,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [addr],
-        }),
-        client.readContract({
-          address: WTON_ADDRESS as `0x${string}`,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [addr],
-        }),
-        client.readContract({
-          address: DEPOSIT_MANAGER as `0x${string}`,
-          abi: accStakedAccountAbi,
-          functionName: "accStakedAccount",
-          args: [addr],
-        }),
-        client.readContract({
-          address: DEPOSIT_MANAGER as `0x${string}`,
-          abi: accStakedAccountAbi,
-          functionName: "pendingUnstakedAccount",
-          args: [addr],
-        }),
-      ]);
+      // Use multicall to fetch all balances in a single RPC call
+      const results = await client.multicall({
+        contracts: [
+          {
+            address: TON_ADDRESS as `0x${string}`,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [addr],
+          },
+          {
+            address: WTON_ADDRESS as `0x${string}`,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [addr],
+          },
+          {
+            address: DEPOSIT_MANAGER as `0x${string}`,
+            abi: accStakedAccountAbi,
+            functionName: "accStakedAccount",
+            args: [addr],
+          },
+          {
+            address: DEPOSIT_MANAGER as `0x${string}`,
+            abi: accStakedAccountAbi,
+            functionName: "pendingUnstakedAccount",
+            args: [addr],
+          },
+        ],
+      });
+      // ETH balance is native, fetch separately
+      let ethBal = BigInt(0);
+      try {
+        ethBal = await client.getBalance({ address: addr });
+      } catch {
+        // ETH balance fetch failed, use 0
+      }
+
+      const tonBal = results[0].status === "success" ? (results[0].result as bigint) : BigInt(0);
+      const wtonBal = results[1].status === "success" ? (results[1].result as bigint) : BigInt(0);
+      const stakedBal = results[2].status === "success" ? (results[2].result as bigint) : BigInt(0);
+      const pendingBal = results[3].status === "success" ? (results[3].result as bigint) : BigInt(0);
+
       // Subtract pending unstaked from total staked to show actual active staking
-      const netStaked = (stakedBal as bigint) > (pendingBal as bigint)
-        ? (stakedBal as bigint) - (pendingBal as bigint)
-        : BigInt(0);
+      const netStaked = stakedBal > pendingBal ? stakedBal - pendingBal : BigInt(0);
       setBalances({
         eth: Number(formatUnits(ethBal, 18)).toFixed(6),
         ton: Number(formatUnits(tonBal, 18)).toLocaleString("en-US", {
@@ -167,8 +180,10 @@ export default function DashboardContent() {
           maximumFractionDigits: 2,
         }),
       });
-    } catch {
-      setBalances({ eth: "\u2014", ton: "\u2014", wton: "\u2014", staked: "\u2014" });
+    } catch (e) {
+      // On error (e.g. 429 rate limit), preserve existing data if available
+      console.error("Failed to fetch balances:", e);
+      setBalances((prev) => prev ?? { eth: "\u2014", ton: "\u2014", wton: "\u2014", staked: "\u2014" });
     }
     setLoading(false);
   }, [balanceAddress]);
@@ -183,6 +198,13 @@ export default function DashboardContent() {
     if (balanceAddress) {
       fetchBalances();
     }
+  }, [balanceAddress, fetchBalances]);
+
+  // Auto-refresh balances periodically (30s) to reflect new stakes/withdrawals
+  useEffect(() => {
+    if (!balanceAddress) return;
+    const id = setInterval(() => { fetchBalances(); }, 30_000);
+    return () => clearInterval(id);
   }, [balanceAddress, fetchBalances]);
 
   const handleRefresh = useCallback(() => {

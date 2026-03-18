@@ -10,6 +10,22 @@ import {
 import { publicClient, isTestnet } from "@/lib/chain";
 
 const BLOCK_TIME_SECONDS = 12;
+const POLL_INTERVAL_MS = 30_000; // 30 seconds
+const MULTICALL_BATCH_SIZE = 50; // Max calls per multicall to avoid RPC limits
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function batchedMulticall(contracts: any[]): Promise<any[]> {
+  if (contracts.length <= MULTICALL_BATCH_SIZE) {
+    return publicClient.multicall({ contracts });
+  }
+  const results = [];
+  for (let i = 0; i < contracts.length; i += MULTICALL_BATCH_SIZE) {
+    const chunk = contracts.slice(i, i + MULTICALL_BATCH_SIZE);
+    const chunkResults = await publicClient.multicall({ contracts: chunk });
+    results.push(...chunkResults);
+  }
+  return results;
+}
 
 export interface WithdrawalRequest {
   index: number;
@@ -81,84 +97,105 @@ export function useWithdrawalStatus(address: string | undefined): WithdrawalStat
       const addr = address as `0x${string}`;
       const blockNumber = await publicClient.getBlockNumber();
 
+      // Fetch operator count
       const numLayer2s = await publicClient.readContract({
         address: registryAddr,
         abi: layer2RegistryAbi,
         functionName: "numLayer2s",
       });
-      const count = Math.min(Number(numLayer2s), 10);
-      const addresses = await Promise.all(
-        Array.from({ length: count }, (_, i) =>
-          publicClient.readContract({
-            address: registryAddr,
-            abi: layer2RegistryAbi,
-            functionName: "layer2ByIndex",
-            args: [BigInt(i)],
-          })
-        )
+      const count = Number(numLayer2s);
+
+      // Multicall: get all operator addresses at once
+      const indexCalls = Array.from({ length: count }, (_, i) => ({
+        address: registryAddr,
+        abi: layer2RegistryAbi,
+        functionName: "layer2ByIndex" as const,
+        args: [BigInt(i)] as const,
+      }));
+      const indexResults = await batchedMulticall(indexCalls);
+      const addresses = indexResults
+        .filter((r) => r.status === "success")
+        .map((r) => r.result as `0x${string}`);
+
+      // Multicall: check numPendingRequests for ALL operators at once
+      const pendingCalls = addresses.map((a) => ({
+        address: depositManagerAddr,
+        abi: depositManagerAbi,
+        functionName: "numPendingRequests" as const,
+        args: [a, addr] as const,
+      }));
+      const pendingResults = await batchedMulticall(pendingCalls);
+
+      // Only process operators that have pending requests
+      const operatorsWithPending = addresses.filter(
+        (_, i) => pendingResults[i].status === "success" && Number(pendingResults[i].result) > 0
       );
 
+      if (operatorsWithPending.length === 0) {
+        setAllRequests([]);
+        prevHasWithdrawable.current = false;
+        setLoading(false);
+        return;
+      }
+
+      // Multicall: get requestIndex + numRequests for operators with pending
+      const detailCalls = operatorsWithPending.flatMap((a) => [
+        {
+          address: depositManagerAddr,
+          abi: depositManagerAbi,
+          functionName: "withdrawalRequestIndex" as const,
+          args: [a, addr] as const,
+        },
+        {
+          address: depositManagerAddr,
+          abi: depositManagerAbi,
+          functionName: "numRequests" as const,
+          args: [a, addr] as const,
+        },
+      ]);
+      const detailResults = await batchedMulticall(detailCalls);
+
+      // Build batch of all withdrawal request calls
+      const requestCalls: { layer2Addr: string; index: number }[] = [];
+      for (let opIdx = 0; opIdx < operatorsWithPending.length; opIdx++) {
+        const startIndex = detailResults[opIdx * 2].status === "success"
+          ? Number(detailResults[opIdx * 2].result) : 0;
+        const total = detailResults[opIdx * 2 + 1].status === "success"
+          ? Number(detailResults[opIdx * 2 + 1].result) : 0;
+
+        for (let i = startIndex; i < total; i++) {
+          requestCalls.push({ layer2Addr: operatorsWithPending[opIdx], index: i });
+        }
+      }
+
+      // Multicall all withdrawal requests at once
       const requests: WithdrawalRequest[] = [];
+      if (requestCalls.length > 0) {
+        const withdrawalCalls = requestCalls.map((rc) => ({
+          address: depositManagerAddr,
+          abi: depositManagerAbi,
+          functionName: "withdrawalRequest" as const,
+          args: [rc.layer2Addr as `0x${string}`, addr, BigInt(rc.index)] as const,
+        }));
+        const withdrawalResults = await batchedMulticall(withdrawalCalls);
 
-      for (const layer2Addr of addresses) {
-        try {
-          const [numPending, requestIndex, numTotal] = await Promise.all([
-            publicClient.readContract({
-              address: depositManagerAddr,
-              abi: depositManagerAbi,
-              functionName: "numPendingRequests",
-              args: [layer2Addr, addr],
-            }),
-            publicClient.readContract({
-              address: depositManagerAddr,
-              abi: depositManagerAbi,
-              functionName: "withdrawalRequestIndex",
-              args: [layer2Addr, addr],
-            }),
-            publicClient.readContract({
-              address: depositManagerAddr,
-              abi: depositManagerAbi,
-              functionName: "numRequests",
-              args: [layer2Addr, addr],
-            }),
-          ]);
+        for (let i = 0; i < withdrawalResults.length; i++) {
+          if (withdrawalResults[i].status !== "success") continue;
+          const [withdrawableBlockNumber, amount, processed] = withdrawalResults[i].result as [bigint, bigint, boolean];
+          if (processed) continue;
 
-          const pending = Number(numPending);
-          if (pending === 0) continue;
-
-          const startIndex = Number(requestIndex);
-          const total = Number(numTotal);
-
-          for (let i = startIndex; i < total && requests.length < pending + requests.length; i++) {
-            try {
-              const result = await publicClient.readContract({
-                address: depositManagerAddr,
-                abi: depositManagerAbi,
-                functionName: "withdrawalRequest",
-                args: [layer2Addr, addr, BigInt(i)],
-              });
-
-              const [withdrawableBlockNumber, amount, processed] = result as [bigint, bigint, boolean];
-              if (processed) continue;
-
-              const blocksRemaining = Number(withdrawableBlockNumber) - Number(blockNumber);
-              // On testnet (Sepolia), delay is set to 1 block — treat all unprocessed requests as withdrawable
-              const withdrawable = isTestnet ? true : blocksRemaining <= 0;
-              requests.push({
-                index: i,
-                withdrawableBlockNumber,
-                amount,
-                processed,
-                isWithdrawable: withdrawable,
-                blocksRemaining: withdrawable ? 0 : Math.max(0, blocksRemaining),
-                operatorAddress: layer2Addr,
-              });
-            } catch {
-              // Skip individual request errors
-            }
-          }
-        } catch {
-          // Skip operator errors
+          const blocksRemaining = Number(withdrawableBlockNumber) - Number(blockNumber);
+          // On testnet (Sepolia), delay is set to 1 block — treat all unprocessed requests as withdrawable
+          const withdrawable = isTestnet ? true : blocksRemaining <= 0;
+          requests.push({
+            index: requestCalls[i].index,
+            withdrawableBlockNumber,
+            amount,
+            processed,
+            isWithdrawable: withdrawable,
+            blocksRemaining: withdrawable ? 0 : Math.max(0, blocksRemaining),
+            operatorAddress: requestCalls[i].layer2Addr,
+          });
         }
       }
 
@@ -171,22 +208,24 @@ export function useWithdrawalStatus(address: string | undefined): WithdrawalStat
       }
       prevHasWithdrawable.current = newWithdrawableCount > 0;
     } catch (e) {
+      // On error (e.g. 429 rate limit), preserve existing data instead of clearing
       console.error("Failed to fetch withdrawal requests:", e);
     }
     setLoading(false);
   }, [address, registryAddr, depositManagerAddr]);
 
-  useEffect(() => {
-    if (address) {
-      fetchRequests();
-    }
-  }, [address, fetchRequests]);
-
-  // Auto-refresh every 5 minutes to detect newly withdrawable requests
+  // Delay initial fetch to let lighter RPC calls (e.g. fetchBalances) complete first
   useEffect(() => {
     if (!address) return;
-    const interval = setInterval(fetchRequests, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    const timeout = setTimeout(() => { fetchRequests(); }, 2000);
+    return () => clearTimeout(timeout);
+  }, [address, fetchRequests]);
+
+  // Poll periodically instead of every block to avoid RPC rate limits
+  useEffect(() => {
+    if (!address) return;
+    const id = setInterval(() => { fetchRequests(); }, POLL_INTERVAL_MS);
+    return () => clearInterval(id);
   }, [address, fetchRequests]);
 
   const pendingRequests = allRequests.filter((r) => !r.isWithdrawable);

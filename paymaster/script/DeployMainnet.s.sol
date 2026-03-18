@@ -45,12 +45,12 @@ contract DeployTONPaymasterMainnet is Script {
         console.log("Markup set to 5% (10500 bps)");
 
         // Stake on EntryPoint (required for paymaster to be accepted by bundlers)
-        paymaster.addStake{value: 0.1 ether}(86400);
-        console.log("Staked 0.1 ETH on EntryPoint");
+        paymaster.addStake{value: 0.01 ether}(86400);
+        console.log("Staked 0.01 ETH on EntryPoint");
 
         // Deposit ETH on EntryPoint (gas prepayment pool, top up with deposit() anytime)
-        paymaster.deposit{value: 0.1 ether}();
-        console.log("Deposited 0.1 ETH on EntryPoint");
+        paymaster.deposit{value: 0.05 ether}();
+        console.log("Deposited 0.05 ETH on EntryPoint");
 
         vm.stopBroadcast();
 
