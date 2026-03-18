@@ -206,43 +206,48 @@ export async function POST(request: NextRequest) {
     if (method === "pm_getPaymasterStubData") {
       // params[0] = userOp, params[1] = entryPoint, params[2] = chainId
       const userOp = params?.[0];
-      const sender = userOp?.sender as Address | undefined;
+      const sender = (userOp?.sender ?? userOp?.Sender) as Address | undefined;
 
-      if (sender && guarantorAccount) {
-        try {
-          // Use a conservative max cost estimate for the stub
-          const maxCost = estimateMaxCost(userOp);
-          const { paymasterData } = await buildGuarantorPaymasterData(sender, maxCost);
+      console.log("[Paymaster API] pm_getPaymasterStubData - sender:", sender, "userOp keys:", userOp ? Object.keys(userOp) : "null");
 
-          return NextResponse.json({
-            jsonrpc: "2.0",
-            id,
-            result: {
-              paymaster: TON_PAYMASTER,
-              paymasterData,
-              paymasterVerificationGasLimit: "0x30d40", // 200k (guarantor mode needs more)
-              paymasterPostOpGasLimit: "0x249f0", // 150k
-              isFinal: false, // Need second call with final gas values
-            },
-          });
-        } catch (e) {
-          console.error("[Paymaster API] stub guarantor signing failed:", e);
-          // Fallback to Mode 0x00
-        }
+      if (!sender) {
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          error: { code: -32602, message: `Missing sender in UserOp. Keys: ${userOp ? Object.keys(userOp).join(",") : "null"}` },
+        }, { status: 400 });
+      }
+      if (!guarantorAccount) {
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          error: { code: -32603, message: "Guarantor not configured on server" },
+        }, { status: 500 });
       }
 
-      // Fallback: Mode 0x00 (pre-charge user)
-      return NextResponse.json({
-        jsonrpc: "2.0",
-        id,
-        result: {
-          paymaster: TON_PAYMASTER,
-          paymasterData: "0x00" as Hex,
-          paymasterVerificationGasLimit: "0x24900",
-          paymasterPostOpGasLimit: "0x186a0",
-          isFinal: true,
-        },
-      });
+      try {
+        const maxCost = estimateMaxCost(userOp);
+        const { paymasterData } = await buildGuarantorPaymasterData(sender, maxCost);
+
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          result: {
+            paymaster: TON_PAYMASTER,
+            paymasterData,
+            paymasterVerificationGasLimit: "0x30d40", // 200k (guarantor mode needs more)
+            paymasterPostOpGasLimit: "0x249f0", // 150k
+            isFinal: false, // Need second call with final gas values
+          },
+        });
+      } catch (e) {
+        console.error("[Paymaster API] stub guarantor signing failed:", e);
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          error: { code: -32603, message: `Guarantor signing failed: ${e instanceof Error ? e.message : String(e)}` },
+        }, { status: 500 });
+      }
     }
 
     // ERC-7677: pm_getPaymasterData
@@ -251,37 +256,43 @@ export async function POST(request: NextRequest) {
       const userOp = params?.[0];
       const sender = userOp?.sender as Address | undefined;
 
-      if (sender && guarantorAccount) {
-        try {
-          const maxCost = estimateMaxCost(userOp);
-          const { paymasterData } = await buildGuarantorPaymasterData(sender, maxCost);
-
-          return NextResponse.json({
-            jsonrpc: "2.0",
-            id,
-            result: {
-              paymaster: TON_PAYMASTER,
-              paymasterData,
-              paymasterVerificationGasLimit: "0x30d40",
-              paymasterPostOpGasLimit: "0x249f0",
-            },
-          });
-        } catch (e) {
-          console.error("[Paymaster API] guarantor signing failed:", e);
-          // Fallback to Mode 0x00
-        }
+      if (!sender) {
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          error: { code: -32602, message: "Missing sender in UserOp" },
+        }, { status: 400 });
+      }
+      if (!guarantorAccount) {
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          error: { code: -32603, message: "Guarantor not configured on server" },
+        }, { status: 500 });
       }
 
-      return NextResponse.json({
-        jsonrpc: "2.0",
-        id,
-        result: {
-          paymaster: TON_PAYMASTER,
-          paymasterData: "0x00" as Hex,
-          paymasterVerificationGasLimit: "0x24900",
-          paymasterPostOpGasLimit: "0x186a0",
-        },
-      });
+      try {
+        const maxCost = estimateMaxCost(userOp);
+        const { paymasterData } = await buildGuarantorPaymasterData(sender, maxCost);
+
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          result: {
+            paymaster: TON_PAYMASTER,
+            paymasterData,
+            paymasterVerificationGasLimit: "0x30d40",
+            paymasterPostOpGasLimit: "0x249f0",
+          },
+        });
+      } catch (e) {
+        console.error("[Paymaster API] guarantor signing failed:", e);
+        return NextResponse.json({
+          jsonrpc: "2.0",
+          id,
+          error: { code: -32603, message: `Guarantor signing failed: ${e instanceof Error ? e.message : String(e)}` },
+        }, { status: 500 });
+      }
     }
 
     return NextResponse.json(
