@@ -6,8 +6,6 @@ import {
   createWalletClient,
   formatUnits,
   parseUnits,
-  encodeAbiParameters,
-  encodeFunctionData,
   custom,
 } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
@@ -17,6 +15,7 @@ import {
   candidateAbi,
   tonTokenAbi,
 } from "@/lib/abi";
+import { buildStakingCalls } from "@/lib/staking-calls";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import OperatorCard from "./OperatorCard";
 
@@ -326,9 +325,9 @@ export default function VNStakingPanel({
 
     try {
       const tonAmount = parseUnits(amount, 18);
-      const stakingData = encodeAbiParameters(
-        [{ type: "address" }, { type: "address" }],
-        [depositManagerAddr, selectedOp as `0x${string}`]
+      const stakingCalls = buildStakingCalls(
+        tonAddr, wtonAddr, depositManagerAddr,
+        selectedOp as `0x${string}`, tonAmount,
       );
 
       let hash: `0x${string}`;
@@ -340,16 +339,7 @@ export default function VNStakingPanel({
         );
       } else if (smartAccountClient) {
         hash = await smartAccountClient.sendTransaction({
-          calls: [
-            {
-              to: tonAddr,
-              data: encodeFunctionData({
-                abi: tonTokenAbi,
-                functionName: "approveAndCall",
-                args: [wtonAddr, tonAmount, stakingData],
-              }),
-            },
-          ],
+          calls: stakingCalls,
         });
       } else {
         const provider = await getEthereumProvider();
@@ -359,12 +349,27 @@ export default function VNStakingPanel({
           account: addr,
         });
 
-        hash = await walletClient.writeContract({
-          address: tonAddr,
-          abi: tonTokenAbi,
-          functionName: "approveAndCall",
-          args: [wtonAddr, tonAmount, stakingData],
-        });
+        if (stakingCalls.length === 1) {
+          hash = await walletClient.sendTransaction({
+            to: stakingCalls[0].to,
+            data: stakingCalls[0].data,
+            chain,
+          });
+        } else {
+          for (let i = 0; i < stakingCalls.length - 1; i++) {
+            const txHash = await walletClient.sendTransaction({
+              to: stakingCalls[i].to,
+              data: stakingCalls[i].data,
+              chain,
+            });
+            await publicClient.waitForTransactionReceipt({ hash: txHash });
+          }
+          hash = await walletClient.sendTransaction({
+            to: stakingCalls[stakingCalls.length - 1].to,
+            data: stakingCalls[stakingCalls.length - 1].data,
+            chain,
+          });
+        }
       }
 
       setTxHash(hash);
