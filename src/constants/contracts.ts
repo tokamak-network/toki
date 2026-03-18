@@ -28,8 +28,8 @@ const SEPOLIA_CONTRACTS = {
   SIMPLE_ACCOUNT_7702: "0xe6Cae83BdE06E4c305530e199D7217f42808555B",
   // MetaMask EIP-7702 Stateless DeleGator (audited by MetaMask, same on all chains)
   METAMASK_DELEGATOR: "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B",
-  // Custom TONPaymaster: pays gas in TON token (EntryPoint v0.8, with TWAP oracle support)
-  TON_PAYMASTER: "0x51820FcC9e10E9B352B670102ED0c9dC3833829f",
+  // Custom TONPaymaster v3: pays gas in TON token (EntryPoint v0.8, guarantor nonce + debt tracking)
+  TON_PAYMASTER: "0x54965Db4520C5df922E99B4F50A4Bdce33c6ac8c",
 } as const;
 
 export const CONTRACTS = isTestnet ? SEPOLIA_CONTRACTS : MAINNET_CONTRACTS;

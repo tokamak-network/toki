@@ -235,7 +235,7 @@ contract TONPaymaster is Ownable, EIP712 {
     uint8 public constant MODE_GUARANTOR = 0x01;
 
     bytes32 public constant GUARANTOR_TYPEHASH = keccak256(
-        "Guarantee(address sender,uint256 maxTokenCost,uint48 validUntil,uint48 validAfter)"
+        "Guarantee(address sender,uint256 guaranteedAmount,uint256 nonce,uint48 validUntil,uint48 validAfter)"
     );
 
     // ─── Immutables ───────────────────────────────────────────────
@@ -270,6 +270,14 @@ contract TONPaymaster is Ownable, EIP712 {
     /// @notice Estimated gas for postOp (transferFrom). Added to cost calculation.
     uint256 public postOpGasOverhead;
 
+    // ─── Guarantor nonce tracking ─────────────────────────────────
+    /// @notice Per-guarantor nonce for one-time signature usage
+    mapping(address => uint256) public guarantorNonces;
+
+    // ─── Debt tracking ────────────────────────────────────────────
+    /// @notice Outstanding debt per user (accumulated when user fails to pay gas)
+    mapping(address => uint256) public userDebt;
+
     // ─── Time range config ───────────────────────────────────────
     /// @notice Validity window for Mode 0x00 UserOps (seconds from block.timestamp)
     uint48 public validityWindow;
@@ -281,6 +289,9 @@ contract TONPaymaster is Ownable, EIP712 {
     event GasPayment(address indexed sender, uint256 tonAmount, uint256 ethCost);
     event GuarantorPayment(address indexed guarantor, address indexed sender, uint256 tonAmount);
     event ValidityWindowUpdated(uint48 validityWindow);
+    event DebtRecorded(address indexed user, uint256 amount);
+    event DebtCollected(address indexed user, uint256 amount);
+    event RefundFailed(address indexed to, uint256 amount);
 
     modifier onlyEntryPoint() {
         require(msg.sender == address(entryPoint), "Not EntryPoint");
@@ -292,7 +303,7 @@ contract TONPaymaster is Ownable, EIP712 {
         IERC20 _token,
         uint256 _tokenPerEth,
         address _owner
-    ) Ownable(_owner) EIP712("TONPaymaster", "2") {
+    ) Ownable(_owner) EIP712("TONPaymaster", "3") {
         entryPoint = _entryPoint;
         token = _token;
         tokenPerEth = _tokenPerEth;
@@ -339,23 +350,31 @@ contract TONPaymaster is Ownable, EIP712 {
         } else if (mode == MODE_GUARANTOR) {
             // Mode 0x01: Guarantor pre-pays
             // paymasterData layout after mode byte:
-            //   [mode(1B)][guarantor(20B)][validUntil(6B)][validAfter(6B)][signature(dynamic)]
+            //   [mode(1B)][guarantor(20B)][guaranteedAmount(32B)][validUntil(6B)][validAfter(6B)][signature(dynamic)]
             require(
-                userOp.paymasterAndData.length >= 20 + 1 + 20 + 6 + 6,
+                userOp.paymasterAndData.length >= 20 + 1 + 20 + 32 + 6 + 6,
                 "TONPaymaster: invalid guarantor data"
             );
 
             address guarantor = address(bytes20(userOp.paymasterAndData[21:41]));
-            uint48 validUntil = uint48(bytes6(userOp.paymasterAndData[41:47]));
-            uint48 validAfter = uint48(bytes6(userOp.paymasterAndData[47:53]));
-            bytes memory signature = userOp.paymasterAndData[53:];
+            uint256 guaranteedAmount = abi.decode(userOp.paymasterAndData[41:73], (uint256));
+            uint48 validUntil = uint48(bytes6(userOp.paymasterAndData[73:79]));
+            uint48 validAfter = uint48(bytes6(userOp.paymasterAndData[79:85]));
+            bytes memory signature = userOp.paymasterAndData[85:];
 
-            // Verify guarantor signature (EIP-712)
-            bytes32 hash = _getGuarantorHash(sender, maxTokenCost, validUntil, validAfter);
+            // Verify guaranteedAmount covers the maxTokenCost
+            require(guaranteedAmount >= maxTokenCost, "TONPaymaster: insufficient guarantee");
+
+            // Verify guarantor signature (EIP-712) with nonce
+            uint256 nonce = guarantorNonces[guarantor];
+            bytes32 hash = _getGuarantorHash(sender, guaranteedAmount, nonce, validUntil, validAfter);
             address recovered = hash.recover(signature);
             bool sigFailed = recovered != guarantor;
 
-            // Guarantor pre-pays maxTokenCost
+            // Increment nonce to prevent signature reuse
+            guarantorNonces[guarantor] = nonce + 1;
+
+            // Guarantor pre-pays maxTokenCost (not guaranteedAmount)
             token.safeTransferFrom(guarantor, address(this), maxTokenCost);
 
             context = abi.encode(sender, maxTokenCost, MODE_GUARANTOR, guarantor);
@@ -395,10 +414,22 @@ contract TONPaymaster is Ownable, EIP712 {
 
             uint256 refund = maxTokenCost - actualTokenCost;
             if (refund > 0) {
-                token.safeTransfer(sender, refund);
+                if (!_tryTransfer(sender, refund)) {
+                    emit RefundFailed(sender, refund);
+                }
             }
 
             emit GasPayment(sender, actualTokenCost, totalGasCost);
+
+            // Attempt to collect outstanding debt
+            uint256 debt = userDebt[sender];
+            if (debt > 0) {
+                bool debtPaid = _tryTransferFrom(sender, address(this), debt);
+                if (debtPaid) {
+                    userDebt[sender] = 0;
+                    emit DebtCollected(sender, debt);
+                }
+            }
         } else {
             // Mode 0x01: Guarantor settlement
             (address sender, uint256 maxTokenCost, , address guarantor) =
@@ -409,13 +440,31 @@ contract TONPaymaster is Ownable, EIP712 {
 
             if (success) {
                 // User paid -> refund guarantor's entire pre-payment
-                token.safeTransfer(guarantor, maxTokenCost);
+                if (!_tryTransfer(guarantor, maxTokenCost)) {
+                    emit RefundFailed(guarantor, maxTokenCost);
+                }
                 emit GasPayment(sender, actualTokenCost, totalGasCost);
+
+                // Attempt to collect outstanding debt
+                uint256 debt = userDebt[sender];
+                if (debt > 0) {
+                    bool debtPaid = _tryTransferFrom(sender, address(this), debt);
+                    if (debtPaid) {
+                        userDebt[sender] = 0;
+                        emit DebtCollected(sender, debt);
+                    }
+                }
             } else {
-                // User couldn't pay -> guarantor absorbs actual cost, refund excess
+                // User couldn't pay -> record debt
+                userDebt[sender] += actualTokenCost;
+                emit DebtRecorded(sender, actualTokenCost);
+
+                // Refund guarantor excess (maxTokenCost - actualTokenCost)
                 uint256 refund = maxTokenCost - actualTokenCost;
                 if (refund > 0) {
-                    token.safeTransfer(guarantor, refund);
+                    if (!_tryTransfer(guarantor, refund)) {
+                        emit RefundFailed(guarantor, refund);
+                    }
                 }
                 emit GuarantorPayment(guarantor, sender, actualTokenCost);
             }
@@ -501,6 +550,20 @@ contract TONPaymaster is Ownable, EIP712 {
         entryPoint.withdrawTo(to, amount);
     }
 
+    // ─── Debt management ──────────────────────────────────────────
+
+    /// @notice Forgive a user's outstanding debt (owner only)
+    function forgiveDebt(address user) external onlyOwner {
+        uint256 debt = userDebt[user];
+        userDebt[user] = 0;
+        emit DebtCollected(user, debt);
+    }
+
+    /// @notice Get a user's outstanding debt
+    function getDebt(address user) external view returns (uint256) {
+        return userDebt[user];
+    }
+
     // ─── Token & ETH withdrawal ───────────────────────────────────
 
     function withdrawToken(address to, uint256 amount) external onlyOwner {
@@ -574,12 +637,13 @@ contract TONPaymaster is Ownable, EIP712 {
     /// @notice Compute EIP-712 hash for guarantor signature verification
     function _getGuarantorHash(
         address sender,
-        uint256 maxTokenCost,
+        uint256 guaranteedAmount,
+        uint256 nonce,
         uint48 validUntil,
         uint48 validAfter
     ) internal view returns (bytes32) {
         return _hashTypedDataV4(keccak256(abi.encode(
-            GUARANTOR_TYPEHASH, sender, maxTokenCost, validUntil, validAfter
+            GUARANTOR_TYPEHASH, sender, guaranteedAmount, nonce, validUntil, validAfter
         )));
     }
 
@@ -588,6 +652,15 @@ contract TONPaymaster is Ownable, EIP712 {
     function _tryTransferFrom(address from, address to, uint256 amount) internal returns (bool success) {
         (bool ok, bytes memory data) = address(token).call(
             abi.encodeWithSelector(IERC20.transferFrom.selector, from, to, amount)
+        );
+        return ok && (data.length == 0 || abi.decode(data, (bool)));
+    }
+
+    /// @notice Try transfer without reverting (for safe refunds in postOp)
+    /// @return success True if transfer succeeded
+    function _tryTransfer(address to, uint256 amount) internal returns (bool success) {
+        (bool ok, bytes memory data) = address(token).call(
+            abi.encodeWithSelector(IERC20.transfer.selector, to, amount)
         );
         return ok && (data.length == 0 || abi.decode(data, (bool)));
     }

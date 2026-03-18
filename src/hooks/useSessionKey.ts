@@ -48,15 +48,74 @@ interface StoredDelegation {
 }
 
 function createTonPaymasterProvider(paymasterAddress: Address) {
-  const stubData = {
-    paymaster: paymasterAddress,
-    paymasterData: "0x" as Hex,
-    paymasterVerificationGasLimit: BigInt(150000),
-    paymasterPostOpGasLimit: BigInt(100000),
-  };
+  const paymasterUrl = "/api/paymaster";
+
   return {
-    getPaymasterStubData: async () => stubData,
-    getPaymasterData: async () => stubData,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getPaymasterStubData: async (params: any) => {
+      try {
+        const res = await fetch(paymasterUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 1,
+            method: "pm_getPaymasterStubData",
+            params: [params.userOperation, params.entryPointAddress, params.chainId],
+          }),
+        });
+        const data = await res.json();
+        if (data.result) {
+          return {
+            paymaster: data.result.paymaster as Address,
+            paymasterData: data.result.paymasterData as Hex,
+            paymasterVerificationGasLimit: BigInt(data.result.paymasterVerificationGasLimit),
+            paymasterPostOpGasLimit: BigInt(data.result.paymasterPostOpGasLimit),
+            isFinal: data.result.isFinal ?? false,
+          };
+        }
+      } catch (e) {
+        console.error("[Paymaster] stub data fetch failed:", e);
+      }
+      return {
+        paymaster: paymasterAddress,
+        paymasterData: "0x00" as Hex,
+        paymasterVerificationGasLimit: BigInt(150000),
+        paymasterPostOpGasLimit: BigInt(100000),
+      };
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getPaymasterData: async (params: any) => {
+      try {
+        const res = await fetch(paymasterUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 2,
+            method: "pm_getPaymasterData",
+            params: [params.userOperation, params.entryPointAddress, params.chainId],
+          }),
+        });
+        const data = await res.json();
+        if (data.result) {
+          return {
+            paymaster: data.result.paymaster as Address,
+            paymasterData: data.result.paymasterData as Hex,
+            paymasterVerificationGasLimit: BigInt(data.result.paymasterVerificationGasLimit),
+            paymasterPostOpGasLimit: BigInt(data.result.paymasterPostOpGasLimit),
+          };
+        }
+      } catch (e) {
+        console.error("[Paymaster] data fetch failed:", e);
+      }
+      return {
+        paymaster: paymasterAddress,
+        paymasterData: "0x00" as Hex,
+        paymasterVerificationGasLimit: BigInt(150000),
+        paymasterPostOpGasLimit: BigInt(100000),
+      };
+    },
   };
 }
 

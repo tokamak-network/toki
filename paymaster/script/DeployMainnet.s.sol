@@ -40,13 +40,17 @@ contract DeployTONPaymasterMainnet is Script {
         paymaster.setUseOracle(true);
         console.log("Oracle mode enabled");
 
+        // Set markup to 5% (10500 bps). Default 15000 (50%) is for testing only.
+        paymaster.setMarkup(10500);
+        console.log("Markup set to 5% (10500 bps)");
+
         // Stake on EntryPoint (required for paymaster to be accepted by bundlers)
         paymaster.addStake{value: 0.1 ether}(86400);
         console.log("Staked 0.1 ETH on EntryPoint");
 
-        // Deposit ETH on EntryPoint (gas prepayment pool)
-        paymaster.deposit{value: 0.3 ether}();
-        console.log("Deposited 0.3 ETH on EntryPoint");
+        // Deposit ETH on EntryPoint (gas prepayment pool, top up with deposit() anytime)
+        paymaster.deposit{value: 0.1 ether}();
+        console.log("Deposited 0.1 ETH on EntryPoint");
 
         vm.stopBroadcast();
 
@@ -54,5 +58,15 @@ contract DeployTONPaymasterMainnet is Script {
         console.log("Owner:", deployer);
         console.log("TON Token:", tonToken);
         console.log("Oracle Pool:", wtonWethPool);
+
+        // ──── POST-DEPLOYMENT (manual, outside script) ────
+        // 1. Guarantor wallet: TON.approve(paymaster, type(uint256).max)
+        //    cast send <TON> "approve(address,uint256)" <paymaster> $(cast max-uint) --private-key $PK
+        // 2. Update src/constants/contracts.ts MAINNET_CONTRACTS.TON_PAYMASTER
+        // 3. Set GUARANTOR_PRIVATE_KEY in production server .env
+        // 4. Frontend build & deploy
+        //
+        // NOTE: If deployer EOA has EIP-7702 delegation code, forge script
+        //       will fail with "gapped-nonce tx". Use forge create + cast send instead.
     }
 }

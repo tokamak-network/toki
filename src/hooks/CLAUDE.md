@@ -25,6 +25,16 @@ This means gasless patterns that rely on ERC-20 permit (e.g., Uniswap Permit2, g
 - MetaMask users need ETH for first-time smart account upgrade (EIP-7702)
 - Only Privy embedded wallet path achieves fully gasless (ETH 0) staking
 
+## TONPaymaster v3 Integration
+
+**useEip7702.ts / useSessionKey.ts** 공통:
+- `createTonPaymasterProvider(paymasterAddress)` — `/api/paymaster` 서버 API 호출
+- Mode 0x01 (Guarantor): 서버가 EIP-712 서명 생성 → 유저 ETH 불필요
+- Mode 0x00 (Pre-charge) 폴백: 서버 에러 시 자동 전환 (유저 TON 선결제)
+- 서버 API가 `pm_getPaymasterStubData` (gas estimation) + `pm_getPaymasterData` (final) 양쪽 처리
+
+**메인넷 전환 시**: `src/constants/contracts.ts`의 `MAINNET_CONTRACTS.TON_PAYMASTER` 주소만 업데이트하면 자동 연결
+
 ## Critical: Exchange Constraints
 
 **Upbit (업비트)**: 개인지갑 인증 시 **MetaMask 연결만 지원** (주소 수동 입력 불가)

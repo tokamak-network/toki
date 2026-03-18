@@ -166,37 +166,40 @@ contract TONPaymasterTest is Test {
 
     function _buildGuarantorPaymasterAndData(
         address sender,
-        uint256 maxTokenCost,
+        uint256 guaranteedAmount,
         uint48 validUntil,
         uint48 validAfter
     ) internal view returns (bytes memory) {
+        uint256 nonce = paymaster.guarantorNonces(guarantor);
         // Sign the guarantor hash
-        bytes32 hash = _getGuarantorHash(sender, maxTokenCost, validUntil, validAfter);
+        bytes32 hash = _getGuarantorHash(sender, guaranteedAmount, nonce, validUntil, validAfter);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(guarantorKey, hash);
         bytes memory signature = abi.encodePacked(r, s, v);
 
         return abi.encodePacked(
-            address(paymaster),  // 20 bytes
-            uint8(0x01),         // mode byte
-            guarantor,           // 20 bytes
-            validUntil,          // 6 bytes
-            validAfter,          // 6 bytes
-            signature            // 65 bytes
+            address(paymaster),      // 20 bytes
+            uint8(0x01),             // mode byte
+            guarantor,               // 20 bytes
+            abi.encode(guaranteedAmount), // 32 bytes (abi-encoded uint256)
+            validUntil,              // 6 bytes
+            validAfter,              // 6 bytes
+            signature                // 65 bytes
         );
     }
 
     function _getGuarantorHash(
         address sender,
-        uint256 maxTokenCost,
+        uint256 guaranteedAmount,
+        uint256 nonce,
         uint48 validUntil,
         uint48 validAfter
     ) internal view returns (bytes32) {
         bytes32 GUARANTOR_TYPEHASH = keccak256(
-            "Guarantee(address sender,uint256 maxTokenCost,uint48 validUntil,uint48 validAfter)"
+            "Guarantee(address sender,uint256 guaranteedAmount,uint256 nonce,uint48 validUntil,uint48 validAfter)"
         );
 
         bytes32 structHash = keccak256(abi.encode(
-            GUARANTOR_TYPEHASH, sender, maxTokenCost, validUntil, validAfter
+            GUARANTOR_TYPEHASH, sender, guaranteedAmount, nonce, validUntil, validAfter
         ));
 
         // Build domain separator from eip712Domain() components
@@ -318,10 +321,11 @@ contract TONPaymasterTest is Test {
         uint256 maxCost = 0.001 ether;
         uint48 validUntil = uint48(block.timestamp + 600);
         uint48 validAfter = uint48(block.timestamp);
-        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+        // guaranteedAmount >= maxTokenCost; using same value
+        uint256 guaranteedAmount = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
 
         bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
-            user, maxTokenCost, validUntil, validAfter
+            user, guaranteedAmount, validUntil, validAfter
         );
 
         uint256 guarantorBalanceBefore = ton.balanceOf(guarantor);
@@ -399,16 +403,18 @@ contract TONPaymasterTest is Test {
         );
     }
 
-    function _buildBadSigPaymasterData(uint256 maxTokenCost, uint48 validUntil, uint48 validAfter)
+    function _buildBadSigPaymasterData(uint256 guaranteedAmount, uint48 validUntil, uint48 validAfter)
         internal view returns (bytes memory)
     {
+        uint256 nonce = paymaster.guarantorNonces(guarantor);
         // Sign with WRONG key
-        bytes32 hash = _getGuarantorHash(user, maxTokenCost, validUntil, validAfter);
+        bytes32 hash = _getGuarantorHash(user, guaranteedAmount, nonce, validUntil, validAfter);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(0xDEAD, hash);
         return abi.encodePacked(
             address(paymaster),
             uint8(0x01),
             guarantor,
+            abi.encode(guaranteedAmount),
             validUntil,
             validAfter,
             abi.encodePacked(r, s, v)
@@ -557,5 +563,271 @@ contract TONPaymasterTest is Test {
     function test_domainSeparator_exists() public view {
         bytes32 ds = _buildDomainSeparator();
         assertTrue(ds != bytes32(0), "domain separator should be non-zero");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // v3: Guarantor nonce tests
+    // ═══════════════════════════════════════════════════════════════
+
+    function test_guarantorNonce_increments() public {
+        assertEq(paymaster.guarantorNonces(guarantor), 0, "nonce should start at 0");
+
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 guaranteedAmount = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
+            user, guaranteedAmount, validUntil, validAfter
+        );
+
+        entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
+        assertEq(paymaster.guarantorNonces(guarantor), 1, "nonce should be 1 after first use");
+    }
+
+    function test_guarantorNonce_replayRejected() public {
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 guaranteedAmount = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        // Build paymasterAndData with nonce=0
+        bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
+            user, guaranteedAmount, validUntil, validAfter
+        );
+
+        // First use: succeeds
+        entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
+
+        // Replay with same data (nonce=0 signature, but contract expects nonce=1)
+        // The signature will not match because the contract uses nonce=1 to verify
+        (, uint256 validationData) =
+            entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
+
+        (bool sigFailed, , ) = _unpackValidationData(validationData);
+        assertTrue(sigFailed, "replayed signature should fail validation");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // v3: guaranteedAmount tests
+    // ═══════════════════════════════════════════════════════════════
+
+    function test_guaranteedAmount_insufficientGuarantee_reverts() public {
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+
+        // guaranteedAmount is deliberately too small (1 wei)
+        uint256 tinyGuarantee = 1;
+        uint256 nonce = paymaster.guarantorNonces(guarantor);
+        bytes32 hash = _getGuarantorHash(user, tinyGuarantee, nonce, validUntil, validAfter);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(guarantorKey, hash);
+        bytes memory signature = abi.encodePacked(r, s, v);
+
+        bytes memory paymasterAndData = abi.encodePacked(
+            address(paymaster),
+            uint8(0x01),
+            guarantor,
+            abi.encode(tinyGuarantee),
+            validUntil,
+            validAfter,
+            signature
+        );
+
+        vm.expectRevert("TONPaymaster: insufficient guarantee");
+        entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
+    }
+
+    function test_guaranteedAmount_largerThanMaxTokenCost_succeeds() public {
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        // guaranteedAmount is 2x maxTokenCost (generous)
+        uint256 generousGuarantee = maxTokenCost * 2;
+
+        bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
+            user, generousGuarantee, validUntil, validAfter
+        );
+
+        uint256 guarantorBalanceBefore = ton.balanceOf(guarantor);
+
+        (bytes memory context, uint256 validationData) =
+            entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
+
+        (bool sigFailed, , ) = _unpackValidationData(validationData);
+        assertFalse(sigFailed, "signature should be valid");
+
+        // Guarantor should only be charged maxTokenCost, not guaranteedAmount
+        uint256 guarantorCharged = guarantorBalanceBefore - ton.balanceOf(guarantor);
+        assertEq(guarantorCharged, maxTokenCost, "guarantor should only be charged maxTokenCost");
+
+        // PostOp: user pays, guarantor gets refunded maxTokenCost
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, context, 0.0005 ether, 30 gwei);
+        assertEq(ton.balanceOf(guarantor), guarantorBalanceBefore, "guarantor fully refunded");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // v3: Debt tracking tests
+    // ═══════════════════════════════════════════════════════════════
+
+    function test_debt_recordedWhenUserCantPay() public {
+        address brokeUser = address(0x7777);
+
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
+            brokeUser, maxTokenCost, validUntil, validAfter
+        );
+
+        (bytes memory context, ) = entryPoint.simulateValidation(
+            paymaster, _buildUserOp(brokeUser, paymasterAndData), maxCost
+        );
+
+        assertEq(paymaster.getDebt(brokeUser), 0, "no debt before postOp");
+
+        uint256 actualGasCost = 0.0005 ether;
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, context, actualGasCost, 30 gwei);
+
+        uint256 expectedDebt = paymaster.ethToToken(actualGasCost + (60000 * 30 gwei));
+        assertEq(paymaster.getDebt(brokeUser), expectedDebt, "debt should be recorded");
+    }
+
+    function test_debt_collectedOnNextMode0Transaction() public {
+        // Step 1: Create debt via guarantor mode with broke user
+        address debtUser = address(0x6666);
+
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
+            debtUser, maxTokenCost, validUntil, validAfter
+        );
+
+        (bytes memory context, ) = entryPoint.simulateValidation(
+            paymaster, _buildUserOp(debtUser, paymasterAndData), maxCost
+        );
+
+        uint256 actualGasCost = 0.0005 ether;
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, context, actualGasCost, 30 gwei);
+
+        uint256 debt = paymaster.getDebt(debtUser);
+        assertGt(debt, 0, "debt should exist");
+
+        // Step 2: User now has tokens and approval — do a Mode 0x00 transaction
+        ton.mint(debtUser, INITIAL_BALANCE);
+        vm.prank(debtUser);
+        ton.approve(address(paymaster), type(uint256).max);
+
+        bytes memory paymasterAndData2 = _buildPaymasterAndData(0x00);
+        PackedUserOperation memory userOp2 = _buildUserOp(debtUser, paymasterAndData2);
+
+        (bytes memory context2, ) = entryPoint.simulateValidation(paymaster, userOp2, maxCost);
+
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, context2, actualGasCost, 30 gwei);
+
+        // Debt should be cleared
+        assertEq(paymaster.getDebt(debtUser), 0, "debt cleared after mode0 postOp");
+    }
+
+    function test_debt_collectedOnNextMode1Transaction() public {
+        // Step 1: Create debt
+        address debtUser = address(0x5555);
+
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
+            debtUser, maxTokenCost, validUntil, validAfter
+        );
+
+        (bytes memory context, ) = entryPoint.simulateValidation(
+            paymaster, _buildUserOp(debtUser, paymasterAndData), maxCost
+        );
+
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, context, 0.0005 ether, 30 gwei);
+        uint256 debt = paymaster.getDebt(debtUser);
+        assertGt(debt, 0, "should have debt");
+
+        // Step 2: User now has tokens — do Mode 0x01 where user CAN pay
+        ton.mint(debtUser, INITIAL_BALANCE);
+        vm.prank(debtUser);
+        ton.approve(address(paymaster), type(uint256).max);
+
+        // Build second guarantor transaction (nonce already incremented)
+        bytes memory paymasterAndData2 = _buildGuarantorPaymasterAndData(
+            debtUser, maxTokenCost, validUntil, validAfter
+        );
+
+        (bytes memory context2, ) = entryPoint.simulateValidation(
+            paymaster, _buildUserOp(debtUser, paymasterAndData2), maxCost
+        );
+
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, context2, 0.0005 ether, 30 gwei);
+
+        // Debt should be cleared
+        assertEq(paymaster.getDebt(debtUser), 0, "debt collected in mode1 postOp");
+    }
+
+    function test_debt_accumulates() public {
+        address brokeUser = address(0x4444);
+
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        // First failed payment
+        bytes memory pd1 = _buildGuarantorPaymasterAndData(brokeUser, maxTokenCost, validUntil, validAfter);
+        (bytes memory ctx1, ) = entryPoint.simulateValidation(paymaster, _buildUserOp(brokeUser, pd1), maxCost);
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, ctx1, 0.0005 ether, 30 gwei);
+        uint256 debt1 = paymaster.getDebt(brokeUser);
+
+        // Second failed payment (nonce auto-incremented)
+        bytes memory pd2 = _buildGuarantorPaymasterAndData(brokeUser, maxTokenCost, validUntil, validAfter);
+        (bytes memory ctx2, ) = entryPoint.simulateValidation(paymaster, _buildUserOp(brokeUser, pd2), maxCost);
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, ctx2, 0.0005 ether, 30 gwei);
+        uint256 debt2 = paymaster.getDebt(brokeUser);
+
+        assertEq(debt2, debt1 * 2, "debt should accumulate");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // v3: forgiveDebt tests
+    // ═══════════════════════════════════════════════════════════════
+
+    function test_forgiveDebt() public {
+        // Create debt
+        address brokeUser = address(0x3333);
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        bytes memory pd = _buildGuarantorPaymasterAndData(brokeUser, maxTokenCost, validUntil, validAfter);
+        (bytes memory ctx, ) = entryPoint.simulateValidation(paymaster, _buildUserOp(brokeUser, pd), maxCost);
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, ctx, 0.0005 ether, 30 gwei);
+
+        assertGt(paymaster.getDebt(brokeUser), 0, "should have debt");
+
+        // Owner forgives debt
+        vm.prank(owner);
+        paymaster.forgiveDebt(brokeUser);
+
+        assertEq(paymaster.getDebt(brokeUser), 0, "debt should be forgiven");
+    }
+
+    function test_forgiveDebt_nonOwner_reverts() public {
+        vm.prank(user);
+        vm.expectRevert();
+        paymaster.forgiveDebt(user);
     }
 }
