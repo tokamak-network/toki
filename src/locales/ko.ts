@@ -707,7 +707,7 @@ const ko = {
     backToAutoSelect: "토키한테 맡기기",
     nextStep: "다음으로",
     gasReserve: "~{amount} TON 가스비 예약",
-    estimatedGasCost: "예상 가스비: ~{amount} TON (MAX 누르면 자동으로 빠져~)",
+    estimatedGasCost: "예상 가스비: ~{amount} TON (스테이킹 후 자동 차감)",
     gasExplainToggle: "가스비가 뭐야? 눌러서 알아보기",
     gasExplainTitle: "가스비란?",
     gasExplainBody1:
@@ -715,12 +715,12 @@ const ko = {
     gasExplainBody2:
       "이더리움에서는 ETH라는 코인이 필요한데, 토키는 Gasless 시스템으로 TON만으로 가스비를 낼 수 있어. ETH 없어도 OK!",
     gasExplainBody3:
-      "표시된 금액은 예상치야. 실제 수수료는 보통 더 적고, 남은 건 그대로 네 지갑에 있어!",
+      "표시된 금액은 예상치야. 실제 수수료는 보통 더 적고, 스테이킹 후에 자동으로 차감돼!",
     // Step 2: Amount
     step2Title: "스테이킹 금액",
     step2Dialogue: "얼마나 맡길 거야? 네 지갑에 {balance} TON이 있어!",
     step2DialogueWithGas:
-      "{balance} TON이 있어! 가스비로 ~{gas} TON 정도 필요하니까, MAX 누르면 내가 알아서 빼놓을게~",
+      "{balance} TON이 있어! 가스비(~{gas} TON)는 스테이킹 후에 자동으로 차감돼~",
     step2Ready: "좋아, {amount} TON! 준비됐으면 다음 단계로 가자!",
     // Step 3: Execute
     step3Title: "스테이킹 실행",

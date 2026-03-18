@@ -195,8 +195,8 @@ export default function StakingScreen() {
   const wtonAddr = CONTRACTS.WTON as `0x${string}`;
   const depositManagerAddr = CONTRACTS.DEPOSIT_MANAGER_PROXY as `0x${string}`;
 
-  // Dynamic gas reserve for MAX button (paymaster pays gas in TON)
-  const [gasReserveTon, setGasReserveTon] = useState(0);
+  // Gas estimate for info display (not deducted from MAX)
+  const [gasEstimateTon, setGasEstimateTon] = useState(0);
 
   // ─── Auth redirect ─────────────────────────────────────────────────
 
@@ -333,25 +333,23 @@ export default function StakingScreen() {
     if (walletAddress) fetchOperators();
   }, [walletAddress, fetchOperators]);
 
-  // ─── Estimate gas reserve for MAX button (via TONPaymaster oracle) ──
+  // ─── Estimate gas cost for info display (via TONPaymaster oracle) ──
   useEffect(() => {
     if (!smartAccountClient) {
-      setGasReserveTon(0);
+      setGasEstimateTon(0);
       return;
     }
     const paymasterAddr = CONTRACTS.TON_PAYMASTER;
     let cancelled = false;
-    async function estimateGasReserve() {
+    async function estimateGasCost() {
       try {
         const gasPrice = await publicClient.getGasPrice();
-        // UserOp gas: ~600k (approve + approveAndCall + paymaster verify/postOp)
         const estimatedGas = BigInt(600_000);
         const gasCostWei = gasPrice * estimatedGas;
 
         let gasCostTon: number;
 
         if (paymasterAddr) {
-          // Use TONPaymaster.ethToToken() — includes markup (150%) and TWAP oracle rate
           const tonAmount = await publicClient.readContract({
             address: paymasterAddr as `0x${string}`,
             abi: tonPaymasterAbi,
@@ -360,23 +358,20 @@ export default function StakingScreen() {
           });
           gasCostTon = Number(formatUnits(tonAmount, 18));
         } else {
-          // Fallback: rough estimate (1 ETH ≈ 1250 TON)
           gasCostTon = (Number(gasCostWei) / 1e18) * 1250;
         }
 
-        // 1.5x safety margin on top of paymaster's 150% markup, minimum 0.5 TON
-        const reserve = Math.max(0.5, Math.ceil(gasCostTon * 1.5 * 10) / 10);
+        const estimate = Math.max(0.01, Math.ceil(gasCostTon * 100) / 100);
 
         if (!cancelled) {
-          setGasReserveTon(reserve);
-          console.log(`[GasReserve] gasPrice=${gasPrice} gasCostWei=${gasCostWei} tonReserve=${reserve}`);
+          setGasEstimateTon(estimate);
         }
       } catch (e) {
-        console.warn("Gas estimation failed, using fallback:", e);
-        if (!cancelled) setGasReserveTon(2);
+        console.warn("Gas estimation failed:", e);
+        if (!cancelled) setGasEstimateTon(0);
       }
     }
-    estimateGasReserve();
+    estimateGasCost();
     return () => { cancelled = true; };
   }, [smartAccountClient]);
 
@@ -594,11 +589,6 @@ export default function StakingScreen() {
     if (step === 2) {
       if (amount && Number(amount) > 0) {
         return s.step2Ready.replace("{amount}", amount);
-      }
-      if (gasReserveTon > 0) {
-        return s.step2DialogueWithGas
-          .replace("{balance}", Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 }))
-          .replace("{gas}", String(gasReserveTon));
       }
       return s.step2Dialogue.replace("{balance}", Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 }));
     }
@@ -862,7 +852,7 @@ export default function StakingScreen() {
                       )}
 
                       {/* Gas estimate info */}
-                      {gasReserveTon > 0 && (
+                      {gasEstimateTon > 0 && (
                         <div className="space-y-0">
                           <button
                             onClick={() => setShowGasExplain(!showGasExplain)}
@@ -870,7 +860,7 @@ export default function StakingScreen() {
                           >
                             <span className="text-accent-amber text-sm">⛽</span>
                             <span className="text-xs text-accent-amber/80 flex-1">
-                              {t.stakingScreen.estimatedGasCost.replace("{amount}", String(gasReserveTon))}
+                              {t.stakingScreen.estimatedGasCost.replace("{amount}", String(gasEstimateTon))}
                             </span>
                             <span className={`text-accent-amber/50 text-[10px] transition-transform ${showGasExplain ? "rotate-180" : ""}`}>▼</span>
                           </button>
@@ -909,7 +899,7 @@ export default function StakingScreen() {
                           />
                           <button
                             onClick={() => {
-                              const max = Math.max(0, Number(tonBalance) - gasReserveTon);
+                              const max = Math.max(0, Number(tonBalance));
                               setAmount(max > 0 ? String(Math.floor(max * 100) / 100) : "0");
                             }}
                             className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-accent-cyan/10 text-accent-cyan text-xs font-semibold hover:bg-accent-cyan/20 transition-colors"
@@ -919,11 +909,6 @@ export default function StakingScreen() {
                         </div>
                         <div className="text-xs text-gray-500 mt-2">
                           {t.dashboard.balance} {Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 })} TON
-                          {gasReserveTon > 0 && (
-                            <span className="text-gray-600 ml-1">
-                              ({t.stakingScreen.gasReserve.replace("{amount}", String(gasReserveTon))})
-                            </span>
-                          )}
                         </div>
                       </div>
 
