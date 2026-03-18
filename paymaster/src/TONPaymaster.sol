@@ -218,10 +218,10 @@ library OracleHelper {
 ///     - Requires user to have pre-approved this paymaster
 ///
 ///   Mode 0x01 (CHARGE_WITH_GUARANTOR):
-///     - Guarantor pre-pays maxTokenCost in validatePaymasterUserOp
-///     - postOp attempts to charge user; if successful, refunds guarantor
-///     - If user charge fails, guarantor absorbs the cost
-///     - Used for first tx (no approve yet) or unstaking (no TON balance)
+///     - Guarantor signs EIP-712 approval; contract uses its own TON pool
+///     - No per-tx transferFrom from guarantor (saves ~42k gas/UserOp)
+///     - postOp charges user actualTokenCost; if user fails, debt is recorded
+///     - Admin deposits/withdraws TON pool via depositToken/withdrawToken
 ///
 ///   Pricing modes:
 ///     - Manual: owner sets tokenPerEth rate directly
@@ -296,6 +296,8 @@ contract TONPaymaster is Ownable, EIP712 {
     event DebtRecorded(address indexed user, uint256 amount);
     event DebtCollected(address indexed user, uint256 amount);
     event RefundFailed(address indexed to, uint256 amount);
+    event TokenDeposited(address indexed from, uint256 amount);
+    event TokenWithdrawn(address indexed to, uint256 amount);
 
     modifier onlyEntryPoint() {
         require(msg.sender == address(entryPoint), "Not EntryPoint");
@@ -307,7 +309,7 @@ contract TONPaymaster is Ownable, EIP712 {
         IERC20 _token,
         uint256 _tokenPerEth,
         address _owner
-    ) Ownable(_owner) EIP712("TONPaymaster", "3") {
+    ) Ownable(_owner) EIP712("TONPaymaster", "4") {
         entryPoint = _entryPoint;
         token = _token;
         tokenPerEth = _tokenPerEth;
@@ -378,6 +380,13 @@ contract TONPaymaster is Ownable, EIP712 {
             // Verify guaranteedAmount covers the maxTokenCost
             require(guaranteedAmount >= maxTokenCost, "TONPaymaster: insufficient guarantee");
 
+            // Verify contract has enough TON balance to cover gas
+            // (admin pre-deposits TON into contract; no per-tx guarantor transfer)
+            require(
+                token.balanceOf(address(this)) >= maxTokenCost,
+                "TONPaymaster: insufficient token pool"
+            );
+
             // Verify guarantor signature (EIP-712) with nonce
             uint256 nonce = guarantorNonces[guarantor];
             bytes32 hash = _getGuarantorHash(sender, guaranteedAmount, nonce, validUntil, validAfter);
@@ -387,10 +396,7 @@ contract TONPaymaster is Ownable, EIP712 {
             // Increment nonce to prevent signature reuse
             guarantorNonces[guarantor] = nonce + 1;
 
-            // Guarantor pre-pays maxTokenCost (not guaranteedAmount)
-            token.safeTransferFrom(guarantor, address(this), maxTokenCost);
-
-            context = abi.encode(sender, maxTokenCost, MODE_GUARANTOR, guarantor);
+            context = abi.encode(sender, maxTokenCost, MODE_GUARANTOR);
             validationData = _packValidationData(sigFailed, validUntil, validAfter);
         } else {
             revert("TONPaymaster: invalid mode");
@@ -444,18 +450,14 @@ contract TONPaymaster is Ownable, EIP712 {
                 }
             }
         } else {
-            // Mode 0x01: Guarantor settlement
-            (address sender, uint256 maxTokenCost, , address guarantor) =
-                abi.decode(context, (address, uint256, uint8, address));
+            // Mode 0x01: Pool-based settlement (no guarantor refund)
+            (address sender, , ) = abi.decode(context, (address, uint256, uint8));
 
             // Try to charge user for actual cost
             bool success = _tryTransferFrom(sender, address(this), actualTokenCost);
 
             if (success) {
-                // User paid -> refund guarantor's entire pre-payment
-                if (!_tryTransfer(guarantor, maxTokenCost)) {
-                    emit RefundFailed(guarantor, maxTokenCost);
-                }
+                // User paid -> TON stays in contract pool
                 emit GasPayment(sender, actualTokenCost, totalGasCost);
 
                 // Attempt to collect outstanding debt
@@ -468,18 +470,9 @@ contract TONPaymaster is Ownable, EIP712 {
                     }
                 }
             } else {
-                // User couldn't pay -> record debt
+                // User couldn't pay -> record debt, gas cost absorbed by pool
                 userDebt[sender] += actualTokenCost;
                 emit DebtRecorded(sender, actualTokenCost);
-
-                // Refund guarantor excess (maxTokenCost - actualTokenCost)
-                uint256 refund = maxTokenCost - actualTokenCost;
-                if (refund > 0) {
-                    if (!_tryTransfer(guarantor, refund)) {
-                        emit RefundFailed(guarantor, refund);
-                    }
-                }
-                emit GuarantorPayment(guarantor, sender, actualTokenCost);
             }
         }
     }
@@ -577,10 +570,23 @@ contract TONPaymaster is Ownable, EIP712 {
         return userDebt[user];
     }
 
-    // ─── Token & ETH withdrawal ───────────────────────────────────
+    // ─── Token pool management ───────────────────────────────────
+
+    /// @notice Deposit TON into the contract pool (admin pre-funds for guarantor mode)
+    /// @dev Caller must have approved this contract for the TON amount
+    function depositToken(uint256 amount) external onlyOwner {
+        token.safeTransferFrom(msg.sender, address(this), amount);
+        emit TokenDeposited(msg.sender, amount);
+    }
+
+    /// @notice Get the contract's TON pool balance
+    function getTokenPool() external view returns (uint256) {
+        return token.balanceOf(address(this));
+    }
 
     function withdrawToken(address to, uint256 amount) external onlyOwner {
         token.safeTransfer(to, amount);
+        emit TokenWithdrawn(to, amount);
     }
 
     function withdrawEth(address payable to, uint256 amount) external onlyOwner {

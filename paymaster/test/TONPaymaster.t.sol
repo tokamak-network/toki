@@ -125,9 +125,12 @@ contract TONPaymasterTest is Test {
         vm.prank(user);
         ton.approve(address(paymaster), type(uint256).max);
 
-        // Guarantor approves paymaster
-        vm.prank(guarantor);
+        // Admin deposits TON into paymaster pool (instead of guarantor approving)
+        ton.mint(owner, INITIAL_BALANCE);
+        vm.startPrank(owner);
         ton.approve(address(paymaster), type(uint256).max);
+        paymaster.depositToken(INITIAL_BALANCE);
+        vm.stopPrank();
 
         // Stake paymaster
         vm.deal(owner, 1 ether);
@@ -161,7 +164,13 @@ contract TONPaymasterTest is Test {
     }
 
     function _buildPaymasterAndData(uint8 mode) internal view returns (bytes memory) {
-        return abi.encodePacked(address(paymaster), mode);
+        // EntryPoint v0.8: [paymaster(20B)][verificationGasLimit(16B)][postOpGasLimit(16B)][mode(1B)]
+        return abi.encodePacked(
+            address(paymaster),
+            uint128(200000),  // verificationGasLimit (16B)
+            uint128(100000),  // postOpGasLimit (16B)
+            mode
+        );
     }
 
     function _buildGuarantorPaymasterAndData(
@@ -178,7 +187,9 @@ contract TONPaymasterTest is Test {
 
         return abi.encodePacked(
             address(paymaster),      // 20 bytes
-            uint8(0x01),             // mode byte
+            uint128(200000),         // verificationGasLimit (16B)
+            uint128(100000),         // postOpGasLimit (16B)
+            uint8(0x01),             // mode byte (at offset 52)
             guarantor,               // 20 bytes
             abi.encode(guaranteedAmount), // 32 bytes (abi-encoded uint256)
             validUntil,              // 6 bytes
@@ -328,14 +339,14 @@ contract TONPaymasterTest is Test {
             user, guaranteedAmount, validUntil, validAfter
         );
 
-        uint256 guarantorBalanceBefore = ton.balanceOf(guarantor);
+        uint256 poolBalanceBefore = ton.balanceOf(address(paymaster));
         uint256 userBalanceBefore = ton.balanceOf(user);
 
-        // Validate: guarantor should be charged
+        // Validate: pool should have enough balance, no transfer happens
         (bytes memory context, uint256 validationData) =
             entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
 
-        assertLt(ton.balanceOf(guarantor), guarantorBalanceBefore, "guarantor should be pre-charged");
+        assertEq(ton.balanceOf(address(paymaster)), poolBalanceBefore, "pool balance unchanged during validate");
         assertEq(ton.balanceOf(user), userBalanceBefore, "user should NOT be charged yet");
 
         // Validation data: signature valid, time range matches
@@ -346,11 +357,9 @@ contract TONPaymasterTest is Test {
             assertEq(vAfter, validAfter);
         }
 
-        // PostOp: user has balance + approval, so user pays and guarantor gets refunded
+        // PostOp: user has balance + approval, so user pays
         entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, context, 0.0005 ether, 30 gwei);
 
-        // Guarantor should get full pre-payment back
-        assertEq(ton.balanceOf(guarantor), guarantorBalanceBefore, "guarantor should be fully refunded");
         // User should have paid actual cost
         assertLt(ton.balanceOf(user), userBalanceBefore, "user should have paid actual cost");
     }
@@ -358,49 +367,32 @@ contract TONPaymasterTest is Test {
     function test_mode1_guarantorPays_userCantPay() public {
         // User with NO approval and NO balance
         address brokeUser = address(0x7777);
-        // No tokens, no approval
 
         uint256 maxCost = 0.001 ether;
         uint48 validUntil = uint48(block.timestamp + 600);
         uint48 validAfter = uint48(block.timestamp);
-
-        uint256 maxFeePerGas = 30 gwei;
-        uint256 totalMaxCost = maxCost + (60000 * maxFeePerGas);
-        uint256 maxTokenCost = paymaster.ethToToken(totalMaxCost);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
 
         bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
             brokeUser, maxTokenCost, validUntil, validAfter
         );
-        PackedUserOperation memory userOp = _buildUserOp(brokeUser, paymasterAndData);
 
-        uint256 guarantorBalanceBefore = ton.balanceOf(guarantor);
+        uint256 poolBalanceBefore = ton.balanceOf(address(paymaster));
 
-        // Validate: guarantor pre-pays
-        (bytes memory context, ) = entryPoint.simulateValidation(paymaster, userOp, maxCost);
-
-        // PostOp: user can't pay, guarantor absorbs cost
-        uint256 actualGasCost = 0.0005 ether;
-        uint256 actualFeePerGas = 30 gwei;
-
-        entryPoint.simulatePostOp(
-            paymaster,
-            PostOpMode.opSucceeded,
-            context,
-            actualGasCost,
-            actualFeePerGas
+        // Validate: checks pool balance
+        (bytes memory context, ) = entryPoint.simulateValidation(
+            paymaster, _buildUserOp(brokeUser, paymasterAndData), maxCost
         );
 
-        // Guarantor should only get partial refund (maxTokenCost - actualTokenCost)
-        uint256 guarantorBalanceAfter = ton.balanceOf(guarantor);
-        assertLt(guarantorBalanceAfter, guarantorBalanceBefore, "guarantor absorbs actual cost");
-        // But guarantor gets excess back
-        uint256 actualTokenCost = paymaster.ethToToken(actualGasCost + (60000 * actualFeePerGas));
-        uint256 expectedGuarantorLoss = actualTokenCost;
-        assertEq(
-            guarantorBalanceBefore - guarantorBalanceAfter,
-            expectedGuarantorLoss,
-            "guarantor loss should equal actual token cost"
-        );
+        // PostOp: user can't pay, debt is recorded
+        entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, context, 0.0005 ether, 30 gwei);
+
+        // Pool balance unchanged
+        assertEq(ton.balanceOf(address(paymaster)), poolBalanceBefore, "pool balance unchanged");
+
+        // Debt should be recorded
+        uint256 actualTokenCost = paymaster.ethToToken(0.0005 ether + (60000 * 30 gwei));
+        assertEq(paymaster.getDebt(brokeUser), actualTokenCost, "debt should be recorded");
     }
 
     function _buildBadSigPaymasterData(uint256 guaranteedAmount, uint48 validUntil, uint48 validAfter)
@@ -412,6 +404,8 @@ contract TONPaymasterTest is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(0xDEAD, hash);
         return abi.encodePacked(
             address(paymaster),
+            uint128(200000),         // verificationGasLimit (16B)
+            uint128(100000),         // postOpGasLimit (16B)
             uint8(0x01),
             guarantor,
             abi.encode(guaranteedAmount),
@@ -438,7 +432,12 @@ contract TONPaymasterTest is Test {
 
     function test_mode1_invalidGuarantorData_reverts() public {
         // Too short paymasterData (missing guarantor fields)
-        bytes memory paymasterAndData = abi.encodePacked(address(paymaster), uint8(0x01));
+        bytes memory paymasterAndData = abi.encodePacked(
+            address(paymaster),
+            uint128(200000),  // verificationGasLimit
+            uint128(100000),  // postOpGasLimit
+            uint8(0x01)       // mode byte but no guarantor data
+        );
         PackedUserOperation memory userOp = _buildUserOp(user, paymasterAndData);
 
         vm.expectRevert("TONPaymaster: invalid guarantor data");
@@ -498,7 +497,12 @@ contract TONPaymasterTest is Test {
     // ═══════════════════════════════════════════════════════════════
 
     function test_invalidMode_reverts() public {
-        bytes memory paymasterAndData = abi.encodePacked(address(paymaster), uint8(0x02));
+        bytes memory paymasterAndData = abi.encodePacked(
+            address(paymaster),
+            uint128(200000),  // verificationGasLimit
+            uint128(100000),  // postOpGasLimit
+            uint8(0x02)       // invalid mode
+        );
         PackedUserOperation memory userOp = _buildUserOp(user, paymasterAndData);
 
         vm.expectRevert("TONPaymaster: invalid mode");
@@ -626,6 +630,8 @@ contract TONPaymasterTest is Test {
 
         bytes memory paymasterAndData = abi.encodePacked(
             address(paymaster),
+            uint128(200000),         // verificationGasLimit
+            uint128(100000),         // postOpGasLimit
             uint8(0x01),
             guarantor,
             abi.encode(tinyGuarantee),
@@ -651,7 +657,7 @@ contract TONPaymasterTest is Test {
             user, generousGuarantee, validUntil, validAfter
         );
 
-        uint256 guarantorBalanceBefore = ton.balanceOf(guarantor);
+        uint256 poolBalanceBefore = ton.balanceOf(address(paymaster));
 
         (bytes memory context, uint256 validationData) =
             entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
@@ -659,13 +665,11 @@ contract TONPaymasterTest is Test {
         (bool sigFailed, , ) = _unpackValidationData(validationData);
         assertFalse(sigFailed, "signature should be valid");
 
-        // Guarantor should only be charged maxTokenCost, not guaranteedAmount
-        uint256 guarantorCharged = guarantorBalanceBefore - ton.balanceOf(guarantor);
-        assertEq(guarantorCharged, maxTokenCost, "guarantor should only be charged maxTokenCost");
+        // Pool balance unchanged after validate
+        assertEq(ton.balanceOf(address(paymaster)), poolBalanceBefore, "pool balance unchanged after validate");
 
-        // PostOp: user pays, guarantor gets refunded maxTokenCost
+        // PostOp: user pays
         entryPoint.simulatePostOp(paymaster, PostOpMode.opSucceeded, context, 0.0005 ether, 30 gwei);
-        assertEq(ton.balanceOf(guarantor), guarantorBalanceBefore, "guarantor fully refunded");
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -829,5 +833,40 @@ contract TONPaymasterTest is Test {
         vm.prank(user);
         vm.expectRevert();
         paymaster.forgiveDebt(user);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // v4: Pool-based tests
+    // ═══════════════════════════════════════════════════════════════
+
+    function test_depositToken_and_getTokenPool() public {
+        uint256 depositAmount = 100e18;
+        ton.mint(owner, depositAmount);
+        vm.startPrank(owner);
+        ton.approve(address(paymaster), depositAmount);
+        paymaster.depositToken(depositAmount);
+        vm.stopPrank();
+
+        assertEq(paymaster.getTokenPool(), INITIAL_BALANCE + depositAmount);
+    }
+
+    function test_mode1_insufficientPool_reverts() public {
+        // Withdraw all tokens from paymaster pool
+        uint256 pool = ton.balanceOf(address(paymaster));
+        vm.prank(owner);
+        paymaster.withdrawToken(owner, pool);
+
+        // Now try Mode 0x01 — should fail with insufficient pool
+        uint256 maxCost = 0.001 ether;
+        uint48 validUntil = uint48(block.timestamp + 600);
+        uint48 validAfter = uint48(block.timestamp);
+        uint256 maxTokenCost = paymaster.ethToToken(maxCost + (60000 * 30 gwei));
+
+        bytes memory paymasterAndData = _buildGuarantorPaymasterAndData(
+            user, maxTokenCost, validUntil, validAfter
+        );
+
+        vm.expectRevert("TONPaymaster: insufficient token pool");
+        entryPoint.simulateValidation(paymaster, _buildUserOp(user, paymasterAndData), maxCost);
     }
 }
