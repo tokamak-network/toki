@@ -32,8 +32,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (saved === "en" || saved === "ko") {
         detected = saved;
       } else {
-        const browserLang = navigator.language || navigator.languages?.[0] || "en";
-        detected = browserLang.startsWith("ko") ? "ko" : "en";
+        // Check all browser languages, not just the primary one
+        const langs = navigator.languages?.length
+          ? navigator.languages
+          : [navigator.language || "en"];
+        const hasKorean = langs.some((l) => l.startsWith("ko"));
+        detected = hasKorean ? "ko" : "en";
       }
       setLocaleState(detected);
       document.documentElement.lang = detected;

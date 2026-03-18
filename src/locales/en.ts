@@ -421,7 +421,8 @@ const en = {
   },
   onboarding: {
     allClear: "All Quests Clear!",
-    allClearDesc: "You've completed all quests.",
+    allClearDesc: "You've completed all quests. Let's start staking right away!",
+    allClearDashboardHint: "You can check your dashboard anytime from the account menu at the top.",
     totalXp: "Total {xp} XP",
     goToStaking: "Start Staking!",
     goToDashboard: "Dashboard",
@@ -681,6 +682,8 @@ const en = {
     step3Dialogue: "Just one button! Press it and your rewards start stacking!",
     step3Staking: "Staking in progress... hang tight!",
     step3Error: "Hmm... something went wrong. Want to try again?",
+    unstakingNotice: "Unstaking takes ~13 days",
+    unstakingNoticeDetail: "Once you request to unstake, it takes approximately 93,000 blocks (~13 days) before you can withdraw your TON. This is a protocol-level waiting period that applies to all stakers.",
     stakeButton: "Start Staking!",
     retryButton: "Try Again",
     // Step 4: Celebration

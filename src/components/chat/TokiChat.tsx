@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 import { useStakingData, replaceApr } from "@/components/providers/StakingDataProvider";
@@ -459,10 +459,13 @@ function ChatWindow({
 
 // ─── Main Component ──────────────────────────────────────────────────
 
+const HIDDEN_PATHS_MOBILE = ["/onboarding", "/staking"];
+
 export default function TokiChat() {
   const [open, setOpen] = useState(false);
   const { locale } = useTranslation();
   const { trackActivity } = useAchievement();
+  const pathname = usePathname();
 
   const handleOpen = () => {
     if (!open) {
@@ -470,6 +473,11 @@ export default function TokiChat() {
     }
     setOpen(!open);
   };
+
+  // Hide on mobile for pages with their own dialogue UI
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const isHiddenPath = HIDDEN_PATHS_MOBILE.some((p) => pathname.startsWith(p));
+  if (isMobile && isHiddenPath) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3">

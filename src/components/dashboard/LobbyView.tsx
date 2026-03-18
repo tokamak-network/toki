@@ -445,7 +445,7 @@ export default function LobbyView({
           <div>
             <h3 className="text-sm text-gray-400 mb-2">{t.dashboard.wallet}</h3>
             <div className="flex items-center gap-3">
-              <div className="flex-1 p-3 rounded-lg bg-white/5 font-mono text-sm text-gray-300 truncate">
+              <div className="flex-1 min-w-0 p-3 rounded-lg bg-white/5 font-mono text-sm text-gray-300 break-all">
                 {walletAddress || "\u2014"}
               </div>
               <button

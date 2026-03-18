@@ -94,7 +94,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       verify: "privy-authenticated",
       success: [
         { text: t.quest1Success1, mood: "surprised" },
-        { text: t.quest1Success2, mood: "peace" },
+        { text: t.quest1Success2, mood: "wink" },
       ],
     },
     {
@@ -151,7 +151,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
       verify: "user-confirm",
       success: [
         { text: t.quest3Success1, mood: "crying-happy" },
-        { text: t.quest3Success2, mood: "peace" },
+        { text: t.quest3Success2, mood: "wink" },
         { text: t.quest3Success3, mood: "laughing" },
       ],
     },
@@ -194,7 +194,7 @@ function buildQuests(t: Dictionary["onboarding"]): Quest[] {
         { text: t.quest5Success1, mood: "surprised" },
         { text: t.quest5Success2, mood: "shy" },
         { text: t.quest5Success3, mood: "explain" },
-        { text: t.quest5Success4, mood: "peace" },
+        { text: t.quest5Success4, mood: "wink" },
       ],
     },
   ];
@@ -513,9 +513,9 @@ export default function OnboardingQuest() {
   const obKey = userId ? `toki-onboarding-${userId}` : null;
   const introKey = userId ? `toki-intro-seen-${userId}` : null;
 
-  // Load progress from localStorage (with migration) + cinematic check
+  // Load progress from localStorage (with migration)
   useEffect(() => {
-    if (!obKey || !introKey) return;
+    if (!obKey) return;
 
     try {
       // Try per-user key first, then legacy global key for migration
@@ -536,19 +536,24 @@ export default function OnboardingQuest() {
     } catch {
       // ignore
     }
+  }, [obKey]);
 
-    // Show intro cinematic on first visit only (skip on mobile)
-    const introSeen = localStorage.getItem(introKey) || localStorage.getItem("toki-intro-seen");
+  // Show intro cinematic on first visit only (skip on mobile)
+  // Check both per-user key AND global key to prevent re-showing after login
+  useEffect(() => {
+    const globalKey = "toki-intro-seen";
+    const introSeen = localStorage.getItem(globalKey) || (introKey && localStorage.getItem(introKey));
     const isMobile = window.innerWidth < 768;
     if (!introSeen && !isMobile) {
       setShowCinematic(true);
     } else {
       setCinematicComplete(true);
       if (!introSeen && isMobile) {
-        localStorage.setItem(introKey, "1");
+        localStorage.setItem(globalKey, "1");
+        if (introKey) localStorage.setItem(introKey, "1");
       }
     }
-  }, [obKey, introKey]);
+  }, [introKey]);
 
   // Preload all mood images so character appears instantly on mobile
   useEffect(() => {
@@ -740,6 +745,7 @@ export default function OnboardingQuest() {
     setShowCinematic(false);
     setCinematicComplete(true);
     setCinematicJustFinished(true);
+    localStorage.setItem("toki-intro-seen", "1");
     if (introKey) localStorage.setItem(introKey, "1");
   }, [introKey]);
 
@@ -783,12 +789,11 @@ export default function OnboardingQuest() {
               <p className="text-gray-400 mb-2">
                 {t.onboarding.allClearDesc}
               </p>
-              <p className="text-accent-amber font-mono-num text-xl mb-6">
+              <p className="text-accent-amber font-mono-num text-xl mb-4">
                 {t.onboarding.totalXp.replace("{xp}", String(totalXp))}
               </p>
 
-
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-3 justify-center mb-3">
                 <button
                   onClick={() => router.push("/staking")}
                   className="px-8 py-4 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-semibold text-lg glow-blue hover:scale-105 transition-transform"
@@ -796,6 +801,9 @@ export default function OnboardingQuest() {
                   {t.onboarding.goToStaking}
                 </button>
               </div>
+              <p className="text-gray-500 text-xs">
+                {t.onboarding.allClearDashboardHint}
+              </p>
             </div>
           </div>
         </div>
@@ -838,7 +846,7 @@ export default function OnboardingQuest() {
           <>
             {/* Desktop: iframe */}
             <div className="hidden md:flex flex-col items-center px-4 mb-2">
-              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 1020, maxWidth: "100%", height: 574 }}>
+              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 860, maxWidth: "100%", height: 484 }}>
                 <iframe
                   src={TUTORIAL_VIDEOS[autoVideoKey].embed}
                   className="w-full h-full"

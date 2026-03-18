@@ -278,6 +278,15 @@ export default function StakingScreen() {
       setTonBalance(formatUnits(tonBal, 18));
     } catch (e) {
       console.error("Failed to fetch operators:", e);
+      // Even if operator fetch fails, still try to check TON balance
+      try {
+        const tonBal = await publicClient.readContract({
+          address: tonAddr, abi: tonTokenAbi, functionName: "balanceOf", args: [addr],
+        });
+        setTonBalance(formatUnits(tonBal, 18));
+      } catch {
+        // ignore balance fetch failure
+      }
     }
     setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -515,13 +524,13 @@ export default function StakingScreen() {
       {/* Middle area: Character left + Interactive panel right */}
       <div className="absolute inset-x-0 top-16 bottom-[176px] z-10 flex items-center justify-center">
         <div className="max-w-3xl w-full mx-auto flex items-end h-full">
-          {/* Left: Toki Character */}
-          <div className="w-[40%] flex items-end justify-center">
+          {/* Left: Toki Character (hidden on mobile) */}
+          <div className="hidden md:flex w-[40%] items-end justify-center">
             <TokiCharacter mood={mood} />
           </div>
 
-          {/* Right: Interactive Panel */}
-          <div className="w-[60%] flex items-end justify-center pb-4">
+          {/* Right: Interactive Panel (full width on mobile) */}
+          <div className="w-full md:w-[60%] flex items-end justify-center pb-4 px-4 md:px-0">
             <div className="w-full max-w-sm animate-slide-up">
             <div className="bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
                 {/* Step indicator + back button (hidden on step 0 and 4) */}
@@ -795,6 +804,17 @@ export default function StakingScreen() {
                             <span className="text-green-400 text-sm font-medium">{t.dashboard.gaslessShort}</span>
                           </div>
                         )}
+                      </div>
+
+                      {/* Unstaking delay notice */}
+                      <div className="p-3 rounded-lg bg-accent-amber/5 border border-accent-amber/15">
+                        <div className="flex items-start gap-2">
+                          <span className="text-accent-amber text-sm mt-0.5 shrink-0">⏳</span>
+                          <div>
+                            <div className="text-accent-amber text-xs font-semibold">{t.stakingScreen.unstakingNotice}</div>
+                            <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">{t.stakingScreen.unstakingNoticeDetail}</p>
+                          </div>
+                        </div>
                       </div>
 
                       {!error ? (
