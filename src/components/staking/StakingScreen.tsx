@@ -36,8 +36,10 @@ interface Operator {
   address: string;
   name: string;
   totalStaked: string;
-  myStaked: string;
-  commissionRate: number; // percentage, negative = rebate
+  myStaked: string;          // stakeOf minus pendingUnstaked (actual available)
+  myStakedRaw: bigint;       // raw WTON bigint (27 decimals) for precise unstaking
+  pendingUnstaked: string;   // amount waiting for withdrawal
+  commissionRate: number;    // percentage, negative = rebate
 }
 
 type Mood = "welcome" | "explain" | "thinking" | "excited" | "proud" | "cheer" | "wink" | "presenting" | "celebrate" | "card-reveal" | "surprised" | "confused" | "shy" | "determined" | "pointing" | "reading" | "crying-happy" | "peace" | "worried" | "laughing";
@@ -180,6 +182,7 @@ export default function StakingScreen() {
   // Unstaking state
   const [unstakeOp, setUnstakeOp] = useState<string>("");
   const [unstakeAmount, setUnstakeAmount] = useState("");
+  const [unstakeIsMax, setUnstakeIsMax] = useState(false);
   const [unstaking, setUnstaking] = useState(false);
   const [unstakeTxHash, setUnstakeTxHash] = useState<string | null>(null);
   const [unstakeError, setUnstakeError] = useState<string | null>(null);
@@ -270,24 +273,35 @@ export default function StakingScreen() {
         address: seigManagerAddr, abi: seigManagerAbi, functionName: "isCommissionRateNegative" as const,
         args: [a] as const,
       }));
+      const pendingUnstakedContracts = addresses.map((a) => ({
+        address: depositManagerAddr, abi: depositManagerAbi, functionName: "pendingUnstaked" as const,
+        args: [a, addr] as const,
+      }));
 
-      const [memoResults, stakedResults, myStakedResults, commResults, commNegResults] = await Promise.all([
+      const [memoResults, stakedResults, myStakedResults, commResults, commNegResults, pendingUnstakedResults] = await Promise.all([
         publicClient.multicall({ contracts: memoContracts, allowFailure: true }),
         publicClient.multicall({ contracts: stakedContracts, allowFailure: true }),
         publicClient.multicall({ contracts: myStakedContracts, allowFailure: true }),
         publicClient.multicall({ contracts: commissionContracts, allowFailure: true }),
         publicClient.multicall({ contracts: commissionNegContracts, allowFailure: true }),
+        publicClient.multicall({ contracts: pendingUnstakedContracts, allowFailure: true }),
       ]);
 
       const ops: Operator[] = addresses.map((a, i) => {
         // Commission rate: RAY format (1e27 = 100%)
         const rawRate = commResults[i].status === "success" ? Number(formatUnits(commResults[i].result as bigint, 27)) * 100 : 0;
         const isNeg = commNegResults[i].status === "success" ? (commNegResults[i].result as boolean) : false;
+        const rawStaked = myStakedResults[i].status === "success" ? (myStakedResults[i].result as bigint) : BigInt(0);
+        const rawPending = pendingUnstakedResults[i].status === "success" ? (pendingUnstakedResults[i].result as bigint) : BigInt(0);
+        // Subtract pending unstaked from stakeOf to show actual available staked amount
+        const netStaked = rawStaked > rawPending ? rawStaked - rawPending : BigInt(0);
         return {
           address: a,
           name: memoResults[i].status === "success" ? (memoResults[i].result as string) || `Operator ${i}` : `Operator ${i}`,
           totalStaked: stakedResults[i].status === "success" ? formatUnits(stakedResults[i].result as bigint, 27) : "0",
-          myStaked: myStakedResults[i].status === "success" ? formatUnits(myStakedResults[i].result as bigint, 27) : "0",
+          myStaked: formatUnits(netStaked, 27),
+          myStakedRaw: netStaked,
+          pendingUnstaked: formatUnits(rawPending, 27),
           commissionRate: isNeg ? -rawRate : rawRate,
         };
       });
@@ -464,7 +478,10 @@ export default function StakingScreen() {
     setUnstakeTxHash(null);
 
     try {
-      const wtonAmount = parseUnits(unstakeAmount, 27);
+      // Use raw bigint when MAX was pressed to avoid rounding issues
+      const wtonAmount = unstakeIsMax && selectedUnstakeOperator
+        ? selectedUnstakeOperator.myStakedRaw
+        : parseUnits(unstakeAmount, 27);
       let hash: `0x${string}`;
 
       if (smartAccountClient) {
@@ -1150,7 +1167,7 @@ export default function StakingScreen() {
                           <input
                             type="number"
                             value={unstakeAmount}
-                            onChange={(e) => setUnstakeAmount(e.target.value)}
+                            onChange={(e) => { setUnstakeAmount(e.target.value); setUnstakeIsMax(false); }}
                             placeholder="0.0"
                             min="0"
                             step="any"
@@ -1160,6 +1177,7 @@ export default function StakingScreen() {
                             onClick={() => {
                               const raw = selectedUnstakeOperator?.myStaked || "0";
                               setUnstakeAmount(String(Math.floor(Number(raw) * 100) / 100));
+                              setUnstakeIsMax(true);
                             }}
                             className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-accent-cyan/10 text-accent-cyan text-xs font-semibold hover:bg-accent-cyan/20 transition-colors"
                           >

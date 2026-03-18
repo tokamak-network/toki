@@ -373,23 +373,20 @@ export default function DashboardContent() {
                   <span>{t.dashboard.vaultWithdrawalTitle}</span>
                 </h3>
                 <div className="space-y-3">
-                  {Object.entries(withdrawalStatus.byOperator).map(([opAddr, requests]) => {
-                    const withdrawable = requests.filter((r) => r.isWithdrawable);
-                    if (withdrawable.length === 0) return null;
-                    const totalAmount = withdrawable.reduce((sum, r) => sum + r.amount, BigInt(0));
-                    const formatted = Number(formatUnits(totalAmount, 27)).toLocaleString("en-US", { maximumFractionDigits: 2 });
+                  {withdrawalStatus.withdrawableRequests.map((req) => {
+                    const formatted = Number(formatUnits(req.amount, 27)).toLocaleString("en-US", { maximumFractionDigits: 2 });
                     return (
-                      <div key={opAddr} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <div key={`${req.operatorAddress}-${req.index}`} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                         <div>
                           <div className="text-sm font-mono-num text-green-400">{formatted} TON</div>
-                          <div className="text-[10px] text-gray-500 font-mono">{opAddr.slice(0, 10)}...{opAddr.slice(-4)}</div>
+                          <div className="text-[10px] text-gray-500 font-mono">{req.operatorAddress.slice(0, 10)}...{req.operatorAddress.slice(-4)}</div>
                         </div>
                         <button
-                          onClick={() => handleMobileWithdraw(opAddr, withdrawable.length)}
-                          disabled={mobileWithdrawProcessing === opAddr}
+                          onClick={() => handleMobileWithdraw(req.operatorAddress, 1)}
+                          disabled={mobileWithdrawProcessing === req.operatorAddress}
                           className="px-4 py-2 rounded-lg bg-green-600/80 text-white text-xs font-medium disabled:opacity-40 hover:bg-green-600 transition-colors whitespace-nowrap"
                         >
-                          {mobileWithdrawProcessing === opAddr ? t.dashboard.vaultWithdrawProcessing : t.dashboard.withdrawAsTon}
+                          {mobileWithdrawProcessing === req.operatorAddress ? t.dashboard.vaultWithdrawProcessing : t.dashboard.withdrawAsTon}
                         </button>
                       </div>
                     );

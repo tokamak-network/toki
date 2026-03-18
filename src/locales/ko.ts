@@ -644,6 +644,8 @@ const ko = {
     showAll: "전체 보기",
     fullListIntro: "여기 전부 모아봤어! 천천히 둘러봐.",
     filterAll: "전체",
+    statsTotal: "전체 프로젝트",
+    statsCategory: "{count}개 프로젝트",
   },
   achievements: {
     panelTitle: "업적",

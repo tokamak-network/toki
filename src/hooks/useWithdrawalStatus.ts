@@ -7,7 +7,7 @@ import {
   layer2RegistryAbi,
   depositManagerAbi,
 } from "@/lib/abi";
-import { publicClient } from "@/lib/chain";
+import { publicClient, isTestnet } from "@/lib/chain";
 
 const BLOCK_TIME_SECONDS = 12;
 
@@ -142,13 +142,15 @@ export function useWithdrawalStatus(address: string | undefined): WithdrawalStat
               if (processed) continue;
 
               const blocksRemaining = Number(withdrawableBlockNumber) - Number(blockNumber);
+              // On testnet (Sepolia), delay is set to 1 block — treat all unprocessed requests as withdrawable
+              const withdrawable = isTestnet ? true : blocksRemaining <= 0;
               requests.push({
                 index: i,
                 withdrawableBlockNumber,
                 amount,
                 processed,
-                isWithdrawable: blocksRemaining <= 0,
-                blocksRemaining: Math.max(0, blocksRemaining),
+                isWithdrawable: withdrawable,
+                blocksRemaining: withdrawable ? 0 : Math.max(0, blocksRemaining),
                 operatorAddress: layer2Addr,
               });
             } catch {

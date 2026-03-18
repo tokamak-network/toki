@@ -618,6 +618,8 @@ const en = {
     showAll: "Show me everything",
     fullListIntro: "Here's everything — take your time!",
     filterAll: "All",
+    statsTotal: "Total Projects",
+    statsCategory: "{count} projects",
   },
   achievements: {
     panelTitle: "Achievements",
