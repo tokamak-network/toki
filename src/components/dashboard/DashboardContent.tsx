@@ -3,7 +3,7 @@
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { formatUnits } from "viem";
+import { formatUnits, encodeFunctionData, createWalletClient, custom } from "viem";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import CardCollection from "./CardCollection";
@@ -14,8 +14,9 @@ import { useStakingSubgraph } from "@/hooks/useStakingSubgraph";
 import { useWithdrawalStatus } from "@/hooks/useWithdrawalStatus";
 import { usePushNotification } from "@/hooks/usePushNotification";
 import { useTranslation } from "@/components/providers/LanguageProvider";
-import { publicClient as client, isTestnet } from "@/lib/chain";
+import { publicClient as client, isTestnet, chain } from "@/lib/chain";
 import { CONTRACTS } from "@/constants/contracts";
+import { depositManagerAbi } from "@/lib/abi";
 
 const TON_ADDRESS = CONTRACTS.TON;
 const WTON_ADDRESS = CONTRACTS.WTON;
@@ -31,7 +32,7 @@ const erc20Abi = [
   },
 ] as const;
 
-const depositManagerAbi = [
+const accStakedAccountAbi = [
   {
     inputs: [{ name: "account", type: "address" }],
     name: "accStakedAccount",
@@ -132,7 +133,7 @@ export default function DashboardContent() {
         }),
         client.readContract({
           address: DEPOSIT_MANAGER as `0x${string}`,
-          abi: depositManagerAbi,
+          abi: accStakedAccountAbi,
           functionName: "accStakedAccount",
           args: [addr],
         }),
@@ -171,6 +172,62 @@ export default function DashboardContent() {
     fetchBalances();
     refreshSubgraph();
   }, [fetchBalances, refreshSubgraph]);
+
+  // Mobile withdrawal execution
+  const [mobileWithdrawProcessing, setMobileWithdrawProcessing] = useState<string | null>(null);
+  const [mobileWithdrawTxHash, setMobileWithdrawTxHash] = useState<string | null>(null);
+  const [mobileWithdrawError, setMobileWithdrawError] = useState<string | null>(null);
+
+  const handleMobileWithdraw = useCallback(async (operatorAddr: string, count: number) => {
+    if (!balanceAddress) return;
+    setMobileWithdrawProcessing(operatorAddr);
+    setMobileWithdrawError(null);
+    setMobileWithdrawTxHash(null);
+    const depositManagerAddr = DEPOSIT_MANAGER as `0x${string}`;
+    const addr = balanceAddress as `0x${string}`;
+
+    try {
+      let hash: `0x${string}`;
+
+      if (smartAccountClient) {
+        hash = await smartAccountClient.sendTransaction({
+          calls: [{
+            to: depositManagerAddr,
+            data: encodeFunctionData({
+              abi: depositManagerAbi,
+              functionName: "processRequests",
+              args: [operatorAddr as `0x${string}`, BigInt(count), true],
+            }),
+          }],
+        });
+      } else if (primaryWallet) {
+        const provider = await primaryWallet.getEthereumProvider();
+        const walletClient = createWalletClient({ chain, transport: custom(provider), account: addr });
+        hash = await walletClient.writeContract({
+          address: depositManagerAddr,
+          abi: depositManagerAbi,
+          functionName: "processRequests",
+          args: [operatorAddr as `0x${string}`, BigInt(count), true],
+        });
+      } else {
+        throw new Error("No wallet available");
+      }
+
+      setMobileWithdrawTxHash(hash);
+      await client.waitForTransactionReceipt({ hash });
+      withdrawalStatus.refresh();
+      handleRefresh();
+    } catch (e: unknown) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error("Withdraw failed:", errMsg);
+      if (errMsg.includes("User rejected")) {
+        setMobileWithdrawError(t.dashboard.txRejected);
+      } else {
+        setMobileWithdrawError(errMsg.slice(0, 200));
+      }
+    }
+    setMobileWithdrawProcessing(null);
+  }, [balanceAddress, smartAccountClient, primaryWallet, withdrawalStatus, handleRefresh, t]);
 
   if (!ready || !authenticated) {
     return (
@@ -218,6 +275,8 @@ export default function DashboardContent() {
           subgraphData={subgraphData}
           subgraphLoading={subgraphLoading}
           withdrawalStatus={withdrawalStatus}
+          smartAccountClient={smartAccountClient}
+          getEthereumProvider={primaryWallet ? () => primaryWallet.getEthereumProvider() : undefined}
         />
       ) : (
         /* Mobile: Original list layout */
@@ -305,6 +364,57 @@ export default function DashboardContent() {
                 loading={loading}
               />
             </div>
+
+            {/* Mobile Withdrawal Execution */}
+            {withdrawalStatus.withdrawableRequests.length > 0 && (
+              <div className="card p-4 mb-6">
+                <h3 className="text-sm text-gray-400 mb-3 flex items-center gap-2">
+                  <span>🔐</span>
+                  <span>{t.dashboard.vaultWithdrawalTitle}</span>
+                </h3>
+                <div className="space-y-3">
+                  {Object.entries(withdrawalStatus.byOperator).map(([opAddr, requests]) => {
+                    const withdrawable = requests.filter((r) => r.isWithdrawable);
+                    if (withdrawable.length === 0) return null;
+                    const totalAmount = withdrawable.reduce((sum, r) => sum + r.amount, BigInt(0));
+                    const formatted = Number(formatUnits(totalAmount, 27)).toLocaleString("en-US", { maximumFractionDigits: 2 });
+                    return (
+                      <div key={opAddr} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                        <div>
+                          <div className="text-sm font-mono-num text-green-400">{formatted} TON</div>
+                          <div className="text-[10px] text-gray-500 font-mono">{opAddr.slice(0, 10)}...{opAddr.slice(-4)}</div>
+                        </div>
+                        <button
+                          onClick={() => handleMobileWithdraw(opAddr, withdrawable.length)}
+                          disabled={mobileWithdrawProcessing === opAddr}
+                          className="px-4 py-2 rounded-lg bg-green-600/80 text-white text-xs font-medium disabled:opacity-40 hover:bg-green-600 transition-colors whitespace-nowrap"
+                        >
+                          {mobileWithdrawProcessing === opAddr ? t.dashboard.vaultWithdrawProcessing : t.dashboard.withdrawAsTon}
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {mobileWithdrawTxHash && (
+                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
+                      <a
+                        href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${mobileWithdrawTxHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-green-500 hover:text-green-300 font-mono break-all"
+                      >
+                        {mobileWithdrawTxHash}
+                      </a>
+                    </div>
+                  )}
+                  {mobileWithdrawError && (
+                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <div className="text-sm text-red-400 break-all">{mobileWithdrawError}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">

@@ -2,11 +2,20 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  createWalletClient,
+  custom,
+  encodeFunctionData,
+  formatUnits,
+} from "viem";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import LobbyHotspot from "./LobbyHotspot";
 import LobbyOverlay from "./LobbyOverlay";
 import CardCollection from "./CardCollection";
+import { depositManagerAbi } from "@/lib/abi";
+import { CONTRACTS } from "@/constants/contracts";
+import { chain, publicClient } from "@/lib/chain";
 import type { UserStakingData } from "@/hooks/useStakingSubgraph";
 import type { WithdrawalStatus } from "@/hooks/useWithdrawalStatus";
 
@@ -21,6 +30,10 @@ interface LobbyViewProps {
   subgraphData?: UserStakingData | null;
   subgraphLoading?: boolean;
   withdrawalStatus?: WithdrawalStatus;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  smartAccountClient?: { sendTransaction: (...args: any[]) => Promise<`0x${string}`> } | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getEthereumProvider?: () => Promise<any>;
 }
 
 export default function LobbyView({
@@ -36,13 +49,19 @@ export default function LobbyView({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subgraphLoading,
   withdrawalStatus,
+  smartAccountClient,
+  getEthereumProvider,
 }: LobbyViewProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [showDialogue, setShowDialogue] = useState(false);
   const [dialogueText, setDialogueText] = useState("");
   const [roomLoaded, setRoomLoaded] = useState(false);
+  const [withdrawProcessing, setWithdrawProcessing] = useState<string | null>(null);
+  const [withdrawTxHash, setWithdrawTxHash] = useState<string | null>(null);
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
 
   const greetings = [
     t.lobby.tokiGreeting1,
@@ -96,6 +115,62 @@ export default function LobbyView({
     const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
     showTokiMessage(randomGreeting, 4000);
   };
+
+  // Auto-open panel from URL param (e.g. /dashboard?panel=wallet)
+  useEffect(() => {
+    const panel = searchParams.get("panel");
+    if (panel === "wallet") setActivePanel("wallet");
+  }, [searchParams]);
+
+  const handleWithdraw = useCallback(async (operatorAddr: string, count: number) => {
+    setWithdrawProcessing(operatorAddr);
+    setWithdrawError(null);
+    setWithdrawTxHash(null);
+    const depositManagerAddr = CONTRACTS.DEPOSIT_MANAGER_PROXY as `0x${string}`;
+    const addr = walletAddress as `0x${string}`;
+
+    try {
+      let hash: `0x${string}`;
+
+      if (smartAccountClient) {
+        hash = await smartAccountClient.sendTransaction({
+          calls: [{
+            to: depositManagerAddr,
+            data: encodeFunctionData({
+              abi: depositManagerAbi,
+              functionName: "processRequests",
+              args: [operatorAddr as `0x${string}`, BigInt(count), true],
+            }),
+          }],
+        });
+      } else if (getEthereumProvider) {
+        const provider = await getEthereumProvider();
+        const walletClient = createWalletClient({ chain, transport: custom(provider), account: addr });
+        hash = await walletClient.writeContract({
+          address: depositManagerAddr,
+          abi: depositManagerAbi,
+          functionName: "processRequests",
+          args: [operatorAddr as `0x${string}`, BigInt(count), true],
+        });
+      } else {
+        throw new Error("No wallet available");
+      }
+
+      setWithdrawTxHash(hash);
+      await publicClient.waitForTransactionReceipt({ hash });
+      withdrawalStatus?.refresh();
+      onRefreshBalances();
+    } catch (e: unknown) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error("Withdraw failed:", errMsg);
+      if (errMsg.includes("User rejected")) {
+        setWithdrawError(t.dashboard.txRejected);
+      } else {
+        setWithdrawError(errMsg.slice(0, 200));
+      }
+    }
+    setWithdrawProcessing(null);
+  }, [smartAccountClient, getEthereumProvider, walletAddress, withdrawalStatus, onRefreshBalances, t]);
 
   const handleStaking = () => {
     router.push("/staking");
@@ -298,8 +373,31 @@ export default function LobbyView({
           size={{ width: "14%", height: "22%" }}
           color="245,158,11"
           pingDelay={1.2}
-          onHoverEnter={() => showTokiMessage(t.lobby.tokiHoverWallet)}
+          onHoverEnter={() => {
+            if (withdrawalStatus?.hasWithdrawable) {
+              showTokiMessage(t.lobby.tokiVaultWithdraw);
+            } else if (withdrawalStatus?.pendingRequests.length) {
+              showTokiMessage(
+                t.lobby.tokiWithdrawPending.replace(
+                  "{time}",
+                  withdrawalStatus.nearestWithdrawTimeFormatted || ""
+                )
+              );
+            } else {
+              showTokiMessage(t.lobby.tokiHoverWallet);
+            }
+          }}
           onHoverLeave={hideTokiMessage}
+          badgeCount={
+            withdrawalStatus?.withdrawableRequests.length
+              ? withdrawalStatus.withdrawableRequests.length
+              : withdrawalStatus?.pendingRequests.length || undefined
+          }
+          badgeColor={
+            withdrawalStatus?.withdrawableRequests.length
+              ? "34,197,94"    // green = ready to claim
+              : "234,179,8"   // amber = still waiting
+          }
         />
 
         {/* Achievement Board - covers the right wall bulletin board */}
@@ -508,6 +606,100 @@ export default function LobbyView({
                   </div>
                   <div className="text-[10px] text-gray-600">WTON</div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Withdrawal Status in Vault */}
+          {withdrawalStatus && (withdrawalStatus.withdrawableRequests.length > 0 || withdrawalStatus.pendingRequests.length > 0) && (
+            <div>
+              <h3 className="text-sm text-gray-400 mb-3">{t.dashboard.vaultWithdrawalTitle}</h3>
+              <div className="space-y-3">
+                {/* Withdrawable items */}
+                {withdrawalStatus.withdrawableRequests.length > 0 && (
+                  <div className="rounded-lg bg-green-500/10 border border-green-500/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-green-500/10 flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_2px_rgba(34,197,94,0.5)] animate-pulse" />
+                      <span className="text-xs font-medium text-green-400">{t.dashboard.withdrawalReady}</span>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      {Object.entries(withdrawalStatus.byOperator).map(([opAddr, requests]) => {
+                        const withdrawable = requests.filter((r) => r.isWithdrawable);
+                        if (withdrawable.length === 0) return null;
+                        const totalAmount = withdrawable.reduce((sum, r) => sum + r.amount, BigInt(0));
+                        const formatted = Number(formatUnits(totalAmount, 27)).toLocaleString("en-US", { maximumFractionDigits: 2 });
+                        return (
+                          <div key={opAddr} className="flex items-center justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-mono-num text-green-400">{formatted} TON</div>
+                              <div className="text-[10px] text-gray-500 font-mono">{opAddr.slice(0, 10)}...{opAddr.slice(-4)}</div>
+                            </div>
+                            <button
+                              onClick={() => handleWithdraw(opAddr, withdrawable.length)}
+                              disabled={withdrawProcessing === opAddr}
+                              className="px-4 py-2 rounded-lg bg-green-600/80 text-white text-xs font-medium disabled:opacity-40 hover:bg-green-600 transition-colors whitespace-nowrap"
+                            >
+                              {withdrawProcessing === opAddr ? t.dashboard.vaultWithdrawProcessing : t.dashboard.withdrawAsTon}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pending items */}
+                {withdrawalStatus.pendingRequests.length > 0 && (
+                  <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/10 overflow-hidden">
+                    <div className="px-4 py-2 bg-yellow-500/5 flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-yellow-400/60" />
+                      <span className="text-xs text-yellow-400/80">{t.dashboard.withdrawalPending}</span>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      {Object.entries(withdrawalStatus.byOperator).map(([opAddr, requests]) => {
+                        const pending = requests.filter((r) => !r.isWithdrawable);
+                        if (pending.length === 0) return null;
+                        const totalAmount = pending.reduce((sum, r) => sum + r.amount, BigInt(0));
+                        const formatted = Number(formatUnits(totalAmount, 27)).toLocaleString("en-US", { maximumFractionDigits: 2 });
+                        const nearest = pending.reduce((min, r) => r.blocksRemaining < min.blocksRemaining ? r : min);
+                        const days = Math.floor((nearest.blocksRemaining * 12) / 86400);
+                        const hours = Math.floor(((nearest.blocksRemaining * 12) % 86400) / 3600);
+                        return (
+                          <div key={opAddr} className="flex items-center justify-between">
+                            <div>
+                              <div className="text-sm font-mono-num text-yellow-400/80">{formatted} TON</div>
+                              <div className="text-[10px] text-gray-500 font-mono">{opAddr.slice(0, 10)}...{opAddr.slice(-4)}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xs text-yellow-400/60">{t.dashboard.waiting}</div>
+                              <div className="text-[10px] text-gray-500">~{days}d {hours}h</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tx status */}
+                {withdrawTxHash && (
+                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
+                    <a
+                      href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${withdrawTxHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-green-500 hover:text-green-300 font-mono break-all"
+                    >
+                      {withdrawTxHash}
+                    </a>
+                  </div>
+                )}
+                {withdrawError && (
+                  <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <div className="text-sm text-red-400 break-all">{withdrawError}</div>
+                  </div>
+                )}
               </div>
             </div>
           )}

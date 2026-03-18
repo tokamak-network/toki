@@ -284,6 +284,7 @@ const en = {
     tokiHoverExplore: "The Explore Portal! Step through to discover the Tokamak ecosystem.",
     tokiWithdrawReady: "You have TON ready to withdraw! Go check it out~",
     tokiWithdrawPending: "Your unstaked TON is still waiting... about {time} left!",
+    tokiVaultWithdraw: "There's TON to collect in your Vault! Open it up~",
   },
   dashboard: {
     loading: "Loading...",
@@ -390,7 +391,9 @@ const en = {
     amountToUnstake: "Amount to Unstake (WTON)",
     unstakePartial: "Partial Unstake",
     processing: "Processing...",
-    withdrawalDelay: "Withdrawal delay: ~14 days (93,046 blocks)",
+    withdrawalDelay: "Withdrawal delay: ~13 days (93,046 blocks)",
+    vaultWithdrawalTitle: "Withdrawal Status",
+    vaultWithdrawProcessing: "Withdrawing...",
     pendingAmount: "Pending Amount",
     withdrawableAmount: "Withdrawable Amount",
     noStakedToUnstake: "No staked balance to unstake",
@@ -608,6 +611,8 @@ const en = {
     reactBuild2: "These tools will help:",
     reactVote1: "You want a voice? That's important!",
     reactVote2: "Here's where you can participate:",
+    // Toki's Pick
+    tokiPickLabel: "Toki's Pick",
     // Navigation
     tryAnother: "Try another interest",
     showAll: "Show me everything",
@@ -705,6 +710,32 @@ const en = {
     noTonDesc: "You need TON to start staking. Follow the guide to withdraw TON from your exchange — it's easy!",
     noTonGoQuest: "Get TON from Exchange",
     noTonSkip: "I'll do it later",
+    // Has-staked guidance (Step 0)
+    hasStakedTitle: "Welcome back!",
+    hasStakedDesc:
+      "You have staked TON! Want to stake more or unstake?",
+    hasStakedStakeMore: "Stake More",
+    hasStakedUnstake: "Unstake",
+    // Step 10: Unstake operator selection
+    unstakeStep1Dialogue: "Pick the operator to unstake from!",
+    // Step 11: Unstake amount
+    unstakeStep2Dialogue:
+      "You have {amount} TON staked on {name}. How much do you want to unstake?",
+    unstakeStep2Ready:
+      "Unstaking {amount} TON! Ready? Let's go~",
+    unstakeDelayWarning:
+      "After requesting withdrawal, there's a ~13 day (93,000 blocks) waiting period!",
+    // Step 12: Unstake execute
+    unstakeStep3Dialogue:
+      "Hit the request button! After ~13 days, you can pick up your TON from the Vault on the dashboard.",
+    unstakeStep3Processing: "Requesting withdrawal... hang tight!",
+    unstakeStep3Error: "Hmm... something went wrong. Want to try again?",
+    unstakeSuccessDialogue:
+      "Withdrawal requested! After ~13 days, pick up your TON from the Vault(🔐) on the dashboard~",
+    unstakeRequestButton: "Request Withdrawal",
+    unstake2StepNotice:
+      "Withdrawal is 2 steps! This is just a 'request'. After ~13 days, you can actually withdraw from the Vault.",
+    goToVault: "Check Vault",
   },
 } as const;
 
