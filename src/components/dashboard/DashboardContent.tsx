@@ -40,6 +40,13 @@ const accStakedAccountAbi = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [{ name: "account", type: "address" }],
+    name: "pendingUnstakedAccount",
+    outputs: [{ name: "wtonAmount", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 interface Balances {
@@ -117,7 +124,7 @@ export default function DashboardContent() {
     setLoading(true);
     try {
       const addr = balanceAddress as `0x${string}`;
-      const [ethBal, tonBal, wtonBal, stakedBal] = await Promise.all([
+      const [ethBal, tonBal, wtonBal, stakedBal, pendingBal] = await Promise.all([
         client.getBalance({ address: addr }),
         client.readContract({
           address: TON_ADDRESS as `0x${string}`,
@@ -137,7 +144,17 @@ export default function DashboardContent() {
           functionName: "accStakedAccount",
           args: [addr],
         }),
+        client.readContract({
+          address: DEPOSIT_MANAGER as `0x${string}`,
+          abi: accStakedAccountAbi,
+          functionName: "pendingUnstakedAccount",
+          args: [addr],
+        }),
       ]);
+      // Subtract pending unstaked from total staked to show actual active staking
+      const netStaked = (stakedBal as bigint) > (pendingBal as bigint)
+        ? (stakedBal as bigint) - (pendingBal as bigint)
+        : BigInt(0);
       setBalances({
         eth: Number(formatUnits(ethBal, 18)).toFixed(6),
         ton: Number(formatUnits(tonBal, 18)).toLocaleString("en-US", {
@@ -146,7 +163,7 @@ export default function DashboardContent() {
         wton: Number(formatUnits(wtonBal, 27)).toLocaleString("en-US", {
           maximumFractionDigits: 2,
         }),
-        staked: Number(formatUnits(stakedBal, 27)).toLocaleString("en-US", {
+        staked: Number(formatUnits(netStaked, 27)).toLocaleString("en-US", {
           maximumFractionDigits: 2,
         }),
       });
