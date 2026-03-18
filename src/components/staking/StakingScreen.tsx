@@ -191,7 +191,25 @@ export default function StakingScreen() {
     }
   }, [ready, authenticated, router]);
 
-  // ─── Fetch Operators ───────────────────────────────────────────────
+  // ─── Fetch TON Balance (independent, runs first) ─────────────────
+
+  const fetchBalance = useCallback(async () => {
+    if (!walletAddress) return;
+    try {
+      const tonBal = await publicClient.readContract({
+        address: tonAddr, abi: tonTokenAbi, functionName: "balanceOf", args: [addr],
+      });
+      setTonBalance(formatUnits(tonBal, 18));
+    } catch (e) {
+      console.error("Failed to fetch TON balance:", e);
+    }
+  }, [walletAddress, tonAddr, addr]);
+
+  useEffect(() => {
+    if (walletAddress) fetchBalance();
+  }, [walletAddress, fetchBalance]);
+
+  // ─── Fetch Operators (batched to avoid rate limiting) ─────────────
 
   const fetchOperators = useCallback(async () => {
     if (!walletAddress) return;
@@ -204,16 +222,23 @@ export default function StakingScreen() {
       });
 
       const count = Number(numLayer2s);
-      const addresses = await Promise.all(
-        Array.from({ length: count }, (_, i) =>
-          publicClient.readContract({
-            address: registryAddr,
-            abi: layer2RegistryAbi,
-            functionName: "layer2ByIndex",
-            args: [BigInt(i)],
-          })
-        )
-      );
+
+      // Batch layer2ByIndex calls via multicall to avoid 429 rate limiting
+      const BATCH_SIZE = 50;
+      const addresses: `0x${string}`[] = [];
+      for (let start = 0; start < count; start += BATCH_SIZE) {
+        const end = Math.min(start + BATCH_SIZE, count);
+        const batchContracts = Array.from({ length: end - start }, (_, i) => ({
+          address: registryAddr,
+          abi: layer2RegistryAbi,
+          functionName: "layer2ByIndex" as const,
+          args: [BigInt(start + i)] as const,
+        }));
+        const batchResults = await publicClient.multicall({ contracts: batchContracts, allowFailure: true });
+        for (const r of batchResults) {
+          if (r.status === "success") addresses.push(r.result as `0x${string}`);
+        }
+      }
 
       const memoContracts = addresses.map((a) => ({
         address: a, abi: candidateAbi, functionName: "memo" as const,
@@ -271,26 +296,12 @@ export default function StakingScreen() {
           setAutoSelectedIndex(idx);
         }
       }
-
-      const tonBal = await publicClient.readContract({
-        address: tonAddr, abi: tonTokenAbi, functionName: "balanceOf", args: [addr],
-      });
-      setTonBalance(formatUnits(tonBal, 18));
     } catch (e) {
       console.error("Failed to fetch operators:", e);
-      // Even if operator fetch fails, still try to check TON balance
-      try {
-        const tonBal = await publicClient.readContract({
-          address: tonAddr, abi: tonTokenAbi, functionName: "balanceOf", args: [addr],
-        });
-        setTonBalance(formatUnits(tonBal, 18));
-      } catch {
-        // ignore balance fetch failure
-      }
     }
     setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walletAddress, seigManagerAddr, registryAddr, tonAddr]);
+  }, [walletAddress, seigManagerAddr, registryAddr, addr]);
 
   useEffect(() => {
     if (walletAddress) fetchOperators();
@@ -554,7 +565,7 @@ export default function StakingScreen() {
                   </div>
                   {step > 1 && (
                     <button
-                      onClick={() => setStep((step - 1) as Step)}
+                      onClick={() => { setError(null); setTxHash(null); setStep((step - 1) as Step); }}
                       className="px-3 py-1 rounded-lg bg-white/10 text-gray-400 text-xs hover:bg-white/20 transition-colors"
                     >
                       ← Back
@@ -777,7 +788,7 @@ export default function StakingScreen() {
 
                       {amount && Number(amount) > 0 && (
                         <button
-                          onClick={() => setStep(3)}
+                          onClick={() => { setError(null); setTxHash(null); setStep(3); }}
                           className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
                         >
                           {t.stakingScreen.nextStep} →
