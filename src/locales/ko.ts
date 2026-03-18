@@ -665,7 +665,7 @@ const ko = {
     gasExplainToggle: "가스비가 뭐야? 눌러서 알아보기",
     gasExplainTitle: "가스비란?",
     gasExplainBody1: "가스비는 블록체인에서 거래를 처리하는 데 드는 수수료야. 택배비 같은 거라고 생각하면 돼!",
-    gasExplainBody2: "보통은 ETH라는 코인이 필요한데, 토키는 Gasless 시스템으로 TON만으로 가스비를 낼 수 있어. ETH 없어도 OK!",
+    gasExplainBody2: "이더리움에서는 ETH라는 코인이 필요한데, 토키는 Gasless 시스템으로 TON만으로 가스비를 낼 수 있어. ETH 없어도 OK!",
     gasExplainBody3: "표시된 금액은 예상치야. 실제 수수료는 보통 더 적고, 남은 건 그대로 네 지갑에 있어!",
     // Step 2: Amount
     step2Title: "스테이킹 금액",

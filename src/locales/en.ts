@@ -670,7 +670,7 @@ const en = {
     gasExplainToggle: "What's gas? Tap to learn",
     gasExplainTitle: "What is gas?",
     gasExplainBody1: "Gas is a small fee paid to process your transaction on the blockchain. Think of it like a delivery fee!",
-    gasExplainBody2: "Normally you need ETH to pay gas, but Toki's gasless system lets you pay with TON instead — no ETH needed!",
+    gasExplainBody2: "On Ethereum, you need ETH to pay gas, but Toki's gasless system lets you pay with TON instead — no ETH needed!",
     gasExplainBody3: "The amount shown is an estimate. The actual fee is usually lower, and any unused portion stays in your wallet.",
     // Step 2: Amount
     step2Title: "Staking Amount",

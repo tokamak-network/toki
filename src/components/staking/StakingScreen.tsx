@@ -90,8 +90,8 @@ const MOOD_GLOW: Record<Mood, string> = {
 };
 
 const STEP_BACKGROUNDS: Record<Step, string> = {
-  0: "/backgrounds/staking-night.png",
-  1: "/backgrounds/staking-night.png",
+  0: "/backgrounds/staking-dawn.png",
+  1: "/backgrounds/staking-dawn.png",
   2: "/backgrounds/staking-dawn.png",
   3: "/backgrounds/staking-dawn.png",
   4: "/backgrounds/staking-sunrise.png",
