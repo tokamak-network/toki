@@ -405,6 +405,16 @@ export default function StakingScreen() {
 
   const handleStake = async () => {
     if (!amount || !selectedOp) return;
+
+    // Block if staking amount + gas fee exceeds balance
+    if (gasEstimateTon > 0) {
+      const remaining = Number(tonBalance) - Number(amount);
+      if (remaining < gasEstimateTon) {
+        setError(t.dashboard.insufficientTonForGas);
+        return;
+      }
+    }
+
     setStaking(true);
     setError(null);
     setTxHash(null);
@@ -925,7 +935,9 @@ export default function StakingScreen() {
                           />
                           <button
                             onClick={() => {
-                              const max = Math.max(0, Number(tonBalance));
+                              const bal = Number(tonBalance);
+                              const reserve = gasEstimateTon > 0 ? gasEstimateTon * 1.2 : 0;
+                              const max = Math.max(0, bal - reserve);
                               setAmount(max > 0 ? String(Math.floor(max * 100) / 100) : "0");
                             }}
                             className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-accent-cyan/10 text-accent-cyan text-xs font-semibold hover:bg-accent-cyan/20 transition-colors"

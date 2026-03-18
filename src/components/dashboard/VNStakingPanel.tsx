@@ -14,6 +14,7 @@ import {
   layer2RegistryAbi,
   candidateAbi,
   tonTokenAbi,
+  tonPaymasterAbi,
 } from "@/lib/abi";
 import { buildStakingCalls } from "@/lib/staking-calls";
 import { useTranslation } from "@/components/providers/LanguageProvider";
@@ -163,6 +164,7 @@ export default function VNStakingPanel({
   const [shuffling, setShuffling] = useState(false);
   const [autoSelectedIndex, setAutoSelectedIndex] = useState<number | undefined>(undefined);
   const [vnPhase, setVnPhase] = useState<VNPhase>("welcome");
+  const [gasEstimateTon, setGasEstimateTon] = useState(0);
   const selectedOpRef = useRef(selectedOp);
   selectedOpRef.current = selectedOp;
   const { t } = useTranslation();
@@ -291,6 +293,36 @@ export default function VNStakingPanel({
     }
   }, [walletAddress, fetchOperators]);
 
+  // ─── Estimate gas cost in TON ──────────────────────────────────────
+  useEffect(() => {
+    if (!smartAccountClient) { setGasEstimateTon(0); return; }
+    const paymasterAddr = CONTRACTS.TON_PAYMASTER;
+    let cancelled = false;
+    async function estimate() {
+      try {
+        const gasPrice = await publicClient.getGasPrice();
+        const gasCostWei = gasPrice * BigInt(600_000);
+        let gasCostTon: number;
+        if (paymasterAddr) {
+          const tonAmount = await publicClient.readContract({
+            address: paymasterAddr as `0x${string}`,
+            abi: tonPaymasterAbi,
+            functionName: "ethToToken",
+            args: [gasCostWei],
+          });
+          gasCostTon = Number(formatUnits(tonAmount, 18));
+        } else {
+          gasCostTon = (Number(gasCostWei) / 1e18) * 1250;
+        }
+        if (!cancelled) setGasEstimateTon(Math.max(0.01, Math.ceil(gasCostTon * 100) / 100));
+      } catch {
+        if (!cancelled) setGasEstimateTon(0);
+      }
+    }
+    estimate();
+    return () => { cancelled = true; };
+  }, [smartAccountClient]);
+
   // ─── Handlers ──────────────────────────────────────────────────────
 
   const handleAutoSelect = () => {
@@ -318,6 +350,17 @@ export default function VNStakingPanel({
 
   const handleStake = async () => {
     if (!amount || !selectedOp) return;
+
+    // Block if staking amount + gas fee exceeds balance
+    if (gasEstimateTon > 0) {
+      const remaining = Number(tonBalance) - Number(amount);
+      if (remaining < gasEstimateTon) {
+        setError(t.dashboard.insufficientTonForGas);
+        setVnPhase("error");
+        return;
+      }
+    }
+
     setStaking(true);
     setError(null);
     setTxHash(null);
@@ -486,7 +529,10 @@ export default function VNStakingPanel({
                   />
                   <button
                     onClick={() => {
-                      setAmount(tonBalance);
+                      const bal = Number(tonBalance);
+                      const reserve = gasEstimateTon > 0 ? gasEstimateTon * 1.2 : 0;
+                      const max = Math.max(0, bal - reserve);
+                      setAmount(max > 0 ? String(Math.floor(max * 100) / 100) : "0");
                       handleAmountFocus();
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-accent-sky hover:text-accent-cyan transition-colors"
