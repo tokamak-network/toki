@@ -709,9 +709,10 @@ const en = {
     onboardingPromptYes: "Sure, show me!",
     onboardingPromptNo: "No thanks, let me stake",
     // No TON prompt
-    noTonTitle: "No TON yet!",
-    noTonDesc: "You need TON to start staking. Follow the guide to withdraw TON from your exchange — it's easy!",
-    noTonGoQuest: "Get TON from Exchange",
+    noTonTitle: "No TON here!",
+    noTonDesc: "Are you here to unstake, or is this your first visit?",
+    noTonGoQuest: "First time! Show me the guide",
+    noTonUnstake: "I'm here to unstake",
     noTonSkip: "I'll do it later",
     // Has-staked guidance (Step 0)
     hasStakedTitle: "Welcome back!",

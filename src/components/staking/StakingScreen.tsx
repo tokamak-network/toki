@@ -725,28 +725,41 @@ export default function StakingScreen() {
                               {t.stakingScreen.hasStakedUnstake}
                             </button>
                           </>
+                        ) : guidanceType === "no-ton" ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                setUnstakeOp("");
+                                setUnstakeAmount("");
+                                setUnstakeError(null);
+                                setUnstakeTxHash(null);
+                                setStep(10);
+                              }}
+                              className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-semibold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-accent-cyan/20"
+                            >
+                              {t.stakingScreen.noTonUnstake}
+                            </button>
+                            <button
+                              onClick={() => router.push("/onboarding")}
+                              className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-amber to-orange-500 text-white font-semibold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-accent-amber/20"
+                            >
+                              {t.stakingScreen.noTonGoQuest}
+                            </button>
+                          </>
                         ) : (
                           <>
                             <button
                               onClick={() => router.push("/onboarding")}
-                              className={`w-full py-3 rounded-xl font-semibold text-sm hover:scale-[1.02] transition-transform shadow-lg ${
-                                guidanceType === "no-ton"
-                                  ? "bg-gradient-to-r from-accent-amber to-orange-500 text-white shadow-accent-amber/20"
-                                  : "bg-gradient-to-r from-accent-blue to-accent-cyan text-white shadow-accent-cyan/20"
-                              }`}
+                              className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-semibold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-accent-cyan/20"
                             >
-                              {guidanceType === "no-ton"
-                                ? t.stakingScreen.noTonGoQuest
-                                : t.stakingScreen.onboardingPromptYes}
+                              {t.stakingScreen.onboardingPromptYes}
                             </button>
-                            {guidanceType !== "no-ton" && (
-                              <button
-                                onClick={() => setStep(1)}
-                                className="w-full py-3 rounded-xl bg-white/10 text-gray-400 font-medium text-sm hover:bg-white/15 transition-colors"
-                              >
-                                {t.stakingScreen.onboardingPromptNo}
-                              </button>
-                            )}
+                            <button
+                              onClick={() => setStep(1)}
+                              className="w-full py-3 rounded-xl bg-white/10 text-gray-400 font-medium text-sm hover:bg-white/15 transition-colors"
+                            >
+                              {t.stakingScreen.onboardingPromptNo}
+                            </button>
                           </>
                         )}
                       </div>

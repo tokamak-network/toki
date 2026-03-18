@@ -747,10 +747,11 @@ const ko = {
     onboardingPromptYes: "좋아, 가이드 볼게!",
     onboardingPromptNo: "아니야, 바로 스테이킹할래",
     // No TON prompt
-    noTonTitle: "TON이 없어!",
+    noTonTitle: "TON이 없네!",
     noTonDesc:
-      "스테이킹하려면 먼저 거래소에서 TON을 인출해야 해. 가이드 따라하면 쉬워~",
-    noTonGoQuest: "거래소에서 TON 가져오기",
+      "언스테이킹하러 왔어? 아니면 처음 방문이야?",
+    noTonGoQuest: "처음이야! 가이드 보여줘",
+    noTonUnstake: "언스테이킹하러 왔어",
     noTonSkip: "나중에 할래",
     // Has-staked guidance (Step 0)
     hasStakedTitle: "돌아왔구나!",
