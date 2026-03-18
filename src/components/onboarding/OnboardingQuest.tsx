@@ -506,6 +506,7 @@ export default function OnboardingQuest() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_cinematicComplete, setCinematicComplete] = useState(false);
   const [cinematicJustFinished, setCinematicJustFinished] = useState(false);
+  const [assetsReady, setAssetsReady] = useState(false);
   const questAreaRef = useRef<HTMLDivElement>(null);
 
   // Per-account localStorage keys
@@ -555,12 +556,40 @@ export default function OnboardingQuest() {
     }
   }, [introKey]);
 
-  // Preload all mood images so character appears instantly on mobile
+  // Preload all assets (character sprites, backgrounds, cinematic images) before starting
   useEffect(() => {
-    Object.values(MOOD_IMAGES).forEach((src) => {
+    const srcs = [
+      ...Object.values(MOOD_IMAGES),
+      ...Object.values(QUEST_BACKGROUNDS),
+      "/intro-toki-character.png",
+      "/intro-cafe-laptop.png",
+      "/vn-bg-default.png",
+    ];
+
+    let cancelled = false;
+    let loaded = 0;
+    const total = srcs.length;
+
+    srcs.forEach((src) => {
       const img = new window.Image();
+      img.onload = img.onerror = () => {
+        loaded++;
+        if (!cancelled && loaded >= total) {
+          setAssetsReady(true);
+        }
+      };
       img.src = src;
     });
+
+    // Safety timeout — don't block forever if an image fails silently
+    const timeout = setTimeout(() => {
+      if (!cancelled) setAssetsReady(true);
+    }, 8000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, []);
 
   // Save progress
@@ -767,6 +796,17 @@ export default function OnboardingQuest() {
       router.push(quest.action.route);
     }
   };
+
+  // ─── Render: Loading ────────────────────────────────────────────────
+
+  if (!assetsReady) {
+    return (
+      <div className="fixed inset-0 bg-[#0a0a0f] flex flex-col items-center justify-center gap-4 z-50">
+        <div className="w-10 h-10 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
+        <p className="text-sm text-gray-500 font-mono animate-pulse">Loading...</p>
+      </div>
+    );
+  }
 
   // ─── Render: All Complete ──────────────────────────────────────────
 
