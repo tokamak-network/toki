@@ -411,6 +411,7 @@ const en = {
     nearestWithdraw: "Next available in ~{time}",
     withdrawNow: "Withdraw Now",
     manageStaking: "Manage Staking",
+    stakingHistory: "Transaction History",
     noActiveStaking: "No active staking yet",
     noActiveStakingDesc: "Stake your TON to start earning seigniorage rewards!",
     // Push Notification

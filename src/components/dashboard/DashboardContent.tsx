@@ -19,6 +19,7 @@ import { CONTRACTS } from "@/constants/contracts";
 
 const TON_ADDRESS = CONTRACTS.TON;
 const WTON_ADDRESS = CONTRACTS.WTON;
+const DEPOSIT_MANAGER = CONTRACTS.DEPOSIT_MANAGER_PROXY;
 
 const erc20Abi = [
   {
@@ -30,10 +31,21 @@ const erc20Abi = [
   },
 ] as const;
 
+const depositManagerAbi = [
+  {
+    inputs: [{ name: "account", type: "address" }],
+    name: "accStakedAccount",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
+
 interface Balances {
   eth: string;
   ton: string;
   wton: string;
+  staked: string;
 }
 
 export default function DashboardContent() {
@@ -104,7 +116,7 @@ export default function DashboardContent() {
     setLoading(true);
     try {
       const addr = balanceAddress as `0x${string}`;
-      const [ethBal, tonBal, wtonBal] = await Promise.all([
+      const [ethBal, tonBal, wtonBal, stakedBal] = await Promise.all([
         client.getBalance({ address: addr }),
         client.readContract({
           address: TON_ADDRESS as `0x${string}`,
@@ -118,6 +130,12 @@ export default function DashboardContent() {
           functionName: "balanceOf",
           args: [addr],
         }),
+        client.readContract({
+          address: DEPOSIT_MANAGER as `0x${string}`,
+          abi: depositManagerAbi,
+          functionName: "accStakedAccount",
+          args: [addr],
+        }),
       ]);
       setBalances({
         eth: Number(formatUnits(ethBal, 18)).toFixed(6),
@@ -127,9 +145,12 @@ export default function DashboardContent() {
         wton: Number(formatUnits(wtonBal, 27)).toLocaleString("en-US", {
           maximumFractionDigits: 2,
         }),
+        staked: Number(formatUnits(stakedBal, 27)).toLocaleString("en-US", {
+          maximumFractionDigits: 2,
+        }),
       });
     } catch {
-      setBalances({ eth: "\u2014", ton: "\u2014", wton: "\u2014" });
+      setBalances({ eth: "\u2014", ton: "\u2014", wton: "\u2014", staked: "\u2014" });
     }
     setLoading(false);
   }, [balanceAddress]);
@@ -270,7 +291,7 @@ export default function DashboardContent() {
               />
               <BalanceItem
                 label="TON (staked)"
-                value={loading ? "..." : balances?.wton || "\u2014"}
+                value={loading ? "..." : balances?.staked || "\u2014"}
                 color="text-accent-gold"
               />
             </div>
@@ -279,7 +300,7 @@ export default function DashboardContent() {
             <div className="mt-4 mb-6">
               <StakingSummaryCard
                 subgraphData={subgraphData}
-                wtonBalance={balances?.wton}
+                stakedBalance={balances?.staked}
                 withdrawalStatus={withdrawalStatus}
                 loading={loading}
               />

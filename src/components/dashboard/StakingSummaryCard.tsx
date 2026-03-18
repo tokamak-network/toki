@@ -8,20 +8,20 @@ import type { UserStakingData } from "@/hooks/useStakingSubgraph";
 
 interface StakingSummaryCardProps {
   subgraphData?: UserStakingData | null;
-  wtonBalance?: string;
+  stakedBalance?: string;
   withdrawalStatus: WithdrawalStatus;
   loading?: boolean;
 }
 
 export default function StakingSummaryCard({
   subgraphData,
-  wtonBalance,
+  stakedBalance,
   withdrawalStatus,
   loading,
 }: StakingSummaryCardProps) {
   const { t } = useTranslation();
 
-  const hasStaking = subgraphData || (wtonBalance && Number(wtonBalance) > 0);
+  const hasStaking = subgraphData || (stakedBalance && Number(stakedBalance.replace(/,/g, "")) > 0);
   const hasWithdrawalActivity =
     withdrawalStatus.pendingRequests.length > 0 ||
     withdrawalStatus.withdrawableRequests.length > 0;
@@ -76,7 +76,7 @@ export default function StakingSummaryCard({
           <div className="p-3 rounded-lg bg-white/5 border border-accent-gold/10">
             <div className="text-xs text-gray-500 mb-1">{t.dashboard.totalStakedValue}</div>
             <div className="text-sm font-mono-num font-semibold text-accent-gold">
-              {loading ? "..." : wtonBalance || "—"}
+              {loading ? "..." : stakedBalance || "—"}
             </div>
             <div className="text-[10px] text-gray-600">WTON</div>
           </div>

@@ -234,6 +234,10 @@ contract TONPaymaster is Ownable, EIP712 {
     uint8 public constant MODE_CHARGE = 0x00;
     uint8 public constant MODE_GUARANTOR = 0x01;
 
+    /// @notice Offset where paymasterData starts in paymasterAndData
+    /// EntryPoint v0.8: [paymaster(20B)][verificationGasLimit(16B)][postOpGasLimit(16B)][data...]
+    uint256 private constant PAYMASTER_DATA_OFFSET = 52;
+
     bytes32 public constant GUARANTOR_TYPEHASH = keccak256(
         "Guarantee(address sender,uint256 guaranteedAmount,uint256 nonce,uint48 validUntil,uint48 validAfter)"
     );
@@ -332,11 +336,12 @@ contract TONPaymaster is Ownable, EIP712 {
         address sender = userOp.sender;
 
         // Parse mode from paymasterData
-        // paymasterAndData layout: [paymaster(20B)][paymasterData...]
-        // paymasterData starts at offset 20
+        // EntryPoint v0.8 paymasterAndData layout:
+        //   [paymaster(20B)][verificationGasLimit(16B)][postOpGasLimit(16B)][paymasterData...]
+        // paymasterData starts at offset 52 (20 + 16 + 16)
         uint8 mode = MODE_CHARGE; // default
-        if (userOp.paymasterAndData.length > 20) {
-            mode = uint8(userOp.paymasterAndData[20]);
+        if (userOp.paymasterAndData.length > PAYMASTER_DATA_OFFSET) {
+            mode = uint8(userOp.paymasterAndData[PAYMASTER_DATA_OFFSET]);
         }
 
         if (mode == MODE_CHARGE) {
@@ -349,18 +354,26 @@ contract TONPaymaster is Ownable, EIP712 {
             validationData = _packValidationData(false, validUntil, 0);
         } else if (mode == MODE_GUARANTOR) {
             // Mode 0x01: Guarantor pre-pays
-            // paymasterData layout after mode byte:
+            // paymasterData layout after mode byte (from offset PAYMASTER_DATA_OFFSET):
             //   [mode(1B)][guarantor(20B)][guaranteedAmount(32B)][validUntil(6B)][validAfter(6B)][signature(dynamic)]
             require(
-                userOp.paymasterAndData.length >= 20 + 1 + 20 + 32 + 6 + 6,
+                userOp.paymasterAndData.length >= PAYMASTER_DATA_OFFSET + 1 + 20 + 32 + 6 + 6,
                 "TONPaymaster: invalid guarantor data"
             );
 
-            address guarantor = address(bytes20(userOp.paymasterAndData[21:41]));
-            uint256 guaranteedAmount = abi.decode(userOp.paymasterAndData[41:73], (uint256));
-            uint48 validUntil = uint48(bytes6(userOp.paymasterAndData[73:79]));
-            uint48 validAfter = uint48(bytes6(userOp.paymasterAndData[79:85]));
-            bytes memory signature = userOp.paymasterAndData[85:];
+            address guarantor;
+            uint256 guaranteedAmount;
+            uint48 validUntil;
+            uint48 validAfter;
+            bytes memory signature;
+            {
+                uint256 o = PAYMASTER_DATA_OFFSET;
+                guarantor = address(bytes20(userOp.paymasterAndData[o + 1 : o + 21]));
+                guaranteedAmount = abi.decode(userOp.paymasterAndData[o + 21 : o + 53], (uint256));
+                validUntil = uint48(bytes6(userOp.paymasterAndData[o + 53 : o + 59]));
+                validAfter = uint48(bytes6(userOp.paymasterAndData[o + 59 : o + 65]));
+                signature = userOp.paymasterAndData[o + 65 :];
+            }
 
             // Verify guaranteedAmount covers the maxTokenCost
             require(guaranteedAmount >= maxTokenCost, "TONPaymaster: insufficient guarantee");

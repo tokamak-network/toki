@@ -406,6 +406,7 @@ const ko = {
     nearestWithdraw: "약 {time} 후 출금 가능",
     withdrawNow: "지금 출금",
     manageStaking: "스테이킹 관리",
+    stakingHistory: "트랜잭션 내역",
     noActiveStaking: "아직 스테이킹이 없어요",
     noActiveStakingDesc: "TON을 스테이킹하면 시뇨리지 보상을 받을 수 있어요!",
     // Push Notification

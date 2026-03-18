@@ -47,13 +47,50 @@ interface StoredDelegation {
   signature: Hex;
 }
 
+// Fetch gas prices from Pimlico bundler (their minimum is higher than on-chain)
+async function estimateFeesPerGas() {
+  const res = await fetch(pimlicoUrl!, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "pimlico_getUserOperationGasPrice",
+      params: [],
+    }),
+  });
+  const data = await res.json();
+  const fast = data.result?.fast;
+  if (!fast) throw new Error("Failed to get bundler gas price");
+  return {
+    maxFeePerGas: BigInt(fast.maxFeePerGas),
+    maxPriorityFeePerGas: BigInt(fast.maxPriorityFeePerGas),
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createTonPaymasterProvider(paymasterAddress: Address) {
   const paymasterUrl = "/api/paymaster";
 
+  // viem spreads UserOp fields at top level of params (no params.userOperation wrapper)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const extractUserOp = (params: any) => ({
+    sender: params.sender,
+    callGasLimit: params.callGasLimit,
+    verificationGasLimit: params.verificationGasLimit,
+    preVerificationGas: params.preVerificationGas,
+    maxFeePerGas: params.maxFeePerGas,
+    maxPriorityFeePerGas: params.maxPriorityFeePerGas,
+    paymasterVerificationGasLimit: params.paymasterVerificationGasLimit,
+    paymasterPostOpGasLimit: params.paymasterPostOpGasLimit,
+    gasFees: params.gasFees,
+  });
+  const bigintReplacer = (_: string, v: unknown) => typeof v === "bigint" ? `0x${v.toString(16)}` : v;
+
   return {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getPaymasterStubData: async (params: any) => {
+      const userOp = extractUserOp(params);
       const res = await fetch(paymasterUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,8 +98,8 @@ function createTonPaymasterProvider(paymasterAddress: Address) {
           jsonrpc: "2.0",
           id: 1,
           method: "pm_getPaymasterStubData",
-          params: [params.userOperation, params.entryPointAddress, params.chainId],
-        }),
+          params: [userOp, params.entryPointAddress, params.chainId],
+        }, bigintReplacer),
       });
       const data = await res.json();
       if (data.error) {
@@ -81,6 +118,7 @@ function createTonPaymasterProvider(paymasterAddress: Address) {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getPaymasterData: async (params: any) => {
+      const userOp = extractUserOp(params);
       const res = await fetch(paymasterUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,8 +126,8 @@ function createTonPaymasterProvider(paymasterAddress: Address) {
           jsonrpc: "2.0",
           id: 2,
           method: "pm_getPaymasterData",
-          params: [params.userOperation, params.entryPointAddress, params.chainId],
-        }),
+          params: [userOp, params.entryPointAddress, params.chainId],
+        }, bigintReplacer),
       });
       const data = await res.json();
       if (data.error) {
@@ -395,6 +433,7 @@ export function useSessionKey(
         client: publicClient,
         transport: http(pimlicoUrl),
         ...(tonPaymaster ? { paymaster: tonPaymaster } : {}),
+        userOperation: { estimateFeesPerGas },
       }).extend(erc7710BundlerActions());
 
       // Encode the delegation chain as permissionsContext
@@ -450,6 +489,7 @@ export function useSessionKey(
         client: publicClient,
         transport: http(pimlicoUrl),
         ...(tonPaymaster ? { paymaster: tonPaymaster } : {}),
+        userOperation: { estimateFeesPerGas },
       });
 
       const receipt = await bundlerForReceipt.waitForUserOperationReceipt({

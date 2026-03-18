@@ -11,7 +11,7 @@ import type { UserStakingData } from "@/hooks/useStakingSubgraph";
 import type { WithdrawalStatus } from "@/hooks/useWithdrawalStatus";
 
 interface LobbyViewProps {
-  balances: { eth: string; ton: string; wton: string } | null;
+  balances: { eth: string; ton: string; wton: string; staked: string } | null;
   loading: boolean;
   walletAddress: string;
   shortAddr?: string;
@@ -476,7 +476,7 @@ export default function LobbyView({
               <div className="p-4 rounded-lg bg-white/5">
                 <div className="text-xs text-gray-500 mb-1">TON (staked)</div>
                 <div className="text-lg font-mono-num font-semibold text-accent-gold">
-                  {loading ? "..." : balances?.wton || "\u2014"}
+                  {loading ? "..." : balances?.staked || "\u2014"}
                 </div>
               </div>
             </div>
@@ -504,10 +504,62 @@ export default function LobbyView({
                 <div className="p-3 rounded-lg bg-white/5 border border-accent-gold/10">
                   <div className="text-xs text-gray-500 mb-1">{t.dashboard.totalStakedValue}</div>
                   <div className="text-base font-mono-num font-semibold text-accent-gold">
-                    {loading ? "..." : balances?.wton || "\u2014"}
+                    {loading ? "..." : balances?.staked || "\u2014"}
                   </div>
                   <div className="text-[10px] text-gray-600">WTON</div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Staking Transaction History */}
+          {subgraphData?.events && subgraphData.events.length > 0 && (
+            <div>
+              <h3 className="text-sm text-gray-400 mb-3">{t.dashboard.stakingHistory}</h3>
+              <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin">
+                {subgraphData.events.slice(0, 20).map((ev, i) => {
+                  const date = new Date(Number(ev.timestamp) * 1000);
+                  const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+                  return (
+                    <a
+                      key={ev.transactionHash || `${ev.type}-${i}`}
+                      href={ev.transactionHash ? `https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${ev.transactionHash}` : "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-2 h-2 rounded-full ${
+                          ev.type === "stake" ? "bg-green-400" :
+                          ev.type === "unstake" ? "bg-yellow-400" :
+                          ev.type === "withdrawal" ? "bg-blue-400" :
+                          "bg-purple-400"
+                        }`} />
+                        <div>
+                          <div className="text-xs font-medium text-gray-300">
+                            {ev.type === "stake" ? "Stake" :
+                             ev.type === "unstake" ? "Unstake" :
+                             ev.type === "withdrawal" ? "Withdrawal" :
+                             "Restake"}
+                          </div>
+                          <div className="text-[10px] text-gray-600">
+                            {ev.candidateName}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-xs font-mono-num font-semibold ${
+                          ev.type === "stake" || ev.type === "restake" ? "text-green-400" : "text-yellow-400"
+                        }`}>
+                          {ev.type === "stake" || ev.type === "restake" ? "+" : "-"}{ev.amount} TON
+                        </div>
+                        <div className="text-[10px] text-gray-600 group-hover:text-accent-cyan transition-colors">
+                          {dateStr}
+                        </div>
+                      </div>
+                    </a>
+                  );
+                })}
               </div>
             </div>
           )}

@@ -23,6 +23,14 @@ export interface StakingHistory {
   candidateName: string;
 }
 
+export interface StakingEvent {
+  type: "stake" | "unstake" | "withdrawal" | "restake";
+  amount: string;
+  timestamp: string;
+  candidateName: string;
+  transactionHash?: string;
+}
+
 export interface UserStakingData {
   /** Total deposited amount (original principal, 27-decimal raw) */
   totalDeposited: bigint;
@@ -34,6 +42,8 @@ export interface UserStakingData {
   seigEarnedFormatted: string;
   /** Staking history events */
   stakingHistory: StakingHistory[];
+  /** Combined staking/unstaking/withdrawal event timeline */
+  events: StakingEvent[];
 }
 
 function formatRay(raw: string): string {
@@ -55,9 +65,20 @@ async function fetchUserStaking(
         staked(first: 20, orderBy: timestamp, orderDirection: desc) {
           amount
           timestamp
-          candidate {
-            name
-          }
+          candidate { name }
+          transaction { id }
+        }
+        unstaked(first: 20, orderBy: timestamp, orderDirection: desc) {
+          amount
+          timestamp
+          candidate { name }
+          transaction { id }
+        }
+        withdrawal(first: 20, orderBy: timestamp, orderDirection: desc) {
+          amount
+          timestamp
+          candidate { name }
+          transaction { id }
         }
       }
     }
@@ -81,6 +102,46 @@ async function fetchUserStaking(
   const totalDeposited = BigInt(user.totalStaked || "0");
   const totalEarnedSeig = BigInt(user.totalEarnedSeig || "0");
 
+  // Build combined event timeline
+  interface RawEvent {
+    amount: string;
+    timestamp: string;
+    candidate: { name: string };
+    transaction?: { id: string };
+  }
+  const events: StakingEvent[] = [];
+
+  for (const s of (user.staked || []) as RawEvent[]) {
+    events.push({
+      type: "stake",
+      amount: formatRay(s.amount),
+      timestamp: s.timestamp,
+      candidateName: s.candidate?.name || "Unknown",
+      transactionHash: s.transaction?.id,
+    });
+  }
+  for (const s of (user.unstaked || []) as RawEvent[]) {
+    events.push({
+      type: "unstake",
+      amount: formatRay(s.amount),
+      timestamp: s.timestamp,
+      candidateName: s.candidate?.name || "Unknown",
+      transactionHash: s.transaction?.id,
+    });
+  }
+  for (const s of (user.withdrawal || []) as RawEvent[]) {
+    events.push({
+      type: "withdrawal",
+      amount: formatRay(s.amount),
+      timestamp: s.timestamp,
+      candidateName: s.candidate?.name || "Unknown",
+      transactionHash: s.transaction?.id,
+    });
+  }
+
+  // Sort by timestamp descending
+  events.sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+
   return {
     totalDeposited,
     totalEarnedSeig,
@@ -93,6 +154,7 @@ async function fetchUserStaking(
         candidateName: s.candidate?.name || "Unknown",
       }),
     ),
+    events,
   };
 }
 

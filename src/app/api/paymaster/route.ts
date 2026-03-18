@@ -254,13 +254,15 @@ export async function POST(request: NextRequest) {
     // Called with final gas values — return definitive guarantor signature
     if (method === "pm_getPaymasterData") {
       const userOp = params?.[0];
-      const sender = userOp?.sender as Address | undefined;
+      const sender = (userOp?.sender ?? userOp?.Sender) as Address | undefined;
+
+      console.log("[Paymaster API] pm_getPaymasterData - sender:", sender, "userOp keys:", userOp ? Object.keys(userOp) : "null");
 
       if (!sender) {
         return NextResponse.json({
           jsonrpc: "2.0",
           id,
-          error: { code: -32602, message: "Missing sender in UserOp" },
+          error: { code: -32602, message: `Missing sender in UserOp. Keys: ${userOp ? Object.keys(userOp).join(",") : "null"}` },
         }, { status: 400 });
       }
       if (!guarantorAccount) {
