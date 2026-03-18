@@ -93,24 +93,6 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          {/* Temp reset button for testing */}
-          <button
-            onClick={() => {
-              if (confirm("Clear all local data and reload?")) {
-                // Preserve Privy keys to avoid SDK crash, clear only app data
-                const keys = Object.keys(localStorage);
-                keys.forEach((key) => {
-                  if (!key.startsWith("privy")) {
-                    localStorage.removeItem(key);
-                  }
-                });
-                window.location.reload();
-              }
-            }}
-            className="px-2 py-1 rounded text-[10px] text-red-400 border border-red-400/30 bg-red-400/5 hover:bg-red-400/10 transition-colors"
-          >
-            RESET
-          </button>
           <div className="hidden sm:block">
             <LanguageToggle />
           </div>
