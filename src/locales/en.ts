@@ -322,7 +322,7 @@ const en = {
     noStakedBalance: "No staked balance on this operator",
     signatureNotice: "Hold on! Tap 'Sign' in the popup to confirm",
     txRejected: "Transaction rejected by user",
-    insufficientTonForGas: "Insufficient TON balance. You need enough TON to cover both the staking amount and gas fee.",
+    insufficientTonForGas: "Wait! Not enough TON for gas~ Lower the amount a bit or use the MAX button!",
     paymasterValidationFailed: "Gas payment validation failed. Please check your TON balance and try again.",
     myStakedPositions: "My Staked Positions",
     estimatedGas: "Est. gas: ~{amount} TON",

@@ -326,7 +326,7 @@ const ko = {
     signatureNotice: "잠깐! 팝업에서 '서명' 버튼을 눌러야 처리가 완료돼요",
     txRejected: "사용자가 트랜잭션을 거부했습니다",
     insufficientTonForGas:
-      "TON 잔액이 부족합니다. 스테이킹 금액과 가스비를 합산한 TON이 필요합니다.",
+      "잠깐! 가스비 낼 TON이 부족해~ 스테이킹 금액을 조금만 줄여주거나 MAX 버튼을 사용해!",
     paymasterValidationFailed:
       "가스비 검증에 실패했습니다. TON 잔액을 확인 후 다시 시도해주세요.",
     myStakedPositions: "내 스테이킹 현황",
