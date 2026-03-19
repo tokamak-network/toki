@@ -301,7 +301,8 @@ export default function VNStakingPanel({
     async function estimate() {
       try {
         const gasPrice = await publicClient.getGasPrice();
-        const gasCostWei = gasPrice * BigInt(600_000);
+        // Mainnet 3-step staking uses ~850k gas; Sepolia 1-step uses ~400k
+        const gasCostWei = gasPrice * (isTestnet ? BigInt(400_000) : BigInt(900_000));
         let gasCostTon: number;
         if (paymasterAddr) {
           const tonAmount = await publicClient.readContract({
@@ -530,7 +531,7 @@ export default function VNStakingPanel({
                   <button
                     onClick={() => {
                       const bal = Number(tonBalance);
-                      const reserve = gasEstimateTon > 0 ? gasEstimateTon * 1.2 : 0;
+                      const reserve = gasEstimateTon > 0 ? gasEstimateTon * 1.5 : 0;
                       const max = Math.max(0, bal - reserve);
                       setAmount(max > 0 ? String(Math.floor(max * 100) / 100) : "0");
                       handleAmountFocus();
