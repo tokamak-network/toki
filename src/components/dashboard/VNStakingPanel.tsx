@@ -355,7 +355,7 @@ export default function VNStakingPanel({
     // Block if staking amount + gas fee exceeds balance
     if (gasEstimateTon > 0) {
       const remaining = Number(tonBalance) - Number(amount);
-      if (remaining < gasEstimateTon) {
+      if (remaining < gasEstimateTon * 1.5) {
         setError(t.dashboard.insufficientTonForGas);
         setVnPhase("error");
         return;
@@ -548,10 +548,18 @@ export default function VNStakingPanel({
               </div>
             </div>
 
+            {/* Gas fee warning */}
+            {amount && Number(amount) > 0 && gasEstimateTon > 0 &&
+              (Number(tonBalance) - Number(amount)) < gasEstimateTon * 1.5 && (
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+                {t.dashboard.insufficientTonForGas}
+              </div>
+            )}
+
             {/* Stake Button */}
             <button
               onClick={handleStake}
-              disabled={staking || !amount || Number(amount) <= 0 || !selectedOp}
+              disabled={staking || !amount || Number(amount) <= 0 || !selectedOp || (gasEstimateTon > 0 && (Number(tonBalance) - Number(amount)) < gasEstimateTon * 1.5)}
               className="w-full py-3.5 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform"
             >
               {staking

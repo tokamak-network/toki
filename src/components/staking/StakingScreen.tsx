@@ -410,7 +410,7 @@ export default function StakingScreen() {
     // Block if staking amount + gas fee exceeds balance
     if (gasEstimateTon > 0) {
       const remaining = Number(tonBalance) - Number(amount);
-      if (remaining < gasEstimateTon) {
+      if (remaining < gasEstimateTon * 1.5) {
         setError(t.dashboard.insufficientTonForGas);
         return;
       }
@@ -951,10 +951,19 @@ export default function StakingScreen() {
                         </div>
                       </div>
 
+                      {/* Gas fee warning in step 2 */}
+                      {amount && Number(amount) > 0 && gasEstimateTon > 0 &&
+                        (Number(tonBalance) - Number(amount)) < gasEstimateTon * 1.5 && (
+                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+                          {t.dashboard.insufficientTonForGas}
+                        </div>
+                      )}
+
                       {amount && Number(amount) > 0 && (
                         <button
                           onClick={() => { setError(null); setTxHash(null); setStep(3); }}
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform"
+                          disabled={gasEstimateTon > 0 && (Number(tonBalance) - Number(amount)) < gasEstimateTon * 1.5}
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform disabled:opacity-40 disabled:hover:scale-100 disabled:cursor-not-allowed"
                         >
                           {t.stakingScreen.nextStep} →
                         </button>
