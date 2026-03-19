@@ -75,8 +75,11 @@ export default function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-400">
-          <a href="#how-it-works" className="hover:text-foreground transition-colors">
-            {t.header.howItWorks}
+          <a href="/onboarding" className="hover:text-foreground transition-colors">
+            {t.header.quests}
+          </a>
+          <a href="/staking" className="hover:text-foreground transition-colors">
+            {t.header.staking}
           </a>
           <a href="/explore" className="hover:text-foreground transition-colors">
             {t.header.explore}
@@ -118,8 +121,11 @@ export default function Header() {
       {mobileOpen && (
         <nav className="sm:hidden border-t border-white/5 bg-background/95 backdrop-blur-md animate-slide-up">
           <div className="px-4 py-4 space-y-3">
-            <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              {t.header.howItWorks}
+            <a href="/onboarding" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
+              {t.header.quests}
+            </a>
+            <a href="/staking" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
+              {t.header.staking}
             </a>
             <a href="/explore" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
               {t.header.explore}

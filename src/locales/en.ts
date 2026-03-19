@@ -1,6 +1,7 @@
 const en = {
   header: {
-    howItWorks: "How It Works",
+    quests: "Quests",
+    staking: "Staking",
     explore: "Ecosystem",
     github: "GitHub",
     connect: "Connect",
@@ -248,8 +249,7 @@ const en = {
     eip7702: "EIP-7702",
     resources: "RESOURCES",
     docs: "Docs",
-    license: "License",
-    termsConditions: "Terms & Conditions",
+    allRightsReserved: "All rights reserved.",
     community: "COMMUNITY",
   },
   cardSection: {

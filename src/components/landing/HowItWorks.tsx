@@ -43,7 +43,7 @@ const miniCharacters: ({ src: string; position: string } | null)[] = [
   // Step 3: Victory celebration, jumping — mobile: inside card top-right, desktop: above card
   {
     src: "/toki-mini-step3.png",
-    position: "right-2 top-2 md:right-auto md:top-auto md:left-1/2 md:-translate-x-1/2 md:top-[-92px] w-[60px] h-[90px] md:w-[95px] md:h-[142px]",
+    position: "right-3 bottom-[-16px] md:right-auto md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:top-[-92px] w-[75px] h-[112px] md:w-[95px] md:h-[142px]",
   },
 ];
 

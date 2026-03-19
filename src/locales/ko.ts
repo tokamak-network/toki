@@ -1,6 +1,7 @@
 const ko = {
   header: {
-    howItWorks: "사용 방법",
+    quests: "퀘스트",
+    staking: "스테이킹",
     explore: "생태계",
     github: "GitHub",
     connect: "연결",
@@ -249,8 +250,7 @@ const ko = {
     eip7702: "EIP-7702",
     resources: "리소스",
     docs: "문서",
-    license: "라이선스",
-    termsConditions: "이용약관",
+    allRightsReserved: "All rights reserved.",
     community: "커뮤니티",
   },
   cardSection: {

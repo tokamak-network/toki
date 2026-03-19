@@ -101,7 +101,7 @@ export default function Footer() {
               </a>
               <span className="text-black/20">|</span>
               <a href="https://tokamak.network" target="_blank" rel="noopener noreferrer" className="text-sm uppercase text-black/60 hover:text-black transition-colors">
-                Tokamak
+                Tokamak Network
               </a>
             </div>
 
@@ -170,11 +170,9 @@ export default function Footer() {
           <p className="text-xs text-black/40 uppercase">
             &copy; {new Date().getFullYear()} Tokamak Network
           </p>
-          <div className="flex items-center gap-4 text-xs text-black/40 uppercase">
-            <a href="#" className="hover:text-black/70 transition-colors">{t.footer.termsConditions}</a>
-            <span className="text-black/20">|</span>
-            <a href="#" className="hover:text-black/70 transition-colors">{t.footer.license}</a>
-          </div>
+          <p className="text-xs text-black/40 uppercase">
+            {t.footer.allRightsReserved}
+          </p>
         </div>
       </div>
     </footer>
