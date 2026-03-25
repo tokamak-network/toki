@@ -409,3 +409,30 @@ body {
   0% { opacity: 0.8; }
   100% { opacity: 0; }
 }
+
+/* ─── Voice / Mic Animations ──────────────────────────────────── */
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(34, 211, 238, 0); }
+}
+
+.animate-mic-pulse { animation: mic-pulse 1.5s ease-in-out infinite; }
+
+/* ─── Toki Talking Animation ──────────────────────────────────── */
+
+@keyframes toki-talking {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.02); }
+}
+
+.animate-toki-talking { animation: toki-talking 0.4s ease-in-out infinite; }
+
+/* ─── Event Mode Animations ──────────────────────────────────── */
+
+@keyframes event-glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.2), 0 0 60px rgba(34, 211, 238, 0.05); }
+  50% { box-shadow: 0 0 40px rgba(34, 211, 238, 0.4), 0 0 80px rgba(34, 211, 238, 0.1); }
+}
+
+.animate-event-glow { animation: event-glow-pulse 2s ease-in-out infinite; }

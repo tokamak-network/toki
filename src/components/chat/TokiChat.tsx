@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
+import { usePrivy } from "@privy-io/react-auth";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 import { useStakingData, replaceApr } from "@/components/providers/StakingDataProvider";
@@ -12,6 +13,12 @@ import {
   getNode,
   matchKeyword,
 } from "@/lib/toki-dialogue";
+import { parseIntent } from "@/lib/toki-intent-parser";
+import { executeAction, type ActionContext } from "@/lib/toki-actions";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import MicButton from "./MicButton";
+import VoiceIndicator from "./VoiceIndicator";
 
 // ─── Constants ────────────────────────────────────────────────────────
 
@@ -125,7 +132,7 @@ function ChatBubble({ onClick, hasNewMessage }: { onClick: () => void; hasNewMes
 
 // ─── Character Display ───────────────────────────────────────────────
 
-function ChatCharacter({ mood }: { mood: Mood }) {
+function ChatCharacter({ mood, isSpeaking }: { mood: Mood; isSpeaking?: boolean }) {
   const [prevMood, setPrevMood] = useState(mood);
   const [transitioning, setTransitioning] = useState(false);
 
@@ -153,7 +160,7 @@ function ChatCharacter({ mood }: { mood: Mood }) {
         height={256}
         className={`relative z-10 w-40 h-44 object-contain object-bottom drop-shadow-lg transition-opacity duration-150 ${
           transitioning ? "opacity-0" : "opacity-100"
-        }`}
+        } ${isSpeaking ? "animate-toki-talking" : ""}`}
       />
     </div>
   );
@@ -223,16 +230,24 @@ function ChoiceButtons({
   );
 }
 
-// ─── Free Text Input ─────────────────────────────────────────────────
+// ─── Free Text Input (with Mic) ─────────────────────────────────────
 
-function TextInput({
+function TextInputWithMic({
   locale,
   onSubmit,
   visible,
+  micSupported,
+  isListening,
+  onMicPress,
+  onMicRelease,
 }: {
   locale: string;
   onSubmit: (text: string) => void;
   visible: boolean;
+  micSupported: boolean;
+  isListening: boolean;
+  onMicPress: () => void;
+  onMicRelease: () => void;
 }) {
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -257,6 +272,13 @@ function TextInput({
           placeholder={locale === "ko" ? "직접 입력..." : "Type a question..."}
           className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-accent-cyan/40 transition-colors"
         />
+        {micSupported && (
+          <MicButton
+            isListening={isListening}
+            onPress={onMicPress}
+            onRelease={onMicRelease}
+          />
+        )}
         <button
           onClick={handleSubmit}
           className="px-3 py-2 rounded-lg bg-accent-cyan/20 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/30 transition-colors"
@@ -318,20 +340,55 @@ function ChatWindow({
   const { trackActivity } = useAchievement();
   const { t } = useTranslation();
   const { apr } = useStakingData();
+  const { login, logout, authenticated, user, exportWallet } = usePrivy();
   const [currentNodeId, setCurrentNodeId] = useState("root");
   const [typingDone, setTypingDone] = useState(false);
   const [key, setKey] = useState(0); // force re-render on node change
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<{ text: string; mood: Mood; videoKey?: string } | null>(null);
 
+  // Voice hooks
+  const { speak, isSpeaking, isSupported: ttsSupported, ttsEnabled, setTtsEnabled } = useSpeechSynthesis({ locale });
+
+  const handleVoiceResult = useCallback((transcript: string) => {
+    handleFreeText(transcript);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { transcript, isListening, isSupported: micSupported, startListening, stopListening } =
+    useSpeechRecognition({ locale, onResult: handleVoiceResult });
+
   const handleTypingComplete = useCallback(() => {
     setTypingDone(true);
   }, []);
+
+  // TTS: speak response when typing completes
+  const lastSpokenRef = useRef<string>("");
+  useEffect(() => {
+    if (typingDone && ttsEnabled) {
+      const textToSpeak = aiResponse?.text || "";
+      if (textToSpeak && textToSpeak !== lastSpokenRef.current) {
+        lastSpokenRef.current = textToSpeak;
+        speak(textToSpeak);
+      }
+    }
+  }, [typingDone, ttsEnabled, aiResponse, speak]);
 
   const node = getNode(currentNodeId);
   if (!node) return null;
 
   const rootNode = getNode("root");
+
+  // Build action context for intent execution
+  const actionCtx: ActionContext = {
+    login,
+    logout,
+    isAuthenticated: authenticated,
+    navigateTo: (path: string) => router.push(path),
+    locale,
+    exportWallet: exportWallet || undefined,
+    userAddress: user?.wallet?.address,
+  };
 
   // Determine what to display: AI response overrides node text
   const displayMood = aiLoading ? "thinking" : aiResponse ? aiResponse.mood : node.mood;
@@ -364,14 +421,41 @@ function ChatWindow({
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleFreeText = async (input: string) => {
     trackActivity("chat-freetext");
+
+    // Phase 1: Try intent parsing first
+    const intent = parseIntent(input);
+    if (intent) {
+      const result = executeAction(intent, actionCtx);
+      const text = locale === "ko" ? result.textKo : result.textEn;
+
+      setAiLoading(false);
+      setAiResponse({ text, mood: result.mood });
+      setTypingDone(false);
+      setKey((k) => k + 1);
+
+      // Execute side effect
+      if (result.sideEffect) {
+        setTimeout(() => result.sideEffect?.(), 500);
+      }
+
+      // Navigate after showing message
+      if (result.navigateAfter) {
+        setTimeout(() => router.push(result.navigateAfter!), 2000);
+      }
+      return;
+    }
+
+    // Existing: try keyword matching
     const matched = matchKeyword(input);
     if (matched) {
       handleChoiceSelect(matched);
       return;
     }
-    // AI call
+
+    // Fallback: AI call
     setAiLoading(true);
     setAiResponse(null);
     setTypingDone(false);
@@ -406,24 +490,50 @@ function ChatWindow({
             online
           </span>
         </div>
-        <button
-          onClick={onClose}
-          className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-colors"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-1">
+          {/* TTS toggle */}
+          {ttsSupported && (
+            <button
+              onClick={() => setTtsEnabled(!ttsEnabled)}
+              className={`w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors ${
+                ttsEnabled ? "text-accent-cyan" : "text-gray-500"
+              }`}
+              aria-label={ttsEnabled ? t.voice.ttsMute : t.voice.ttsUnmute}
+              title={ttsEnabled ? t.voice.ttsMute : t.voice.ttsUnmute}
+            >
+              {ttsEnabled ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                  <path d="M11 5L6 9H2v6h4l5 4V5z" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                  <path d="M11 5L6 9H2v6h4l5 4V5z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" />
+                </svg>
+              )}
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-colors"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Character */}
       <div className="bg-gradient-to-b from-black/40 to-transparent">
-        <ChatCharacter mood={displayMood} />
+        <ChatCharacter mood={displayMood} isSpeaking={isSpeaking} />
       </div>
 
       {/* Dialogue */}
       <div className="border-t border-white/5 bg-black/30 flex-1 overflow-y-auto">
         <DialogueDisplay key={key} text={displayText} onComplete={handleTypingComplete} />
+
+        {/* Voice indicator */}
+        <VoiceIndicator transcript={transcript} isListening={isListening} locale={locale} />
 
         {/* Video suggestion — show after AI typing completes */}
         {aiResponse?.videoKey && typingDone && (
@@ -448,9 +558,17 @@ function ChatWindow({
           />
         )}
 
-        {/* Free text input — show when choices are visible */}
+        {/* Free text input with mic — show when choices are visible */}
         {!isNavNode && !aiLoading && (
-          <TextInput locale={locale} onSubmit={handleFreeText} visible={typingDone} />
+          <TextInputWithMic
+            locale={locale}
+            onSubmit={handleFreeText}
+            visible={typingDone}
+            micSupported={micSupported}
+            isListening={isListening}
+            onMicPress={startListening}
+            onMicRelease={stopListening}
+          />
         )}
       </div>
     </div>
