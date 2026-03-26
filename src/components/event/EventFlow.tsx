@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
-import { parseIntent } from "@/lib/toki-intent-parser";
 import EventCharacter from "./EventCharacter";
 import QRDisplay from "./QRDisplay";
 import MicButton from "@/components/chat/MicButton";
@@ -34,29 +33,19 @@ export default function EventFlow() {
 
   const { speak, isSpeaking, ttsEnabled, setTtsEnabled } = useSpeechSynthesis({ locale });
 
-  const handleVoiceResult = useCallback(
-    (transcript: string) => {
-      if (state !== "listening") return;
-      setState("processing");
+  const { transcript, finalTranscript, isListening, isSupported, startListening, stopListening } =
+    useSpeechRecognition({ locale });
 
-      const intent = parseIntent(transcript);
-      if (intent?.category === "wallet" && intent.action === "login") {
-        setState("wallet_create");
-        login();
-      } else {
-        // Any voice input triggers the wallet creation flow in event mode
-        setState("wallet_create");
-        login();
-      }
-    },
-    [state, login],
-  );
-
-  const { transcript, isListening, isSupported, startListening, stopListening } =
-    useSpeechRecognition({
-      locale,
-      onResult: handleVoiceResult,
-    });
+  // Watch finalTranscript — any voice input triggers wallet creation in event mode
+  const lastProcessedRef = useRef<string>("");
+  useEffect(() => {
+    if (finalTranscript && finalTranscript !== lastProcessedRef.current && state === "listening") {
+      lastProcessedRef.current = finalTranscript;
+      setState("wallet_create");
+      login();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finalTranscript]);
 
   // Watch for authentication completion
   useEffect(() => {
@@ -126,16 +115,12 @@ export default function EventFlow() {
     setError(null);
   };
 
-  const handleMicPress = () => {
-    if (state === "idle") {
-      setState("listening");
-      startListening();
-    }
-  };
-
-  const handleMicRelease = () => {
+  const handleMicToggle = () => {
     if (isListening) {
       stopListening();
+    } else if (state === "idle" || state === "listening") {
+      setState("listening");
+      startListening();
     }
   };
 
@@ -196,8 +181,7 @@ export default function EventFlow() {
               <div className="mt-4">
                 <MicButton
                   isListening={isListening}
-                  onPress={handleMicPress}
-                  onRelease={handleMicRelease}
+                  onClick={handleMicToggle}
                   className="!w-20 !h-20 !rounded-full"
                 />
               </div>
@@ -223,8 +207,7 @@ export default function EventFlow() {
             </p>
             <MicButton
               isListening={isListening}
-              onPress={handleMicPress}
-              onRelease={handleMicRelease}
+              onClick={handleMicToggle}
               className="!w-20 !h-20 !rounded-full"
             />
           </div>

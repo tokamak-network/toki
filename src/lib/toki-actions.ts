@@ -3,6 +3,15 @@
 import type { Mood } from "./toki-dialogue";
 import type { ParsedIntent } from "./toki-intents";
 
+/** Inline action button shown in chat messages */
+export interface ChatActionButton {
+  id: string;
+  labelKo: string;
+  labelEn: string;
+  variant?: "primary" | "secondary" | "danger";
+  params?: Record<string, string>;
+}
+
 /** Context provided by the chat component */
 export interface ActionContext {
   login: () => void;
@@ -23,6 +32,8 @@ export interface ActionResult {
   navigateAfter?: string;
   /** If set, call this function after displaying the message */
   sideEffect?: () => void;
+  /** Inline action buttons rendered below the message */
+  actions?: ChatActionButton[];
 }
 
 /**
@@ -63,19 +74,24 @@ function handleWallet(intent: ParsedIntent, ctx: ActionContext): ActionResult {
         };
       }
       return {
-        textKo: "좋아! 지금 바로 로그인 창을 열어줄게!",
-        textEn: "Let's do it! Opening the login screen for you!",
+        textKo: "좋아! 아래 버튼을 누르면 바로 지갑을 만들 수 있어!",
+        textEn: "Click the button below to create your wallet!",
         mood: "excited",
-        sideEffect: () => ctx.login(),
+        actions: [{
+          id: "privy-login",
+          labelKo: "Google로 시작하기",
+          labelEn: "Sign in with Google",
+          variant: "primary",
+        }],
       };
 
     case "exportKey":
       if (!ctx.isAuthenticated) {
         return {
-          textKo: "먼저 로그인이 필요해! 로그인할까?",
-          textEn: "You need to log in first! Shall I open login?",
+          textKo: "먼저 로그인이 필요해!",
+          textEn: "You need to log in first!",
           mood: "confused",
-          sideEffect: () => ctx.login(),
+          actions: [{ id: "privy-login", labelKo: "로그인", labelEn: "Sign in", variant: "primary" }],
         };
       }
       if (ctx.exportWallet) {
@@ -96,23 +112,70 @@ function handleWallet(intent: ParsedIntent, ctx: ActionContext): ActionResult {
     case "showAddress":
       if (!ctx.isAuthenticated) {
         return {
-          textKo: "먼저 로그인해서 지갑을 만들어야 해!",
-          textEn: "You need to log in first to create a wallet!",
+          textKo: "먼저 로그인이 필요해!",
+          textEn: "You need to log in first!",
           mood: "explain",
-          sideEffect: () => ctx.login(),
+          actions: [{ id: "privy-login", labelKo: "로그인", labelEn: "Sign in", variant: "primary" }],
         };
       }
       if (ctx.userAddress) {
+        const short = `${ctx.userAddress.slice(0, 8)}...${ctx.userAddress.slice(-6)}`;
         return {
-          textKo: `네 지갑 주소야: ${ctx.userAddress.slice(0, 8)}...${ctx.userAddress.slice(-6)}. 대시보드에서 복사할 수 있어!`,
-          textEn: `Here's your address: ${ctx.userAddress.slice(0, 8)}...${ctx.userAddress.slice(-6)}. You can copy it from the dashboard!`,
+          textKo: `네 지갑 주소야: ${short}`,
+          textEn: `Here's your address: ${short}`,
           mood: "pointing",
-          navigateAfter: "/dashboard",
+          actions: [{ id: "copy-address", labelKo: "주소 복사", labelEn: "Copy Address", variant: "primary", params: { address: ctx.userAddress } }],
         };
       }
       return {
         textKo: "대시보드에서 지갑 주소를 확인할 수 있어!",
         textEn: "You can check your wallet address on the dashboard!",
+        mood: "pointing",
+        navigateAfter: "/dashboard",
+      };
+
+    case "logout":
+      if (!ctx.isAuthenticated) {
+        return {
+          textKo: "아직 로그인하지 않았어!",
+          textEn: "You're not logged in yet!",
+          mood: "confused",
+        };
+      }
+      return {
+        textKo: "정말 로그아웃할 거야?",
+        textEn: "Are you sure you want to log out?",
+        mood: "worried",
+        actions: [
+          { id: "confirm-logout", labelKo: "로그아웃", labelEn: "Log Out", variant: "danger" },
+          { id: "cancel-action", labelKo: "취소", labelEn: "Cancel", variant: "secondary" },
+        ],
+      };
+
+    case "balance":
+      if (!ctx.isAuthenticated) {
+        return {
+          textKo: "먼저 로그인이 필요해!",
+          textEn: "You need to log in first!",
+          mood: "explain",
+          actions: [{ id: "privy-login", labelKo: "로그인", labelEn: "Sign in", variant: "primary" }],
+        };
+      }
+      if (ctx.tonBalance) {
+        const bal = Number(ctx.tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 });
+        return {
+          textKo: `현재 TON 잔액: ${bal} TON`,
+          textEn: `Current TON balance: ${bal} TON`,
+          mood: "pointing",
+          actions: [
+            { id: "start-staking-flow", labelKo: "스테이킹 시작", labelEn: "Start Staking", variant: "primary" },
+            { id: "refresh-balance", labelKo: "새로고침", labelEn: "Refresh", variant: "secondary" },
+          ],
+        };
+      }
+      return {
+        textKo: "대시보드에서 잔액을 확인할 수 있어!",
+        textEn: "You can check your balance on the dashboard!",
         mood: "pointing",
         navigateAfter: "/dashboard",
       };
@@ -151,17 +214,17 @@ function handleStaking(intent: ParsedIntent, ctx: ActionContext): ActionResult {
     case "start":
       if (!ctx.isAuthenticated) {
         return {
-          textKo: "스테이킹하려면 먼저 로그인이 필요해! 로그인할까?",
-          textEn: "You need to log in first to stake! Shall I open login?",
+          textKo: "스테이킹하려면 먼저 로그인이 필요해!",
+          textEn: "You need to log in to stake!",
           mood: "explain",
-          sideEffect: () => ctx.login(),
+          actions: [{ id: "privy-login", labelKo: "로그인", labelEn: "Sign in", variant: "primary" }],
         };
       }
       return {
-        textKo: "좋아! 스테이킹 페이지로 이동할게!",
-        textEn: "Let's go! Taking you to the staking page!",
-        mood: "determined",
-        navigateAfter: "/staking",
+        textKo: "좋아! 내가 제일 좋은 오퍼레이터를 찾아서 스테이킹 도와줄게!",
+        textEn: "I'll find the best operator and help you stake!",
+        mood: "excited",
+        actions: [{ id: "start-staking-flow", labelKo: "스테이킹 시작", labelEn: "Start Staking", variant: "primary" }],
       };
 
     case "unstake":
@@ -205,6 +268,18 @@ function handleNavigation(intent: ParsedIntent): ActionResult {
       path: "/explore",
       mood: "proud",
     },
+    collection: {
+      ko: "카드 컬렉션을 보여줄게! 어떤 카드를 모았는지 확인해봐~",
+      en: "Let me show you your card collection! Check what you've collected~",
+      path: "/collection",
+      mood: "excited",
+    },
+    staking: {
+      ko: "스테이킹 페이지로 이동할게!",
+      en: "Taking you to the staking page!",
+      path: "/staking",
+      mood: "determined",
+    },
   };
 
   const route = routes[intent.action];
@@ -239,8 +314,8 @@ function handleInfo(intent: ParsedIntent): ActionResult {
 
     case "help":
       return {
-        textKo: "이런 것들을 할 수 있어! 지갑 만들기, 스테이킹, 보상 확인, 생태계 탐험... 뭐든 물어봐~",
-        textEn: "I can help with: wallet creation, staking, checking rewards, exploring the ecosystem... Ask me anything~",
+        textKo: "이런 것들을 할 수 있어!\n• 로그인 / 로그아웃\n• 지갑 주소 보기 / 복사\n• 잔액 확인\n• 스테이킹 시작 / 언스테이킹\n• 보상 확인\n• 비밀키 내보내기\n• 대시보드 / 컬렉션 / 생태계 이동\n뭐든 물어봐~",
+        textEn: "I can help with:\n• Login / Logout\n• View / Copy wallet address\n• Check balance\n• Start staking / Unstaking\n• Check rewards\n• Export private key\n• Navigate to Dashboard / Collection / Ecosystem\nAsk me anything~",
         mood: "cheer",
       };
 

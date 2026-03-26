@@ -31,7 +31,17 @@ function extractAmount(input: string): Record<string, string> {
 // ─── Intent Patterns (order matters: more specific first) ────────────
 
 export const INTENT_PATTERNS: IntentPattern[] = [
-  // ─── Wallet intents ───
+  // ─── Wallet intents (logout MUST come before login to avoid 로그아웃 matching 로그인) ───
+  {
+    category: "wallet",
+    action: "logout",
+    patterns: [
+      /로그아웃/i, /로그\s*아웃/i, /연결\s*해제/i, /연결\s*끊/i,
+      /지갑\s*연결\s*해제/i, /지갑\s*끊/i, /접속\s*해제/i, /나가/i,
+      /log\s*out/i, /logout/i, /sign\s*out/i, /signout/i,
+      /disconnect/i, /disconnect\s*wallet/i,
+    ],
+  },
   {
     category: "wallet",
     action: "login",
@@ -55,7 +65,18 @@ export const INTENT_PATTERNS: IntentPattern[] = [
     action: "showAddress",
     patterns: [
       /내\s*주소/i, /지갑\s*주소/i, /주소\s*알려/i, /주소\s*보여/i,
-      /my\s*address/i, /wallet\s*address/i, /show\s*address/i,
+      /주소\s*복사/i, /주소\s*보내/i,
+      /my\s*address/i, /wallet\s*address/i, /show\s*address/i, /copy\s*address/i,
+    ],
+  },
+  {
+    category: "wallet",
+    action: "balance",
+    patterns: [
+      /잔액/i, /잔고/i, /얼마\s*있/i, /얼마나\s*있/i, /내\s*잔액/i,
+      /내\s*TON/i, /내\s*톤/i, /지갑\s*잔액/i, /토큰\s*잔액/i,
+      /balance/i, /my\s*balance/i, /how\s*much\s*do\s*i\s*have/i,
+      /check\s*balance/i, /show\s*balance/i,
     ],
   },
 
@@ -90,20 +111,20 @@ export const INTENT_PATTERNS: IntentPattern[] = [
   },
   {
     category: "staking",
+    action: "unstake",
+    patterns: [
+      /언스테이킹/i, /스테이킹\s*해제/i, /출금/i, /인출/i,
+      /unstake/i, /withdraw/i, /claim/i,
+    ],
+  },
+  {
+    category: "staking",
     action: "start",
     patterns: [
       /스테이킹\s*시작/i, /스테이킹\s*하고/i, /스테이킹\s*해/i, /스테이킹\s*할래/i,
       /스테이킹해/i, /스테이킹하러/i, /바로\s*스테이킹/i,
       /start\s*staking/i, /want\s*to\s*stake/i, /let\s*me\s*stake/i,
       /begin\s*staking/i, /do\s*staking/i, /stake\s*now/i,
-    ],
-  },
-  {
-    category: "staking",
-    action: "unstake",
-    patterns: [
-      /언스테이킹/i, /스테이킹\s*해제/i, /출금/i, /인출/i,
-      /unstake/i, /withdraw/i, /claim/i,
     ],
   },
   {
@@ -140,6 +161,22 @@ export const INTENT_PATTERNS: IntentPattern[] = [
       /explore/i, /ecosystem/i,
     ],
   },
+  {
+    category: "navigation",
+    action: "collection",
+    patterns: [
+      /컬렉션/i, /카드\s*보/i, /내\s*카드/i, /카드\s*모음/i, /업적/i,
+      /collection/i, /my\s*cards/i, /show\s*cards/i, /achievements/i,
+    ],
+  },
+  {
+    category: "navigation",
+    action: "staking",
+    patterns: [
+      /스테이킹\s*페이지/i, /스테이킹\s*화면/i,
+      /staking\s*page/i, /go\s*to\s*staking/i,
+    ],
+  },
 
   // ─── Event intents ───
   {
@@ -164,8 +201,8 @@ export const INTENT_PATTERNS: IntentPattern[] = [
     category: "info",
     action: "help",
     patterns: [
-      /도와/i, /도움/i, /뭐\s*할\s*수\s*있/i, /메뉴/i,
-      /help/i, /what\s*can\s*you\s*do/i, /menu/i,
+      /도와/i, /도움/i, /뭐\s*할\s*수\s*있/i, /메뉴/i, /기능/i,
+      /help/i, /what\s*can\s*you\s*do/i, /menu/i, /commands/i, /features/i,
     ],
   },
 ];
