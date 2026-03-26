@@ -31,16 +31,45 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://toki.tokamak.network";
+
 export const metadata: Metadata = {
-  title: "Toki - TON Staking Made Easy",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Toki - TON Staking Made Easy",
+    template: "%s | Toki",
+  },
   description:
     "Stake your TON with one click. Earn seigniorage rewards with 20%+ APR. No MetaMask, no ETH gas fees, no complexity.",
-  keywords: ["TON", "Tokamak Network", "Staking", "Seigniorage", "DeFi"],
+  keywords: ["TON", "Tokamak Network", "Staking", "Seigniorage", "DeFi", "Web3", "Crypto"],
   manifest: "/manifest.webmanifest",
   openGraph: {
     title: "Toki - TON Staking Made Easy",
     description: "Stake your TON with one click. Earn 20%+ APR seigniorage rewards.",
+    url: siteUrl,
+    siteName: "Toki",
     type: "website",
+    locale: "ko_KR",
+    alternateLocale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Toki - TON Staking Made Easy",
+    description: "Stake your TON with one click. Earn 20%+ APR seigniorage rewards.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: siteUrl,
   },
 };
 
@@ -85,6 +114,31 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-grid min-h-screen`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Toki",
+              url: siteUrl,
+              description:
+                "Stake your TON with one click. Earn seigniorage rewards with 20%+ APR.",
+              applicationCategory: "FinanceApplication",
+              operatingSystem: "Web",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              creator: {
+                "@type": "Organization",
+                name: "Tokamak Network",
+                url: "https://tokamak.network",
+              },
+            }),
+          }}
+        />
         <LanguageProvider>
           <AudioProvider>
             <PrivyClientProvider>
