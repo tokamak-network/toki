@@ -5,7 +5,9 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://toki.tokamak.network";
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://toki.tokamak.network");
 
   return new ImageResponse(
     (
