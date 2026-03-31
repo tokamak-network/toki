@@ -50,6 +50,8 @@ export const INTENT_PATTERNS: IntentPattern[] = [
       /로그인/i, /회원가입/i, /가입/i,
       /create\s*wallet/i, /make\s*wallet/i, /create\s*account/i,
       /sign\s*up/i, /log\s*in/i, /login/i,
+      // STT misrecognition variants
+      /logan/i,
     ],
   },
   {
@@ -77,6 +79,8 @@ export const INTENT_PATTERNS: IntentPattern[] = [
       /내\s*TON/i, /내\s*톤/i, /지갑\s*잔액/i, /토큰\s*잔액/i,
       /balance/i, /my\s*balance/i, /how\s*much\s*do\s*i\s*have/i,
       /check\s*balance/i, /show\s*balance/i,
+      // STT misrecognition variants
+      /자격\s*확인/i,
     ],
   },
 
@@ -99,6 +103,8 @@ export const INTENT_PATTERNS: IntentPattern[] = [
       /토키\s*픽/i, /토키\s*추천/i, /토키\s*골라/i, /토키가\s*골라/i,
       /추천\s*해/i, /골라\s*줘/i,
       /toki\s*pick/i, /recommend/i, /pick\s*for\s*me/i, /choose\s*for\s*me/i,
+      // STT misrecognition variants
+      /투키\s*추천/i, /t\w{1,5}[iy]\s*pick/i, /t\w{2,6}pick/i,
     ],
   },
   {
@@ -125,6 +131,8 @@ export const INTENT_PATTERNS: IntentPattern[] = [
       /스테이킹해/i, /스테이킹하러/i, /바로\s*스테이킹/i,
       /start\s*staking/i, /want\s*to\s*stake/i, /let\s*me\s*stake/i,
       /begin\s*staking/i, /do\s*staking/i, /stake\s*now/i,
+      // STT misrecognition variants (spacing issues in Korean STT)
+      /스테이\s*긴?\s*시작/i, /스테이\s*킹\s*시작/i,
     ],
   },
   {
@@ -143,6 +151,8 @@ export const INTENT_PATTERNS: IntentPattern[] = [
     patterns: [
       /대시보드/i, /홈/i,
       /dashboard/i, /home/i, /go\s*home/i,
+      // STT misrecognition variants
+      /다시\s*보[드트]/i, /대시\s*보드/i,
     ],
   },
   {
@@ -203,6 +213,8 @@ export const INTENT_PATTERNS: IntentPattern[] = [
     patterns: [
       /도와/i, /도움/i, /뭐\s*할\s*수\s*있/i, /메뉴/i, /기능/i,
       /help/i, /what\s*can\s*you\s*do/i, /menu/i, /commands/i, /features/i,
+      // STT misrecognition variants
+      /held/i,
     ],
   },
 ];
