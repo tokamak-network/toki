@@ -46,9 +46,12 @@ export const INTENT_PATTERNS: IntentPattern[] = [
     category: "wallet",
     action: "login",
     patterns: [
-      /지갑\s*만들/i, /지갑\s*생성/i, /계정\s*만들/i, /계정\s*생성/i,
+      /지갑.*만들/i, /지갑.*만드/i, /지갑.*생성/i, /계정.*만들/i, /계정.*만드/i, /계정.*생성/i,
       /로그인/i, /회원가입/i, /가입/i,
-      /create\s*wallet/i, /make\s*wallet/i, /create\s*account/i,
+      /시작하려면/i, /어떻게\s*시작/i, /처음.*어떻게/i,
+      /월렛.*만들/i,
+      /create.*wallet/i, /make.*wallet/i, /create.*account/i,
+      /how.*wallet/i, /how.*sign\s*up/i, /how.*start/i,
       /sign\s*up/i, /log\s*in/i, /login/i,
       // STT misrecognition variants
       /logan/i,
@@ -79,6 +82,10 @@ export const INTENT_PATTERNS: IntentPattern[] = [
       /내\s*TON/i, /내\s*톤/i, /지갑\s*잔액/i, /토큰\s*잔액/i,
       /balance/i, /my\s*balance/i, /how\s*much\s*do\s*i\s*have/i,
       /check\s*balance/i, /show\s*balance/i,
+      // Natural conversational patterns (일반인이 쓰는 자연어)
+      /톤\s*몇\s*개/i, /톤\s*얼마/i, /톤\s*있/i,
+      /가지고\s*있는\s*톤/i, /내\s*톤\s*몇/i, /보유/i,
+      /how\s*many\s*ton/i, /how\s*much\s*ton/i, /my\s*ton/i,
       // STT misrecognition variants
       /자격\s*확인/i,
     ],

@@ -656,7 +656,14 @@ function ChatWindow({
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input, locale }),
+        body: JSON.stringify({
+          message: input,
+          locale,
+          userContext: {
+            isAuthenticated: authenticated,
+            address: user?.wallet?.address,
+          },
+        }),
       });
       const data = await res.json();
       setAiLoading(false);
@@ -723,7 +730,7 @@ function ChatWindow({
 
   // ── Container classes
   const containerClass = fullScreen
-    ? "fixed inset-0 sm:inset-4 z-[60] rounded-none sm:rounded-2xl overflow-hidden border-0 sm:border border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/50 flex flex-col"
+    ? "fixed inset-0 sm:inset-4 z-[60] rounded-none sm:rounded-2xl overflow-hidden border-0 sm:border border-white/10 bg-background backdrop-blur-none shadow-2xl shadow-black/50 flex flex-col"
     : "w-80 sm:w-96 rounded-2xl overflow-hidden border border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/50 animate-slide-up-fade flex flex-col max-h-[560px]";
 
   return (
@@ -740,7 +747,7 @@ function ChatWindow({
           {ttsSupported && (
             <button
               onClick={() => setTtsEnabled(!ttsEnabled)}
-              className={`w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors ${ttsEnabled ? "text-accent-cyan" : "text-gray-500"}`}
+              className={`w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors ${ttsEnabled ? "text-accent-cyan" : "text-gray-300"}`}
               aria-label={ttsEnabled ? t.voice.ttsMute : t.voice.ttsUnmute}
             >
               {ttsEnabled ? (
@@ -757,7 +764,7 @@ function ChatWindow({
           {/* Expand / Collapse */}
           <button
             onClick={() => setFullScreen(!fullScreen)}
-            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
             aria-label={fullScreen ? "Collapse" : "Expand"}
           >
             {fullScreen ? (
@@ -773,7 +780,7 @@ function ChatWindow({
           {/* Close */}
           <button
             onClick={onClose}
-            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />

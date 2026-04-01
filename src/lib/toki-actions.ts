@@ -119,10 +119,9 @@ function handleWallet(intent: ParsedIntent, ctx: ActionContext): ActionResult {
         };
       }
       if (ctx.userAddress) {
-        const short = `${ctx.userAddress.slice(0, 8)}...${ctx.userAddress.slice(-6)}`;
         return {
-          textKo: `네 지갑 주소야: ${short}`,
-          textEn: `Here's your address: ${short}`,
+          textKo: `네 지갑 주소야: ${ctx.userAddress}`,
+          textEn: `Here's your address: ${ctx.userAddress}`,
           mood: "pointing",
           actions: [{ id: "copy-address", labelKo: "주소 복사", labelEn: "Copy Address", variant: "primary", params: { address: ctx.userAddress } }],
         };

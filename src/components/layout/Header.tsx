@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { isTestnet } from "@/lib/chain";
 
 const ConnectButton = dynamic(() => import("./ConnectButton"), {
   ssr: false,
@@ -71,6 +72,11 @@ export default function Header() {
             className="w-[60px] h-auto"
             priority
           />
+          {isTestnet && (
+            <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 leading-none">
+              TESTNET
+            </span>
+          )}
         </a>
 
         {/* Desktop Nav */}
