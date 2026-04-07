@@ -964,6 +964,7 @@ function ChatWindow({
 // ─── Main Component ──────────────────────────────────────────────────
 
 const HIDDEN_PATHS_MOBILE = ["/onboarding", "/staking"];
+const HIDDEN_PATHS_ALL = ["/lottery"];
 
 export default function TokiChat() {
   const [open, setOpen] = useState(false);
@@ -977,6 +978,9 @@ export default function TokiChat() {
     }
     setOpen(!open);
   };
+
+  // Hide completely on lottery pages (has its own chat UI)
+  if (HIDDEN_PATHS_ALL.some((p) => pathname.startsWith(p))) return null;
 
   // Hide on mobile for pages with their own dialogue UI
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
