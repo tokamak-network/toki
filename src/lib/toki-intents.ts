@@ -86,6 +86,8 @@ export const INTENT_PATTERNS: IntentPattern[] = [
       /톤\s*몇\s*개/i, /톤\s*얼마/i, /톤\s*있/i,
       /가지고\s*있는\s*톤/i, /내\s*톤\s*몇/i, /보유/i,
       /how\s*many\s*ton/i, /how\s*much\s*ton/i, /my\s*ton/i,
+      // Conversational holding patterns
+      /톤.*들고/i, /들고\s*있/i,
       // STT misrecognition variants
       /자격\s*확인/i,
     ],

@@ -88,7 +88,7 @@ export default function LotteryOnboarding({ onComplete }: LotteryOnboardingProps
     return (
       <div className="flex flex-col items-center text-center space-y-6 animate-fade-in">
         <Image
-          src="/toki-welcome.png"
+          src="/characters/toki-welcome.png"
           alt="Toki"
           width={160}
           height={160}
@@ -122,7 +122,7 @@ export default function LotteryOnboarding({ onComplete }: LotteryOnboardingProps
     return (
       <div className="flex flex-col items-center text-center space-y-6 animate-fade-in" key={slideIndex}>
         <Image
-          src={`/toki-${slide.mood}.png`}
+          src={`/characters/toki-${slide.mood}.png`}
           alt="Toki"
           width={160}
           height={160}
@@ -189,7 +189,7 @@ export default function LotteryOnboarding({ onComplete }: LotteryOnboardingProps
   return (
     <div className="flex flex-col items-center text-center space-y-6 animate-fade-in">
       <Image
-        src="/toki-cheer.png"
+        src="/characters/toki-cheer.png"
         alt="Toki"
         width={160}
         height={160}

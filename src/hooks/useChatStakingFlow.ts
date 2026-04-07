@@ -149,6 +149,102 @@ export function useChatStakingFlow(deps: UseChatStakingFlowDeps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userAddress, t]);
 
+  /** Start flow with a pre-set amount — skips ask-amount, goes straight to confirm */
+  const startWithAmount = useCallback(async (amount: string): Promise<FlowMessage[]> => {
+    if (!userAddress) return [];
+
+    setStep("fetching-data");
+
+    const messages: FlowMessage[] = [{
+      text: t.chatActions.fetchingOperators,
+      mood: "thinking",
+    }];
+
+    try {
+      const [operators, balance] = await Promise.all([
+        fetchTopOperators(),
+        fetchTonBalance(userAddress as `0x${string}`),
+      ]);
+
+      const best = tokiPick(operators);
+      operatorRef.current = best;
+      balanceRef.current = balance;
+
+      if (!best) {
+        setStep("idle");
+        return [...messages, { text: t.chatActions.errorGeneric, mood: "confused" as Mood }];
+      }
+
+      const balNum = Number(balance);
+      if (balNum <= 0) {
+        setStep("idle");
+        return [...messages, { text: t.chatActions.noBalance, mood: "explain" as Mood }];
+      }
+
+      const inputAmount = Number(amount);
+      const gasReserve = 2;
+      const maxAmount = Math.max(0, balNum - gasReserve);
+
+      if (inputAmount > maxAmount) {
+        setStep("ask-amount");
+        return [
+          ...messages,
+          {
+            text: t.chatActions.exceedsBalance.replace("{max}", maxAmount.toFixed(2)),
+            mood: "worried" as Mood,
+            actions: [
+              { id: "stake-max", labelKo: t.chatActions.stakeAllButton, labelEn: t.chatActions.stakeAllButton, variant: "primary" as const },
+              { id: "staking-cancel", labelKo: t.chatActions.cancelButton, labelEn: t.chatActions.cancelButton, variant: "secondary" as const },
+            ],
+          },
+        ];
+      }
+
+      if (inputAmount <= 0) {
+        setStep("ask-amount");
+        const askMsg = t.chatActions.askAmount
+          .replace("{balance}", balNum.toLocaleString("en-US", { maximumFractionDigits: 2 }));
+        return [...messages, { text: t.chatActions.invalidAmount, mood: "confused" as Mood }, { text: askMsg, mood: "explain" as Mood }];
+      }
+
+      // Valid amount — show operator info and go to confirm
+      amountRef.current = amount;
+      setStep("confirm");
+
+      const rateStr = best.commissionRate.toFixed(1);
+      const resultMsg = t.chatActions.tokiPickResult
+        .replace("{name}", best.name)
+        .replace("{rate}", rateStr);
+
+      const confirmText = t.chatActions.confirmStake
+        .replace("{amount}", amount)
+        .replace("{operator}", best.name);
+
+      return [
+        ...messages,
+        { text: resultMsg, mood: "cheer" as Mood },
+        {
+          text: confirmText,
+          mood: "determined" as Mood,
+          actions: [
+            {
+              id: "confirm-stake",
+              labelKo: locale === "ko" ? `${amount} TON 스테이킹` : `Stake ${amount} TON`,
+              labelEn: `Stake ${amount} TON`,
+              variant: "primary" as const,
+            },
+            { id: "staking-cancel", labelKo: t.chatActions.cancelButton, labelEn: t.chatActions.cancelButton, variant: "secondary" as const },
+          ],
+        },
+      ];
+    } catch (e) {
+      console.error("Staking flow fetch error:", e);
+      setStep("idle");
+      return [...messages, { text: t.chatActions.errorGeneric, mood: "worried" as Mood }];
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userAddress, t, locale]);
+
   const handleAction = useCallback(async (actionId: string): Promise<FlowMessage[]> => {
     const operator = operatorRef.current;
     const balance = balanceRef.current;
@@ -368,6 +464,7 @@ export function useChatStakingFlow(deps: UseChatStakingFlowDeps) {
   return {
     isActive,
     start,
+    startWithAmount,
     handleAction,
     handleTextInput,
     reset,

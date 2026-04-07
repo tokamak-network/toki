@@ -15,7 +15,7 @@ export default function ClaimChoice({ tier, onChoose, loading }: ClaimChoiceProp
   return (
     <div className="flex flex-col items-center text-center space-y-6 animate-fade-in">
       <Image
-        src="/toki-presenting.png"
+        src="/characters/toki-presenting.png"
         alt="Toki"
         width={140}
         height={140}

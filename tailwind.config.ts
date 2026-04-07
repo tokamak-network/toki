@@ -49,6 +49,12 @@ const config: Config = {
         "character-entrance": "characterEntrance 0.7s ease-out forwards",
         "coin-drop": "coinDrop 2s ease-in forwards",
         "card-shuffle": "cardShuffle 0.5s ease-in-out",
+        wiggle: "wiggle 0.5s ease-in-out 3",
+        "fade-in-up": "fadeInUp 0.3s ease-out",
+        "orb-float-1": "orbFloat1 12s ease-in-out infinite",
+        "orb-float-2": "orbFloat2 15s ease-in-out infinite",
+        "orb-float-3": "orbFloat3 18s ease-in-out infinite",
+        "shimmer": "shimmer 3s ease-in-out infinite",
       },
       keyframes: {
         float: {
@@ -107,6 +113,33 @@ const config: Config = {
           "25%": { transform: "translateX(10px) scale(0.95)" },
           "75%": { transform: "translateX(-10px) scale(0.95)" },
           "100%": { transform: "translateX(0) scale(1)" },
+        },
+        wiggle: {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "25%": { transform: "rotate(-8deg)" },
+          "75%": { transform: "rotate(8deg)" },
+        },
+        fadeInUp: {
+          "0%": { transform: "translateY(8px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        orbFloat1: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "33%": { transform: "translate(30px, -40px) scale(1.1)" },
+          "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+        },
+        orbFloat2: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "33%": { transform: "translate(-40px, 30px) scale(1.15)" },
+          "66%": { transform: "translate(25px, -35px) scale(0.85)" },
+        },
+        orbFloat3: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "50%": { transform: "translate(35px, 25px) scale(1.1)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
         },
       },
     },

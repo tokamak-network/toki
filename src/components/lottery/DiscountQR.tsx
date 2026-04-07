@@ -22,7 +22,7 @@ export default function DiscountQR({ cardNumber, tier }: DiscountQRProps) {
   return (
     <div className="flex flex-col items-center text-center space-y-6 animate-fade-in">
       <Image
-        src="/toki-wink.png"
+        src="/characters/toki-wink.png"
         alt="Toki"
         width={120}
         height={120}

@@ -15,11 +15,15 @@ import {
 } from "@/lib/toki-dialogue";
 import { parseIntent } from "@/lib/toki-intent-parser";
 import { executeAction, type ActionContext, type ChatActionButton } from "@/lib/toki-actions";
-import { useChatStakingFlow } from "@/hooks/useChatStakingFlow";
+import { useChatStakingFlow, type FlowMessage } from "@/hooks/useChatStakingFlow";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useEip7702 } from "@/hooks/useEip7702";
 import { useSessionKey } from "@/hooks/useSessionKey";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { formatUnits } from "viem";
+import { publicClient } from "@/lib/chain";
+import { CONTRACTS } from "@/constants/contracts";
+import { tonTokenAbi } from "@/lib/abi";
 import MicButton from "./MicButton";
 import VoiceIndicator from "./VoiceIndicator";
 
@@ -268,23 +272,59 @@ function TypingIndicator() {
 
 // ─── Shared: Chat Bubble (Floating Button) ───────────────────────────
 
-function ChatBubble({ onClick, hasNewMessage }: { onClick: () => void; hasNewMessage: boolean }) {
+function ChatBubble({ onClick, hasNewMessage, greeting }: { onClick: () => void; hasNewMessage: boolean; greeting?: string }) {
+  const [showGreeting, setShowGreeting] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (dismissed) return;
+    const timer = setTimeout(() => setShowGreeting(true), 3000);
+    return () => clearTimeout(timer);
+  }, [dismissed]);
+
+  const handleClick = () => {
+    setShowGreeting(false);
+    setDismissed(true);
+    onClick();
+  };
+
   return (
-    <button
-      onClick={onClick}
-      className="group relative w-14 h-14 rounded-full shadow-lg shadow-accent-cyan/20 hover:shadow-accent-cyan/40 transition-all hover:scale-105 active:scale-95 overflow-hidden border-2 border-accent-cyan/30 hover:border-accent-cyan/50"
-    >
-      <Image
-        src="/toki-icon.png"
-        alt="Chat with Toki"
-        width={56}
-        height={56}
-        className="w-full h-full object-cover"
-      />
-      {hasNewMessage && (
-        <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-accent-cyan rounded-full border-2 border-background animate-pulse" />
+    <div className="flex items-end gap-2">
+      {/* Speech bubble */}
+      {showGreeting && greeting && (
+        <button
+          onClick={handleClick}
+          className="relative max-w-[210px] px-3.5 py-2.5 rounded-2xl bg-accent-cyan/15 border border-accent-cyan/30 text-[13px] leading-snug text-white shadow-lg shadow-accent-cyan/10 animate-slide-up-fade cursor-pointer hover:bg-accent-cyan/25 transition-colors backdrop-blur-sm"
+        >
+          <span className="font-medium">{greeting}</span>
+          {/* Tail pointing to Toki */}
+          <span
+            className="absolute -right-2 bottom-4 w-0 h-0"
+            style={{
+              borderTop: "6px solid transparent",
+              borderBottom: "6px solid transparent",
+              borderLeft: "8px solid rgb(34 211 238 / 0.15)",
+            }}
+          />
+        </button>
       )}
-    </button>
+      {/* Bubble button */}
+      <button
+        onClick={handleClick}
+        className="group relative w-14 h-14 rounded-full shadow-lg shadow-accent-cyan/20 hover:shadow-accent-cyan/40 transition-all hover:scale-105 active:scale-95 overflow-hidden border-2 border-accent-cyan/30 hover:border-accent-cyan/50 shrink-0"
+      >
+        <Image
+          src="/toki-icon.png"
+          alt="Chat with Toki"
+          width={56}
+          height={56}
+          className={`w-full h-full object-cover ${showGreeting ? "animate-wiggle" : ""}`}
+        />
+        {hasNewMessage && !showGreeting && (
+          <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-accent-cyan rounded-full border-2 border-background animate-pulse" />
+        )}
+      </button>
+    </div>
   );
 }
 
@@ -436,8 +476,25 @@ function ChatWindow({
     (primaryWallet?.address as `0x${string}`) || null,
   );
 
+  // ── TON balance for chat actions
+  const [tonBalance, setTonBalance] = useState<string | undefined>();
+  const walletAddress = user?.wallet?.address;
+  useEffect(() => {
+    if (!authenticated || !walletAddress) { setTonBalance(undefined); return; }
+    const addr = walletAddress as `0x${string}`;
+    const tonAddr = CONTRACTS.TON as `0x${string}`;
+    publicClient.readContract({
+      address: tonAddr, abi: tonTokenAbi, functionName: "balanceOf", args: [addr],
+    }).then((bal) => setTonBalance(formatUnits(bal, 18)))
+      .catch(() => setTonBalance(undefined));
+  }, [authenticated, walletAddress]);
+
+  // ── Restore chat from sessionStorage (survives login redirect)
+  const saved = typeof window !== "undefined" ? sessionStorage.getItem("toki-chat") : null;
+  const restored = saved ? JSON.parse(saved) as { mode: "vn" | "chat"; messages: ChatMessage[]; nextId: number } : null;
+
   // ── Mode & layout state
-  const [mode, setMode] = useState<"vn" | "chat">("vn");
+  const [mode, setMode] = useState<"vn" | "chat">(restored?.mode ?? "vn");
   const [fullScreen, setFullScreen] = useState(false);
 
   // ── Visual-novel state
@@ -446,11 +503,18 @@ function ChatWindow({
   const rootNode = getNode("root");
 
   // ── Chat state
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(restored?.messages ?? []);
   const [currentChoices, setCurrentChoices] = useState<DialogueChoice[] | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [latestVideoKey, setLatestVideoKey] = useState<string | undefined>();
-  const nextIdRef = useRef(1);
+  const nextIdRef = useRef(restored?.nextId ?? 1);
+
+  // ── Persist chat to sessionStorage
+  useEffect(() => {
+    if (messages.length > 0) {
+      sessionStorage.setItem("toki-chat", JSON.stringify({ mode, messages, nextId: nextIdRef.current }));
+    }
+  }, [messages, mode]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // ── Voice hooks
@@ -530,6 +594,7 @@ function ChatWindow({
     locale,
     exportWallet: exportWallet || undefined,
     userAddress: user?.wallet?.address,
+    tonBalance,
   };
 
   // ── Staking flow hook
@@ -599,6 +664,16 @@ function ChatWindow({
         router.push("/dashboard");
         break;
       }
+      case "go-staking-amount": {
+        const amt = params?.amount;
+        router.push(amt ? `/staking?amount=${amt}` : "/staking");
+        break;
+      }
+      case "go-staking-toki-pick": {
+        const amt = params?.amount;
+        router.push(amt ? `/staking?amount=${amt}&tokiPick=true` : "/staking?tokiPick=true");
+        break;
+      }
     }
   };
 
@@ -628,11 +703,33 @@ function ChatWindow({
     // 1) Intent
     const intent = parseIntent(input);
     if (intent) {
+      // Staking intents → route through staking flow when authenticated
+      if (intent.category === "staking" && authenticated && user?.wallet?.address) {
+        const stakingActions = ["setAmount", "start", "tokiPick", "stakeMax"];
+        if (stakingActions.includes(intent.action)) {
+          let flowMsgs: FlowMessage[];
+          if (intent.action === "setAmount" && intent.params.amount) {
+            flowMsgs = await stakingFlow.startWithAmount(intent.params.amount);
+          } else if (intent.action === "stakeMax") {
+            flowMsgs = await stakingFlow.start();
+            // Auto-trigger max after start
+            if (stakingFlow.isActive) {
+              const maxMsgs = await stakingFlow.handleAction("stake-max");
+              flowMsgs = [...flowMsgs, ...maxMsgs];
+            }
+          } else {
+            flowMsgs = await stakingFlow.start();
+          }
+          flowMsgs.forEach(m => addTokiMessage(m.text, m.mood, undefined, m.actions));
+          return;
+        }
+      }
+
       const result = executeAction(intent, actionCtx);
       const text = locale === "ko" ? result.textKo : result.textEn;
       addTokiMessage(text, result.mood, undefined, result.actions);
       if (result.sideEffect) setTimeout(() => result.sideEffect?.(), 500);
-      if (result.navigateAfter) setTimeout(() => router.push(result.navigateAfter!), 2000);
+      if (result.navigateAfter) setTimeout(() => { onClose(); router.push(result.navigateAfter!); }, 2000);
       return;
     }
 
@@ -870,7 +967,7 @@ const HIDDEN_PATHS_MOBILE = ["/onboarding", "/staking"];
 
 export default function TokiChat() {
   const [open, setOpen] = useState(false);
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const { trackActivity } = useAchievement();
   const pathname = usePathname();
 
@@ -894,6 +991,7 @@ export default function TokiChat() {
       <ChatBubble
         onClick={handleOpen}
         hasNewMessage={!open}
+        greeting={!open ? t.chat.bubbleGreet : undefined}
       />
     </div>
   );

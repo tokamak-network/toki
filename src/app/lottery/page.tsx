@@ -24,7 +24,7 @@ export default function LotteryPage() {
         {/* Header */}
         <div className="text-center space-y-4">
           <Image
-            src="/toki-welcome.png"
+            src="/characters/toki-welcome.png"
             alt="Toki"
             width={140}
             height={140}

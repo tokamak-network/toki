@@ -13,6 +13,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Demo mode for development
+    if (process.env.NODE_ENV === "development" && cardNumber === "TK01-DEMO01") {
+      return NextResponse.json({
+        success: true,
+        card: { tier: "basic", prizeAmount: 1 },
+      });
+    }
+
     // Look up the card
     const { data: card, error } = await supabaseAdmin
       .from("cards")

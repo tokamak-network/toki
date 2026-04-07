@@ -72,7 +72,10 @@ export function useLottery() {
   }, []);
 
   const chooseReward = useCallback(
-    async (choice: "discount" | "ton", userId: string) => {
+    async (
+      choice: "discount" | "ton",
+      userId: string,
+    ): Promise<{ txHash?: string; showMission?: boolean } | undefined> => {
       if (!state.cardNumber) return;
 
       setState((s) => ({ ...s, loading: true }));
@@ -98,6 +101,7 @@ export function useLottery() {
 
         if (choice === "discount") {
           setState((s) => ({ ...s, loading: false, step: "discount_qr" }));
+          return {};
         } else {
           setState((s) => ({
             ...s,
@@ -106,6 +110,7 @@ export function useLottery() {
             showMission: data.showMission || false,
             step: "ton_success",
           }));
+          return { txHash: data.txHash, showMission: data.showMission || false };
         }
       } catch {
         setState((s) => ({

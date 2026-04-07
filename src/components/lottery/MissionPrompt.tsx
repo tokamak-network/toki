@@ -52,7 +52,7 @@ export default function MissionPrompt({ cardNumber, onComplete }: MissionPromptP
   return (
     <div className="flex flex-col items-center text-center space-y-6 animate-fade-in">
       <Image
-        src="/toki-excited.png"
+        src="/characters/toki-excited.png"
         alt="Toki"
         width={140}
         height={140}

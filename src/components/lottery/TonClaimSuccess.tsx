@@ -23,7 +23,7 @@ export default function TonClaimSuccess({
   return (
     <div className="flex flex-col items-center text-center space-y-6 animate-fade-in">
       <Image
-        src="/toki-celebrate.png"
+        src="/characters/toki-celebrate.png"
         alt="Toki"
         width={160}
         height={160}

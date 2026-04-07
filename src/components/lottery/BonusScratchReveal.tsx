@@ -124,7 +124,7 @@ export default function BonusScratchReveal({ tier, onReveal }: BonusScratchRevea
   return (
     <div className="flex flex-col items-center text-center space-y-6 animate-fade-in">
       <Image
-        src="/toki-card-reveal.png"
+        src="/characters/toki-card-reveal.png"
         alt="Toki"
         width={120}
         height={120}

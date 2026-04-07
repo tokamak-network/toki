@@ -186,13 +186,26 @@ function handleWallet(intent: ParsedIntent, ctx: ActionContext): ActionResult {
 
 function handleStaking(intent: ParsedIntent, ctx: ActionContext): ActionResult {
   switch (intent.action) {
-    case "setAmount":
+    case "setAmount": {
+      if (!ctx.isAuthenticated) {
+        return {
+          textKo: `${intent.params.amount} TON 스테이킹하려면 먼저 로그인이 필요해!`,
+          textEn: `You need to log in first to stake ${intent.params.amount} TON!`,
+          mood: "explain",
+          actions: [{ id: "privy-login", labelKo: "Google로 시작하기", labelEn: "Sign in with Google", variant: "primary" }],
+        };
+      }
+      const amt = intent.params.amount;
       return {
-        textKo: `${intent.params.amount} TON 스테이킹! 스테이킹 페이지로 이동할게~`,
-        textEn: `Staking ${intent.params.amount} TON! Taking you to the staking page~`,
+        textKo: `${amt} TON 스테이킹 준비 완료!`,
+        textEn: `Ready to stake ${amt} TON!`,
         mood: "excited",
-        navigateAfter: `/staking?amount=${intent.params.amount}`,
+        actions: [
+          { id: "go-staking-amount", labelKo: `${amt} TON 스테이킹하기`, labelEn: `Stake ${amt} TON`, variant: "primary", params: { amount: amt } },
+          { id: "go-staking-toki-pick", labelKo: "토키가 오퍼레이터 골라줘", labelEn: "Let Toki pick operator", variant: "secondary", params: { amount: amt } },
+        ],
       };
+    }
 
     case "tokiPick":
       return {

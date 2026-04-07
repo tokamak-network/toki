@@ -18,7 +18,7 @@ export default function PrizeResult({ tier, onContinue }: PrizeResultProps) {
       {/* Toki character with mood */}
       <div className={`relative ${isJackpot ? "animate-bounce-in" : "animate-character-entrance"}`}>
         <Image
-          src={`/toki-${prize.tokiMood}.png`}
+          src={`/characters/toki-${prize.tokiMood}.png`}
           alt="Toki"
           width={200}
           height={200}
