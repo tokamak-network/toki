@@ -49,7 +49,12 @@ export default function LotteryClaimPage() {
   // ── Loading ──────────────────────────────────────────────────────────────────
   if (step === "loading") {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
+      <main
+        className="min-h-screen flex items-center justify-center"
+        style={{
+          background: "linear-gradient(180deg, #fff5f7 0%, #ffe4ec 30%, #ffd6e0 50%, #fce8ef 70%, #f5e6f0 100%)",
+        }}
+      >
         <div className="text-center space-y-4">
           <Image
             src="/characters/toki-thinking.png"
@@ -58,7 +63,7 @@ export default function LotteryClaimPage() {
             height={120}
             className="mx-auto animate-pulse-slow"
           />
-          <p className="text-gray-400 animate-pulse">카드 확인 중...</p>
+          <p className="text-pink-400 animate-pulse">카드 확인 중...</p>
         </div>
       </main>
     );
@@ -67,7 +72,12 @@ export default function LotteryClaimPage() {
   // ── Invalid / Error ──────────────────────────────────────────────────────────
   if (step === "invalid") {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center px-6">
+      <main
+        className="min-h-screen flex items-center justify-center px-6"
+        style={{
+          background: "linear-gradient(180deg, #fff5f7 0%, #ffe4ec 30%, #ffd6e0 50%, #fce8ef 70%, #f5e6f0 100%)",
+        }}
+      >
         <div className="text-center space-y-6 max-w-sm">
           <Image
             src="/characters/toki-thinking.png"
@@ -77,13 +87,16 @@ export default function LotteryClaimPage() {
             className="mx-auto"
           />
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-white">앗, 문제가 생겼어!</h2>
-            <p className="text-sm text-gray-400">{error}</p>
+            <h2 className="text-xl font-bold text-pink-950">앗, 문제가 생겼어!</h2>
+            <p className="text-sm text-pink-900/50">{error}</p>
           </div>
           <a
             href="/lottery"
-            className="inline-block py-3 px-6 rounded-xl font-bold
-              bg-white/10 text-white hover:bg-white/20 transition-colors"
+            className="inline-block py-3 px-6 rounded-xl font-bold transition-colors text-white"
+            style={{
+              background: "linear-gradient(135deg, #ec4899 0%, #a855f7 100%)",
+              boxShadow: "0 4px 20px rgba(236,72,153,0.25)",
+            }}
           >
             다시 입력하기
           </a>

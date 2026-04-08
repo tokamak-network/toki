@@ -6,6 +6,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { QRCodeSVG } from "qrcode.react";
 import { PRIZE_TIERS, type PrizeTier } from "@/constants/lottery";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { fetchStakingData } from "@/lib/staking";
 import MicButton from "@/components/chat/MicButton";
 import VoiceIndicator from "@/components/chat/VoiceIndicator";
 
@@ -151,6 +152,14 @@ function PrizeRevealCard({ prize, tier }: { prize: typeof PRIZE_TIERS[PrizeTier]
 // ─── APR highlight card ───────────────────────────────────────────────────────
 
 function AprCard() {
+  const [apr, setApr] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetchStakingData()
+      .then((data) => setApr(data.apr))
+      .catch(() => setApr(null));
+  }, []);
+
   return (
     <div
       className="rounded-xl border border-pink-300/30 mt-2 p-3 overflow-hidden relative"
@@ -165,7 +174,7 @@ function AprCard() {
         className="text-2xl font-black tracking-tight text-pink-600"
         style={{ textShadow: "0 0 20px rgba(236,72,153,0.3)" }}
       >
-        ~XX% APR
+        {apr !== null ? `~${apr.toFixed(1)}% APR` : "loading..."}
       </p>
     </div>
   );
@@ -421,7 +430,15 @@ function QrResultCard({
           </div>
           <div className="flex justify-between items-center py-1.5">
             <span className="text-pink-900/50 font-medium">유효기간</span>
-            <span className="text-pink-950/70">오늘 자정까지</span>
+            <span className="text-pink-950/70">
+              {(() => {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = now.getMonth() + 1;
+                const d = now.getDate();
+                return `${y}년 ${m}월 ${d}일 23:59까지`;
+              })()}
+            </span>
           </div>
         </div>
       </div>

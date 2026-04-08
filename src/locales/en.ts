@@ -788,7 +788,7 @@ const en = {
     slide1Line1: "Hi there! The TON you won is a token from Tokamak Network~",
     slide1Line2: "Tokamak Network has been building in the Ethereum ecosystem since 2017. Not many projects survive 8+ years!",
     slide2Line1: "TON is listed on all 4 major Korean exchanges — Upbit, Bithumb, Coinone, and GOPAX!",
-    slide2Line2: "That means you can easily buy and sell it anywhere~",
+    slide2Line2: "That means it's a verified, trusted project~ Only legit projects get listed on all major exchanges!",
     slide3Line1: "Staking is like depositing money in a bank and earning interest — you deposit TON to the network and earn rewards!",
     slide3Line2: "Your staked TON helps secure the network. In return, rewards accumulate automatically!",
     slide3Apr: "Current Staking APR",
@@ -815,7 +815,7 @@ const en = {
     discountAmount: "Discount amount",
     discountCardNumber: "Card number",
     discountExpiry: "Valid until",
-    discountExpiryValue: "Midnight tonight",
+    discountExpiryValue: "Until {year}-{month}-{day} 23:59",
     discountFooter: "Your Toki account has been created! Visit toki.tokamak.network anytime~",
     // TON success
     tonSentTitle: "Transfer Complete!",

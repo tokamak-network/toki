@@ -783,7 +783,7 @@ const ko = {
     slide1Line1: "반가워! 네가 받은 TON은 토카막 네트워크의 토큰이야~",
     slide1Line2: "토카막 네트워크는 2017년부터 이더리움 생태계에서 꾸준히 개발해온 한국 블록체인 프로젝트야. 8년 넘게 살아남은 프로젝트는 많지 않거든~",
     slide2Line1: "TON은 업비트, 빗썸, 코인원, 고팍스 — 국내 4대 거래소에 모두 상장돼 있어!",
-    slide2Line2: "어디서든 쉽게 사고팔 수 있다는 뜻이지~",
+    slide2Line2: "그만큼 검증된 프로젝트라는 뜻이야~ 실체 있는 프로젝트만 상장될 수 있거든!",
     slide3Line1: "스테이킹은 은행에 돈을 맡기고 이자를 받는 것처럼, TON을 네트워크에 맡겨서 보상을 받는 거야!",
     slide3Line2: "맡긴 TON은 네트워크를 안전하게 지키는 데 쓰여. 그 대가로 보상이 자동으로 쌓이는 거지!",
     slide3Apr: "현재 스테이킹 수익률",
@@ -810,7 +810,7 @@ const ko = {
     discountAmount: "할인 금액",
     discountCardNumber: "카드 번호",
     discountExpiry: "유효기간",
-    discountExpiryValue: "오늘 자정까지",
+    discountExpiryValue: "{year}년 {month}월 {day}일 23:59까지",
     discountFooter: "토키 계정이 만들어졌어요! 나중에 toki.tokamak.network에서 다시 만나~",
     // TON success
     tonSentTitle: "전송 완료!",

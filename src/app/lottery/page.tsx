@@ -196,10 +196,10 @@ export default function LotteryPage() {
                 animation: "shimmer 4s ease-in-out infinite",
               }}
             >
-              Cherry Blossom Lottery
+              TOKI LOTTERY
             </h1>
             <p className="text-xs text-pink-400/70 tracking-widest uppercase font-medium">
-              Tokamak Network Edition
+              Season 1 — Cherry Blossom
             </p>
           </div>
 
@@ -283,13 +283,13 @@ export default function LotteryPage() {
             </div>
 
             {/* Powered by */}
-            <div className="flex items-center justify-center gap-2">
-              <div
-                className="w-4 h-4 rounded-full flex-shrink-0"
-                style={{
-                  background: "linear-gradient(135deg, #ec4899 0%, #a855f7 100%)",
-                  boxShadow: "0 0 6px rgba(236,72,153,0.4)",
-                }}
+            <div className="flex items-center justify-center gap-1.5">
+              <Image
+                src="/toki-logo.png"
+                alt="Tokamak Network"
+                width={16}
+                height={16}
+                className="flex-shrink-0 opacity-50"
               />
               <p className="text-[10px] text-pink-400/60 tracking-wider uppercase font-medium">
                 Powered by Tokamak Network
