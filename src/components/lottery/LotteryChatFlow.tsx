@@ -761,11 +761,8 @@ export default function LotteryChatFlow({
   );
 
   const runDiscountResult = useCallback(async () => {
-    const qrData = JSON.stringify({
-      type: "toki-discount",
-      cardNumber,
-      amount: prize.amount,
-    });
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const qrData = `${origin}/lottery/redeem?card=${encodeURIComponent(cardNumber)}`;
 
     await addTokiMessage("짜잔~ QR 코드야! 바 스탭에게 보여줘!", "proud", 700);
 
