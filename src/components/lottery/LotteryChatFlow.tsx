@@ -43,8 +43,8 @@ const EXCHANGE_LOGOS = [
 function ConfettiParticles({ tier }: { tier: PrizeTier }) {
   const isJackpot = tier === "jackpot";
   const colors = isJackpot
-    ? ["#f59e0b", "#fbbf24", "#fcd34d", "#22d3ee", "#ffffff", "#f97316", "#facc15", "#fb923c"]
-    : ["#22d3ee", "#4a90d9", "#60a5fa", "#a78bfa", "#34d399", "#ffffff", "#7dd3fc"];
+    ? ["#f59e0b", "#fbbf24", "#fcd34d", "#f9a8d4", "#ffffff", "#f97316", "#facc15", "#fb923c"]
+    : ["#f9a8d4", "#fbcfe8", "#f472b6", "#c4b5fd", "#fda4af", "#ffffff", "#fce7f3"];
 
   const particles = Array.from({ length: 12 }, (_, i) => {
     const color = colors[i % colors.length];
@@ -87,20 +87,20 @@ function PrizeRevealCard({ prize, tier }: { prize: typeof PRIZE_TIERS[PrizeTier]
   const gradientText = isJackpot
     ? "from-amber-300 via-yellow-200 to-amber-400"
     : isLucky
-    ? "from-cyan-300 via-white to-cyan-400"
-    : "from-cyan-400 to-accent-blue";
+    ? "from-pink-500 via-rose-400 to-pink-600"
+    : "from-pink-500 to-purple-500";
 
   const cardGlow = isJackpot
-    ? "shadow-[0_0_40px_rgba(245,158,11,0.35),inset_0_1px_0_rgba(255,255,255,0.1)]"
-    : "shadow-[0_0_30px_rgba(34,211,238,0.25),inset_0_1px_0_rgba(255,255,255,0.08)]";
+    ? "shadow-[0_0_40px_rgba(245,158,11,0.35),inset_0_1px_0_rgba(255,255,255,0.3)]"
+    : "shadow-[0_0_30px_rgba(244,114,182,0.25),inset_0_1px_0_rgba(255,255,255,0.3)]";
 
   const borderColor = isJackpot
     ? "border-amber-400/40"
-    : "border-accent-cyan/30";
+    : "border-pink-300/40";
 
   const bgGlow = isJackpot
-    ? "bg-gradient-to-br from-amber-900/30 via-[#0d0a18] to-amber-900/20"
-    : "bg-gradient-to-br from-cyan-900/20 via-[#0a0e1a] to-blue-900/20";
+    ? "bg-gradient-to-br from-amber-50/80 via-white/70 to-amber-50/60"
+    : "bg-gradient-to-br from-pink-50/80 via-white/70 to-fuchsia-50/60";
 
   return (
     <div className="w-full mb-2 animate-bounce-in" style={{ animationDuration: "0.7s" }}>
@@ -111,14 +111,14 @@ function PrizeRevealCard({ prize, tier }: { prize: typeof PRIZE_TIERS[PrizeTier]
         <ConfettiParticles tier={tier} />
 
         {/* Inner shimmer line */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-pink-300/40 to-transparent" />
 
         <div className="relative flex flex-col items-center gap-2 text-center">
           {/* Emoji — large */}
           <div
             className="text-5xl"
             style={{
-              filter: isJackpot ? "drop-shadow(0 0 12px rgba(245,158,11,0.8))" : "drop-shadow(0 0 8px rgba(34,211,238,0.6))",
+              filter: isJackpot ? "drop-shadow(0 0 12px rgba(245,158,11,0.8))" : "drop-shadow(0 0 8px rgba(244,114,182,0.6))",
               animation: "float 2.5s ease-in-out infinite",
             }}
           >
@@ -131,14 +131,14 @@ function PrizeRevealCard({ prize, tier }: { prize: typeof PRIZE_TIERS[PrizeTier]
             style={{
               filter: isJackpot
                 ? "drop-shadow(0 2px 8px rgba(245,158,11,0.4))"
-                : "drop-shadow(0 2px 6px rgba(34,211,238,0.3))",
+                : "drop-shadow(0 2px 6px rgba(244,114,182,0.3))",
             }}
           >
             {prize.label}
           </p>
 
           {/* Label */}
-          <p className="text-sm font-semibold text-white/70 tracking-wide">
+          <p className="text-sm font-semibold text-pink-900/60 tracking-wide">
             {isJackpot ? "🏆 대박 당첨!" : isLucky ? "⭐ 행운 당첨!" : "🎉 당첨!"}
           </p>
         </div>
@@ -153,17 +153,17 @@ function PrizeRevealCard({ prize, tier }: { prize: typeof PRIZE_TIERS[PrizeTier]
 function AprCard() {
   return (
     <div
-      className="rounded-xl border border-accent-cyan/25 mt-2 p-3 overflow-hidden relative"
+      className="rounded-xl border border-pink-300/30 mt-2 p-3 overflow-hidden relative"
       style={{
-        background: "linear-gradient(135deg, rgba(34,211,238,0.08) 0%, rgba(10,14,26,0.9) 60%)",
-        boxShadow: "0 0 20px rgba(34,211,238,0.12), inset 0 1px 0 rgba(255,255,255,0.06)",
+        background: "linear-gradient(135deg, rgba(251,207,232,0.3) 0%, rgba(255,255,255,0.5) 60%)",
+        boxShadow: "0 0 20px rgba(244,114,182,0.1), inset 0 1px 0 rgba(255,255,255,0.6)",
       }}
     >
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-accent-cyan/40 via-accent-cyan/20 to-transparent" />
-      <p className="text-xs text-gray-400 font-medium mb-0.5">현재 스테이킹 수익률</p>
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-pink-400/40 via-pink-300/20 to-transparent" />
+      <p className="text-xs text-pink-900/50 font-medium mb-0.5">현재 스테이킹 수익률</p>
       <p
-        className="text-2xl font-black tracking-tight text-accent-cyan"
-        style={{ textShadow: "0 0 20px rgba(34,211,238,0.5)" }}
+        className="text-2xl font-black tracking-tight text-pink-600"
+        style={{ textShadow: "0 0 20px rgba(236,72,153,0.3)" }}
       >
         ~XX% APR
       </p>
@@ -197,12 +197,17 @@ function TypingIndicator() {
   return (
     <div className="flex items-end gap-2.5 mb-3">
       <div
-        className="bg-white/[0.09] backdrop-blur-md border-l-2 border-l-accent-cyan/40 border border-white/[0.06] rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5"
+        className="backdrop-blur-md border-l-2 border-l-pink-400/40 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5"
+        style={{
+          background: "linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(252,231,243,0.5) 100%)",
+          border: "1px solid rgba(244,114,182,0.2)",
+          borderLeft: "2px solid rgba(244,114,182,0.4)",
+        }}
       >
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="w-2 h-2 rounded-full bg-accent-cyan/70 animate-bounce"
+            className="w-2 h-2 rounded-full bg-pink-400/70 animate-bounce"
             style={{ animationDelay: `${i * 0.15}s` }}
           />
         ))}
@@ -223,8 +228,13 @@ function TokiBubble({
   return (
     <div className={`flex items-end gap-2.5 animate-fade-in-up ${isConsecutive ? "mb-1" : "mb-2.5"}`}>
       <div
-        className="max-w-[85%] bg-white/[0.09] backdrop-blur-md border-l-2 border-l-accent-cyan/35 border border-white/[0.07] rounded-2xl rounded-bl-sm px-4 py-3 text-sm text-gray-100 leading-relaxed"
-        style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+        className="max-w-[85%] backdrop-blur-md rounded-2xl rounded-bl-sm px-4 py-3 text-sm text-pink-950 leading-relaxed"
+        style={{
+          background: "linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(252,231,243,0.55) 100%)",
+          border: "1px solid rgba(244,114,182,0.25)",
+          borderLeft: "2px solid rgba(244,114,182,0.4)",
+          boxShadow: "0 2px 12px rgba(244,114,182,0.08), inset 0 1px 0 rgba(255,255,255,0.6)",
+        }}
       >
         {message.content}
       </div>
@@ -236,10 +246,10 @@ function UserBubble({ message }: { message: ChatMessage }) {
   return (
     <div className="flex justify-end mb-2.5 animate-fade-in-up">
       <div
-        className="max-w-[78%] border border-accent-cyan/25 rounded-2xl rounded-br-sm px-4 py-3 text-sm text-gray-100 leading-relaxed"
+        className="max-w-[78%] rounded-2xl rounded-br-sm px-4 py-3 text-sm text-white leading-relaxed"
         style={{
-          background: "linear-gradient(135deg, rgba(34,211,238,0.18) 0%, rgba(74,144,217,0.14) 100%)",
-          boxShadow: "0 2px 12px rgba(34,211,238,0.08)",
+          background: "linear-gradient(135deg, rgba(236,72,153,0.85) 0%, rgba(168,85,247,0.75) 100%)",
+          boxShadow: "0 2px 12px rgba(236,72,153,0.2)",
         }}
       >
         {message.content}
@@ -252,8 +262,12 @@ function SystemBubble({ message }: { message: ChatMessage }) {
   return (
     <div className="flex justify-center my-3 animate-fade-in-up">
       <div
-        className="text-xs text-gray-400 border border-white/[0.07] rounded-full px-4 py-1.5"
-        style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(8px)" }}
+        className="text-xs text-pink-900/50 rounded-full px-4 py-1.5"
+        style={{
+          background: "rgba(255,255,255,0.5)",
+          border: "1px solid rgba(244,114,182,0.15)",
+          backdropFilter: "blur(8px)",
+        }}
       >
         {message.content}
       </div>
@@ -278,25 +292,29 @@ function ChoiceCard({
   disabled: boolean;
   accentColor: "amber" | "cyan";
 }) {
-  const borderHover = accentColor === "amber" ? "hover:border-accent-amber/60" : "hover:border-accent-cyan/60";
-  const bgHover = accentColor === "amber" ? "hover:bg-accent-amber/[0.07]" : "hover:bg-accent-cyan/[0.07]";
-  const iconBg = accentColor === "amber" ? "bg-accent-amber/15 border border-accent-amber/25" : "bg-accent-cyan/15 border border-accent-cyan/25";
-  const glowColor = accentColor === "amber" ? "rgba(245,158,11,0.15)" : "rgba(34,211,238,0.12)";
+  const borderHover = accentColor === "amber" ? "hover:border-amber-400/50" : "hover:border-pink-400/50";
+  const iconBg = accentColor === "amber" ? "bg-amber-100 border border-amber-300/40" : "bg-pink-100 border border-pink-300/40";
+  const glowColor = accentColor === "amber" ? "rgba(245,158,11,0.1)" : "rgba(244,114,182,0.1)";
 
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full p-4 rounded-2xl text-left border border-white/[0.09] bg-white/[0.05] ${borderHover} ${bgHover} disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.98]`}
-      style={{ boxShadow: `0 2px 16px ${glowColor}` }}
+      className={`w-full p-4 rounded-2xl text-left ${borderHover} disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.98]`}
+      style={{
+        background: "linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(252,231,243,0.5) 100%)",
+        border: "1px solid rgba(244,114,182,0.2)",
+        backdropFilter: "blur(12px)",
+        boxShadow: `0 2px 16px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.5)`,
+      }}
     >
       <div className="flex items-center gap-3.5">
         <div className={`w-11 h-11 rounded-xl ${iconBg} flex items-center justify-center text-2xl shrink-0`}>
           {icon}
         </div>
         <div>
-          <p className="font-bold text-white text-sm leading-snug">{title}</p>
-          <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{description}</p>
+          <p className="font-bold text-pink-950 text-sm leading-snug">{title}</p>
+          <p className="text-xs text-pink-900/50 mt-0.5 leading-relaxed">{description}</p>
         </div>
       </div>
     </button>
@@ -316,47 +334,45 @@ function TonSuccessCard({
 }) {
   return (
     <div
-      className="w-full rounded-2xl border border-emerald-500/30 overflow-hidden animate-bounce-in"
+      className="w-full rounded-2xl overflow-hidden animate-bounce-in"
       style={{
-        background: "linear-gradient(135deg, rgba(16,185,129,0.10) 0%, rgba(10,14,26,0.95) 100%)",
-        boxShadow: "0 0 24px rgba(16,185,129,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
+        background: "linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(209,250,229,0.5) 100%)",
+        border: "1px solid rgba(16,185,129,0.3)",
+        boxShadow: "0 0 24px rgba(16,185,129,0.1), inset 0 1px 0 rgba(255,255,255,0.6)",
       }}
     >
       <div className="p-4 space-y-3">
         {/* Success header */}
         <div className="flex items-center gap-2.5">
           <div
-            className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-sm"
-            style={{ boxShadow: "0 0 12px rgba(16,185,129,0.3)" }}
+            className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300/50 flex items-center justify-center text-sm text-emerald-600"
+            style={{ boxShadow: "0 0 12px rgba(16,185,129,0.2)" }}
           >
             ✓
           </div>
           <div>
-            <p className="text-xs text-emerald-400/80 font-medium">전송 완료</p>
-            <p
-              className="text-lg font-black text-emerald-300 tracking-tight"
-              style={{ textShadow: "0 0 16px rgba(16,185,129,0.4)" }}
-            >
+            <p className="text-xs text-emerald-600/80 font-medium">전송 완료</p>
+            <p className="text-lg font-black text-emerald-600 tracking-tight">
               {prize.label}
             </p>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="h-[1px] bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-transparent" />
+        <div className="h-[1px] bg-gradient-to-r from-emerald-400/30 via-emerald-300/15 to-transparent" />
 
         {/* Details */}
         <div className="space-y-2 text-xs">
           {addr && (
             <div>
-              <span className="text-gray-500 font-medium">지갑 주소</span>
-              <p className="font-mono text-gray-300 mt-0.5 break-all text-[10px] leading-relaxed">{addr}</p>
+              <span className="text-pink-900/40 font-medium">지갑 주소</span>
+              <p className="font-mono text-pink-950/70 mt-0.5 break-all text-[10px] leading-relaxed">{addr}</p>
             </div>
           )}
           {hash && (
             <div>
-              <span className="text-gray-500 font-medium">트랜잭션 해시</span>
-              <p className="font-mono text-gray-300 mt-0.5 break-all text-[10px] leading-relaxed">{hash}</p>
+              <span className="text-pink-900/40 font-medium">트랜잭션 해시</span>
+              <p className="font-mono text-pink-950/70 mt-0.5 break-all text-[10px] leading-relaxed">{hash}</p>
             </div>
           )}
         </div>
@@ -378,36 +394,34 @@ function QrResultCard({
 }) {
   return (
     <div
-      className="w-full rounded-2xl border border-white/[0.08] overflow-hidden animate-bounce-in"
+      className="w-full rounded-2xl overflow-hidden animate-bounce-in"
       style={{
-        background: "linear-gradient(160deg, rgba(245,158,11,0.08) 0%, rgba(10,14,26,0.95) 100%)",
-        boxShadow: "0 0 24px rgba(245,158,11,0.12), inset 0 1px 0 rgba(255,255,255,0.06)",
+        background: "linear-gradient(160deg, rgba(255,255,255,0.75) 0%, rgba(254,243,199,0.4) 100%)",
+        border: "1px solid rgba(245,158,11,0.25)",
+        boxShadow: "0 0 24px rgba(245,158,11,0.08), inset 0 1px 0 rgba(255,255,255,0.6)",
       }}
     >
       <div className="p-4 flex flex-col items-center gap-4">
         {/* QR area */}
-        <div className="bg-white rounded-2xl p-3 shadow-lg shadow-black/30">
+        <div className="bg-white rounded-2xl p-3 shadow-lg shadow-pink-200/30">
           <QRCodeSVG value={qrData} size={148} level="M" includeMargin={false} />
         </div>
 
         {/* Details */}
         <div className="w-full space-y-1.5 text-xs">
-          <div className="flex justify-between items-center py-1.5 border-b border-white/[0.06]">
-            <span className="text-gray-400 font-medium">할인 금액</span>
-            <span
-              className="text-accent-amber font-black text-sm"
-              style={{ textShadow: "0 0 12px rgba(245,158,11,0.4)" }}
-            >
+          <div className="flex justify-between items-center py-1.5 border-b border-pink-200/30">
+            <span className="text-pink-900/50 font-medium">할인 금액</span>
+            <span className="text-amber-600 font-black text-sm">
               {prize.label}
             </span>
           </div>
-          <div className="flex justify-between items-center py-1.5 border-b border-white/[0.06]">
-            <span className="text-gray-400 font-medium">카드 번호</span>
-            <span className="font-mono text-gray-300 text-[11px]">{cardNumber}</span>
+          <div className="flex justify-between items-center py-1.5 border-b border-pink-200/30">
+            <span className="text-pink-900/50 font-medium">카드 번호</span>
+            <span className="font-mono text-pink-950/70 text-[11px]">{cardNumber}</span>
           </div>
           <div className="flex justify-between items-center py-1.5">
-            <span className="text-gray-400 font-medium">유효기간</span>
-            <span className="text-gray-300">오늘 자정까지</span>
+            <span className="text-pink-900/50 font-medium">유효기간</span>
+            <span className="text-pink-950/70">오늘 자정까지</span>
           </div>
         </div>
       </div>
@@ -573,21 +587,8 @@ export default function LotteryChatFlow({
       900,
     );
 
-    setActionButtons(
-      <button
-        onClick={() => login()}
-        className="w-full py-3.5 rounded-2xl font-bold text-base flex items-center justify-center gap-3 bg-white text-gray-900 hover:bg-gray-50 active:scale-[0.98] transition-all duration-200"
-        style={{
-          boxShadow: "0 4px 24px rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.3)",
-        }}
-      >
-        <GoogleIcon />
-        Google로 시작하기
-      </button>,
-    );
-
     setPhase("awaiting_login");
-  }, [addTokiMessage, login, prize, tier]);
+  }, [addTokiMessage, prize, tier]);
 
   const ONBOARDING_SLIDES = [
     {
@@ -597,16 +598,16 @@ export default function LotteryChatFlow({
         "2017년부터 이더리움 생태계에서 꾸준히 개발해온 한국 블록체인 프로젝트야. 8년 넘게 살아남은 프로젝트는 많지 않거든~",
       ],
       extra: null as null | React.ReactNode,
-      accent: "cyan" as const,
+      accent: "pink" as const,
     },
     {
       mood: "proud",
       messages: [
         "TON은 업비트, 빗썸, 코인원, 고팍스 — 국내 4대 거래소에 모두 상장돼 있어!",
-        "어디서든 쉽게 사고팔 수 있다는 뜻이지~",
+        "그만큼 검증된 프로젝트라는 뜻이야~ 실체 있는 프로젝트만 상장될 수 있거든!",
       ],
       extra: <ExchangeRow />,
-      accent: "cyan" as const,
+      accent: "pink" as const,
     },
     {
       mood: "excited",
@@ -615,7 +616,7 @@ export default function LotteryChatFlow({
         "맡긴 TON은 네트워크를 안전하게 지키는 데 쓰여. 그 대가로 보상이 자동으로 쌓이는 거지!",
       ],
       extra: <AprCard />,
-      accent: "cyan" as const,
+      accent: "pink" as const,
     },
     {
       mood: "proud",
@@ -663,8 +664,8 @@ export default function LotteryChatFlow({
           }}
           className="w-full py-3.5 rounded-2xl font-bold text-base text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           style={{
-            background: "linear-gradient(135deg, #22d3ee 0%, #4a90d9 100%)",
-            boxShadow: "0 4px 20px rgba(34,211,238,0.25), inset 0 1px 0 rgba(255,255,255,0.15)",
+            background: "linear-gradient(135deg, #ec4899 0%, #a855f7 100%)",
+            boxShadow: "0 4px 20px rgba(236,72,153,0.25), inset 0 1px 0 rgba(255,255,255,0.2)",
           }}
         >
           {isLast ? "지갑 확인하기" : "다음 →"}
@@ -681,7 +682,7 @@ export default function LotteryChatFlow({
     await addTokiMessage("지갑이 준비됐어! 🎉", "cheer", 700);
     if (addr) {
       addSystemMessage(
-        <span className="font-mono text-accent-cyan text-xs">{addr}</span>,
+        <span className="font-mono text-pink-600 text-xs">{addr}</span>,
       );
     }
     await addTokiMessage(`${prize.label} 어떻게 받을래?`, "presenting", 800);
@@ -810,8 +811,8 @@ export default function LotteryChatFlow({
           href="/staking"
           className="w-full py-3.5 rounded-2xl font-bold text-base text-center block text-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           style={{
-            background: "linear-gradient(135deg, #22d3ee 0%, #4a90d9 100%)",
-            boxShadow: "0 4px 20px rgba(34,211,238,0.25), inset 0 1px 0 rgba(255,255,255,0.15)",
+            background: "linear-gradient(135deg, #ec4899 0%, #a855f7 100%)",
+            boxShadow: "0 4px 20px rgba(236,72,153,0.25), inset 0 1px 0 rgba(255,255,255,0.2)",
           }}
         >
           스테이킹하러 가기
@@ -832,13 +833,13 @@ export default function LotteryChatFlow({
   }, []);
 
   useEffect(() => {
-    if (authenticated && phaseRef.current === "awaiting_login") {
+    if (authenticated && phase === "awaiting_login") {
       setActionButtons(null);
       addUserMessage("로그인 완료! ✅");
       setPhase("onboarding");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated]);
+  }, [authenticated, phase]);
 
   useEffect(() => {
     if (phase === "onboarding") {
@@ -881,40 +882,53 @@ export default function LotteryChatFlow({
     <div className="relative flex flex-col h-screen overflow-hidden">
       {/* ── Background ────────────────────────────────────────────────────── */}
       <div className="absolute inset-0">
+        {/* Base cherry blossom gradient (matches landing page) */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(180deg, #fff5f7 0%, #ffe4ec 30%, #ffd6e0 50%, #fce8ef 70%, #f5e6f0 100%)",
+          }}
+        />
         {/* Background image */}
         <Image
           src="/backgrounds/lottery-chat.png"
           alt=""
           fill
-          className="object-cover opacity-30"
+          className="object-cover opacity-20"
           priority
         />
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/50" />
-        {/* Gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
-        {/* Floating orbs on top of image */}
+        {/* Soft light overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-white/30" />
+        {/* Floating cherry blossom orbs */}
         <div
           className="absolute top-[8%] left-[12%] w-72 h-72 rounded-full blur-[90px] animate-orb-float-1"
-          style={{ background: "rgba(34,211,238,0.08)" }}
+          style={{ background: "rgba(251,207,232,0.35)" }}
         />
         <div
           className="absolute top-[45%] right-[8%] w-80 h-80 rounded-full blur-[100px] animate-orb-float-2"
-          style={{ background: "rgba(74,144,217,0.10)" }}
+          style={{ background: "rgba(249,168,212,0.25)" }}
+        />
+        <div
+          className="absolute bottom-[15%] left-[40%] w-60 h-60 rounded-full blur-[80px] animate-orb-float-3"
+          style={{ background: "rgba(196,181,253,0.2)" }}
         />
       </div>
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="relative z-10 shrink-0">
         <div
-          className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.07]"
-          style={{ background: "rgba(255,255,255,0.035)", backdropFilter: "blur(20px)" }}
+          className="flex items-center gap-3 px-5 py-3.5"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(252,231,243,0.6) 100%)",
+            borderBottom: "1px solid rgba(244,114,182,0.15)",
+            backdropFilter: "blur(20px)",
+          }}
         >
           <div className="relative">
             <div
               className="w-10 h-10 rounded-full overflow-hidden"
               style={{
-                boxShadow: "0 0 0 2px rgba(34,211,238,0.4), 0 0 16px rgba(34,211,238,0.2)",
+                boxShadow: "0 0 0 2px rgba(244,114,182,0.4), 0 0 16px rgba(244,114,182,0.15)",
               }}
             >
               <Image
@@ -926,21 +940,21 @@ export default function LotteryChatFlow({
               />
             </div>
             <div
-              className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-400 border-2 border-[#07080f]"
-              style={{ boxShadow: "0 0 8px rgba(74,222,128,0.6)" }}
+              className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-400 border-2 border-white"
+              style={{ boxShadow: "0 0 8px rgba(74,222,128,0.4)" }}
             />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold text-white tracking-wide">토키</p>
-            <p className="text-[11px] font-medium" style={{ color: "rgba(74,222,128,0.85)" }}>온라인</p>
+            <p className="text-sm font-bold text-pink-950 tracking-wide">토키</p>
+            <p className="text-[11px] font-medium text-emerald-500">온라인</p>
           </div>
           <div className="flex gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-white/[0.18]" />
-            <div className="w-1.5 h-1.5 rounded-full bg-white/[0.18]" />
-            <div className="w-1.5 h-1.5 rounded-full bg-white/[0.18]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-pink-400/30" />
+            <div className="w-1.5 h-1.5 rounded-full bg-pink-400/30" />
+            <div className="w-1.5 h-1.5 rounded-full bg-pink-400/30" />
           </div>
         </div>
-        <div className="h-[1px] bg-gradient-to-r from-transparent via-accent-cyan/40 to-transparent" />
+        <div className="h-[1px] bg-gradient-to-r from-transparent via-pink-400/30 to-transparent" />
       </div>
 
       {/* ── Messages ────────────────────────────────────────────────────────── */}
@@ -975,11 +989,30 @@ export default function LotteryChatFlow({
 
       {/* ── Bottom area ──────────────────────────────────────────────────── */}
       <div className="relative z-10 shrink-0">
-        <div className="h-[1px] bg-gradient-to-r from-transparent via-accent-cyan/30 to-transparent" />
+        <div className="h-[1px] bg-gradient-to-r from-transparent via-pink-400/25 to-transparent" />
         <div
-          className="border-t border-white/[0.05]"
-          style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(24px)" }}
+          style={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(252,231,243,0.55) 100%)",
+            borderTop: "1px solid rgba(244,114,182,0.12)",
+            backdropFilter: "blur(24px)",
+          }}
         >
+          {/* Login button — rendered at render-time so `login` is never stale */}
+          {phase === "awaiting_login" && !authenticated && (
+            <div className="px-4 pt-3 pb-1">
+              <button
+                onClick={() => login()}
+                className="w-full py-3.5 rounded-2xl font-bold text-base flex items-center justify-center gap-3 bg-white text-gray-900 hover:bg-gray-50 active:scale-[0.98] transition-all duration-200"
+                style={{
+                  boxShadow: "0 4px 24px rgba(244,114,182,0.15), 0 2px 8px rgba(0,0,0,0.08)",
+                }}
+              >
+                <GoogleIcon />
+                Google로 시작하기
+              </button>
+            </div>
+          )}
+
           {/* Action buttons (when present) */}
           {actionButtons && (
             <div className="px-4 pt-3 pb-1">
@@ -1002,14 +1035,22 @@ export default function LotteryChatFlow({
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleChatSubmit()}
                 placeholder="메시지 입력..."
-                className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-accent-cyan/40 transition-colors"
+                className="flex-1 px-3 py-2 rounded-lg text-sm text-pink-950 placeholder-pink-300 outline-none transition-colors"
+                style={{
+                  background: "rgba(255,255,255,0.5)",
+                  border: "1px solid rgba(244,114,182,0.2)",
+                }}
               />
               {micSupported && (
                 <MicButton isListening={isListening} onClick={toggleMic} />
               )}
               <button
                 onClick={handleChatSubmit}
-                className="px-3 py-2 rounded-lg bg-accent-cyan/20 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/30 transition-colors"
+                className="px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{
+                  background: "rgba(244,114,182,0.15)",
+                  color: "#9d174d",
+                }}
               >
                 전송
               </button>
