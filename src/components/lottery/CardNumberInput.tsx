@@ -40,7 +40,7 @@ export default function CardNumberInput({ onSubmit, loading }: CardNumberInputPr
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-6">
       <div className="text-center space-y-2">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-pink-900/60">
           스크래치 아래 카드번호를 입력해주세요
         </p>
       </div>
@@ -52,15 +52,15 @@ export default function CardNumberInput({ onSubmit, loading }: CardNumberInputPr
           onChange={(e) => handlePrefixChange(e.target.value)}
           placeholder="TK01"
           className="w-20 text-center text-xl font-mono font-bold tracking-wider
-            bg-white/5 border border-white/20 rounded-lg px-2 py-3
-            text-white placeholder:text-gray-600
-            focus:outline-none focus:border-accent-cyan focus:ring-1 focus:ring-accent-cyan/50
+            bg-white/60 border border-pink-300/50 rounded-lg px-2 py-3
+            text-pink-900 placeholder:text-pink-300
+            focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400/50
             transition-colors"
           maxLength={4}
           autoFocus
           disabled={loading}
         />
-        <span className="text-2xl font-bold text-gray-500">-</span>
+        <span className="text-2xl font-bold text-pink-300">-</span>
         <input
           ref={codeRef}
           type="text"
@@ -68,9 +68,9 @@ export default function CardNumberInput({ onSubmit, loading }: CardNumberInputPr
           onChange={(e) => handleCodeChange(e.target.value)}
           placeholder="A3F9B2"
           className="w-32 text-center text-xl font-mono font-bold tracking-wider
-            bg-white/5 border border-white/20 rounded-lg px-2 py-3
-            text-white placeholder:text-gray-600
-            focus:outline-none focus:border-accent-cyan focus:ring-1 focus:ring-accent-cyan/50
+            bg-white/60 border border-pink-300/50 rounded-lg px-2 py-3
+            text-pink-900 placeholder:text-pink-300
+            focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400/50
             transition-colors"
           maxLength={6}
           disabled={loading}
@@ -81,9 +81,9 @@ export default function CardNumberInput({ onSubmit, loading }: CardNumberInputPr
         type="submit"
         disabled={!isValid || loading}
         className="w-full py-3 rounded-xl font-bold text-lg
-          bg-gradient-to-r from-accent-cyan to-accent-blue
-          text-white shadow-lg shadow-accent-cyan/20
-          hover:shadow-accent-cyan/40 hover:scale-[1.02]
+          bg-gradient-to-r from-pink-500 to-purple-500
+          text-white shadow-lg shadow-pink-500/25
+          hover:shadow-pink-500/40 hover:scale-[1.02]
           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100
           transition-all duration-200"
       >

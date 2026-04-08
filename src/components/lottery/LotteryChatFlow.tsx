@@ -196,15 +196,6 @@ function ExchangeRow() {
 function TypingIndicator() {
   return (
     <div className="flex items-end gap-2.5 mb-3">
-      <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 self-end ring-1 ring-white/10">
-        <Image
-          src="/characters/toki-thinking.png"
-          alt="Toki"
-          width={32}
-          height={32}
-          className="w-full h-full object-cover"
-        />
-      </div>
       <div
         className="bg-white/[0.09] backdrop-blur-md border-l-2 border-l-accent-cyan/40 border border-white/[0.06] rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5"
       >
@@ -224,32 +215,15 @@ function TypingIndicator() {
 
 function TokiBubble({
   message,
-  showAvatar,
   isConsecutive,
 }: {
   message: ChatMessage;
-  showAvatar: boolean;
   isConsecutive: boolean;
 }) {
   return (
     <div className={`flex items-end gap-2.5 animate-fade-in-up ${isConsecutive ? "mb-1" : "mb-2.5"}`}>
-      <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 self-end">
-        {showAvatar ? (
-          <div className="ring-2 ring-accent-cyan/35 rounded-full overflow-hidden shadow-lg shadow-accent-cyan/15">
-            <Image
-              src={`/characters/toki-${message.mood ?? "welcome"}.png`}
-              alt="Toki"
-              width={32}
-              height={32}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className="w-8 h-8" />
-        )}
-      </div>
       <div
-        className="max-w-[80%] bg-white/[0.09] backdrop-blur-md border-l-2 border-l-accent-cyan/35 border border-white/[0.07] rounded-2xl rounded-bl-sm px-4 py-3 text-sm text-gray-100 leading-relaxed"
+        className="max-w-[85%] bg-white/[0.09] backdrop-blur-md border-l-2 border-l-accent-cyan/35 border border-white/[0.07] rounded-2xl rounded-bl-sm px-4 py-3 text-sm text-gray-100 leading-relaxed"
         style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)" }}
       >
         {message.content}
@@ -973,13 +947,11 @@ export default function LotteryChatFlow({
       <div className="relative z-10 flex-1 overflow-y-auto px-4 py-5 scrollbar-thin">
         {messages.map((msg, i) => {
           if (msg.sender === "toki") {
-            const showAvatar = i === 0 || messages[i - 1]?.sender !== "toki";
             const isConsecutive = i > 0 && messages[i - 1]?.sender === "toki";
             return (
               <TokiBubble
                 key={msg.id}
                 message={msg}
-                showAvatar={showAvatar}
                 isConsecutive={isConsecutive}
               />
             );

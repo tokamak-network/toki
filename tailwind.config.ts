@@ -55,6 +55,17 @@ const config: Config = {
         "orb-float-2": "orbFloat2 15s ease-in-out infinite",
         "orb-float-3": "orbFloat3 18s ease-in-out infinite",
         "shimmer": "shimmer 3s ease-in-out infinite",
+        "holo-tilt": "holoTilt 6s ease-in-out infinite",
+        "holo-shine": "holoShine 4s ease-in-out infinite",
+        "particle-drift-1": "particleDrift1 8s ease-in-out infinite",
+        "particle-drift-2": "particleDrift2 11s ease-in-out infinite",
+        "particle-drift-3": "particleDrift3 9s ease-in-out infinite",
+        "particle-drift-4": "particleDrift4 13s ease-in-out infinite",
+        "particle-drift-5": "particleDrift5 7s ease-in-out infinite",
+        "particle-drift-6": "particleDrift6 10s ease-in-out infinite",
+        "speech-bounce": "speechBounce 2s ease-in-out infinite",
+        "border-glow": "borderGlow 3s ease-in-out infinite",
+        "border-glow-pink": "borderGlowPink 3s ease-in-out infinite",
       },
       keyframes: {
         float: {
@@ -140,6 +151,57 @@ const config: Config = {
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
+        },
+        holoTilt: {
+          "0%, 100%": { transform: "perspective(600px) rotateY(-4deg) rotateX(2deg)" },
+          "25%": { transform: "perspective(600px) rotateY(4deg) rotateX(-2deg)" },
+          "50%": { transform: "perspective(600px) rotateY(2deg) rotateX(4deg)" },
+          "75%": { transform: "perspective(600px) rotateY(-2deg) rotateX(-4deg)" },
+        },
+        holoShine: {
+          "0%, 100%": { backgroundPosition: "0% 50%", opacity: "0.6" },
+          "50%": { backgroundPosition: "100% 50%", opacity: "1" },
+        },
+        particleDrift1: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)", opacity: "0.7" },
+          "33%": { transform: "translate(18px, -28px) scale(1.2)", opacity: "1" },
+          "66%": { transform: "translate(-12px, 16px) scale(0.8)", opacity: "0.5" },
+        },
+        particleDrift2: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)", opacity: "0.5" },
+          "40%": { transform: "translate(-22px, -18px) scale(1.3)", opacity: "0.9" },
+          "70%": { transform: "translate(14px, 24px) scale(0.7)", opacity: "0.6" },
+        },
+        particleDrift3: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)", opacity: "0.8" },
+          "50%": { transform: "translate(24px, -16px) scale(1.1)", opacity: "0.4" },
+        },
+        particleDrift4: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)", opacity: "0.6" },
+          "30%": { transform: "translate(-16px, 20px) scale(1.2)", opacity: "1" },
+          "60%": { transform: "translate(20px, -10px) scale(0.9)", opacity: "0.4" },
+        },
+        particleDrift5: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)", opacity: "0.9" },
+          "45%": { transform: "translate(10px, -22px) scale(1.15)", opacity: "0.5" },
+        },
+        particleDrift6: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)", opacity: "0.5" },
+          "35%": { transform: "translate(-20px, -14px) scale(1.1)", opacity: "0.8" },
+          "70%": { transform: "translate(16px, 18px) scale(0.85)", opacity: "0.6" },
+        },
+        speechBounce: {
+          "0%, 100%": { transform: "translateY(0px) scale(1)" },
+          "30%": { transform: "translateY(-6px) scale(1.02)" },
+          "60%": { transform: "translateY(-3px) scale(1.01)" },
+        },
+        borderGlow: {
+          "0%, 100%": { boxShadow: "0 0 12px 2px rgba(34,211,238,0.3), 0 0 24px 4px rgba(34,211,238,0.1)" },
+          "50%": { boxShadow: "0 0 20px 4px rgba(34,211,238,0.6), 0 0 40px 8px rgba(34,211,238,0.2)" },
+        },
+        borderGlowPink: {
+          "0%, 100%": { boxShadow: "0 0 12px 2px rgba(236,72,153,0.15), 0 0 24px 4px rgba(236,72,153,0.05)" },
+          "50%": { boxShadow: "0 0 20px 4px rgba(236,72,153,0.3), 0 0 40px 8px rgba(236,72,153,0.1)" },
         },
       },
     },
