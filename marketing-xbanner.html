@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X-Banner 600×1800mm — Tokamak × THE GREEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 60px;
+    font-family: 'Inter', sans-serif;
+  }
+  .label {
+    color: #555;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: -40px;
+  }
+  .spec {
+    color: #444;
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin-top: -50px;
+  }
+
+  /* X-Banner: 600×1800mm → ratio 1:3, displayed at 320×960px */
+  .xbanner {
+    width: 320px;
+    height: 960px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(178deg, #0a1f12 0%, #122e1e 20%, #163828 45%, #0d2818 70%, #081510 100%);
+    color: #f0ebe0;
+    border-radius: 4px;
+  }
+
+  /* Texture overlay */
+  .xbanner .grain {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.025) 1px, transparent 1px);
+    background-size: 16px 16px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Top branding */
+  .xbanner .top-brands {
+    position: absolute;
+    top: 20px; left: 20px; right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 20;
+  }
+  .xbanner .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .xbanner .logo-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    filter: brightness(0) invert(0.8) sepia(1) saturate(3) hue-rotate(10deg);
+  }
+  .xbanner .brand-name {
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c9a84c;
+    line-height: 1.3;
+  }
+  .xbanner .collab-x {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: #c9a84c;
+    opacity: 0.5;
+  }
+  .xbanner .brand-right {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #f0ebe0;
+    opacity: 0.6;
+  }
+
+  /* Hero type — top section */
+  .xbanner .hero-type {
+    position: absolute;
+    top: 55px;
+    left: 20px;
+    right: 20px;
+    z-index: 5;
+  }
+  .xbanner .hero-type .ghost {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 90px;
+    line-height: 0.8;
+    letter-spacing: -2px;
+    color: rgba(240,235,224,0.07);
+  }
+  .xbanner .hero-type .main {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 74px;
+    line-height: 0.85;
+    letter-spacing: -1px;
+    color: #f0ebe0;
+    margin-top: -6px;
+  }
+  .xbanner .hero-type .accent {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 58px;
+    line-height: 0.9;
+    color: #c9a84c;
+    margin-top: -2px;
+  }
+  .xbanner .hero-type .accent .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: #c9a84c;
+    border-radius: 50%;
+    margin-left: 3px;
+    vertical-align: middle;
+  }
+
+  /* Toki character — large, center/right */
+  .xbanner .toki-char {
+    position: absolute;
+    right: -20px;
+    top: 210px;
+    width: 280px;
+    height: 380px;
+    z-index: 10;
+  }
+  .xbanner .toki-char img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: right center;
+    filter: drop-shadow(-8px 6px 20px rgba(0,0,0,0.6));
+  }
+
+  /* Side info bullets */
+  .xbanner .side-info {
+    position: absolute;
+    left: 20px;
+    top: 340px;
+    z-index: 15;
+  }
+  .xbanner .side-info .bullet {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c9a84c;
+    opacity: 0.8;
+  }
+  .xbanner .side-info .bullet::before {
+    content: '';
+    width: 3px;
+    height: 3px;
+    background: #c9a84c;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Lottery card */
+  .xbanner .lottery-card {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    top: 520px;
+    width: 200px;
+    z-index: 15;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 20px rgba(201,168,76,0.1);
+  }
+  .xbanner .lottery-card img {
+    width: 100%;
+    display: block;
+  }
+
+  /* Prize section */
+  .xbanner .prize-section {
+    position: absolute;
+    top: 650px;
+    left: 20px;
+    right: 20px;
+    text-align: center;
+    z-index: 15;
+  }
+  .xbanner .prize-section .prize-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #c9a84c;
+    opacity: 0.7;
+    margin-bottom: 6px;
+  }
+  .xbanner .prize-section .prize-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    color: #f0ebe0;
+    line-height: 1;
+    letter-spacing: 3px;
+  }
+  .xbanner .prize-section .prize-unit {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: #c9a84c;
+  }
+
+  /* Description */
+  .xbanner .desc-area {
+    position: absolute;
+    top: 755px;
+    left: 20px;
+    right: 20px;
+    z-index: 15;
+  }
+  .xbanner .desc-area .desc-text {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #f0ebe0;
+    opacity: 0.5;
+    text-align: center;
+  }
+
+  /* Bottom section */
+  .xbanner .bottom-section {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 20px 20px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.5));
+    z-index: 20;
+  }
+  .xbanner .bottom-section .date-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 10px;
+  }
+  .xbanner .bottom-section .date {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .xbanner .bottom-section .time-badge {
+    background: #c9a84c;
+    color: #0d2818;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+  .xbanner .bottom-section .venue-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid rgba(201,168,76,0.15);
+  }
+  .xbanner .bottom-section .venue {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    opacity: 0.5;
+  }
+  .xbanner .bottom-section .qr {
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7px;
+    color: #c9a84c;
+    opacity: 0.5;
+    line-height: 1.3;
+  }
+</style>
+</head>
+<body>
+
+<p class="label">X-Banner — 600 × 1800mm</p>
+
+<div class="xbanner">
+  <div class="grain"></div>
+
+  <div class="top-brands">
+    <div class="brand-left">
+      <img class="logo-img" src="/Users/son-yeongseong/Downloads/tokamak-network-logo.png" alt="Tokamak">
+      <div class="brand-name">TOKAMAK<br>NETWORK</div>
+    </div>
+    <span class="collab-x">×</span>
+    <div class="brand-right">THE GREEN</div>
+  </div>
+
+  <div class="hero-type">
+    <div class="ghost">SCRATCH</div>
+    <div class="main">FREE</div>
+    <div class="accent">Lottery<span class="dot"></span></div>
+  </div>
+
+  <div class="toki-char">
+    <img src="/Users/son-yeongseong/Downloads/toki-peeking-nobg.png" alt="Toki">
+  </div>
+
+  <div class="side-info">
+    <div class="bullet">100% 당첨</div>
+    <div class="bullet">무료 스크래치</div>
+    <div class="bullet">TON COIN</div>
+  </div>
+
+  <div class="lottery-card">
+    <img src="/Users/son-yeongseong/Downloads/Combine_these_two_202604070943.png" alt="Lottery Card">
+  </div>
+
+  <div class="prize-section">
+    <div class="prize-label">Win up to</div>
+    <div class="prize-amount">100</div>
+    <div class="prize-unit">TON</div>
+  </div>
+
+  <div class="desc-area">
+    <div class="desc-text">
+      긁으면 다 당첨!<br>
+      무료 스크래치 복권으로<br>
+      TON 코인을 받아가세요
+    </div>
+  </div>
+
+  <div class="bottom-section">
+    <div class="date-row">
+      <div class="date">2026.04</div>
+      <div class="time-badge">EVERY WEEKEND</div>
+    </div>
+    <div class="venue-row">
+      <div class="venue">@ THE GREEN, 강남</div>
+      <div class="qr">QR<br>CODE</div>
+    </div>
+  </div>
+</div>
+
+<p class="spec">600 × 1800mm · CMYK · 150DPI · X배너 거치대 사용</p>
+
+</body>
+</html>

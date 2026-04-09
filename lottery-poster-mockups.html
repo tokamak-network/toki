@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lottery Poster — A tone refined</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 60px;
+    font-family: 'Inter', sans-serif;
+  }
+  .label {
+    color: #555;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: -40px;
+  }
+
+  .poster {
+    width: 480px;
+    height: 678px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ===== POSTER 1: CILLIN-style ===== */
+  .p1 {
+    background: linear-gradient(175deg, #0a1f12 0%, #153525 35%, #0d2818 70%, #091a10 100%);
+    color: #f0ebe0;
+  }
+  .p1 .grid-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Top brands */
+  .p1 .top-brands {
+    position: absolute;
+    top: 24px; left: 28px; right: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 20;
+  }
+  .p1 .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .p1 .brand-left .logo-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
+  .p1 .brand-left .name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #f0ebe0;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+  .p1 .brand-right {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #c9a84c;
+  }
+  .p1 .collab-x {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: #c9a84c;
+    opacity: 0.6;
+  }
+
+  /* Hero type */
+  .p1 .hero-type {
+    position: absolute;
+    top: 72px;
+    left: 28px;
+    right: 28px;
+    z-index: 5;
+  }
+  .p1 .hero-type .line1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 120px;
+    line-height: 0.82;
+    letter-spacing: -3px;
+    color: rgba(240,235,224,0.12);
+  }
+  .p1 .hero-type .line2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 100px;
+    line-height: 0.85;
+    letter-spacing: -2px;
+    color: #f0ebe0;
+    margin-top: -6px;
+  }
+  .p1 .hero-type .line3 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 56px;
+    line-height: 0.9;
+    color: #c9a84c;
+    margin-top: -2px;
+    margin-left: 4px;
+  }
+  .p1 .hero-type .line3 .dot {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background: #c9a84c;
+    border-radius: 50%;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  /* Toki character — peeking from right edge */
+  .p1 .toki-char {
+    position: absolute;
+    right: -42px;
+    top: 80px;
+    width: 280px;
+    height: 500px;
+    z-index: 10;
+  }
+  .p1 .toki-char img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: right center;
+    filter: drop-shadow(-8px 4px 20px rgba(0,0,0,0.6));
+  }
+
+  /* Side info */
+  .p1 .side-label {
+    position: absolute;
+    left: 28px;
+    top: 350px;
+    z-index: 20;
+  }
+  .p1 .side-label .by-line {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #c9a84c;
+    opacity: 0.8;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .p1 .side-label .by-line::before {
+    content: '';
+    width: 3px;
+    height: 3px;
+    background: #c9a84c;
+    border-radius: 50%;
+  }
+  /* Prize tier badges */
+  .p1 .prize-tiers {
+    display: flex;
+    gap: 5px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    max-width: 180px;
+  }
+  .p1 .prize-tiers .tier {
+    padding: 3px 8px;
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 3px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    color: #c9a84c;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .p1 .prize-tiers .tier .unit {
+    font-family: 'Inter', sans-serif;
+    font-size: 7px;
+    font-weight: 600;
+    opacity: 0.6;
+    margin-left: 2px;
+  }
+
+  /* Hashtags */
+  .p1 .hashtags {
+    margin-top: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    color: #f0ebe0;
+    opacity: 0.3;
+    letter-spacing: 0.5px;
+    line-height: 1.7;
+  }
+
+  /* Max prize callout */
+  .p1 .max-prize {
+    position: absolute;
+    left: 28px;
+    bottom: 85px;
+    z-index: 15;
+  }
+  .p1 .max-prize .label-text {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #c9a84c;
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+  .p1 .max-prize .amount-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .p1 .max-prize .amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    color: #f0ebe0;
+    line-height: 1;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(201,168,76,0.4), 0 0 40px rgba(201,168,76,0.2);
+  }
+  .p1 .max-prize .unit {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 24px;
+    color: #c9a84c;
+    text-shadow: 0 0 12px rgba(201,168,76,0.3);
+  }
+  .p1 .max-prize .krw-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #c9a84c;
+    opacity: 0.7;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+  .p1 .max-prize .price-note {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 8px;
+    color: #f0ebe0;
+    opacity: 0.3;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  .p1 .max-prize .glow-bar {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, #c9a84c, transparent);
+    margin-top: 6px;
+    opacity: 0.5;
+  }
+
+  /* Tags row */
+  .p1 .tags-row {
+    position: absolute;
+    left: 28px;
+    bottom: 70px;
+    z-index: 15;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    max-width: 200px;
+  }
+  .p1 .tags-row .tag {
+    font-size: 8px;
+    font-weight: 600;
+    color: #f0ebe0;
+    opacity: 0.3;
+    letter-spacing: 0.5px;
+  }
+
+  /* Lottery card floating */
+  .p1 .lottery-card {
+    position: absolute;
+    left: 20px;
+    bottom: 120px;
+    width: 170px;
+    height: auto;
+    z-index: 15;
+    transform: rotate(-6deg);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(201,168,76,0.15);
+  }
+  .p1 .lottery-card img {
+    width: 100%;
+    display: block;
+  }
+
+  /* Date block */
+  .p1 .date-block {
+    position: absolute;
+    right: 28px;
+    bottom: 90px;
+    z-index: 20;
+    text-align: right;
+  }
+  .p1 .date-block .date {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 44px;
+    letter-spacing: 2px;
+    color: #f0ebe0;
+    line-height: 1;
+  }
+  .p1 .date-block .time {
+    display: inline-block;
+    background: #c9a84c;
+    color: #0d2818;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* Bottom bar */
+  .p1 .bottom-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    background: rgba(0,0,0,0.4);
+    border-top: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    z-index: 20;
+  }
+  .p1 .bottom-bar .venue {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    opacity: 0.6;
+  }
+  .p1 .bottom-bar .collab-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    opacity: 0.5;
+  }
+  .p1 .bottom-bar .collab-logo .x {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: #c9a84c;
+    margin: 0 4px;
+  }
+  .p1 .bottom-bar .qr {
+    width: 44px;
+    height: 44px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .p1 .bottom-bar .qr img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* ===== POSTER 2: BackYard-style ===== */
+  .p2 {
+    background: #f0ebe0;
+    color: #153525;
+  }
+  .p2 .top-brands {
+    position: absolute;
+    top: 24px; left: 28px; right: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 20;
+  }
+  .p2 .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .p2 .brand-left .logo-img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+  .p2 .brand-left .name-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+  .p2 .brand-left .name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: #153525;
+    opacity: 0.6;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .p2 .brand-right-area {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .p2 .brand-stamp {
+    padding: 6px 14px;
+    border: 2.5px solid #153525;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #153525;
+    transform: rotate(-3deg);
+    line-height: 1.3;
+  }
+
+  /* Character — peeking from right edge */
+  .p2 .toki-center {
+    position: absolute;
+    right: -34px;
+    top: 50px;
+    width: 260px;
+    height: 420px;
+    z-index: 5;
+  }
+  .p2 .toki-center img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: right center;
+    filter: drop-shadow(-4px 4px 12px rgba(0,0,0,0.12));
+  }
+
+  /* Lottery card overlay */
+  .p2 .lottery-card {
+    position: absolute;
+    right: 20px;
+    top: 260px;
+    width: 150px;
+    z-index: 10;
+    transform: rotate(8deg);
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 4px 6px 20px rgba(0,0,0,0.15);
+  }
+  .p2 .lottery-card img {
+    width: 100%;
+    display: block;
+  }
+
+  /* Collab × */
+  .p2 .p2-collab-x {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 36px;
+    color: #c9a84c;
+    opacity: 0.6;
+  }
+
+  /* Date badge */
+  .p2 .date-badge {
+    position: absolute;
+    top: 250px;
+    left: 28px;
+    z-index: 15;
+    background: #fff;
+    border: 2.5px solid #153525;
+    padding: 6px 24px;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #153525;
+    letter-spacing: 2px;
+    box-shadow: 4px 4px 0 #153525;
+  }
+
+  /* Venue badge */
+  /* Max prize for P2 */
+  .p2 .max-prize {
+    position: absolute;
+    left: 28px;
+    top: 310px;
+    z-index: 15;
+  }
+  .p2 .max-prize .label-text {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #5a7a4a;
+    opacity: 0.6;
+    margin-bottom: 2px;
+  }
+  .p2 .max-prize .amount-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .p2 .max-prize .amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    color: #153525;
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+  .p2 .max-prize .unit {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 20px;
+    color: #5a7a4a;
+  }
+  .p2 .max-prize .krw-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #153525;
+    opacity: 0.5;
+    margin-top: 2px;
+  }
+  .p2 .max-prize .price-note {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 8px;
+    color: #153525;
+    opacity: 0.3;
+    margin-top: 3px;
+  }
+
+  /* Bottom type */
+  .p2 .bottom-type {
+    position: absolute;
+    bottom: 62px;
+    left: 28px;
+    right: 28px;
+    z-index: 20;
+  }
+  .p2 .bottom-type .main {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 72px;
+    line-height: 0.88;
+    color: #153525;
+    letter-spacing: -2px;
+  }
+  .p2 .bottom-type .main .serif-italic {
+    font-style: italic;
+    color: #5a7a4a;
+  }
+
+  .p2 .sub-info {
+    position: absolute;
+    bottom: 16px;
+    left: 28px;
+    right: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    z-index: 20;
+  }
+  .p2 .sub-info .details {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    line-height: 1.6;
+    text-transform: uppercase;
+    color: #153525;
+    opacity: 0.45;
+  }
+  .p2 .sub-info .qr {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .p2 .sub-info .qr img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .p2 .sub-info .by-logo {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-style: italic;
+    font-size: 22px;
+    color: #153525;
+    opacity: 0.2;
+  }
+
+  /* ===== POSTER 3: Dynamic split ===== */
+  .p3 {
+    background: linear-gradient(170deg, #0d2818 0%, #1a4030 50%, #0a1f12 100%);
+    color: #f0ebe0;
+  }
+  .p3::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+  }
+  .p3 > * { position: relative; z-index: 2; }
+
+  .p3 .top-bar {
+    position: absolute;
+    top: 24px; left: 28px; right: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 20;
+  }
+  .p3 .top-bar .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .p3 .top-bar .logo-img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+  }
+  .p3 .top-bar .brand-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #f0ebe0;
+    opacity: 0.7;
+  }
+  .p3 .top-bar .the-green {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #c9a84c;
+  }
+
+  /* Background watermark */
+  .p3 .bg-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 160px;
+    color: rgba(201,168,76,0.04);
+    white-space: nowrap;
+    letter-spacing: 10px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Split type */
+  .p3 .type-left {
+    position: absolute;
+    top: 72px;
+    left: 28px;
+    z-index: 10;
+  }
+  .p3 .type-left .word1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    line-height: 0.85;
+    letter-spacing: 4px;
+    color: #f0ebe0;
+  }
+  .p3 .type-left .word2 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 56px;
+    line-height: 0.9;
+    color: #c9a84c;
+  }
+  .p3 .type-right {
+    position: absolute;
+    top: 68px;
+    right: 28px;
+    text-align: right;
+    z-index: 4;
+  }
+  .p3 .type-right .big {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 130px;
+    line-height: 0.78;
+    letter-spacing: -4px;
+    color: rgba(240,235,224,0.08);
+  }
+
+  /* Character center-left */
+  .p3 .toki-main {
+    position: absolute;
+    left: -20px;
+    top: 160px;
+    width: 320px;
+    height: 370px;
+    z-index: 8;
+  }
+  .p3 .toki-main img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom left;
+    filter: drop-shadow(0 6px 24px rgba(0,0,0,0.6));
+  }
+
+  /* Right info panel */
+  .p3 .info-panel {
+    position: absolute;
+    right: 28px;
+    top: 250px;
+    z-index: 10;
+    text-align: right;
+  }
+  .p3 .info-panel .prize-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #c9a84c;
+    opacity: 0.8;
+    margin-bottom: 8px;
+  }
+  .p3 .info-panel .prize-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    color: #f0ebe0;
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+  .p3 .info-panel .prize-unit {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: #c9a84c;
+  }
+  .p3 .info-panel .sub-text {
+    font-size: 11px;
+    opacity: 0.4;
+    margin-top: 14px;
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  /* Floating lottery card */
+  .p3 .lottery-card {
+    position: absolute;
+    right: 20px;
+    top: 410px;
+    width: 175px;
+    z-index: 12;
+    transform: rotate(-5deg);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.5), 0 0 16px rgba(201,168,76,0.1);
+  }
+  .p3 .lottery-card img {
+    width: 100%;
+    display: block;
+  }
+
+  /* Bottom */
+  .p3 .bottom-section {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 28px 22px;
+    z-index: 20;
+    background: linear-gradient(transparent, rgba(0,0,0,0.5));
+  }
+  .p3 .bottom-section .badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .p3 .bottom-section .badge {
+    padding: 3px 10px;
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 2px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #c9a84c;
+    letter-spacing: 1px;
+  }
+  .p3 .bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .p3 .bottom-row .date-info {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .p3 .bottom-row .date-info .venue-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    opacity: 0.5;
+    margin-top: 3px;
+  }
+  .p3 .bottom-row .collab {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    opacity: 0.4;
+  }
+  .p3 .bottom-row .collab .x {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: #c9a84c;
+    margin: 0 3px;
+  }
+  .p3 .bottom-row .qr {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .p3 .bottom-row .qr img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+</style>
+</head>
+<body>
+
+<p class="label">Poster 1 — Character overlaps big type</p>
+
+<div class="poster p1">
+  <div class="grid-overlay"></div>
+  <div class="top-brands">
+    <div class="brand-left">
+      <img class="logo-img" src="/Users/son-yeongseong/Downloads/tokamak-network-logo.png" alt="Tokamak">
+      <div class="name">TOKAMAK NETWORK</div>
+    </div>
+    <span class="collab-x">×</span>
+    <div class="brand-right">THE GREEN</div>
+  </div>
+
+  <div class="hero-type">
+    <div class="line1">SCRATCH</div>
+    <div class="line2">FREE</div>
+    <div class="line3">Toki Lottery<span class="dot"></span></div>
+  </div>
+
+  <div class="toki-char">
+    <img src="/Users/son-yeongseong/Downloads/toki-peeking-nobg.png" alt="Toki">
+  </div>
+
+  <div class="side-label">
+    <div class="by-line">100% 당첨</div>
+    <div class="by-line">무료 스크래치</div>
+    <div class="by-line">즉시 사용 가능</div>
+  </div>
+
+  <div class="max-prize">
+    <div class="label-text">Win up to</div>
+    <div class="amount-row">
+      <div class="amount">100</div>
+      <div class="unit">TON</div>
+    </div>
+    <div class="krw-value">≈ ₩70,000+</div>
+    <div class="price-note">*시세에 따라 변동 · 업비트에서 실시간 확인</div>
+    <div class="glow-bar"></div>
+  </div>
+  <div class="tags-row">
+    <span class="tag">#Tokamak</span>
+    <span class="tag">#TokamakNetwork</span>
+    <span class="tag">#TON</span>
+    <span class="tag">#더그린</span>
+  </div>
+
+  <div class="date-block">
+    <div class="date">2026.04</div>
+    <div class="time">EVERY DAY</div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="venue">@ THE GREEN, 서울대입구</div>
+    <div class="collab-logo">TOKAMAK<span class="x">×</span>THE GREEN</div>
+    <div class="qr"><img src="/Users/son-yeongseong/Downloads/qr-code.png" alt="QR"></div>
+  </div>
+</div>
+
+<p class="label">Poster 2 — Character center, bold type bottom</p>
+
+<div class="poster p2">
+  <div class="top-brands">
+    <div class="brand-left">
+      <img class="logo-img" src="/Users/son-yeongseong/Downloads/tokamak-network-logo.png" alt="Tokamak">
+      <div class="name">TOKAMAK NETWORK</div>
+    </div>
+    <span class="p2-collab-x">×</span>
+    <div class="brand-right-area">
+      <div class="brand-stamp">THE<br>GREEN</div>
+    </div>
+  </div>
+
+  <div class="toki-center">
+    <img src="/Users/son-yeongseong/Downloads/toki-peeking-nobg.png" alt="Toki">
+  </div>
+
+  <div class="date-badge">2026. 04</div>
+
+  <div class="max-prize">
+    <div class="label-text">Win up to</div>
+    <div class="amount-row">
+      <div class="amount">100</div>
+      <div class="unit">TON</div>
+    </div>
+    <div class="krw-value">≈ ₩70,000+</div>
+    <div class="price-note">*시세에 따라 변동 · 업비트에서 실시간 확인</div>
+  </div>
+
+  <div class="bottom-type">
+    <div class="main">FREE<br>SCRATCH<br><span class="serif-italic">Toki Lottery</span></div>
+  </div>
+
+  <div class="sub-info">
+    <div class="details">
+      100% 당첨 · 무료<br>
+      TON COIN REWARDS<br>
+      @ THE GREEN, 서울대입구
+    </div>
+    <div class="qr"><img src="/Users/son-yeongseong/Downloads/qr-code.png" alt="QR"></div>
+  </div>
+</div>
+
+<p class="label">Poster 3 — Dynamic split layout</p>
+
+<div class="poster p3">
+  <div class="bg-text">TOKAMAK</div>
+
+  <div class="top-bar">
+    <div class="brand-left">
+      <img class="logo-img" src="/Users/son-yeongseong/Downloads/tokamak-network-logo.png" alt="Tokamak">
+      <div class="brand-name">TOKAMAK NETWORK</div>
+    </div>
+    <div class="the-green">THE GREEN</div>
+  </div>
+
+  <div class="type-left">
+    <div class="word1">FREE</div>
+    <div class="word2">Scratch</div>
+  </div>
+  <div class="type-right">
+    <div class="big">LOT<br>TERY</div>
+  </div>
+
+  <div class="toki-main">
+    <img src="/Users/son-yeongseong/Downloads/toki-laughing.png" alt="Toki">
+  </div>
+
+  <div class="info-panel">
+    <div class="prize-label">Win up to</div>
+    <div class="prize-amount">100</div>
+    <div class="prize-unit">TON</div>
+    <div class="sub-text">긁으면 다 당첨!<br>무료 스크래치 복권</div>
+  </div>
+
+  <div class="bottom-section">
+    <div class="badges">
+      <span class="badge">100% 당첨</span>
+      <span class="badge">무료</span>
+      <span class="badge">TON</span>
+    </div>
+    <div class="bottom-row">
+      <div class="date-info">
+        2026. 04
+        <div class="venue-sub">@ THE GREEN, 서울대입구</div>
+      </div>
+      <div class="collab">TOKAMAK<span class="x">×</span>THE GREEN</div>
+      <div class="qr"><img src="/Users/son-yeongseong/Downloads/qr-code.png" alt="QR"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
