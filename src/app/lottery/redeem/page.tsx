@@ -25,6 +25,8 @@ export default function LotteryRedeemPage() {
   const [cardInfo, setCardInfo] = useState<CardInfo | null>(null);
   const [pageState, setPageState] = useState<PageState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [pin, setPin] = useState("");
+  const [pinError, setPinError] = useState(false);
 
   // Fetch card info
   useEffect(() => {
@@ -71,18 +73,27 @@ export default function LotteryRedeemPage() {
   // Redeem handler
   const handleRedeem = useCallback(async () => {
     if (!cardInfo) return;
+    if (!pin.trim()) {
+      setPinError(true);
+      return;
+    }
+    setPinError(false);
     setPageState("confirming");
 
     try {
       const res = await fetch("/api/lottery/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cardNumber: cardInfo.cardNumber }),
+        body: JSON.stringify({ cardNumber: cardInfo.cardNumber, pin: pin.trim() }),
       });
       const data = await res.json();
 
       if (data.success) {
         setPageState("success");
+      } else if (data.error === "invalid_pin") {
+        setPinError(true);
+        setPin("");
+        setPageState("ready");
       } else {
         setErrorMessage(data.message ?? "처리 중 오류가 발생했습니다.");
         setPageState("error");
@@ -91,7 +102,7 @@ export default function LotteryRedeemPage() {
       setErrorMessage("네트워크 오류가 발생했습니다.");
       setPageState("error");
     }
-  }, [cardInfo]);
+  }, [cardInfo, pin]);
 
   // Format expiry date
   const formatExpiry = (iso: string | null) => {
@@ -212,10 +223,34 @@ export default function LotteryRedeemPage() {
           </div>
         )}
 
+        {/* Staff PIN input */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-pink-900/60 block">
+            스탭 PIN 번호
+          </label>
+          <input
+            type="password"
+            inputMode="numeric"
+            maxLength={8}
+            value={pin}
+            onChange={(e) => { setPin(e.target.value); setPinError(false); }}
+            onKeyDown={(e) => e.key === "Enter" && handleRedeem()}
+            placeholder="PIN 입력"
+            className={`w-full px-4 py-3 rounded-xl text-center text-lg font-bold tracking-[0.3em] outline-none transition-colors ${
+              pinError
+                ? "border-2 border-red-400 bg-red-50/50"
+                : "border border-pink-200/50 bg-white/50"
+            }`}
+          />
+          {pinError && (
+            <p className="text-xs text-red-500 text-center">PIN 번호가 올바르지 않습니다</p>
+          )}
+        </div>
+
         {/* Redeem button */}
         <button
           onClick={handleRedeem}
-          disabled={pageState === "confirming"}
+          disabled={pageState === "confirming" || !pin.trim()}
           className="w-full py-4 rounded-2xl font-black text-lg text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
             background: "linear-gradient(135deg, #ec4899 0%, #a855f7 100%)",

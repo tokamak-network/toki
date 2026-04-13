@@ -53,13 +53,23 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { cardNumber } = await request.json();
+    const { cardNumber, pin } = await request.json();
 
-    if (!cardNumber) {
+    if (!cardNumber || !pin) {
       return NextResponse.json(
-        { error: "Missing card number" },
+        { error: "Missing card number or PIN" },
         { status: 400 },
       );
+    }
+
+    // Verify staff PIN
+    const staffPin = process.env.LOTTERY_STAFF_PIN;
+    if (!staffPin || pin !== staffPin) {
+      return NextResponse.json({
+        success: false,
+        error: "invalid_pin",
+        message: "PIN 번호가 올바르지 않습니다.",
+      });
     }
 
     const { data: card, error } = await supabaseAdmin
@@ -106,7 +116,7 @@ export async function POST(request: NextRequest) {
       .from("cards")
       .update({
         discount_verified_at: new Date().toISOString(),
-        discount_verified_by: "qr_redeem",
+        discount_verified_by: `pin:${pin}`,
       })
       .eq("card_number", cardNumber)
       .eq("status", "discount_used")
