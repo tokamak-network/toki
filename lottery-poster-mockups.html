@@ -275,6 +275,15 @@
     opacity: 0.5;
   }
 
+  .p1 .max-prize .ticker {
+    font-family: 'Space Grotesk', sans-serif;
+    font-style: normal;
+    font-size: 12px;
+    font-weight: 600;
+    color: #c9a84c;
+    opacity: 0.6;
+  }
+
   /* Tags row */
   .p1 .tags-row {
     position: absolute;
@@ -322,7 +331,7 @@
   }
   .p1 .date-block .date {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 44px;
+    font-size: 32px;
     letter-spacing: 2px;
     color: #f0ebe0;
     line-height: 1;
@@ -352,24 +361,49 @@
     padding: 0 28px;
     z-index: 20;
   }
-  .p1 .bottom-bar .venue {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    opacity: 0.6;
+  .p1 .bottom-bar .brand-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
   .p1 .bottom-bar .collab-logo {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 10px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     letter-spacing: 1.5px;
-    opacity: 0.5;
   }
   .p1 .bottom-bar .collab-logo .x {
     font-family: 'Playfair Display', serif;
     font-style: italic;
     color: #c9a84c;
     margin: 0 4px;
+  }
+  .p1 .bottom-bar .venue {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    opacity: 0.45;
+  }
+  .p1 .bottom-bar .qr-area {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .p1 .bottom-bar .toki-scan {
+    position: absolute;
+    right: 59px;
+    bottom: -12px;
+    width: auto;
+    height: 94px;
+    object-fit: contain;
+  }
+  .p1 .bottom-bar .url {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #f0ebe0;
+    opacity: 0.5;
   }
   .p1 .bottom-bar .qr {
     width: 44px;
@@ -548,6 +582,15 @@
     margin-top: 3px;
   }
 
+  .p2 .max-prize .ticker {
+    font-family: 'Space Grotesk', sans-serif;
+    font-style: normal;
+    font-size: 11px;
+    font-weight: 600;
+    color: #5a7a4a;
+    opacity: 0.6;
+  }
+
   /* Bottom type */
   .p2 .bottom-type {
     position: absolute;
@@ -587,6 +630,21 @@
     text-transform: uppercase;
     color: #153525;
     opacity: 0.45;
+  }
+  .p2 .sub-info .qr-area {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .p2 .sub-info .url {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #153525;
+    opacity: 0.5;
+    text-align: right;
+    line-height: 1.4;
   }
   .p2 .sub-info .qr {
     width: 48px;
@@ -756,6 +814,14 @@
     font-size: 22px;
     color: #c9a84c;
   }
+  .p3 .info-panel .ticker {
+    font-family: 'Space Grotesk', sans-serif;
+    font-style: normal;
+    font-size: 11px;
+    font-weight: 600;
+    color: #c9a84c;
+    opacity: 0.6;
+  }
   .p3 .info-panel .sub-text {
     font-size: 11px;
     opacity: 0.4;
@@ -875,18 +941,17 @@
 
   <div class="side-label">
     <div class="by-line">100% 당첨</div>
-    <div class="by-line">무료 스크래치</div>
     <div class="by-line">즉시 사용 가능</div>
+    <div class="by-line">수량 한정</div>
   </div>
 
   <div class="max-prize">
     <div class="label-text">Win up to</div>
     <div class="amount-row">
       <div class="amount">100</div>
-      <div class="unit">TON</div>
+      <div class="unit">TON <span class="ticker">(TOKAMAK)</span></div>
     </div>
-    <div class="krw-value">≈ ₩70,000+</div>
-    <div class="price-note">*시세에 따라 변동 · 업비트에서 실시간 확인</div>
+    <div class="price-note">*국내 4대 거래소에서 실시간 확인</div>
     <div class="glow-bar"></div>
   </div>
   <div class="tags-row">
@@ -897,14 +962,19 @@
   </div>
 
   <div class="date-block">
-    <div class="date">2026.04</div>
+    <div class="date">2026.04.18 ~</div>
     <div class="time">EVERY DAY</div>
   </div>
 
   <div class="bottom-bar">
-    <div class="venue">@ THE GREEN, 서울대입구</div>
-    <div class="collab-logo">TOKAMAK<span class="x">×</span>THE GREEN</div>
-    <div class="qr"><img src="/Users/son-yeongseong/Downloads/qr-code.png" alt="QR"></div>
+    <div class="brand-info">
+      <div class="collab-logo">TOKAMAK NETWORK<span class="x">×</span>THE GREEN</div>
+      <div class="venue">@ THE GREEN, 서울대입구</div>
+    </div>
+    <div class="qr-area">
+      <img class="toki-scan" src="public/toki-scan-me.png" alt="Toki">
+      <div class="qr"><img src="/Users/son-yeongseong/Downloads/qr-code.png" alt="QR"></div>
+    </div>
   </div>
 </div>
 
@@ -926,16 +996,15 @@
     <img src="/Users/son-yeongseong/Downloads/toki-peeking-nobg.png" alt="Toki">
   </div>
 
-  <div class="date-badge">2026. 04</div>
+  <div class="date-badge">2026.04.18 ~</div>
 
   <div class="max-prize">
     <div class="label-text">Win up to</div>
     <div class="amount-row">
       <div class="amount">100</div>
-      <div class="unit">TON</div>
+      <div class="unit">TON <span class="ticker">(TOKAMAK)</span></div>
     </div>
-    <div class="krw-value">≈ ₩70,000+</div>
-    <div class="price-note">*시세에 따라 변동 · 업비트에서 실시간 확인</div>
+    <div class="price-note">*국내 4대 거래소에서 거래 가능</div>
   </div>
 
   <div class="bottom-type">
@@ -944,7 +1013,7 @@
 
   <div class="sub-info">
     <div class="details">
-      100% 당첨 · 무료<br>
+      100% 당첨 · 즉시 사용 · 수량 한정<br>
       TON COIN REWARDS<br>
       @ THE GREEN, 서울대입구
     </div>
@@ -980,19 +1049,19 @@
   <div class="info-panel">
     <div class="prize-label">Win up to</div>
     <div class="prize-amount">100</div>
-    <div class="prize-unit">TON</div>
-    <div class="sub-text">긁으면 다 당첨!<br>무료 스크래치 복권</div>
+    <div class="prize-unit">TON <span class="ticker">(TOKAMAK)</span></div>
+    <div class="sub-text">긁으면 다 당첨!<br>즉시 사용 · 수량 한정</div>
   </div>
 
   <div class="bottom-section">
     <div class="badges">
       <span class="badge">100% 당첨</span>
-      <span class="badge">무료</span>
+      <span class="badge">수량 한정</span>
       <span class="badge">TON</span>
     </div>
     <div class="bottom-row">
       <div class="date-info">
-        2026. 04
+        2026.04.18 ~
         <div class="venue-sub">@ THE GREEN, 서울대입구</div>
       </div>
       <div class="collab">TOKAMAK<span class="x">×</span>THE GREEN</div>
