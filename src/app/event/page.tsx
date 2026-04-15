@@ -33,17 +33,57 @@ const LINKS = [
     borderColor: "border-yellow-400/30",
     external: true,
   },
+  {
+    id: "toki-main",
+    title: "토키 메인",
+    subtitle: "스테이킹 · 대시보드 · 생태계",
+    href: "/",
+    icon: "🏠",
+    color: "from-cyan-500 to-teal-600",
+    borderColor: "border-cyan-400/30",
+    external: false,
+  },
 ] as const;
 
 export default function EventPage() {
   return (
     <main
-      className="relative min-h-screen overflow-hidden flex flex-col items-center"
+      className="relative min-h-screen overflow-hidden flex flex-col items-center pt-14"
       style={{
         background:
           "linear-gradient(180deg, #fff5f7 0%, #ffe4ec 30%, #ffd6e0 50%, #fce8ef 70%, #f5e6f0 100%)",
       }}
     >
+      {/* ── Header ────────────────────────────────────────────────────── */}
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm bg-white/30 border-b border-pink-200/15">
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+          <a href="/" className="flex items-center gap-2">
+            <Image
+              src="/toki-icon.png"
+              alt="Toki"
+              width={28}
+              height={28}
+              className="w-7 h-7 rounded-full"
+            />
+            <Image
+              src="/toki-title-logo.png"
+              alt="Toki"
+              width={100}
+              height={40}
+              className="w-[50px] h-auto"
+            />
+          </a>
+          <nav className="flex items-center gap-4 text-xs font-medium">
+            <a href="/lottery" className="text-pink-600/70 hover:text-pink-700 transition-colors">
+              Lottery
+            </a>
+            <a href="/" className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-600 hover:bg-pink-500/20 transition-colors">
+              메인으로
+            </a>
+          </nav>
+        </div>
+      </header>
+
       {/* ── Floating cherry-blossom orbs ──────────────────────────────── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
@@ -94,19 +134,19 @@ export default function EventPage() {
       <div className="relative z-10 w-full max-w-sm flex flex-col items-center px-5 pt-10 pb-10">
 
         {/* Branding */}
-        <div className="flex items-center gap-2.5 mb-1">
+        <div className="flex items-center gap-1.5 mb-1 whitespace-nowrap">
           <Image
             src="/toki-logo.png"
             alt="Tokamak Network"
-            width={28}
-            height={28}
+            width={24}
+            height={24}
             className="rounded-full"
           />
-          <span className="text-pink-800/60 text-xs font-bold tracking-[3px] uppercase">
+          <span className="text-pink-800/60 text-[14px] font-bold tracking-[1.5px] uppercase">
             Tokamak Network
           </span>
-          <span className="text-emerald-400/50 font-serif italic text-xs">×</span>
-          <span className="text-emerald-500/70 font-bold text-xs tracking-[3px] uppercase">
+          <span className="text-emerald-400/50 font-serif italic text-[14px]">×</span>
+          <span className="text-emerald-500/70 font-bold text-[14px] tracking-[1.5px] uppercase">
             THE GREEN
           </span>
         </div>
@@ -214,20 +254,6 @@ export default function EventPage() {
             </a>
           ))}
         </div>
-
-        {/* Toki Main CTA */}
-        <a
-          href="/"
-          className="w-full flex items-center justify-center gap-2 rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-          style={{
-            background: "linear-gradient(135deg, rgba(6,182,212,0.12) 0%, rgba(34,211,238,0.08) 100%)",
-            border: "1px solid rgba(6,182,212,0.25)",
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          <span className="text-sm font-semibold text-cyan-700/80">토키 메인으로 가기</span>
-          <span className="text-cyan-500/60 text-xs">→</span>
-        </a>
 
         {/* Footer */}
         <div className="flex items-center justify-center gap-1.5">

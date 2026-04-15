@@ -21,12 +21,42 @@ export default function LotteryPage() {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden flex flex-col"
+      className="relative min-h-screen overflow-hidden flex flex-col pt-14"
       style={{
         background:
           "linear-gradient(180deg, #fff5f7 0%, #ffe4ec 30%, #ffd6e0 50%, #fce8ef 70%, #f5e6f0 100%)",
       }}
     >
+      {/* ── Header ────────────────────────────────────────────────────── */}
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm bg-white/30 border-b border-pink-200/15">
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+          <a href="/" className="flex items-center gap-2">
+            <Image
+              src="/toki-icon.png"
+              alt="Toki"
+              width={28}
+              height={28}
+              className="w-7 h-7 rounded-full"
+            />
+            <Image
+              src="/toki-title-logo.png"
+              alt="Toki"
+              width={100}
+              height={40}
+              className="w-[50px] h-auto"
+            />
+          </a>
+          <nav className="flex items-center gap-4 text-xs font-medium">
+            <a href="/event" className="text-pink-600/70 hover:text-pink-700 transition-colors">
+              Event
+            </a>
+            <a href="/" className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-600 hover:bg-pink-500/20 transition-colors">
+              메인으로
+            </a>
+          </nav>
+        </div>
+      </header>
+
       {/* ── Floating cherry-blossom orbs ────────────────────────────────── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
@@ -281,6 +311,8 @@ export default function LotteryPage() {
                 <span className="text-pink-600 font-semibold">스크래치 아래</span>에 카드번호가 있어요
               </p>
             </div>
+
+            <div style={{ height: "15px" }} />
 
             {/* Toki Main CTA */}
             <a
