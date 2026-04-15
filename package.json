@@ -11,14 +11,17 @@
   "dependencies": {
     "@metamask/delegation-toolkit": "^0.13.0",
     "@privy-io/react-auth": "^3.14.1",
+    "@supabase/supabase-js": "^2.102.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "next": "14.2.35",
+    "qrcode.react": "^4.2.0",
     "react": "^18",
     "react-dom": "^18",
     "viem": "^2.46.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

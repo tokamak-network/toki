@@ -409,3 +409,79 @@ body {
   0% { opacity: 0.8; }
   100% { opacity: 0; }
 }
+
+/* ─── Voice / Mic Animations ──────────────────────────────────── */
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(34, 211, 238, 0); }
+}
+
+.animate-mic-pulse { animation: mic-pulse 1.5s ease-in-out infinite; }
+
+/* Ripple ring animations — 3 concentric borders expanding outward */
+@keyframes mic-ring-1 {
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+@keyframes mic-ring-2 {
+  0% { opacity: 0.4; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+@keyframes mic-ring-3 {
+  0% { opacity: 0.3; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+
+.animate-mic-ring-1 { animation: mic-ring-1 1.2s ease-out infinite; }
+.animate-mic-ring-2 { animation: mic-ring-2 1.2s ease-out infinite 0.2s; }
+.animate-mic-ring-3 { animation: mic-ring-3 1.2s ease-out infinite 0.4s; }
+
+/* Waveform bar animations — staggered bounce heights */
+@keyframes mic-bar-1 {
+  0%, 100% { height: 12px; }
+  50% { height: 6px; }
+}
+@keyframes mic-bar-2 {
+  0%, 100% { height: 16px; }
+  50% { height: 8px; }
+}
+@keyframes mic-bar-3 {
+  0%, 100% { height: 10px; }
+  50% { height: 16px; }
+}
+@keyframes mic-bar-4 {
+  0%, 100% { height: 14px; }
+  50% { height: 6px; }
+}
+
+.animate-mic-bar-1 { animation: mic-bar-1 0.6s ease-in-out infinite; }
+.animate-mic-bar-2 { animation: mic-bar-2 0.6s ease-in-out infinite 0.1s; }
+.animate-mic-bar-3 { animation: mic-bar-3 0.6s ease-in-out infinite 0.2s; }
+.animate-mic-bar-4 { animation: mic-bar-4 0.6s ease-in-out infinite 0.3s; }
+
+/* Ambient glow behind the mic button when listening */
+@keyframes mic-glow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+.animate-mic-glow { animation: mic-glow 1.5s ease-in-out infinite; }
+
+/* ─── Toki Talking Animation ──────────────────────────────────── */
+
+@keyframes toki-talking {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.02); }
+}
+
+.animate-toki-talking { animation: toki-talking 0.4s ease-in-out infinite; }
+
+/* ─── Event Mode Animations ──────────────────────────────────── */
+
+@keyframes event-glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.2), 0 0 60px rgba(34, 211, 238, 0.05); }
+  50% { box-shadow: 0 0 40px rgba(34, 211, 238, 0.4), 0 0 80px rgba(34, 211, 238, 0.1); }
+}
+
+.animate-event-glow { animation: event-glow-pulse 2s ease-in-out infinite; }
