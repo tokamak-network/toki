@@ -56,6 +56,9 @@ snap/node_modules/
 # asset archive (unused assets kept for potential reuse)
 public/_archive/
 
+# browser extension (separate Plasmo project)
+toki-extension/
+
 # claude tooling
 **/CLAUDE.md
 .omc/
