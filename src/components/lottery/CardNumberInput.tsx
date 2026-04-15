@@ -9,9 +9,8 @@ interface CardNumberInputProps {
 }
 
 export default function CardNumberInput({ onSubmit, loading }: CardNumberInputProps) {
-  const isDev = process.env.NODE_ENV === "development";
-  const [prefix, setPrefix] = useState(isDev ? "TK01" : "");
-  const [code, setCode] = useState(isDev ? "DEMO01" : "");
+  const [prefix, setPrefix] = useState("");
+  const [code, setCode] = useState("");
   const codeRef = useRef<HTMLInputElement>(null);
 
   const fullNumber = `${prefix}-${code}`.toUpperCase();

@@ -312,22 +312,6 @@ export default function LotteryPage() {
               </p>
             </div>
 
-            <div style={{ height: "15px" }} />
-
-            {/* Toki Main CTA */}
-            <a
-              href="/"
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: "linear-gradient(135deg, rgba(6,182,212,0.12) 0%, rgba(34,211,238,0.08) 100%)",
-                border: "1px solid rgba(6,182,212,0.25)",
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              <span className="text-sm font-semibold text-cyan-700/80">토키 메인으로 가기</span>
-              <span className="text-cyan-500/60 text-xs">→</span>
-            </a>
-
             {/* Powered by */}
             <div className="flex items-center justify-center gap-1.5">
               <Image
