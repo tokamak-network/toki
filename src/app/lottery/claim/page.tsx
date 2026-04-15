@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 import { usePrivy } from "@privy-io/react-auth";
 import { useLottery } from "@/hooks/useLottery";
 import LotteryChatFlow from "@/components/lottery/LotteryChatFlow";
