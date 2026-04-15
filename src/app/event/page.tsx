@@ -38,7 +38,7 @@ const LINKS = [
 export default function EventPage() {
   return (
     <main
-      className="relative min-h-screen overflow-hidden flex flex-col items-center"
+      className="relative min-h-screen overflow-hidden flex flex-col items-center max-w-md mx-auto"
       style={{
         background:
           "linear-gradient(180deg, #fff5f7 0%, #ffe4ec 30%, #ffd6e0 50%, #fce8ef 70%, #f5e6f0 100%)",
@@ -105,13 +105,13 @@ export default function EventPage() {
           <span className="text-pink-800/60 text-xs font-bold tracking-[3px] uppercase">
             Tokamak Network
           </span>
-        </div>
-        <div className="flex items-center gap-1.5 mb-6">
-          <span className="text-pink-400/50 font-serif italic text-xs">×</span>
-          <span className="text-pink-600/70 font-bold text-xs tracking-[3px] uppercase">
+          <span className="text-emerald-400/50 font-serif italic text-xs">×</span>
+          <span className="text-emerald-500/70 font-bold text-xs tracking-[3px] uppercase">
             THE GREEN
           </span>
         </div>
+
+        <div className="mb-8" />
 
         {/* Lottery card preview */}
         <div

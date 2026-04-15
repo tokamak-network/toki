@@ -48,6 +48,7 @@ async function exportPosters() {
     { selector: '.p1', name: 'poster-1' },
     { selector: '.p2', name: 'poster-2' },
     { selector: '.p3', name: 'poster-3' },
+    { selector: '.p4', name: 'poster-4' },
   ];
 
   for (const { selector, name } of posters) {

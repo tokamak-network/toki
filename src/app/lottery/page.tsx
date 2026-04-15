@@ -21,7 +21,7 @@ export default function LotteryPage() {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden flex flex-col"
+      className="relative min-h-screen overflow-hidden flex flex-col max-w-md mx-auto"
       style={{
         background:
           "linear-gradient(180deg, #fff5f7 0%, #ffe4ec 30%, #ffd6e0 50%, #fce8ef 70%, #f5e6f0 100%)",
