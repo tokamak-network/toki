@@ -77,11 +77,11 @@ export default function EventPage() {
               className="w-[50px] h-auto"
             />
           </a>
-          <nav className="flex items-center gap-4 text-xs font-medium">
-            <a href="/lottery" className="text-pink-600/70 hover:text-pink-700 transition-colors">
+          <nav className="flex items-center gap-2 text-xs font-medium">
+            <a href="/lottery" className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-600 hover:bg-pink-500/20 active:scale-95 transition-all">
               {e.headerLottery}
             </a>
-            <a href="/" className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-600 hover:bg-pink-500/20 transition-colors">
+            <a href="/" className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-600 hover:bg-pink-500/20 active:scale-95 transition-all">
               {e.headerMain}
             </a>
           </nav>
