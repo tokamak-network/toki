@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import CardNumberInput from "@/components/lottery/CardNumberInput";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 /**
  * Lottery landing page — fixed QR code leads here.
@@ -13,6 +14,9 @@ import CardNumberInput from "@/components/lottery/CardNumberInput";
 export default function LotteryPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
+  const l = t.lotteryPage;
+  const e = t.eventPage;
 
   const handleSubmit = (cardNumber: string) => {
     setLoading(true);
@@ -48,10 +52,10 @@ export default function LotteryPage() {
           </a>
           <nav className="flex items-center gap-4 text-xs font-medium">
             <a href="/event" className="text-pink-600/70 hover:text-pink-700 transition-colors">
-              Event
+              {e.headerEvent}
             </a>
             <a href="/" className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-600 hover:bg-pink-500/20 transition-colors">
-              메인으로
+              {e.headerMain}
             </a>
           </nav>
         </div>
@@ -173,7 +177,7 @@ export default function LotteryPage() {
               boxShadow: "0 2px 12px rgba(244,114,182,0.2)",
             }}
           >
-            카드번호를 알려줘!
+            {l.speechBubble}
             {/* Tail pointing right toward Toki */}
             <span
               className="absolute top-1/2 -translate-y-1/2 -right-[10px]"
@@ -229,7 +233,7 @@ export default function LotteryPage() {
               TOKI LOTTERY
             </h1>
             <p className="text-xs text-pink-400/70 tracking-widest uppercase font-medium">
-              Season 1 — Cherry Blossom
+              {l.season}
             </p>
           </div>
 
@@ -308,7 +312,7 @@ export default function LotteryPage() {
                 </div>
               </div>
               <p className="text-xs text-gray-600 leading-snug">
-                <span className="text-pink-600 font-semibold">스크래치 아래</span>에 카드번호가 있어요
+                <span className="text-pink-600 font-semibold">{l.scratchHint}</span>{l.scratchHintSuffix}
               </p>
             </div>
 
@@ -322,7 +326,7 @@ export default function LotteryPage() {
                 className="flex-shrink-0 opacity-50"
               />
               <p className="text-[10px] text-pink-400/60 tracking-wider uppercase font-medium">
-                Powered by Tokamak Network
+                {l.poweredBy}
               </p>
             </div>
           </div>

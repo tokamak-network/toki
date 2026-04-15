@@ -839,6 +839,30 @@ const ko = {
     // Mission CTA
     missionCta: "🎁 미션 완료하면 카드 한 장 더!",
   },
+  eventPage: {
+    lottery: "Toki Lottery",
+    lotteryDesc: "무료 스크래치 복권 참여하기",
+    naverMap: "네이버 지도",
+    kakaoMap: "카카오맵",
+    mapDesc: "THE GREEN 오시는 길",
+    tokiMain: "토키 메인",
+    tokiMainDesc: "스테이킹 · 대시보드 · 생태계",
+    tagline: "100% 당첨 · 즉시 사용 가능",
+    poweredBy: "Powered by Tokamak Network",
+    headerLottery: "Lottery",
+    headerEvent: "Event",
+    headerMain: "메인으로",
+  },
+  lotteryPage: {
+    speechBubble: "카드번호를 알려줘!",
+    season: "Season 1 — Cherry Blossom",
+    scratchHint: "스크래치 아래",
+    scratchHintSuffix: "에 카드번호가 있어요",
+    inputGuide: "스크래치 아래 카드번호를 입력해주세요",
+    submit: "당첨 확인하기",
+    submitting: "확인 중...",
+    poweredBy: "Powered by Tokamak Network",
+  },
 } as const;
 
 export default ko;

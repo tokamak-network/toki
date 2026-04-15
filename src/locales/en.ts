@@ -844,6 +844,30 @@ const en = {
     // Mission CTA
     missionCta: "🎁 Complete a mission for a bonus card!",
   },
+  eventPage: {
+    lottery: "Toki Lottery",
+    lotteryDesc: "Try your luck with a free scratch card",
+    naverMap: "Naver Map",
+    kakaoMap: "KakaoMap",
+    mapDesc: "Directions to THE GREEN",
+    tokiMain: "Toki Main",
+    tokiMainDesc: "Staking · Dashboard · Ecosystem",
+    tagline: "100% Win · Use Instantly",
+    poweredBy: "Powered by Tokamak Network",
+    headerLottery: "Lottery",
+    headerEvent: "Event",
+    headerMain: "Main",
+  },
+  lotteryPage: {
+    speechBubble: "Tell me your card number!",
+    season: "Season 1 — Cherry Blossom",
+    scratchHint: "Under the scratch area",
+    scratchHintSuffix: " you'll find the card number",
+    inputGuide: "Enter the card number under the scratch area",
+    submit: "Check Prize",
+    submitting: "Checking...",
+    poweredBy: "Powered by Tokamak Network",
+  },
 } as const;
 
 export default en;

@@ -1,51 +1,55 @@
 "use client";
 
 import Image from "next/image";
-
-const LINKS = [
-  {
-    id: "lottery",
-    title: "Toki Lottery",
-    subtitle: "무료 스크래치 복권 참여하기",
-    href: "/lottery",
-    icon: "🎫",
-    color: "from-pink-500 to-pink-700",
-    borderColor: "border-pink-400/30",
-    external: false,
-  },
-  {
-    id: "naver-map",
-    title: "네이버 지도",
-    subtitle: "THE GREEN 오시는 길",
-    href: "https://naver.me/5wWe6XdA",
-    icon: "🗺️",
-    color: "from-green-500 to-green-700",
-    borderColor: "border-green-400/30",
-    external: true,
-  },
-  {
-    id: "kakao-map",
-    title: "카카오맵",
-    subtitle: "THE GREEN 오시는 길",
-    href: "https://place.map.kakao.com/718492093",
-    icon: "📍",
-    color: "from-yellow-400 to-amber-500",
-    borderColor: "border-yellow-400/30",
-    external: true,
-  },
-  {
-    id: "toki-main",
-    title: "토키 메인",
-    subtitle: "스테이킹 · 대시보드 · 생태계",
-    href: "/",
-    icon: "🏠",
-    color: "from-cyan-500 to-teal-600",
-    borderColor: "border-cyan-400/30",
-    external: false,
-  },
-] as const;
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 export default function EventPage() {
+  const { t } = useTranslation();
+  const e = t.eventPage;
+
+  const LINKS = [
+    {
+      id: "lottery",
+      title: e.lottery,
+      subtitle: e.lotteryDesc,
+      href: "/lottery",
+      iconSrc: "/toki-excited.png",
+      color: "from-pink-500 to-pink-700",
+      borderColor: "border-pink-400/30",
+      external: false,
+    },
+    {
+      id: "naver-map",
+      title: e.naverMap,
+      subtitle: e.mapDesc,
+      href: "https://naver.me/5wWe6XdA",
+      iconSrc: "/naver-map-icon.png",
+      color: "from-green-500 to-green-700",
+      borderColor: "border-green-400/30",
+      external: true,
+    },
+    {
+      id: "kakao-map",
+      title: e.kakaoMap,
+      subtitle: e.mapDesc,
+      href: "https://place.map.kakao.com/718492093",
+      iconSrc: "/kakao-map-icon.png",
+      color: "from-yellow-400 to-amber-500",
+      borderColor: "border-yellow-400/30",
+      external: true,
+    },
+    {
+      id: "toki-main",
+      title: e.tokiMain,
+      subtitle: e.tokiMainDesc,
+      href: "/",
+      iconSrc: "/toki-presenting.png",
+      color: "from-cyan-50 to-teal-50",
+      borderColor: "border-cyan-400/30",
+      external: false,
+    },
+  ];
+
   return (
     <main
       className="relative min-h-screen overflow-hidden flex flex-col items-center pt-14"
@@ -75,10 +79,10 @@ export default function EventPage() {
           </a>
           <nav className="flex items-center gap-4 text-xs font-medium">
             <a href="/lottery" className="text-pink-600/70 hover:text-pink-700 transition-colors">
-              Lottery
+              {e.headerLottery}
             </a>
             <a href="/" className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-600 hover:bg-pink-500/20 transition-colors">
-              메인으로
+              {e.headerMain}
             </a>
           </nav>
         </div>
@@ -195,7 +199,7 @@ export default function EventPage() {
             TOKI LOTTERY
           </h1>
           <p className="text-xs text-pink-400/70 tracking-widest uppercase font-medium">
-            100% 당첨 · 즉시 사용 가능
+            {e.tagline}
           </p>
         </div>
 
@@ -222,11 +226,17 @@ export default function EventPage() {
               <div
                 className={`
                   w-11 h-11 rounded-lg bg-gradient-to-br ${link.color}
-                  flex items-center justify-center text-xl shrink-0
-                  shadow-md
+                  flex items-center justify-center shrink-0
+                  shadow-md overflow-hidden
                 `}
               >
-                {link.icon}
+                <Image
+                  src={link.iconSrc}
+                  alt={link.title}
+                  width={44}
+                  height={44}
+                  className={`w-full h-full ${link.color ? "object-cover" : "object-contain p-1"}`}
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-gray-800 font-bold text-sm">
@@ -265,7 +275,7 @@ export default function EventPage() {
             className="opacity-40"
           />
           <p className="text-[10px] text-pink-400/50 tracking-wider uppercase font-medium">
-            Powered by Tokamak Network
+            {e.poweredBy}
           </p>
         </div>
       </div>
