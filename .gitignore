@@ -3,6 +3,9 @@
 # debug screenshots
 /.screenshots
 
+# sensitive lottery data
+lottery-codes*.csv
+
 # dependencies
 /node_modules
 /.pnp
