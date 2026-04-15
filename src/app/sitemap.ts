@@ -1,44 +1,31 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/constants/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://toki.tokamak.network";
-
   return [
     {
-      url: siteUrl,
+      url: SITE_URL,
       lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 1,
+      changeFrequency: "daily",
+      priority: 1.0,
     },
     {
-      url: `${siteUrl}/staking`,
+      url: `${SITE_URL}/staking`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/dashboard`,
+      url: `${SITE_URL}/onboarding`,
       lastModified: new Date(),
-      changeFrequency: "daily",
+      changeFrequency: "weekly",
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/explore`,
+      url: `${SITE_URL}/explore`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.7,
-    },
-    {
-      url: `${siteUrl}/collection`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.6,
-    },
-    {
-      url: `${siteUrl}/onboarding`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
     },
   ];
 }

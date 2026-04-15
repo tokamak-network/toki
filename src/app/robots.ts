@@ -1,16 +1,20 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/constants/seo";
 
 export default function robots(): MetadataRoute.Robots {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://toki.tokamak.network";
-
   return {
-    rules: [
-      {
-        userAgent: "*",
-        allow: "/",
-        disallow: ["/api/", "/admin/", "/toast-test/", "/lobby-preview/"],
-      },
-    ],
-    sitemap: `${siteUrl}/sitemap.xml`,
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: [
+        "/api/",
+        "/dashboard",
+        "/collection",
+        "/admin/",
+        "/toast-test",
+        "/lobby-preview",
+      ],
+    },
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

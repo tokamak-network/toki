@@ -10,7 +10,6 @@ import {
   type Address,
   type Hex,
   encodeFunctionData,
-  encodeAbiParameters,
   parseUnits,
   maxUint256,
   erc20Abi,
@@ -25,7 +24,7 @@ import {
 import { encodeDelegations } from "@metamask/delegation-toolkit/utils";
 import { erc7710BundlerActions } from "@metamask/delegation-toolkit/experimental";
 import { CONTRACTS } from "@/constants/contracts";
-import { tonTokenAbi } from "@/lib/abi";
+import { buildStakingCalls } from "@/lib/staking-calls";
 import { chain, publicClient, pimlicoUrl } from "@/lib/chain";
 
 // LocalStorage keys
@@ -445,12 +444,12 @@ export function useSessionKey(
       const depositManagerAddr = CONTRACTS.DEPOSIT_MANAGER_PROXY as Address;
       const tonAddr = CONTRACTS.TON as Address;
 
-      const stakingData = encodeAbiParameters(
-        [{ type: "address" }, { type: "address" }],
-        [depositManagerAddr, operatorAddress],
+      const stakingRawCalls = buildStakingCalls(
+        tonAddr, wtonAddr, depositManagerAddr,
+        operatorAddress, amount,
       );
 
-      // Calls: approve paymaster (if applicable) + approveAndCall for staking
+      // Calls: approve paymaster (if applicable) + staking calls
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const calls: any[] = [];
 
@@ -467,16 +466,13 @@ export function useSessionKey(
         });
       }
 
-      calls.push({
-        to: tonAddr,
-        data: encodeFunctionData({
-          abi: tonTokenAbi,
-          functionName: "approveAndCall",
-          args: [wtonAddr, amount, stakingData],
-        }),
-        permissionsContext,
-        delegationManager: environment.DelegationManager,
-      });
+      for (const call of stakingRawCalls) {
+        calls.push({
+          ...call,
+          permissionsContext,
+          delegationManager: environment.DelegationManager,
+        });
+      }
 
       const userOpHash = await bundler.sendUserOperationWithDelegation({
         account: sessionSmartAccount,

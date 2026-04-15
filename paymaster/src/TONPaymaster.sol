@@ -274,7 +274,9 @@ contract TONPaymaster is Ownable, EIP712 {
     /// @notice Estimated gas for postOp (transferFrom). Added to cost calculation.
     uint256 public postOpGasOverhead;
 
-    // ─── Guarantor nonce tracking ─────────────────────────────────
+    // ─── Guarantor whitelist & nonce tracking ──────────────────────
+    /// @notice Only whitelisted guarantors can authorize Mode 0x01 UserOps
+    mapping(address => bool) public trustedGuarantors;
     /// @notice Per-guarantor nonce for one-time signature usage
     mapping(address => uint256) public guarantorNonces;
 
@@ -298,6 +300,7 @@ contract TONPaymaster is Ownable, EIP712 {
     event RefundFailed(address indexed to, uint256 amount);
     event TokenDeposited(address indexed from, uint256 amount);
     event TokenWithdrawn(address indexed to, uint256 amount);
+    event GuarantorUpdated(address indexed guarantor, bool trusted);
 
     modifier onlyEntryPoint() {
         require(msg.sender == address(entryPoint), "Not EntryPoint");
@@ -376,6 +379,9 @@ contract TONPaymaster is Ownable, EIP712 {
                 validAfter = uint48(bytes6(userOp.paymasterAndData[o + 59 : o + 65]));
                 signature = userOp.paymasterAndData[o + 65 :];
             }
+
+            // Verify guarantor is whitelisted
+            require(trustedGuarantors[guarantor], "TONPaymaster: untrusted guarantor");
 
             // Verify guaranteedAmount covers the maxTokenCost
             require(guaranteedAmount >= maxTokenCost, "TONPaymaster: insufficient guarantee");
@@ -493,6 +499,13 @@ contract TONPaymaster is Ownable, EIP712 {
 
     function setPostOpGasOverhead(uint256 _overhead) external onlyOwner {
         postOpGasOverhead = _overhead;
+    }
+
+    /// @notice Add or remove a trusted guarantor
+    function setTrustedGuarantor(address _guarantor, bool _trusted) external onlyOwner {
+        require(_guarantor != address(0), "Invalid guarantor");
+        trustedGuarantors[_guarantor] = _trusted;
+        emit GuarantorUpdated(_guarantor, _trusted);
     }
 
     function setValidityWindow(uint48 _validityWindow) external onlyOwner {

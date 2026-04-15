@@ -1,6 +1,7 @@
 const ko = {
   header: {
-    howItWorks: "사용 방법",
+    quests: "퀘스트",
+    staking: "스테이킹",
     explore: "생태계",
     github: "GitHub",
     connect: "연결",
@@ -40,7 +41,8 @@ const ko = {
     step2Title: "TON 전송",
     step2Desc: "거래소(업비트, 빗썸)에서 토키 주소로 TON을 출금하세요.",
     step3Title: "스테이킹",
-    step3Desc: "버튼 하나만 누르세요. 래핑, 오퍼레이터 선택, 가스비를 토키가 처리합니다.",
+    step3Desc:
+      "버튼 하나만 누르세요. 래핑, 오퍼레이터 선택, 가스비를 토키가 처리합니다.",
     step1Heading: "로그인하면",
     step1Highlight: "지갑이 생겨요",
     step1Bullet1: "구글 또는 이메일로 간편 로그인",
@@ -120,9 +122,11 @@ const ko = {
     toCta: "어때, 준비됐어?",
   },
   howItWorksVn: {
-    step1Dialogue: "반가워! 먼저 지갑을 만들어볼까? 카카오나 구글로 로그인하면 끝이야!",
+    step1Dialogue:
+      "반가워! 먼저 지갑을 만들어볼까? 카카오나 구글로 로그인하면 끝이야!",
     step2Dialogue: "다음은 거래소에서 TON을 보내면 돼. 주소 복사 한 번이면 OK!",
-    step3Dialogue: "마지막! 버튼 하나만 누르면 스테이킹 완료! 래핑? 가스비? 내가 다 처리할게~",
+    step3Dialogue:
+      "마지막! 버튼 하나만 누르면 스테이킹 완료! 래핑? 가스비? 내가 다 처리할게~",
   },
   whyTokiVs: {
     oldWay: "기존 방식",
@@ -146,7 +150,8 @@ const ko = {
     simReaction1: "가만히 두기만 해도 이 정도!",
     simReaction2: "은행 적금의 10배야!",
     simReaction3: "스테이킹 고수가 될 수 있어!",
-    simDisclaimer: "* 현재 연이율 ~{apr}% 기준 예상치. 실제 수익은 달라질 수 있습니다.",
+    simDisclaimer:
+      "* 현재 연이율 ~{apr}% 기준 예상치. 실제 수익은 달라질 수 있습니다.",
     vsTitle: "은행 적금 vs 토키",
     vsSubtitle: "어디에 맡기는 게 나을까?",
     vsIfYouPut: "{amount}을 1년간 맡기면",
@@ -237,7 +242,8 @@ const ko = {
   stakingPreview: {
     title: "실시간 스테이킹 통계",
     subtitle: "토카막 네트워크 컨트랙트의 실시간 데이터",
-    seigManagerInfo: "SeigManager: {operatorCount}개 오퍼레이터에 {totalStaked} TON 스테이킹",
+    seigManagerInfo:
+      "SeigManager: {operatorCount}개 오퍼레이터에 {totalStaked} TON 스테이킹",
     currentApr: "현재 연이율",
     compoundSeigniorage: "복리 시뇨리지",
     totalStaked: "총 스테이킹",
@@ -249,7 +255,8 @@ const ko = {
     daily: "일간",
     monthly: "월간",
     yearly: "연간",
-    disclaimer: "* 현재 온체인 연이율({apr}%) 기준. 실제 수익은 달라질 수 있습니다. 시뇨리지는 자동 복리됩니다.",
+    disclaimer:
+      "* 현재 온체인 연이율({apr}%) 기준. 실제 수익은 달라질 수 있습니다. 시뇨리지는 자동 복리됩니다.",
     activeOperators: "활성 오퍼레이터",
     failedToLoad: "온체인 데이터를 불러오지 못했습니다. 새로고침해 주세요.",
     arcadeTag: "인터랙티브 시뮬레이터",
@@ -269,8 +276,7 @@ const ko = {
     eip7702: "EIP-7702",
     resources: "리소스",
     docs: "문서",
-    license: "라이선스",
-    termsConditions: "이용약관",
+    allRightsReserved: "All rights reserved.",
     community: "커뮤니티",
   },
   cardSection: {
@@ -299,12 +305,15 @@ const ko = {
     achievementBoardDesc: "카드 컬렉션 보기",
     exploreDoor: "탐험 포탈",
     exploreDoorDesc: "생태계 둘러보기",
-    tokiHoverStaking: "여긴 스테이킹 터미널이야! TON을 스테이킹하고 시뇨리지를 받을 수 있어~",
+    tokiHoverStaking:
+      "여긴 스테이킹 터미널이야! TON을 스테이킹하고 시뇨리지를 받을 수 있어~",
     tokiHoverWallet: "지갑 금고야! 잔액 확인하고 주소도 관리할 수 있어.",
     tokiHoverAchievement: "업적 보드야! 지금까지 모은 카드를 볼 수 있어~",
     tokiHoverExplore: "탐험 포탈이야! 토카막 생태계를 둘러볼 수 있어.",
     tokiWithdrawReady: "출금할 수 있는 TON이 있어! 확인해봐~",
-    tokiWithdrawPending: "언스테이킹한 TON이 아직 대기 중이야... 약 {time} 남았어!",
+    tokiVaultWithdraw: "금고에 찾아갈 TON이 있어! 열어서 확인해봐~",
+    tokiWithdrawPending:
+      "언스테이킹한 TON이 아직 대기 중이야... 약 {time} 남았어!",
   },
   dashboard: {
     loading: "로딩 중...",
@@ -340,9 +349,12 @@ const ko = {
     requesting: "요청 중...",
     txSubmitted: "트랜잭션이 제출되었습니다!",
     noStakedBalance: "이 오퍼레이터에 스테이킹된 잔액이 없습니다",
+    signatureNotice: "잠깐! 팝업에서 '서명' 버튼을 눌러야 처리가 완료돼요",
     txRejected: "사용자가 트랜잭션을 거부했습니다",
-    insufficientTonForGas: "TON 잔액이 부족합니다. 스테이킹 금액과 가스비를 합산한 TON이 필요합니다.",
-    paymasterValidationFailed: "가스비 검증에 실패했습니다. TON 잔액을 확인 후 다시 시도해주세요.",
+    insufficientTonForGas:
+      "잠깐! 가스비 낼 TON이 부족해~ 스테이킹 금액을 조금만 줄여주거나 MAX 버튼을 사용해!",
+    paymasterValidationFailed:
+      "가스비 검증에 실패했습니다. TON 잔액을 확인 후 다시 시도해주세요.",
     myStakedPositions: "내 스테이킹 현황",
     estimatedGas: "예상 가스비: ~{amount} TON",
     // Delegation / Session Key
@@ -358,9 +370,12 @@ const ko = {
     revokeSessionKey: "세션 키 취소",
     stakeTonDelegation: "TON 스테이킹 (Delegation 가스리스)",
     delegationRequired: "먼저 Delegation 서명이 필요합니다",
-    sessionKeyInfo: "세션 키를 사용하면 1회 서명 후 7일간 가스리스 스테이킹이 가능합니다.",
-    metamaskDelegationUnsupported: "MetaMask는 외부 dApp에서의 delegation 서명을 지원하지 않습니다. 가스리스 스테이킹은 Privy 임베디드 지갑으로 연결해주세요.",
-    firstTxNote: "최초 사용 시 스마트 계정 업그레이드에 소량의 ETH가 필요합니다.",
+    sessionKeyInfo:
+      "세션 키를 사용하면 1회 서명 후 7일간 가스리스 스테이킹이 가능합니다.",
+    metamaskDelegationUnsupported:
+      "MetaMask는 외부 dApp에서의 delegation 서명을 지원하지 않습니다. 가스리스 스테이킹은 Privy 임베디드 지갑으로 연결해주세요.",
+    firstTxNote:
+      "최초 사용 시 스마트 계정 업그레이드에 소량의 ETH가 필요합니다.",
     stepUpgrade: "스마트 계정 업그레이드 (1회)",
     stepDelegation: "Delegation 서명 (무료)",
     upgradeNote: "소량의 ETH가 필요합니다 (1회만).",
@@ -411,7 +426,9 @@ const ko = {
     amountToUnstake: "언스테이킹 수량 (WTON)",
     unstakePartial: "부분 언스테이킹",
     processing: "처리 중...",
-    withdrawalDelay: "출금 대기: 약 14일 (93,046블록)",
+    withdrawalDelay: "출금 대기: 약 13일 (93,046블록)",
+    vaultWithdrawalTitle: "출금 현황",
+    vaultWithdrawProcessing: "출금 중...",
     pendingAmount: "대기 중 금액",
     withdrawableAmount: "출금 가능 금액",
     noStakedToUnstake: "언스테이킹할 잔액이 없습니다",
@@ -444,7 +461,8 @@ const ko = {
   onboarding: {
     allClear: "모든 퀘스트 클리어!",
     allClearDesc: "모든 퀘스트를 클리어했어! 바로 스테이킹을 시작해볼까?",
-    allClearDashboardHint: "대시보드는 상단의 계정 메뉴에서 언제든 확인할 수 있어~",
+    allClearDashboardHint:
+      "대시보드는 상단의 계정 메뉴에서 언제든 확인할 수 있어~",
     totalXp: "총 {xp} XP",
     goToStaking: "스테이킹 하러 가기!",
     goToDashboard: "대시보드",
@@ -460,17 +478,22 @@ const ko = {
     metamaskCancelled: "MetaMask 연결이 취소되었습니다.",
     metamaskInstallCheck: "MetaMask 설치를 완료했으면 아래 버튼을 눌러줘!",
     verifyInstall: "설치 확인하기",
-    metamaskNotYet: "MetaMask가 아직 감지되지 않아! 설치 후 이 페이지를 새로고침해줘!",
+    metamaskNotYet:
+      "MetaMask가 아직 감지되지 않아! 설치 후 이 페이지를 새로고침해줘!",
     privyNotReady: "로그인 서비스를 준비하고 있어. 잠깐만 기다려!",
     substepLabel: "단계 {current}/{total}",
-    exportKeyInstruction: "MetaMask가 준비됐으니, 이제 비밀키를 꺼내자! 아래 버튼을 누르면 볼 수 있어.",
+    exportKeyInstruction:
+      "MetaMask가 준비됐으니, 이제 비밀키를 꺼내자! 아래 버튼을 누르면 볼 수 있어.",
     exportKeyButton: "비밀키 내보내기",
     exportKeyConfirm: "비밀키를 안전하게 복사했어요",
-    installMetamaskInstruction: "먼저 MetaMask를 설치하자! 크롬 확장 프로그램이야.",
+    installMetamaskInstruction:
+      "먼저 MetaMask를 설치하자! 크롬 확장 프로그램이야.",
     installMetamaskButton: "MetaMask 설치하기",
-    importKeyInstruction: "브라우저 우측 상단 퍼즐 아이콘 🧩 → MetaMask 클릭 → 계정 아이콘 → '계정 가져오기' → 비밀키 붙여넣기",
+    importKeyInstruction:
+      "브라우저 우측 상단 퍼즐 아이콘 🧩 → MetaMask 클릭 → 계정 아이콘 → '계정 가져오기' → 비밀키 붙여넣기",
     importKeyConfirm: "MetaMask에 키를 가져왔어요",
-    keyCopyReminder: "비밀키를 복사했지? 다음 단계에서 MetaMask에 붙여넣을 거야!",
+    keyCopyReminder:
+      "비밀키를 복사했지? 다음 단계에서 MetaMask에 붙여넣을 거야!",
     exportKeyAgain: "비밀키 다시 복사하기",
     exportKeyAgainHint: "혹시 복사가 안 됐다면 여기서 다시 할 수 있어요",
     // Quest 1: Create Wallet (Privy login)
@@ -479,9 +502,12 @@ const ko = {
     quest1Badge: "계정 크리에이터",
     quest1Intro1: "안녕! 나는 토키, 너의 스테이킹 가이드야.",
     quest1Intro2: "스테이킹을 하려면 먼저 '계정'을 만들어야 해.",
-    quest1Intro3: "계정은 블록체인 위의 내 주소야. 이 주소로 코인을 보관하고, 보내고, 받을 수 있어.",
-    quest1Intro4: "참고로 '지갑'은 이 계정을 관리하는 앱이야. 지갑 안에 계정이 들어있는 거지!",
-    quest1Intro5: "먼저 계정부터 만들자! 구글이나 이메일로 로그인하면 바로 생겨.",
+    quest1Intro3:
+      "계정은 블록체인 위의 내 주소야. 이 주소로 코인을 보관하고, 보내고, 받을 수 있어.",
+    quest1Intro4:
+      "참고로 '지갑'은 이 계정을 관리하는 앱이야. 지갑 안에 계정이 들어있는 거지!",
+    quest1Intro5:
+      "먼저 계정부터 만들자! 구글이나 이메일로 로그인하면 바로 생겨.",
     quest1Intro6: "아래 버튼을 눌러서 시작해볼까?",
     quest1Action: "로그인하여 계정 만들기",
     quest1Success1: "잘했어! 계정이 생겼네!",
@@ -490,10 +516,14 @@ const ko = {
     quest2Title: "MetaMask 연결",
     quest2Subtitle: "비밀키 내보내기 & 가져오기",
     quest2Badge: "브릿지 빌더",
-    quest2Intro1: "거래소에서 TON을 꺼내려면 계정 인증이 필요한데, MetaMask라는 지갑 앱으로만 가능해.",
-    quest2Intro2: "'비밀키'는 계정의 비밀번호 같은 거야. 이걸 가진 사람만 계정 안의 코인을 움직일 수 있어.",
-    quest2Intro3: "그래서 비밀키를 MetaMask에 복사하면 같은 계정을 두 곳에서 쓸 수 있는 거지!",
-    quest2Intro4: "⚠️ 단, 비밀키는 절대 다른 사람에게 공유하면 안 돼! 비밀키가 노출되면 코인을 전부 잃을 수 있어.",
+    quest2Intro1:
+      "거래소에서 TON을 꺼내려면 계정 인증이 필요한데, MetaMask라는 지갑 앱으로만 가능해.",
+    quest2Intro2:
+      "'비밀키'는 계정의 비밀번호 같은 거야. 이걸 가진 사람만 계정 안의 코인을 움직일 수 있어.",
+    quest2Intro3:
+      "그래서 비밀키를 MetaMask에 복사하면 같은 계정을 두 곳에서 쓸 수 있는 거지!",
+    quest2Intro4:
+      "⚠️ 단, 비밀키는 절대 다른 사람에게 공유하면 안 돼! 비밀키가 노출되면 코인을 전부 잃을 수 있어.",
     quest2Intro5: "걱정 마, 3단계로 쉽게 끝나!",
     quest2Action: "시작하기",
     quest2Success1: "완벽해! MetaMask 연결 성공!",
@@ -504,7 +534,8 @@ const ko = {
     quest3Subtitle: "거래소 계정 등록",
     quest3Badge: "거래소 고수",
     quest3Intro1: "이제 거래소에서 계정 주소를 인증할 차례야!",
-    quest3Intro2: "거래소 앱에서 개인 주소 등록 → 이더리움(ETH) 네트워크 선택 → MetaMask 서명!",
+    quest3Intro2:
+      "거래소 앱에서 개인 주소 등록 → 이더리움(ETH) 네트워크 선택 → MetaMask 서명!",
     quest3Intro3: "아래에서 사용하는 거래소를 선택하면 가이드를 볼 수 있어.",
     quest3Confirm: "거래소에서 계정 인증을 완료했어요",
     quest3ActionLabel: "완료 확인",
@@ -525,8 +556,10 @@ const ko = {
     quest4Subtitle: "거래소에서 TON 출금",
     quest4Badge: "TON 홀더",
     quest4Intro1: "이제 진짜 TON을 가져와 볼까?",
-    quest4Intro2: "거래소 앱에서: 입출금 -> TON -> 원하는 수량 입력 -> 출금 신청! 수수료를 제외한 금액이 네 계정으로 도착해.",
-    quest4Intro3: "많이 가져올수록 시뇨리지 수익도 커져! 여유 있는 만큼 넉넉하게 가져와봐.",
+    quest4Intro2:
+      "거래소 앱에서: 입출금 -> TON -> 원하는 수량 입력 -> 출금 신청! 수수료를 제외한 금액이 네 계정으로 도착해.",
+    quest4Intro3:
+      "많이 가져올수록 시뇨리지 수익도 커져! 여유 있는 만큼 넉넉하게 가져와봐.",
     quest4Intro4: "얼마나 벌 수 있는지 궁금하지? 계산기로 미리 확인해봐!",
     quest4Confirm: "거래소에서 TON 출금을 완료했어요",
     quest4ActionLabel: "완료 확인",
@@ -587,14 +620,16 @@ const ko = {
     videoCommentReceiveTon: "거래소에서 TON 출금하는 방법을 확인해봐!",
     openCalculator: "수익 계산기 열기",
     balanceChecking: "TON 잔액 확인 중...",
-    balanceZero: "아직 TON이 도착하지 않았어. 거래소에서 출금했다면 잠시 기다려줘!",
+    balanceZero:
+      "아직 TON이 도착하지 않았어. 거래소에서 출금했다면 잠시 기다려줘!",
     balanceRefresh: "다시 확인하기",
     balanceFound: "{amount}",
     balanceAsk: "거래소에서 인출한 TON이 맞아?",
     balanceYes: "네, 맞아요!",
     balanceNo: "아니요, 전송 중이에요",
     balanceConfirmed: "{amount} TON 확인 완료!",
-    balanceWaiting: "전송 중이에요. 잠시 후에 도착할 거예요! 10초마다 자동으로 확인하고 있어요.",
+    balanceWaiting:
+      "전송 중이에요. 잠시 후에 도착할 거예요! 10초마다 자동으로 확인하고 있어요.",
     calcTitle: "스테이킹 수익 계산기",
     calcInputLabel: "스테이킹할 TON",
     calcInputPlaceholder: "예: 100",
@@ -629,11 +664,15 @@ const ko = {
     reactBuild2: "이런 도구들이 있어:",
     reactVote1: "네 목소리를 내고 싶구나? 중요한 거지!",
     reactVote2: "여기서 참여할 수 있어:",
+    // Toki's Pick
+    tokiPickLabel: "Toki's Pick",
     // Navigation
     tryAnother: "다른 것도 볼래",
     showAll: "전체 보기",
     fullListIntro: "여기 전부 모아봤어! 천천히 둘러봐.",
     filterAll: "전체",
+    statsTotal: "전체 프로젝트",
+    statsCategory: "{count}개 프로젝트",
   },
   achievements: {
     panelTitle: "업적",
@@ -665,8 +704,10 @@ const ko = {
   },
   vnStaking: {
     welcome: "TON 스테이킹을 도와줄게! 먼저 오퍼레이터를 골라볼까?",
-    operatorExplain: "이 오퍼레이터는 총 {amount} TON이 스테이킹 되어있어. 많이 스테이킹 된 곳일수록 안정적이지!",
-    tokiPick: "내가 제일 좋은 곳을 골랐어! 가장 많은 TON이 스테이킹 된 오퍼레이터야.",
+    operatorExplain:
+      "이 오퍼레이터는 총 {amount} TON이 스테이킹 되어있어. 많이 스테이킹 된 곳일수록 안정적이지!",
+    tokiPick:
+      "내가 제일 좋은 곳을 골랐어! 가장 많은 TON이 스테이킹 된 오퍼레이터야.",
     amountEntry: "얼마나 스테이킹할지 입력해봐! {balance} TON 있어!",
     progress: "스테이킹 진행 중... 잠깐만 기다려!",
     success: "축하해! 이제 블록마다 보상이 쌓일 거야!",
@@ -709,27 +750,35 @@ const ko = {
   stakingScreen: {
     // Step 1: Operator
     step1Title: "오퍼레이터 선택",
-    step1Dialogue: "먼저 어디에 스테이킹할지 골라보자! 오퍼레이터는 네 TON을 관리해주는 곳이야.",
-    step1OperatorSelected: "좋아! {name}을 선택했네. 총 {amount} TON이 스테이킹 된 곳이야.",
+    step1Dialogue:
+      "먼저 어디에 스테이킹할지 골라보자! 오퍼레이터는 네 TON을 관리해주는 곳이야.",
+    step1OperatorSelected:
+      "좋아! {name}을 선택했네. 총 {amount} TON이 스테이킹 된 곳이야.",
     step1TokiPick: "여기 골랐어! 수수료가 제일 낮고 물량도 많아서 안정적이야~",
-    step1AutoSelected: "내가 제일 좋은 곳을 골라놨어! 예상 연이율은 약 {apr}%야. 준비되면 다음으로~",
+    step1AutoSelected:
+      "내가 제일 좋은 곳을 골라놨어! 예상 연이율은 약 {apr}%야. 준비되면 다음으로~",
     tokiPickButton: "토키가 골라줄게!",
-    tokiPickHover: "내가 제일 좋은 오퍼레이터 찾아줄게! 수수료 낮고 물량 많은 곳으로~",
+    tokiPickHover:
+      "내가 제일 좋은 오퍼레이터 찾아줄게! 수수료 낮고 물량 많은 곳으로~",
     currentApr: "예상 연이율",
     manualSelectButton: "직접 선택할래",
     backToAutoSelect: "토키한테 맡기기",
     nextStep: "다음으로",
     gasReserve: "~{amount} TON 가스비 예약",
-    estimatedGasCost: "예상 가스비: ~{amount} TON (MAX 누르면 자동으로 빠져~)",
+    estimatedGasCost: "예상 가스비: ~{amount} TON (스테이킹 후 자동 차감)",
     gasExplainToggle: "가스비가 뭐야? 눌러서 알아보기",
     gasExplainTitle: "가스비란?",
-    gasExplainBody1: "가스비는 블록체인에서 거래를 처리하는 데 드는 수수료야. 택배비 같은 거라고 생각하면 돼!",
-    gasExplainBody2: "이더리움에서는 ETH라는 코인이 필요한데, 토키는 Gasless 시스템으로 TON만으로 가스비를 낼 수 있어. ETH 없어도 OK!",
-    gasExplainBody3: "표시된 금액은 예상치야. 실제 수수료는 보통 더 적고, 남은 건 그대로 네 지갑에 있어!",
+    gasExplainBody1:
+      "가스비는 블록체인에서 거래를 처리하는 데 드는 수수료야. 택배비 같은 거라고 생각하면 돼!",
+    gasExplainBody2:
+      "이더리움에서는 ETH라는 코인이 필요한데, 토키는 Gasless 시스템으로 TON만으로 가스비를 낼 수 있어. ETH 없어도 OK!",
+    gasExplainBody3:
+      "표시된 금액은 예상치야. 실제 수수료는 보통 더 적고, 스테이킹 후에 자동으로 차감돼!",
     // Step 2: Amount
     step2Title: "스테이킹 금액",
     step2Dialogue: "얼마나 맡길 거야? 네 지갑에 {balance} TON이 있어!",
-    step2DialogueWithGas: "{balance} TON이 있어! 가스비로 ~{gas} TON 정도 필요하니까, MAX 누르면 내가 알아서 빼놓을게~",
+    step2DialogueWithGas:
+      "{balance} TON이 있어! 가스비(~{gas} TON)는 스테이킹 후에 자동으로 차감돼~",
     step2Ready: "좋아, {amount} TON! 준비됐으면 다음 단계로 가자!",
     // Step 3: Execute
     step3Title: "스테이킹 실행",
@@ -737,12 +786,14 @@ const ko = {
     step3Staking: "스테이킹 진행 중... 잠깐만 기다려!",
     step3Error: "음... 뭔가 잘못됐어. 다시 해볼까?",
     unstakingNotice: "언스테이킹에 약 13일 소요",
-    unstakingNoticeDetail: "스테이킹 해제를 요청하면 약 93,000 블록(~13일) 후에 TON을 인출할 수 있어. 모든 스테이커에게 적용되는 프로토콜 규정이야!",
+    unstakingNoticeDetail:
+      "스테이킹 해제를 요청하면 약 93,000 블록(약 13일) 후에 TON을 인출할 수 있어. 모든 스테이커에게 적용되는 프로토콜 규정이야!",
     stakeButton: "스테이킹 시작!",
     retryButton: "다시 시도",
     // Step 4: Celebration
     step4TapToReveal: "멤버카드를 획득했어! 카드를 눌러서 확인해봐!",
-    step4Dialogue: "축하해! 첫 스테이킹 성공이야! 대시보드에서 보상을 확인할 수 있어!",
+    step4Dialogue:
+      "축하해! 첫 스테이킹 성공이야! 대시보드에서 보상을 확인할 수 있어!",
     step4CardUnlocked: "멤버카드 해금!",
     goToDashboard: "대시보드로 가기",
     goToExplore: "생태계 둘러보기",
@@ -754,10 +805,36 @@ const ko = {
     onboardingPromptYes: "좋아, 가이드 볼게!",
     onboardingPromptNo: "아니야, 바로 스테이킹할래",
     // No TON prompt
-    noTonTitle: "TON이 없어!",
-    noTonDesc: "스테이킹하려면 먼저 거래소에서 TON을 인출해야 해. 가이드 따라하면 쉬워~",
-    noTonGoQuest: "거래소에서 TON 가져오기",
+    noTonTitle: "TON이 없네!",
+    noTonDesc:
+      "언스테이킹하러 왔어? 아니면 처음 방문이야?",
+    noTonGoQuest: "처음이야! 가이드 보여줘",
+    noTonUnstake: "언스테이킹하러 왔어",
     noTonSkip: "나중에 할래",
+    // Has-staked guidance (Step 0)
+    hasStakedTitle: "돌아왔구나!",
+    hasStakedDesc:
+      "이미 스테이킹한 TON이 있네! 추가로 스테이킹할래, 아니면 언스테이킹할래?",
+    hasStakedStakeMore: "추가 스테이킹",
+    hasStakedUnstake: "언스테이킹",
+    // Step 10: Unstake operator selection
+    unstakeStep1Dialogue: "언스테이킹할 오퍼레이터를 선택해!",
+    // Step 11: Unstake amount
+    unstakeStep2Dialogue:
+      "{name}에 {amount} TON 스테이킹되어 있어. 얼마나 뺄래?",
+    unstakeStep2Ready: "{amount} TON 언스테이킹할게! 준비됐으면 다음으로~",
+    unstakeDelayWarning: "출금 요청 후 약 13일(93,000 블록) 대기 필요!",
+    // Step 12: Unstake execute
+    unstakeStep3Dialogue:
+      "출금 '요청' 버튼을 눌러! 약 13일 후에 대시보드 금고에서 실제로 찾아갈 수 있어.",
+    unstakeStep3Processing: "출금 요청 중... 잠깐만!",
+    unstakeStep3Error: "음... 뭔가 잘못됐어. 다시 해볼까?",
+    unstakeSuccessDialogue:
+      "출금 요청 완료! 약 13일 후에 대시보드 금고(🔐)에서 TON을 찾아가면 돼~",
+    unstakeRequestButton: "출금 요청",
+    unstake2StepNotice:
+      "출금은 2단계! 지금은 '요청'만 하는 거야. 약 13일 후에 금고에서 실제 출금할 수 있어.",
+    goToVault: "금고에서 확인",
   },
   lottery: {
     // Landing

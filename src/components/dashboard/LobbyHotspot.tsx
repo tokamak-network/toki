@@ -96,14 +96,6 @@ export default function LobbyHotspot({
           >
             {badgeCount}
           </div>
-          {/* Pulse ring */}
-          <div
-            className="absolute w-8 h-8 rounded-full"
-            style={{
-              border: `2px solid rgba(${badgeColor},0.6)`,
-              animation: "hotspotPing 2s ease-out infinite",
-            }}
-          />
         </div>
       )}
 

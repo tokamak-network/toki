@@ -91,6 +91,13 @@ const CATEGORIES: InterestCategory[] = [
   { id: "vote", icon: "\uD83D\uDDF3", nameKey: "catVoteName", descKey: "catVoteDesc" },
 ];
 
+const CATEGORY_MINI_IMAGES: Record<string, string> = {
+  earn: "/characters/mini/toki-explore-earn.png",
+  play: "/characters/mini/toki-explore-play.png",
+  build: "/characters/mini/toki-explore-build.png",
+  vote: "/characters/mini/toki-explore-vote.png",
+};
+
 const CATEGORY_ICON: Record<string, string> = Object.fromEntries(
   CATEGORIES.map((c) => [c.id, c.icon])
 );
@@ -269,6 +276,83 @@ function ExploreDialogueBox({
   );
 }
 
+// ─── Toki's Pick Banner ─────────────────────────────────────────────
+
+function TokiPickBanner({
+  services,
+  t,
+  locale,
+  onServiceClick,
+}: {
+  services: EcosystemService[];
+  t: Dictionary["explore"];
+  locale: string;
+  onServiceClick?: (serviceId: string) => void;
+}) {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Pick featured services (first 3 non-comingSoon)
+  const featured = services.filter((s) => !s.comingSoon).slice(0, 3);
+
+  useEffect(() => {
+    if (featured.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % featured.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [featured.length]);
+
+  if (featured.length === 0) return null;
+
+  const service = featured[currentSlide];
+  if (!service) return null;
+
+  const name = locale === "ko" ? service.nameKo : service.nameEn;
+  const desc = locale === "ko" ? service.descKo : service.descEn;
+  const icon = resolveIcon(service);
+
+  return (
+    <div className="mb-4 rounded-xl border border-accent-cyan/20 bg-gradient-to-br from-accent-cyan/[0.07] to-accent-blue/[0.04] overflow-hidden">
+      <div className="flex items-center gap-2 px-3 pt-2.5">
+        <span className="text-[10px] font-bold tracking-widest text-accent-cyan uppercase bg-accent-cyan/10 border border-accent-cyan/25 px-2 py-0.5 rounded-full">
+          {t.tokiPickLabel}
+        </span>
+      </div>
+      <a
+        href={service.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => onServiceClick?.(service.id)}
+        className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors"
+      >
+        <div className="w-10 h-10 rounded-lg bg-white/[0.07] border border-white/10 flex items-center justify-center text-xl flex-shrink-0">
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold text-white">{name}</div>
+          <div className="text-[11px] text-gray-400 line-clamp-1">{desc}</div>
+        </div>
+        <span className="text-[11px] text-accent-cyan font-semibold bg-accent-cyan/10 px-2.5 py-1.5 rounded-lg flex-shrink-0">
+          {t.visitService} →
+        </span>
+      </a>
+      {featured.length > 1 && (
+        <div className="flex justify-center gap-1.5 pb-2.5">
+          {featured.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`h-1 rounded-full transition-all ${
+                i === currentSlide ? "w-4 bg-accent-cyan" : "w-1.5 bg-white/20"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Category Picker ─────────────────────────────────────────────────
 
 function CategoryPicker({
@@ -276,27 +360,50 @@ function CategoryPicker({
   t,
   onSelect,
   onShowAll,
+  services,
+  locale,
+  onServiceClick,
 }: {
   categories: InterestCategory[];
   t: Dictionary["explore"];
   onSelect: (id: string) => void;
   onShowAll: () => void;
+  services: EcosystemService[];
+  locale: string;
+  onServiceClick?: (serviceId: string) => void;
 }) {
   return (
     <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
+      {/* Toki's Pick Banner */}
+      <TokiPickBanner services={services} t={t} locale={locale} onServiceClick={onServiceClick} />
+
+      {/* Category Grid with mini character images */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         {categories.map((cat, i) => (
           <button
             key={cat.id}
             onClick={() => onSelect(cat.id)}
-            className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-accent-cyan/30 transition-all text-left animate-slide-up-fade"
+            className="group relative p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-accent-cyan/30 transition-all text-left animate-slide-up-fade overflow-hidden"
             style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}
           >
-            <div className="text-2xl mb-2">{cat.icon}</div>
-            <div className="text-white font-semibold text-sm group-hover:text-accent-cyan transition-colors">
-              {t[cat.nameKey]}
+            <div className="flex items-center gap-3">
+              {/* Mini character */}
+              <div className="w-14 h-14 flex-shrink-0 relative">
+                <Image
+                  src={CATEGORY_MINI_IMAGES[cat.id] || ""}
+                  alt={String(t[cat.nameKey])}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-contain drop-shadow-lg"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-semibold text-sm group-hover:text-accent-cyan transition-colors">
+                  {t[cat.nameKey]}
+                </div>
+                <div className="text-gray-500 text-[11px] mt-0.5 leading-snug">{t[cat.descKey]}</div>
+              </div>
             </div>
-            <div className="text-gray-500 text-xs mt-0.5">{t[cat.descKey]}</div>
           </button>
         ))}
       </div>
@@ -310,9 +417,64 @@ function CategoryPicker({
   );
 }
 
+// ─── Category Colors ─────────────────────────────────────────────────
+
+const CATEGORY_COLORS: Record<string, { border: string; bg: string; text: string }> = {
+  earn: { border: "border-amber-500/30", bg: "bg-amber-500/10", text: "text-amber-400" },
+  play: { border: "border-pink-500/30", bg: "bg-pink-500/10", text: "text-pink-400" },
+  build: { border: "border-accent-cyan/30", bg: "bg-accent-cyan/10", text: "text-accent-cyan" },
+  vote: { border: "border-emerald-500/30", bg: "bg-emerald-500/10", text: "text-emerald-400" },
+};
+
 // ─── Service Card ────────────────────────────────────────────────────
 
 function ServiceCard({ service, t, locale, onServiceClick }: { service: EcosystemService; t: Dictionary["explore"]; locale: string; onServiceClick?: (serviceId: string) => void }) {
+  const name = locale === "ko" ? service.nameKo : service.nameEn;
+  const desc = locale === "ko" ? service.descKo : service.descEn;
+  const icon = resolveIcon(service);
+
+  if (service.comingSoon) {
+    return (
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 opacity-50">
+        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-lg flex-shrink-0">
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-gray-400 truncate">{name}</h3>
+          <p className="text-xs text-gray-600 truncate">{desc}</p>
+        </div>
+        <span className="text-[10px] text-gray-500 bg-white/5 px-2 py-1 rounded flex-shrink-0">
+          {t.comingSoon}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={service.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => onServiceClick?.(service.id)}
+      className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/[0.06] hover:bg-white/10 hover:border-accent-cyan/30 transition-all group"
+    >
+      <div className="w-10 h-10 rounded-lg bg-white/[0.07] flex items-center justify-center text-lg flex-shrink-0 group-hover:scale-110 transition-transform">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-semibold text-gray-200 group-hover:text-accent-cyan transition-colors truncate">
+          {name}
+        </h3>
+        <p className="text-xs text-gray-500 truncate">{desc}</p>
+      </div>
+      <span className="text-gray-600 group-hover:text-accent-cyan transition-colors flex-shrink-0 text-sm">↗</span>
+    </a>
+  );
+}
+
+// ─── Service Card (large, for recommended) ──────────────────────────
+
+function ServiceCardLarge({ service, t, locale, onServiceClick }: { service: EcosystemService; t: Dictionary["explore"]; locale: string; onServiceClick?: (serviceId: string) => void }) {
   const name = locale === "ko" ? service.nameKo : service.nameEn;
   const desc = locale === "ko" ? service.descKo : service.descEn;
   const icon = resolveIcon(service);
@@ -376,7 +538,7 @@ function RecommendedCards({
             className="animate-slide-up-fade"
             style={{ animationDelay: `${i * 120}ms`, animationFillMode: "both" }}
           >
-            <ServiceCard service={service} t={t} locale={locale} onServiceClick={onServiceClick} />
+            <ServiceCardLarge service={service} t={t} locale={locale} onServiceClick={onServiceClick} />
           </div>
         ))}
       </div>
@@ -401,17 +563,13 @@ function RecommendedCards({
 // ─── Full Service Grid ───────────────────────────────────────────────
 
 function FullServiceGrid({ t, services, locale, onServiceClick }: { t: Dictionary["explore"]; services: EcosystemService[]; locale: string; onServiceClick?: (serviceId: string) => void }) {
-  const [activeFilter, setActiveFilter] = useState<string>("all");
+  // Group services by category
+  const grouped = CATEGORIES.map((cat) => ({
+    ...cat,
+    services: services.filter((s) => s.categories.includes(cat.id)),
+  }));
 
-  const filters = [
-    { id: "all", label: t.filterAll },
-    ...CATEGORIES.map((cat) => ({ id: cat.id, label: `${cat.icon} ${t[cat.nameKey]}` })),
-  ];
-
-  const filtered =
-    activeFilter === "all"
-      ? services
-      : services.filter((s) => s.categories.includes(activeFilter));
+  const totalCount = services.length;
 
   return (
     <div className="min-h-screen bg-grid pt-16">
@@ -422,38 +580,76 @@ function FullServiceGrid({ t, services, locale, onServiceClick }: { t: Dictionar
           <p className="text-gray-300 text-sm">{t.fullListIntro}</p>
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {filters.map((f) => (
-            <button
-              key={f.id}
-              onClick={() => setActiveFilter(f.id)}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeFilter === f.id
-                  ? "bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/30"
-                  : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+        {/* Stats summary bar */}
+        <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-1">
+          <div className="flex-shrink-0 px-4 py-2 rounded-xl bg-white/[0.06] border border-white/10">
+            <div className="text-[11px] text-gray-500 uppercase tracking-wider">{t.statsTotal}</div>
+            <div className="text-xl font-bold text-white">{totalCount}</div>
+          </div>
+          {grouped.map((cat) => {
+            const colors = CATEGORY_COLORS[cat.id];
+            return (
+              <div
+                key={cat.id}
+                className={`flex-shrink-0 px-4 py-2 rounded-xl ${colors?.bg || "bg-white/5"} border ${colors?.border || "border-white/10"}`}
+              >
+                <div className={`text-[11px] uppercase tracking-wider ${colors?.text || "text-gray-400"}`}>
+                  {t[cat.nameKey]}
+                </div>
+                <div className="text-xl font-bold text-white">{cat.services.length}</div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Service Card Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
-          {filtered.map((service, i) => (
-            <div
-              key={service.id}
-              className="animate-fade-in"
-              style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}
-            >
-              <ServiceCard service={service} t={t} locale={locale} onServiceClick={onServiceClick} />
-            </div>
-          ))}
-        </div>
+        {/* Category sections */}
+        {grouped.map((cat, catIdx) => {
+          if (cat.services.length === 0) return null;
+          const colors = CATEGORY_COLORS[cat.id];
+          return (
+            <section key={cat.id} className="mb-10">
+              {/* Section header with mini character */}
+              <div
+                className="flex items-center gap-3 mb-4 animate-slide-up-fade"
+                style={{ animationDelay: `${catIdx * 100}ms`, animationFillMode: "both" }}
+              >
+                <div className="w-10 h-10 flex-shrink-0">
+                  <Image
+                    src={CATEGORY_MINI_IMAGES[cat.id] || ""}
+                    alt={String(t[cat.nameKey])}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-contain drop-shadow-md"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h2 className={`text-lg font-bold ${colors?.text || "text-white"}`}>
+                    {t[cat.nameKey]}
+                  </h2>
+                  <p className="text-xs text-gray-500">
+                    {(t.statsCategory as string).replace("{count}", String(cat.services.length))}
+                  </p>
+                </div>
+              </div>
+
+              {/* Service list */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {cat.services.map((service, i) => (
+                  <div
+                    key={service.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${catIdx * 100 + i * 40}ms`, animationFillMode: "both" }}
+                  >
+                    <ServiceCard service={service} t={t} locale={locale} onServiceClick={onServiceClick} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
 
         {/* Back to Dashboard */}
-        <div className="text-center">
+        <div className="text-center mt-4 mb-12">
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 text-gray-300 hover:bg-white/15 transition-colors"
@@ -588,6 +784,9 @@ export default function ExploreContent() {
               t={et}
               onSelect={handleCategorySelect}
               onShowAll={handleShowAll}
+              services={allServices}
+              locale={locale}
+              onServiceClick={handleServiceClick}
             />
           )}
 

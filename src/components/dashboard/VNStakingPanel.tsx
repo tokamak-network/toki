@@ -6,8 +6,6 @@ import {
   createWalletClient,
   formatUnits,
   parseUnits,
-  encodeAbiParameters,
-  encodeFunctionData,
   custom,
 } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
@@ -16,7 +14,9 @@ import {
   layer2RegistryAbi,
   candidateAbi,
   tonTokenAbi,
+  tonPaymasterAbi,
 } from "@/lib/abi";
+import { buildStakingCalls } from "@/lib/staking-calls";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import OperatorCard from "./OperatorCard";
 
@@ -164,6 +164,7 @@ export default function VNStakingPanel({
   const [shuffling, setShuffling] = useState(false);
   const [autoSelectedIndex, setAutoSelectedIndex] = useState<number | undefined>(undefined);
   const [vnPhase, setVnPhase] = useState<VNPhase>("welcome");
+  const [gasEstimateTon, setGasEstimateTon] = useState(0);
   const selectedOpRef = useRef(selectedOp);
   selectedOpRef.current = selectedOp;
   const { t } = useTranslation();
@@ -292,6 +293,37 @@ export default function VNStakingPanel({
     }
   }, [walletAddress, fetchOperators]);
 
+  // ─── Estimate gas cost in TON ──────────────────────────────────────
+  useEffect(() => {
+    if (!smartAccountClient) { setGasEstimateTon(0); return; }
+    const paymasterAddr = CONTRACTS.TON_PAYMASTER;
+    let cancelled = false;
+    async function estimate() {
+      try {
+        const gasPrice = await publicClient.getGasPrice();
+        // Mainnet 3-step staking uses ~850k gas; Sepolia 1-step uses ~400k
+        const gasCostWei = gasPrice * (isTestnet ? BigInt(400_000) : BigInt(900_000));
+        let gasCostTon: number;
+        if (paymasterAddr) {
+          const tonAmount = await publicClient.readContract({
+            address: paymasterAddr as `0x${string}`,
+            abi: tonPaymasterAbi,
+            functionName: "ethToToken",
+            args: [gasCostWei],
+          });
+          gasCostTon = Number(formatUnits(tonAmount, 18));
+        } else {
+          gasCostTon = (Number(gasCostWei) / 1e18) * 1250;
+        }
+        if (!cancelled) setGasEstimateTon(Math.max(0.01, Math.ceil(gasCostTon * 100) / 100));
+      } catch {
+        if (!cancelled) setGasEstimateTon(0);
+      }
+    }
+    estimate();
+    return () => { cancelled = true; };
+  }, [smartAccountClient]);
+
   // ─── Handlers ──────────────────────────────────────────────────────
 
   const handleAutoSelect = () => {
@@ -319,6 +351,17 @@ export default function VNStakingPanel({
 
   const handleStake = async () => {
     if (!amount || !selectedOp) return;
+
+    // Block if staking amount + gas fee exceeds balance
+    if (gasEstimateTon > 0) {
+      const remaining = Number(tonBalance) - Number(amount);
+      if (remaining < gasEstimateTon * 1.5) {
+        setError(t.dashboard.insufficientTonForGas);
+        setVnPhase("error");
+        return;
+      }
+    }
+
     setStaking(true);
     setError(null);
     setTxHash(null);
@@ -326,9 +369,9 @@ export default function VNStakingPanel({
 
     try {
       const tonAmount = parseUnits(amount, 18);
-      const stakingData = encodeAbiParameters(
-        [{ type: "address" }, { type: "address" }],
-        [depositManagerAddr, selectedOp as `0x${string}`]
+      const stakingCalls = buildStakingCalls(
+        tonAddr, wtonAddr, depositManagerAddr,
+        selectedOp as `0x${string}`, tonAmount,
       );
 
       let hash: `0x${string}`;
@@ -340,16 +383,7 @@ export default function VNStakingPanel({
         );
       } else if (smartAccountClient) {
         hash = await smartAccountClient.sendTransaction({
-          calls: [
-            {
-              to: tonAddr,
-              data: encodeFunctionData({
-                abi: tonTokenAbi,
-                functionName: "approveAndCall",
-                args: [wtonAddr, tonAmount, stakingData],
-              }),
-            },
-          ],
+          calls: stakingCalls,
         });
       } else {
         const provider = await getEthereumProvider();
@@ -359,12 +393,27 @@ export default function VNStakingPanel({
           account: addr,
         });
 
-        hash = await walletClient.writeContract({
-          address: tonAddr,
-          abi: tonTokenAbi,
-          functionName: "approveAndCall",
-          args: [wtonAddr, tonAmount, stakingData],
-        });
+        if (stakingCalls.length === 1) {
+          hash = await walletClient.sendTransaction({
+            to: stakingCalls[0].to,
+            data: stakingCalls[0].data,
+            chain,
+          });
+        } else {
+          for (let i = 0; i < stakingCalls.length - 1; i++) {
+            const txHash = await walletClient.sendTransaction({
+              to: stakingCalls[i].to,
+              data: stakingCalls[i].data,
+              chain,
+            });
+            await publicClient.waitForTransactionReceipt({ hash: txHash });
+          }
+          hash = await walletClient.sendTransaction({
+            to: stakingCalls[stakingCalls.length - 1].to,
+            data: stakingCalls[stakingCalls.length - 1].data,
+            chain,
+          });
+        }
       }
 
       setTxHash(hash);
@@ -481,7 +530,10 @@ export default function VNStakingPanel({
                   />
                   <button
                     onClick={() => {
-                      setAmount(tonBalance);
+                      const bal = Number(tonBalance);
+                      const reserve = gasEstimateTon > 0 ? gasEstimateTon * 1.5 : 0;
+                      const max = Math.max(0, bal - reserve);
+                      setAmount(max > 0 ? String(Math.floor(max * 100) / 100) : "0");
                       handleAmountFocus();
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-accent-sky hover:text-accent-cyan transition-colors"
@@ -496,10 +548,18 @@ export default function VNStakingPanel({
               </div>
             </div>
 
+            {/* Gas fee warning */}
+            {amount && Number(amount) > 0 && gasEstimateTon > 0 &&
+              (Number(tonBalance) - Number(amount)) < gasEstimateTon * 1.5 && (
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+                {t.dashboard.insufficientTonForGas}
+              </div>
+            )}
+
             {/* Stake Button */}
             <button
               onClick={handleStake}
-              disabled={staking || !amount || Number(amount) <= 0 || !selectedOp}
+              disabled={staking || !amount || Number(amount) <= 0 || !selectedOp || (gasEstimateTon > 0 && (Number(tonBalance) - Number(amount)) < gasEstimateTon * 1.5)}
               className="w-full py-3.5 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform"
             >
               {staking

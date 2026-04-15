@@ -151,6 +151,13 @@ export const wtonTokenAbi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [{ name: "tonAmount", type: "uint256" }],
+    name: "swapFromTON",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ] as const;
 
 // DepositManager (deposit, withdraw)

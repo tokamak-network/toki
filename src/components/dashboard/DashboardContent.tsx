@@ -3,7 +3,7 @@
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { formatUnits } from "viem";
+import { formatUnits, encodeFunctionData, createWalletClient, custom } from "viem";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import CardCollection from "./CardCollection";
@@ -14,8 +14,9 @@ import { useStakingSubgraph } from "@/hooks/useStakingSubgraph";
 import { useWithdrawalStatus } from "@/hooks/useWithdrawalStatus";
 import { usePushNotification } from "@/hooks/usePushNotification";
 import { useTranslation } from "@/components/providers/LanguageProvider";
-import { publicClient as client, isTestnet } from "@/lib/chain";
+import { publicClient as client, isTestnet, chain } from "@/lib/chain";
 import { CONTRACTS } from "@/constants/contracts";
+import { depositManagerAbi } from "@/lib/abi";
 
 const TON_ADDRESS = CONTRACTS.TON;
 const WTON_ADDRESS = CONTRACTS.WTON;
@@ -31,11 +32,18 @@ const erc20Abi = [
   },
 ] as const;
 
-const depositManagerAbi = [
+const accStakedAccountAbi = [
   {
     inputs: [{ name: "account", type: "address" }],
     name: "accStakedAccount",
     outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "account", type: "address" }],
+    name: "pendingUnstakedAccount",
+    outputs: [{ name: "wtonAmount", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
@@ -116,27 +124,50 @@ export default function DashboardContent() {
     setLoading(true);
     try {
       const addr = balanceAddress as `0x${string}`;
-      const [ethBal, tonBal, wtonBal, stakedBal] = await Promise.all([
-        client.getBalance({ address: addr }),
-        client.readContract({
-          address: TON_ADDRESS as `0x${string}`,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [addr],
-        }),
-        client.readContract({
-          address: WTON_ADDRESS as `0x${string}`,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [addr],
-        }),
-        client.readContract({
-          address: DEPOSIT_MANAGER as `0x${string}`,
-          abi: depositManagerAbi,
-          functionName: "accStakedAccount",
-          args: [addr],
-        }),
-      ]);
+      // Use multicall to fetch all balances in a single RPC call
+      const results = await client.multicall({
+        contracts: [
+          {
+            address: TON_ADDRESS as `0x${string}`,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [addr],
+          },
+          {
+            address: WTON_ADDRESS as `0x${string}`,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [addr],
+          },
+          {
+            address: DEPOSIT_MANAGER as `0x${string}`,
+            abi: accStakedAccountAbi,
+            functionName: "accStakedAccount",
+            args: [addr],
+          },
+          {
+            address: DEPOSIT_MANAGER as `0x${string}`,
+            abi: accStakedAccountAbi,
+            functionName: "pendingUnstakedAccount",
+            args: [addr],
+          },
+        ],
+      });
+      // ETH balance is native, fetch separately
+      let ethBal = BigInt(0);
+      try {
+        ethBal = await client.getBalance({ address: addr });
+      } catch {
+        // ETH balance fetch failed, use 0
+      }
+
+      const tonBal = results[0].status === "success" ? (results[0].result as bigint) : BigInt(0);
+      const wtonBal = results[1].status === "success" ? (results[1].result as bigint) : BigInt(0);
+      const stakedBal = results[2].status === "success" ? (results[2].result as bigint) : BigInt(0);
+      const pendingBal = results[3].status === "success" ? (results[3].result as bigint) : BigInt(0);
+
+      // Subtract pending unstaked from total staked to show actual active staking
+      const netStaked = stakedBal > pendingBal ? stakedBal - pendingBal : BigInt(0);
       setBalances({
         eth: Number(formatUnits(ethBal, 18)).toFixed(6),
         ton: Number(formatUnits(tonBal, 18)).toLocaleString("en-US", {
@@ -145,12 +176,14 @@ export default function DashboardContent() {
         wton: Number(formatUnits(wtonBal, 27)).toLocaleString("en-US", {
           maximumFractionDigits: 2,
         }),
-        staked: Number(formatUnits(stakedBal, 27)).toLocaleString("en-US", {
+        staked: Number(formatUnits(netStaked, 27)).toLocaleString("en-US", {
           maximumFractionDigits: 2,
         }),
       });
-    } catch {
-      setBalances({ eth: "\u2014", ton: "\u2014", wton: "\u2014", staked: "\u2014" });
+    } catch (e) {
+      // On error (e.g. 429 rate limit), preserve existing data if available
+      console.error("Failed to fetch balances:", e);
+      setBalances((prev) => prev ?? { eth: "\u2014", ton: "\u2014", wton: "\u2014", staked: "\u2014" });
     }
     setLoading(false);
   }, [balanceAddress]);
@@ -167,10 +200,73 @@ export default function DashboardContent() {
     }
   }, [balanceAddress, fetchBalances]);
 
+  // Auto-refresh balances periodically (30s) to reflect new stakes/withdrawals
+  useEffect(() => {
+    if (!balanceAddress) return;
+    const id = setInterval(() => { fetchBalances(); }, 30_000);
+    return () => clearInterval(id);
+  }, [balanceAddress, fetchBalances]);
+
   const handleRefresh = useCallback(() => {
     fetchBalances();
     refreshSubgraph();
   }, [fetchBalances, refreshSubgraph]);
+
+  // Mobile withdrawal execution
+  const [mobileWithdrawProcessing, setMobileWithdrawProcessing] = useState<string | null>(null);
+  const [mobileWithdrawTxHash, setMobileWithdrawTxHash] = useState<string | null>(null);
+  const [mobileWithdrawError, setMobileWithdrawError] = useState<string | null>(null);
+
+  const handleMobileWithdraw = useCallback(async (operatorAddr: string, count: number) => {
+    if (!balanceAddress) return;
+    setMobileWithdrawProcessing(operatorAddr);
+    setMobileWithdrawError(null);
+    setMobileWithdrawTxHash(null);
+    const depositManagerAddr = DEPOSIT_MANAGER as `0x${string}`;
+    const addr = balanceAddress as `0x${string}`;
+
+    try {
+      let hash: `0x${string}`;
+
+      if (smartAccountClient) {
+        hash = await smartAccountClient.sendTransaction({
+          calls: [{
+            to: depositManagerAddr,
+            data: encodeFunctionData({
+              abi: depositManagerAbi,
+              functionName: "processRequests",
+              args: [operatorAddr as `0x${string}`, BigInt(count), true],
+            }),
+          }],
+        });
+      } else if (primaryWallet) {
+        const provider = await primaryWallet.getEthereumProvider();
+        const walletClient = createWalletClient({ chain, transport: custom(provider), account: addr });
+        hash = await walletClient.writeContract({
+          address: depositManagerAddr,
+          abi: depositManagerAbi,
+          functionName: "processRequests",
+          args: [operatorAddr as `0x${string}`, BigInt(count), true],
+        });
+      } else {
+        throw new Error("No wallet available");
+      }
+
+      setMobileWithdrawTxHash(hash);
+      await client.waitForTransactionReceipt({ hash });
+      withdrawalStatus.refresh();
+      handleRefresh();
+    } catch (e: unknown) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error("Withdraw failed:", errMsg);
+      if (errMsg.includes("User rejected")) {
+        setMobileWithdrawError(t.dashboard.txRejected);
+      } else {
+        setMobileWithdrawError(errMsg.slice(0, 200));
+      }
+    }
+    setMobileWithdrawProcessing(null);
+  }, [balanceAddress, smartAccountClient, primaryWallet, withdrawalStatus, handleRefresh, t]);
 
   if (!ready || !authenticated) {
     return (
@@ -218,6 +314,8 @@ export default function DashboardContent() {
           subgraphData={subgraphData}
           subgraphLoading={subgraphLoading}
           withdrawalStatus={withdrawalStatus}
+          smartAccountClient={smartAccountClient}
+          getEthereumProvider={primaryWallet ? () => primaryWallet.getEthereumProvider() : undefined}
         />
       ) : (
         /* Mobile: Original list layout */
@@ -305,6 +403,60 @@ export default function DashboardContent() {
                 loading={loading}
               />
             </div>
+
+            {/* Mobile Withdrawal Execution */}
+            {withdrawalStatus.withdrawableRequests.length > 0 && (
+              <div className="card p-4 mb-6">
+                <h3 className="text-sm text-gray-400 mb-3 flex items-center gap-2">
+                  <span>🔐</span>
+                  <span>{t.dashboard.vaultWithdrawalTitle}</span>
+                </h3>
+                <div className="space-y-3">
+                  {!mobileWithdrawProcessing && (
+                    <div className="flex items-center gap-2 p-2 rounded-md bg-blue-500/5 border border-blue-500/10">
+                      <span className="text-blue-400 text-xs shrink-0">✍️</span>
+                      <span className="text-[11px] text-blue-400/80">{t.dashboard.signatureNotice}</span>
+                    </div>
+                  )}
+                  {withdrawalStatus.withdrawableRequests.map((req) => {
+                    const formatted = Number(formatUnits(req.amount, 27)).toLocaleString("en-US", { maximumFractionDigits: 2 });
+                    return (
+                      <div key={`${req.operatorAddress}-${req.index}`} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                        <div>
+                          <div className="text-sm font-mono-num text-green-400">{formatted} TON</div>
+                          <div className="text-[10px] text-gray-500 font-mono">{req.operatorAddress.slice(0, 10)}...{req.operatorAddress.slice(-4)}</div>
+                        </div>
+                        <button
+                          onClick={() => handleMobileWithdraw(req.operatorAddress, 1)}
+                          disabled={mobileWithdrawProcessing === req.operatorAddress}
+                          className="px-4 py-2 rounded-lg bg-green-600/80 text-white text-xs font-medium disabled:opacity-40 hover:bg-green-600 transition-colors whitespace-nowrap"
+                        >
+                          {mobileWithdrawProcessing === req.operatorAddress ? t.dashboard.vaultWithdrawProcessing : t.dashboard.withdrawAsTon}
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {mobileWithdrawTxHash && (
+                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <div className="text-sm text-green-400">{t.dashboard.txSubmitted}</div>
+                      <a
+                        href={`https://${isTestnet ? "sepolia." : ""}etherscan.io/tx/${mobileWithdrawTxHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-green-500 hover:text-green-300 font-mono break-all"
+                      >
+                        {mobileWithdrawTxHash}
+                      </a>
+                    </div>
+                  )}
+                  {mobileWithdrawError && (
+                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <div className="text-sm text-red-400 break-all">{mobileWithdrawError}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">

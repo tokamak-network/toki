@@ -81,8 +81,11 @@ export default function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-400">
-          <a href="#how-it-works" className="hover:text-foreground transition-colors">
-            {t.header.howItWorks}
+          <a href="/onboarding" className="hover:text-foreground transition-colors">
+            {t.header.quests}
+          </a>
+          <a href="/staking" className="hover:text-foreground transition-colors">
+            {t.header.staking}
           </a>
           <a href="/explore" className="hover:text-foreground transition-colors">
             {t.header.explore}
@@ -99,24 +102,6 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          {/* Temp reset button for testing */}
-          <button
-            onClick={() => {
-              if (confirm("Clear all local data and reload?")) {
-                // Preserve Privy keys to avoid SDK crash, clear only app data
-                const keys = Object.keys(localStorage);
-                keys.forEach((key) => {
-                  if (!key.startsWith("privy")) {
-                    localStorage.removeItem(key);
-                  }
-                });
-                window.location.reload();
-              }
-            }}
-            className="px-2 py-1 rounded text-[10px] text-red-400 border border-red-400/30 bg-red-400/5 hover:bg-red-400/10 transition-colors"
-          >
-            RESET
-          </button>
           <div className="hidden sm:block">
             <LanguageToggle />
           </div>
@@ -142,8 +127,11 @@ export default function Header() {
       {mobileOpen && (
         <nav className="sm:hidden border-t border-white/5 bg-background/95 backdrop-blur-md animate-slide-up">
           <div className="px-4 py-4 space-y-3">
-            <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              {t.header.howItWorks}
+            <a href="/onboarding" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
+              {t.header.quests}
+            </a>
+            <a href="/staking" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
+              {t.header.staking}
             </a>
             <a href="/explore" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
               {t.header.explore}

@@ -411,9 +411,9 @@ const QUEST_BACKGROUNDS: Record<string, string> = {
 const TUTORIAL_VIDEOS: Record<string, { embed: string; mobileUrl?: string }> = {
   "create-wallet": { embed: "https://www.youtube.com/embed/UURB7Tc7D4M?start=129" },
   "install-metamask": { embed: "https://www.youtube.com/embed/KjwlrQAtdYU", mobileUrl: "https://www.youtube.com/shorts/stRSJxS2kyY" },
-  "import-key": { embed: "https://www.youtube.com/embed/yvOie0hBr2k", mobileUrl: "https://www.youtube.com/watch?v=O8R6V2fvwKs&t=173" },
+  "import-key": { embed: "https://www.youtube.com/embed/yvOie0hBr2k", mobileUrl: "https://www.youtube.com/watch?v=O8R6V2fvwKs&t=200" },
   "verify-exchange": { embed: "https://www.youtube.com/embed/vr858w78q2Y" },
-  "receive-ton": { embed: "https://www.youtube.com/embed/D-6tFe_KBZs" },
+  "receive-ton": { embed: "https://www.youtube.com/embed/SXQZuKLtnjY", mobileUrl: "https://www.youtube.com/watch?v=D-6tFe_KBZs" },
 };
 
 // ─── Character Display (Visual Novel Style) ──────────────────────────
@@ -506,6 +506,7 @@ export default function OnboardingQuest() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_cinematicComplete, setCinematicComplete] = useState(false);
   const [cinematicJustFinished, setCinematicJustFinished] = useState(false);
+  const [assetsReady, setAssetsReady] = useState(false);
   const questAreaRef = useRef<HTMLDivElement>(null);
 
   // Per-account localStorage keys
@@ -555,12 +556,40 @@ export default function OnboardingQuest() {
     }
   }, [introKey]);
 
-  // Preload all mood images so character appears instantly on mobile
+  // Preload all assets (character sprites, backgrounds, cinematic images) before starting
   useEffect(() => {
-    Object.values(MOOD_IMAGES).forEach((src) => {
+    const srcs = [
+      ...Object.values(MOOD_IMAGES),
+      ...Object.values(QUEST_BACKGROUNDS),
+      "/intro-toki-character.png",
+      "/intro-cafe-laptop.png",
+      "/vn-bg-default.png",
+    ];
+
+    let cancelled = false;
+    let loaded = 0;
+    const total = srcs.length;
+
+    srcs.forEach((src) => {
       const img = new window.Image();
+      img.onload = img.onerror = () => {
+        loaded++;
+        if (!cancelled && loaded >= total) {
+          setAssetsReady(true);
+        }
+      };
       img.src = src;
     });
+
+    // Safety timeout — don't block forever if an image fails silently
+    const timeout = setTimeout(() => {
+      if (!cancelled) setAssetsReady(true);
+    }, 8000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, []);
 
   // Save progress
@@ -768,6 +797,17 @@ export default function OnboardingQuest() {
     }
   };
 
+  // ─── Render: Loading ────────────────────────────────────────────────
+
+  if (!assetsReady) {
+    return (
+      <div className="fixed inset-0 bg-[#0a0a0f] flex flex-col items-center justify-center gap-4 z-50">
+        <div className="w-10 h-10 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
+        <p className="text-sm text-gray-500 font-mono animate-pulse">Loading...</p>
+      </div>
+    );
+  }
+
   // ─── Render: All Complete ──────────────────────────────────────────
 
   if (isAllComplete) {
@@ -846,7 +886,7 @@ export default function OnboardingQuest() {
           <>
             {/* Desktop: iframe */}
             <div className="hidden md:flex flex-col items-center px-4 mb-2">
-              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 860, maxWidth: "100%", height: 484 }}>
+              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10" style={{ width: 860, maxWidth: "100%", height: 440 }}>
                 <iframe
                   src={TUTORIAL_VIDEOS[autoVideoKey].embed}
                   className="w-full h-full"

@@ -15,6 +15,8 @@ import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { AchievementProvider } from "@/components/providers/AchievementProvider";
 import { AudioProvider } from "@/components/audio/AudioProvider";
+import { OrganizationJsonLd, WebApplicationJsonLd } from "@/components/seo/JsonLd";
+import { SITE_URL, SITE_NAME } from "@/constants/seo";
 import "./globals.css";
 
 const TokiChat = dynamic(() => import("@/components/chat/TokiChat"), { ssr: false });
@@ -31,33 +33,43 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://toki.tokamak.network");
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Toki - TON Staking Made Easy",
-    template: "%s | Toki",
+    default: "Toki - TON 스테이킹을 쉽게 | 토카막 네트워크",
+    template: `%s | ${SITE_NAME}`,
   },
   description:
-    "Stake your TON with one click. Earn seigniorage rewards with 20%+ APR. No MetaMask, no ETH gas fees, no complexity.",
-  keywords: ["TON", "Tokamak Network", "Staking", "Seigniorage", "DeFi", "Web3", "Crypto"],
+    "원클릭으로 TON을 스테이킹하고 세뇨리지 보상을 받으세요. 20%+ APR, 가스비 무료, 복잡한 설정 없이.",
+  keywords: [
+    "토카막 네트워크",
+    "스테이킹",
+    "세뇨리지",
+    "TON 스테이킹",
+    "TON",
+    "Tokamak Network",
+    "Staking",
+    "Seigniorage",
+    "DeFi",
+  ],
   manifest: "/manifest.webmanifest",
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "Toki - TON Staking Made Easy",
-    description: "Stake your TON with one click. Earn 20%+ APR seigniorage rewards.",
-    url: siteUrl,
-    siteName: "Toki",
+    title: "Toki - TON 스테이킹을 쉽게 | 토카막 네트워크",
+    description:
+      "원클릭으로 TON을 스테이킹하고 세뇨리지 보상을 받으세요. 20%+ APR.",
     type: "website",
     locale: "ko_KR",
-    alternateLocale: "en_US",
+    siteName: SITE_NAME,
+    url: SITE_URL,
+    images: ["/toki-promo-poster.jpg"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Toki - TON Staking Made Easy",
-    description: "Stake your TON with one click. Earn 20%+ APR seigniorage rewards.",
+    title: "Toki - TON 스테이킹을 쉽게",
+    description:
+      "원클릭으로 TON을 스테이킹하고 세뇨리지 보상을 받으세요. 20%+ APR.",
+    images: ["/toki-promo-poster.jpg"],
   },
   robots: {
     index: true,
@@ -65,13 +77,8 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
       "max-image-preview": "large",
-      "max-snippet": -1,
     },
-  },
-  alternates: {
-    canonical: siteUrl,
   },
 };
 
@@ -116,31 +123,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-grid min-h-screen`}
       >
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              name: "Toki",
-              url: siteUrl,
-              description:
-                "Stake your TON with one click. Earn seigniorage rewards with 20%+ APR.",
-              applicationCategory: "FinanceApplication",
-              operatingSystem: "Web",
-              offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "USD",
-              },
-              creator: {
-                "@type": "Organization",
-                name: "Tokamak Network",
-                url: "https://tokamak.network",
-              },
-            }),
-          }}
-        />
+        <OrganizationJsonLd />
+        <WebApplicationJsonLd />
         <LanguageProvider>
           <AudioProvider>
             <PrivyClientProvider>

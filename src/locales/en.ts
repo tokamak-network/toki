@@ -1,6 +1,7 @@
 const en = {
   header: {
-    howItWorks: "How It Works",
+    quests: "Quests",
+    staking: "Staking",
     explore: "Ecosystem",
     github: "GitHub",
     connect: "Connect",
@@ -274,8 +275,7 @@ const en = {
     eip7702: "EIP-7702",
     resources: "RESOURCES",
     docs: "Docs",
-    license: "License",
-    termsConditions: "Terms & Conditions",
+    allRightsReserved: "All rights reserved.",
     community: "COMMUNITY",
   },
   cardSection: {
@@ -310,6 +310,7 @@ const en = {
     tokiHoverExplore: "The Explore Portal! Step through to discover the Tokamak ecosystem.",
     tokiWithdrawReady: "You have TON ready to withdraw! Go check it out~",
     tokiWithdrawPending: "Your unstaked TON is still waiting... about {time} left!",
+    tokiVaultWithdraw: "There's TON to collect in your Vault! Open it up~",
   },
   dashboard: {
     loading: "Loading...",
@@ -345,8 +346,9 @@ const en = {
     requesting: "Requesting...",
     txSubmitted: "Transaction submitted!",
     noStakedBalance: "No staked balance on this operator",
+    signatureNotice: "Hold on! Tap 'Sign' in the popup to confirm",
     txRejected: "Transaction rejected by user",
-    insufficientTonForGas: "Insufficient TON balance. You need enough TON to cover both the staking amount and gas fee.",
+    insufficientTonForGas: "Wait! Not enough TON for gas~ Lower the amount a bit or use the MAX button!",
     paymasterValidationFailed: "Gas payment validation failed. Please check your TON balance and try again.",
     myStakedPositions: "My Staked Positions",
     estimatedGas: "Est. gas: ~{amount} TON",
@@ -416,7 +418,9 @@ const en = {
     amountToUnstake: "Amount to Unstake (WTON)",
     unstakePartial: "Partial Unstake",
     processing: "Processing...",
-    withdrawalDelay: "Withdrawal delay: ~14 days (93,046 blocks)",
+    withdrawalDelay: "Withdrawal delay: ~13 days (93,046 blocks)",
+    vaultWithdrawalTitle: "Withdrawal Status",
+    vaultWithdrawProcessing: "Withdrawing...",
     pendingAmount: "Pending Amount",
     withdrawableAmount: "Withdrawable Amount",
     noStakedToUnstake: "No staked balance to unstake",
@@ -634,11 +638,15 @@ const en = {
     reactBuild2: "These tools will help:",
     reactVote1: "You want a voice? That's important!",
     reactVote2: "Here's where you can participate:",
+    // Toki's Pick
+    tokiPickLabel: "Toki's Pick",
     // Navigation
     tryAnother: "Try another interest",
     showAll: "Show me everything",
     fullListIntro: "Here's everything — take your time!",
     filterAll: "All",
+    statsTotal: "Total Projects",
+    statsCategory: "{count} projects",
   },
   achievements: {
     panelTitle: "Achievements",
@@ -725,16 +733,16 @@ const en = {
     backToAutoSelect: "Let Toki choose",
     nextStep: "Next",
     gasReserve: "~{amount} TON reserved for gas",
-    estimatedGasCost: "Estimated gas fee: ~{amount} TON (auto-deducted from MAX)",
+    estimatedGasCost: "Estimated gas fee: ~{amount} TON (auto-deducted after staking)",
     gasExplainToggle: "What's gas? Tap to learn",
     gasExplainTitle: "What is gas?",
     gasExplainBody1: "Gas is a small fee paid to process your transaction on the blockchain. Think of it like a delivery fee!",
     gasExplainBody2: "On Ethereum, you need ETH to pay gas, but Toki's gasless system lets you pay with TON instead — no ETH needed!",
-    gasExplainBody3: "The amount shown is an estimate. The actual fee is usually lower, and any unused portion stays in your wallet.",
+    gasExplainBody3: "The amount shown is an estimate. The actual fee is usually lower and is deducted automatically after staking.",
     // Step 2: Amount
     step2Title: "Staking Amount",
     step2Dialogue: "How much do you want to stake? You have {balance} TON in your wallet!",
-    step2DialogueWithGas: "You have {balance} TON! About ~{gas} TON goes to gas, so I'll save that for you when you hit MAX~",
+    step2DialogueWithGas: "You have {balance} TON! A small gas fee (~{gas} TON) will be charged after staking~",
     step2Ready: "Great, {amount} TON! Ready? Let's move to the next step!",
     // Step 3: Execute
     step3Title: "Execute Staking",
@@ -759,10 +767,37 @@ const en = {
     onboardingPromptYes: "Sure, show me!",
     onboardingPromptNo: "No thanks, let me stake",
     // No TON prompt
-    noTonTitle: "No TON yet!",
-    noTonDesc: "You need TON to start staking. Follow the guide to withdraw TON from your exchange — it's easy!",
-    noTonGoQuest: "Get TON from Exchange",
+    noTonTitle: "No TON here!",
+    noTonDesc: "Are you here to unstake, or is this your first visit?",
+    noTonGoQuest: "First time! Show me the guide",
+    noTonUnstake: "I'm here to unstake",
     noTonSkip: "I'll do it later",
+    // Has-staked guidance (Step 0)
+    hasStakedTitle: "Welcome back!",
+    hasStakedDesc:
+      "You have staked TON! Want to stake more or unstake?",
+    hasStakedStakeMore: "Stake More",
+    hasStakedUnstake: "Unstake",
+    // Step 10: Unstake operator selection
+    unstakeStep1Dialogue: "Pick the operator to unstake from!",
+    // Step 11: Unstake amount
+    unstakeStep2Dialogue:
+      "You have {amount} TON staked on {name}. How much do you want to unstake?",
+    unstakeStep2Ready:
+      "Unstaking {amount} TON! Ready? Let's go~",
+    unstakeDelayWarning:
+      "After requesting withdrawal, there's a ~13 day (93,000 blocks) waiting period!",
+    // Step 12: Unstake execute
+    unstakeStep3Dialogue:
+      "Hit the request button! After ~13 days, you can pick up your TON from the Vault on the dashboard.",
+    unstakeStep3Processing: "Requesting withdrawal... hang tight!",
+    unstakeStep3Error: "Hmm... something went wrong. Want to try again?",
+    unstakeSuccessDialogue:
+      "Withdrawal requested! After ~13 days, pick up your TON from the Vault(🔐) on the dashboard~",
+    unstakeRequestButton: "Request Withdrawal",
+    unstake2StepNotice:
+      "Withdrawal is 2 steps! This is just a 'request'. After ~13 days, you can actually withdraw from the Vault.",
+    goToVault: "Check Vault",
   },
   lottery: {
     // Landing
