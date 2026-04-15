@@ -21,7 +21,7 @@ export default function LotteryPage() {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden flex flex-col max-w-md mx-auto"
+      className="relative min-h-screen overflow-hidden flex flex-col"
       style={{
         background:
           "linear-gradient(180deg, #fff5f7 0%, #ffe4ec 30%, #ffd6e0 50%, #fce8ef 70%, #f5e6f0 100%)",
@@ -281,6 +281,20 @@ export default function LotteryPage() {
                 <span className="text-pink-600 font-semibold">스크래치 아래</span>에 카드번호가 있어요
               </p>
             </div>
+
+            {/* Toki Main CTA */}
+            <a
+              href="/"
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: "linear-gradient(135deg, rgba(6,182,212,0.12) 0%, rgba(34,211,238,0.08) 100%)",
+                border: "1px solid rgba(6,182,212,0.25)",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <span className="text-sm font-semibold text-cyan-700/80">토키 메인으로 가기</span>
+              <span className="text-cyan-500/60 text-xs">→</span>
+            </a>
 
             {/* Powered by */}
             <div className="flex items-center justify-center gap-1.5">

@@ -17,7 +17,7 @@ const LINKS = [
     id: "naver-map",
     title: "네이버 지도",
     subtitle: "THE GREEN 오시는 길",
-    href: "https://map.naver.com/v5/search/더그린 서울대입구",
+    href: "https://naver.me/5wWe6XdA",
     icon: "🗺️",
     color: "from-green-500 to-green-700",
     borderColor: "border-green-400/30",
@@ -27,7 +27,7 @@ const LINKS = [
     id: "kakao-map",
     title: "카카오맵",
     subtitle: "THE GREEN 오시는 길",
-    href: "https://map.kakao.com/?q=더그린 서울대입구",
+    href: "https://place.map.kakao.com/718492093",
     icon: "📍",
     color: "from-yellow-400 to-amber-500",
     borderColor: "border-yellow-400/30",
@@ -38,7 +38,7 @@ const LINKS = [
 export default function EventPage() {
   return (
     <main
-      className="relative min-h-screen overflow-hidden flex flex-col items-center max-w-md mx-auto"
+      className="relative min-h-screen overflow-hidden flex flex-col items-center"
       style={{
         background:
           "linear-gradient(180deg, #fff5f7 0%, #ffe4ec 30%, #ffd6e0 50%, #fce8ef 70%, #f5e6f0 100%)",
@@ -214,6 +214,20 @@ export default function EventPage() {
             </a>
           ))}
         </div>
+
+        {/* Toki Main CTA */}
+        <a
+          href="/"
+          className="w-full flex items-center justify-center gap-2 rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          style={{
+            background: "linear-gradient(135deg, rgba(6,182,212,0.12) 0%, rgba(34,211,238,0.08) 100%)",
+            border: "1px solid rgba(6,182,212,0.25)",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <span className="text-sm font-semibold text-cyan-700/80">토키 메인으로 가기</span>
+          <span className="text-cyan-500/60 text-xs">→</span>
+        </a>
 
         {/* Footer */}
         <div className="flex items-center justify-center gap-1.5">
