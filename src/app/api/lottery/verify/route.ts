@@ -12,6 +12,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify staff PIN
+    const staffPin = process.env.LOTTERY_STAFF_PIN;
+    if (!staffPin || barStaffPin !== staffPin) {
+      return NextResponse.json(
+        { valid: false, error: "Invalid staff PIN" },
+        { status: 403 },
+      );
+    }
+
     const { data: card, error } = await supabaseAdmin
       .from("cards")
       .select("card_number, prize_amount, status, expires_at, discount_verified_at")
