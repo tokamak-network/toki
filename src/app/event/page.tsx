@@ -227,7 +227,7 @@ export default function EventPage() {
                 className={`
                   w-11 h-11 rounded-lg bg-gradient-to-br ${link.color}
                   flex items-center justify-center shrink-0
-                  shadow-md ${link.id === "toki-main" ? "overflow-visible" : "overflow-hidden"}
+                  shadow-md overflow-hidden
                 `}
               >
                 <Image
@@ -235,7 +235,7 @@ export default function EventPage() {
                   alt={link.title}
                   width={44}
                   height={44}
-                  className={`${link.id === "toki-main" ? "w-16 h-16 -mt-3 object-contain" : "w-full h-full object-cover"}`}
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div className="flex-1 min-w-0">
