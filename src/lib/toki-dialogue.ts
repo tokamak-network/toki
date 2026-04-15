@@ -100,10 +100,24 @@ export const DIALOGUE_TREE: DialogueNode[] = [
     textKo: "안녕! 나는 토키야. 토카막 네트워크에 대해 뭐든 물어봐!",
     textEn: "Hey! I'm Toki. Ask me anything about Tokamak Network!",
     choices: [
+      { labelKo: "토카막 네트워크가 뭐야?", labelEn: "What is Tokamak Network?", next: "what-is-tokamak" },
       { labelKo: "스테이킹이 뭐야?", labelEn: "What is staking?", next: "what-is-staking" },
       { labelKo: "수익률 알려줘", labelEn: "Tell me about APR", next: "apr-info" },
       { labelKo: "TON 어디서 사?", labelEn: "Where to buy TON?", next: "buy-ton" },
       { labelKo: "생태계 둘러보기", labelEn: "Explore ecosystem", next: "ecosystem" },
+    ],
+  },
+
+  // ─── What is Tokamak Network ───
+  {
+    id: "what-is-tokamak",
+    mood: "proud",
+    textKo: "토카막 네트워크는 이더리움 레이어2 프로토콜이야! 누구나 쉽게 롤업을 만들 수 있게 해주는 온디맨드 네트워크 플랫폼이지. TON은 토카막의 네이티브 토큰이고, 국내 4대 거래소에 모두 상장돼 있어!",
+    textEn: "Tokamak Network is an Ethereum Layer 2 protocol! It's an on-demand network platform that lets anyone easily create rollups. TON is Tokamak's native token, listed on all major Korean exchanges!",
+    choices: [
+      { labelKo: "스테이킹은 뭐야?", labelEn: "What is staking?", next: "what-is-staking" },
+      { labelKo: "생태계 둘러보기", labelEn: "Explore ecosystem", next: "ecosystem" },
+      { labelKo: "처음으로", labelEn: "Back to start", next: "root" },
     ],
   },
 
