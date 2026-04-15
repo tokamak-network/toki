@@ -487,7 +487,7 @@ export default function ExploreContent() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/admin/services")
+    fetch("/data/services.json")
       .then((r) => r.json())
       .then((data) => setAllServices(data))
       .catch(() => {});
