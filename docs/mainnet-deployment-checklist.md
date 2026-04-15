@@ -221,6 +221,7 @@ paymaster.setPrice(2500e18); // 2500 TON per ETH
 [ ] Deployer EOA secured (multisig or timelock recommended)
 [ ] Test full staking flow on mainnet fork
 [ ] Monitor Pimlico API usage limits
+[ ] /admin, /api/admin routes — add proper authentication (currently blocked via middleware)
 ```
 
 ---

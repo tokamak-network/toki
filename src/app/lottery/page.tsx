@@ -168,7 +168,7 @@ export default function LotteryPage() {
         {/* Speech bubble — positioned to the left of Toki */}
         <div className="animate-speech-bounce self-start mt-16 shrink-0" style={{ marginRight: "calc(0.75rem - 55px)" }}>
           <div
-            className="relative px-4 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap"
+            className="relative px-4 py-2.5 rounded-2xl text-sm md:text-base font-bold whitespace-nowrap"
             style={{
               color: "#9d174d",
               background: "linear-gradient(135deg, rgba(251,207,232,0.8) 0%, rgba(252,231,243,0.7) 100%)",
@@ -200,7 +200,7 @@ export default function LotteryPage() {
             width={500}
             height={444}
             className="drop-shadow-2xl h-auto"
-            style={{ width: "65vw", maxWidth: "380px" }}
+            style={{ width: "clamp(250px, 50vw, 420px)" }}
             priority
           />
           {/* Fade-out gradient at bottom so the cutoff looks natural */}
@@ -215,12 +215,12 @@ export default function LotteryPage() {
 
       {/* ── Main content ───────────────────────────────────────────────── */}
       <div className="relative z-10 w-full flex-1 flex flex-col items-center gap-5 px-4 pb-10" style={{ marginTop: "30px" }}>
-        <div className="w-full max-w-sm flex flex-col items-center gap-5">
+        <div className="w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col items-center gap-5">
 
           {/* ── Title ───────────────────────────────────────────────────── */}
           <div className="text-center space-y-1 animate-fade-in">
             <h1
-              className="text-3xl font-black tracking-tight"
+              className="text-3xl md:text-4xl font-black tracking-tight"
               style={{
                 background: "linear-gradient(90deg, #ec4899 0%, #f472b6 30%, #a855f7 60%, #ec4899 100%)",
                 backgroundSize: "200% auto",

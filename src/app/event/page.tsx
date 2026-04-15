@@ -13,7 +13,7 @@ export default function EventPage() {
       title: e.lottery,
       subtitle: e.lotteryDesc,
       href: "/lottery",
-      iconSrc: "/toki-excited.png",
+      iconSrc: "/toki-lottery.png",
       color: "from-pink-500 to-pink-700",
       borderColor: "border-pink-400/30",
       external: false,
@@ -43,8 +43,8 @@ export default function EventPage() {
       title: e.tokiMain,
       subtitle: e.tokiMainDesc,
       href: "/",
-      iconSrc: "/toki-presenting.png",
-      color: "from-cyan-50 to-teal-50",
+      iconSrc: "/toki-main-icon.png",
+      color: "",
       borderColor: "border-cyan-400/30",
       external: false,
     },
@@ -135,7 +135,7 @@ export default function EventPage() {
       </div>
 
       {/* ── Content ───────────────────────────────────────────────────── */}
-      <div className="relative z-10 w-full max-w-sm flex flex-col items-center px-5 pt-10 pb-10">
+      <div className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col items-center px-5 pt-10 pb-10">
 
         {/* Branding */}
         <div className="flex items-center gap-1.5 mb-1 whitespace-nowrap">
@@ -186,7 +186,7 @@ export default function EventPage() {
         {/* Title */}
         <div className="text-center mb-6 animate-fade-in">
           <h1
-            className="text-3xl font-black tracking-tight mb-1"
+            className="text-3xl md:text-4xl font-black tracking-tight mb-1"
             style={{
               background: "linear-gradient(90deg, #ec4899 0%, #f472b6 30%, #a855f7 60%, #ec4899 100%)",
               backgroundSize: "200% auto",
@@ -227,7 +227,7 @@ export default function EventPage() {
                 className={`
                   w-11 h-11 rounded-lg bg-gradient-to-br ${link.color}
                   flex items-center justify-center shrink-0
-                  shadow-md overflow-hidden
+                  shadow-md ${link.id === "toki-main" ? "overflow-visible" : "overflow-hidden"}
                 `}
               >
                 <Image
@@ -235,7 +235,7 @@ export default function EventPage() {
                   alt={link.title}
                   width={44}
                   height={44}
-                  className={`w-full h-full ${link.color ? "object-cover" : "object-contain p-1"}`}
+                  className={`${link.id === "toki-main" ? "w-16 h-16 -mt-3 object-contain" : "w-full h-full object-cover"}`}
                 />
               </div>
               <div className="flex-1 min-w-0">
