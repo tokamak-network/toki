@@ -485,3 +485,53 @@ body {
 }
 
 .animate-event-glow { animation: event-glow-pulse 2s ease-in-out infinite; }
+
+/* ─── Poster Effects ──────────────────────────────────────────── */
+
+/* 7. Ticket Drop */
+@keyframes ticket-drop {
+  0% { transform: translateY(-120px) rotate(-3deg); opacity: 0; }
+  50% { transform: translateY(8px) rotate(0.5deg); opacity: 1; }
+  70% { transform: translateY(-4px) rotate(-0.2deg); }
+  85% { transform: translateY(2px) rotate(0.1deg); }
+  100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+}
+.animate-ticket-drop { animation: ticket-drop 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+/* 7. Drop shadow grow */
+@keyframes poster-shadow-grow {
+  0% { transform: scaleX(0.3); opacity: 0; }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+.animate-shadow-grow { animation: poster-shadow-grow 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+/* 6. Neon border rotation */
+@property --neon-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes neon-rotate {
+  to { --neon-angle: 360deg; }
+}
+.animate-neon-rotate { animation: neon-rotate 3s linear infinite; }
+
+/* 5. Gold stamp in then fade out */
+@keyframes stamp-in-out {
+  0% { transform: translate(-50%, -50%) rotate(-15deg) scale(3); opacity: 0; }
+  20% { transform: translate(-50%, -50%) rotate(-15deg) scale(0.95); opacity: 1; }
+  25% { transform: translate(-50%, -50%) rotate(-15deg) scale(1); opacity: 1; }
+  60% { transform: translate(-50%, -50%) rotate(-15deg) scale(1); opacity: 1; }
+  80% { transform: translate(-50%, -50%) rotate(-15deg) scale(1.05); opacity: 0; }
+  100% { transform: translate(-50%, -50%) rotate(-15deg) scale(1.05); opacity: 0; }
+}
+.animate-stamp-in-out { animation: stamp-in-out 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* 1. Cherry blossom petal fall */
+@keyframes petal-fall {
+  0% { opacity: 0; transform: translate(0, -20px) rotate(0deg) scale(0.6); }
+  8% { opacity: 0.85; }
+  85% { opacity: 0.5; }
+  100% { opacity: 0; transform: translate(40px, calc(100% + 40px)) rotate(400deg) scale(0.2); }
+}
+.animate-petal-fall { animation: petal-fall linear infinite; }

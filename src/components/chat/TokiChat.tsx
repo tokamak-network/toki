@@ -162,7 +162,7 @@ function ChatCharacter({ mood, fullScreen }: { mood: Mood; fullScreen?: boolean 
 
 // ─── Visual Novel: Dialogue ──────────────────────────────────────────
 
-function DialogueDisplay({ text, onComplete }: { text: string; onComplete?: () => void }) {
+function DialogueDisplay({ text, onComplete, lightBg }: { text: string; onComplete?: () => void; lightBg?: boolean }) {
   const { displayed, done, skip } = useTypewriter(text, 25);
 
   useEffect(() => {
@@ -175,12 +175,12 @@ function DialogueDisplay({ text, onComplete }: { text: string; onComplete?: () =
       onClick={() => !done && skip()}
     >
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="text-accent-cyan font-bold text-xs tracking-wide">Toki</span>
+        <span className={`font-bold text-xs tracking-wide ${lightBg ? "text-pink-600" : "text-accent-cyan"}`}>Toki</span>
       </div>
-      <p className="text-gray-100 text-sm leading-relaxed">
+      <p className={`text-sm leading-relaxed ${lightBg ? "text-gray-800" : "text-gray-100"}`}>
         {displayed}
         {!done && (
-          <span className="inline-block w-0.5 h-4 bg-accent-cyan ml-0.5 animate-pulse align-middle" />
+          <span className={`inline-block w-0.5 h-4 ml-0.5 animate-pulse align-middle ${lightBg ? "bg-pink-500" : "bg-accent-cyan"}`} />
         )}
       </p>
     </div>
@@ -201,12 +201,14 @@ function TokiMessageBubble({
   actions,
   locale,
   onAction,
+  lightBg,
 }: {
   text: string;
   mood?: Mood;
   actions?: ChatActionButton[];
   locale?: string;
   onAction?: (actionId: string, params?: Record<string, string>) => void;
+  lightBg?: boolean;
 }) {
   return (
     <div className="flex gap-2 px-3 py-1 animate-slide-up-fade">
@@ -215,11 +217,13 @@ function TokiMessageBubble({
         alt="Toki"
         width={28}
         height={28}
-        className="w-7 h-7 rounded-full object-cover object-top shrink-0 mt-0.5 ring-1 ring-white/10"
+        className={`w-7 h-7 rounded-full object-cover object-top shrink-0 mt-0.5 ring-1 ${lightBg ? "ring-pink-200/30" : "ring-white/10"}`}
       />
       <div className="flex-1 max-w-[80%] space-y-1.5">
-        <div className="bg-white/[0.06] border border-white/10 rounded-2xl rounded-tl-sm px-3 py-2">
-          <p className="text-[13px] text-gray-200 leading-relaxed whitespace-pre-wrap">{text}</p>
+        <div className={`rounded-2xl rounded-tl-sm px-3 py-2 ${
+          lightBg ? "bg-pink-50/60 border border-pink-200/30" : "bg-white/[0.06] border border-white/10"
+        }`}>
+          <p className={`text-[13px] leading-relaxed whitespace-pre-wrap ${lightBg ? "text-gray-800" : "text-gray-200"}`}>{text}</p>
         </div>
         {actions && actions.length > 0 && (
           <div className="flex flex-wrap gap-1.5 pl-1">
@@ -239,17 +243,19 @@ function TokiMessageBubble({
   );
 }
 
-function UserMessageBubble({ text }: { text: string }) {
+function UserMessageBubble({ text, lightBg }: { text: string; lightBg?: boolean }) {
   return (
     <div className="flex justify-end px-3 py-1 animate-slide-up-fade">
-      <div className="bg-accent-cyan/10 border border-accent-cyan/20 rounded-2xl rounded-tr-sm px-3 py-2 max-w-[80%]">
-        <p className="text-[13px] text-gray-100 leading-relaxed">{text}</p>
+      <div className={`rounded-2xl rounded-tr-sm px-3 py-2 max-w-[80%] ${
+        lightBg ? "bg-pink-500/10 border border-pink-400/20" : "bg-accent-cyan/10 border border-accent-cyan/20"
+      }`}>
+        <p className={`text-[13px] leading-relaxed ${lightBg ? "text-gray-800" : "text-gray-100"}`}>{text}</p>
       </div>
     </div>
   );
 }
 
-function TypingIndicator() {
+function TypingIndicator({ lightBg }: { lightBg?: boolean }) {
   return (
     <div className="flex gap-2 px-3 py-1">
       <Image
@@ -257,13 +263,15 @@ function TypingIndicator() {
         alt="Toki"
         width={28}
         height={28}
-        className="w-7 h-7 rounded-full object-cover object-top shrink-0 ring-1 ring-white/10"
+        className={`w-7 h-7 rounded-full object-cover object-top shrink-0 ring-1 ${lightBg ? "ring-pink-200/30" : "ring-white/10"}`}
       />
-      <div className="bg-white/[0.06] border border-white/10 rounded-2xl rounded-tl-sm px-3 py-2.5">
+      <div className={`rounded-2xl rounded-tl-sm px-3 py-2.5 ${
+        lightBg ? "bg-pink-50/60 border border-pink-200/30" : "bg-white/[0.06] border border-white/10"
+      }`}>
         <div className="flex items-center gap-1.5 h-4">
-          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+          <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${lightBg ? "bg-pink-400" : "bg-gray-400"}`} style={{ animationDelay: "0ms" }} />
+          <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${lightBg ? "bg-pink-400" : "bg-gray-400"}`} style={{ animationDelay: "150ms" }} />
+          <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${lightBg ? "bg-pink-400" : "bg-gray-400"}`} style={{ animationDelay: "300ms" }} />
         </div>
       </div>
     </div>
@@ -272,7 +280,7 @@ function TypingIndicator() {
 
 // ─── Shared: Chat Bubble (Floating Button) ───────────────────────────
 
-function ChatBubble({ onClick, hasNewMessage, greeting }: { onClick: () => void; hasNewMessage: boolean; greeting?: string }) {
+function ChatBubble({ onClick, hasNewMessage, greeting, lightBg }: { onClick: () => void; hasNewMessage: boolean; greeting?: string; lightBg?: boolean }) {
   const [showGreeting, setShowGreeting] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -294,7 +302,11 @@ function ChatBubble({ onClick, hasNewMessage, greeting }: { onClick: () => void;
       {showGreeting && greeting && (
         <button
           onClick={handleClick}
-          className="relative max-w-[210px] px-3.5 py-2.5 rounded-2xl bg-accent-cyan/15 border border-accent-cyan/30 text-[13px] leading-snug text-white shadow-lg shadow-accent-cyan/10 animate-slide-up-fade cursor-pointer hover:bg-accent-cyan/25 transition-colors backdrop-blur-sm"
+          className={`relative max-w-[210px] px-3.5 py-2.5 rounded-2xl text-[13px] leading-snug shadow-lg animate-slide-up-fade cursor-pointer transition-colors backdrop-blur-sm ${
+            lightBg
+              ? "bg-pink-600/90 border border-pink-700/30 text-white shadow-pink-500/20 hover:bg-pink-600"
+              : "bg-accent-cyan/15 border border-accent-cyan/30 text-white shadow-accent-cyan/10 hover:bg-accent-cyan/25"
+          }`}
         >
           <span className="font-medium">{greeting}</span>
           {/* Tail pointing to Toki */}
@@ -303,7 +315,9 @@ function ChatBubble({ onClick, hasNewMessage, greeting }: { onClick: () => void;
             style={{
               borderTop: "6px solid transparent",
               borderBottom: "6px solid transparent",
-              borderLeft: "8px solid rgb(34 211 238 / 0.15)",
+              borderLeft: lightBg
+                ? "8px solid rgba(219, 39, 119, 0.9)"
+                : "8px solid rgb(34 211 238 / 0.15)",
             }}
           />
         </button>
@@ -311,7 +325,11 @@ function ChatBubble({ onClick, hasNewMessage, greeting }: { onClick: () => void;
       {/* Bubble button */}
       <button
         onClick={handleClick}
-        className="group relative w-14 h-14 rounded-full shadow-lg shadow-accent-cyan/20 hover:shadow-accent-cyan/40 transition-all hover:scale-105 active:scale-95 overflow-hidden border-2 border-accent-cyan/30 hover:border-accent-cyan/50 shrink-0"
+        className={`group relative w-14 h-14 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 overflow-hidden border-2 shrink-0 ${
+          lightBg
+            ? "shadow-pink-500/30 hover:shadow-pink-500/50 border-pink-400/50 hover:border-pink-500/70"
+            : "shadow-accent-cyan/20 hover:shadow-accent-cyan/40 border-accent-cyan/30 hover:border-accent-cyan/50"
+        }`}
       >
         <Image
           src="/toki-icon.png"
@@ -335,11 +353,13 @@ function ChoiceButtons({
   locale,
   onSelect,
   compact,
+  lightBg,
 }: {
   choices: DialogueChoice[];
   locale: string;
   onSelect: (choice: DialogueChoice) => void;
   compact?: boolean;
+  lightBg?: boolean;
 }) {
   return (
     <div className={`space-y-1.5 animate-slide-up-fade ${compact ? "px-3 pb-1 pl-12 space-y-1" : "px-4 pb-2"}`}>
@@ -347,8 +367,14 @@ function ChoiceButtons({
         <button
           key={`${choice.next}-${i}`}
           onClick={() => onSelect(choice)}
-          className={`w-full text-left rounded-lg bg-white/5 border border-white/10 hover:bg-accent-cyan/10 hover:border-accent-cyan/30 hover:text-accent-cyan transition-all ${
-            compact ? "px-3 py-1.5 text-xs text-gray-300" : "px-3 py-2 text-sm text-gray-200"
+          className={`w-full text-left rounded-lg transition-all ${
+            lightBg
+              ? `bg-pink-50/50 border border-pink-200/30 hover:bg-pink-100/60 hover:border-pink-300/40 hover:text-pink-700 ${
+                  compact ? "px-3 py-1.5 text-xs text-gray-600" : "px-3 py-2 text-sm text-gray-700"
+                }`
+              : `bg-white/5 border border-white/10 hover:bg-accent-cyan/10 hover:border-accent-cyan/30 hover:text-accent-cyan ${
+                  compact ? "px-3 py-1.5 text-xs text-gray-300" : "px-3 py-2 text-sm text-gray-200"
+                }`
           }`}
           style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}
         >
@@ -367,12 +393,14 @@ function TextInputWithMic({
   micSupported,
   isListening,
   onMicToggle,
+  lightBg,
 }: {
   locale: string;
   onSubmit: (text: string) => void;
   micSupported: boolean;
   isListening: boolean;
   onMicToggle: () => void;
+  lightBg?: boolean;
 }) {
   const [value, setValue] = useState("");
 
@@ -391,14 +419,22 @@ function TextInputWithMic({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           placeholder={locale === "ko" ? "메시지 입력..." : "Type a message..."}
-          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-accent-cyan/40 transition-colors"
+          className={`flex-1 px-3 py-2 rounded-lg text-sm outline-none transition-colors ${
+            lightBg
+              ? "bg-pink-50/50 border border-pink-200/30 text-gray-800 placeholder-gray-400 focus:border-pink-400/50"
+              : "bg-white/5 border border-white/10 text-gray-200 placeholder-gray-600 focus:border-accent-cyan/40"
+          }`}
         />
         {micSupported && (
           <MicButton isListening={isListening} onClick={onMicToggle} />
         )}
         <button
           onClick={handleSubmit}
-          className="px-3 py-2 rounded-lg bg-accent-cyan/20 text-accent-cyan text-sm font-medium hover:bg-accent-cyan/30 transition-colors"
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            lightBg
+              ? "bg-pink-500/15 text-pink-600 hover:bg-pink-500/25"
+              : "bg-accent-cyan/20 text-accent-cyan hover:bg-accent-cyan/30"
+          }`}
         >
           {locale === "ko" ? "전송" : "Send"}
         </button>
@@ -449,9 +485,11 @@ function VideoSuggestion({ videoKey, locale, indent }: { videoKey: string; local
 function ChatWindow({
   onClose,
   locale,
+  lightBg,
 }: {
   onClose: () => void;
   locale: string;
+  lightBg?: boolean;
 }) {
   const router = useRouter();
   const { trackActivity } = useAchievement();
@@ -828,23 +866,33 @@ function ChatWindow({
   // ── Container classes
   const containerClass = fullScreen
     ? "fixed inset-0 sm:inset-4 z-[60] rounded-none sm:rounded-2xl overflow-hidden border-0 sm:border border-white/10 bg-background backdrop-blur-none shadow-2xl shadow-black/50 flex flex-col"
-    : "w-80 sm:w-96 rounded-2xl overflow-hidden border border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/50 animate-slide-up-fade flex flex-col max-h-[560px]";
+    : `w-80 sm:w-96 rounded-2xl overflow-hidden shadow-2xl animate-slide-up-fade flex flex-col max-h-[560px] ${
+        lightBg
+          ? "bg-white/70 backdrop-blur-xl border border-pink-200/40 shadow-pink-500/10"
+          : "bg-background/95 backdrop-blur-xl border border-white/10 shadow-black/50"
+      }`;
 
   return (
     <div className={containerClass}>
       {/* ── Header ─────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 shrink-0">
+      <div className={`flex items-center justify-between px-4 py-2.5 border-b shrink-0 ${
+        lightBg ? "border-pink-200/30" : "border-white/5"
+      }`}>
         <div className="flex items-center gap-2">
           <Image src="/toki-icon.png" alt="Toki" width={24} height={24} className="rounded-full" />
-          <span className="text-sm font-semibold text-gradient">Toki</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400">online</span>
+          <span className={`text-sm font-semibold ${lightBg ? "text-pink-700" : "text-gradient"}`}>Toki</span>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${lightBg ? "bg-green-500/15 text-green-600" : "bg-green-500/20 text-green-400"}`}>online</span>
         </div>
         <div className="flex items-center gap-1">
           {/* TTS toggle */}
           {ttsSupported && (
             <button
               onClick={() => setTtsEnabled(!ttsEnabled)}
-              className={`w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors ${ttsEnabled ? "text-accent-cyan" : "text-gray-300"}`}
+              className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors ${
+                lightBg
+                  ? `hover:bg-pink-100 ${ttsEnabled ? "text-pink-600" : "text-gray-500"}`
+                  : `hover:bg-white/10 ${ttsEnabled ? "text-accent-cyan" : "text-gray-300"}`
+              }`}
               aria-label={ttsEnabled ? t.voice.ttsMute : t.voice.ttsUnmute}
             >
               {ttsEnabled ? (
@@ -861,7 +909,9 @@ function ChatWindow({
           {/* Expand / Collapse */}
           <button
             onClick={() => setFullScreen(!fullScreen)}
-            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+            className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors ${
+              lightBg ? "text-gray-500 hover:bg-pink-100 hover:text-gray-700" : "text-gray-300 hover:bg-white/10 hover:text-white"
+            }`}
             aria-label={fullScreen ? "Collapse" : "Expand"}
           >
             {fullScreen ? (
@@ -877,7 +927,9 @@ function ChatWindow({
           {/* Close */}
           <button
             onClick={onClose}
-            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+            className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors ${
+              lightBg ? "text-gray-500 hover:bg-pink-100 hover:text-gray-700" : "text-gray-300 hover:bg-white/10 hover:text-white"
+            }`}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -889,16 +941,18 @@ function ChatWindow({
       {/* ── Visual Novel Mode ──────────────────────────────── */}
       {mode === "vn" && (
         <>
-          <div className="bg-gradient-to-b from-black/40 to-transparent">
+          <div className={lightBg ? "bg-gradient-to-b from-pink-100/40 to-transparent" : "bg-gradient-to-b from-black/40 to-transparent"}>
             <ChatCharacter mood={rootNode.mood} fullScreen={fullScreen} />
           </div>
-          <div className="border-t border-white/5 bg-black/30 flex-1 overflow-y-auto">
-            <DialogueDisplay key={vnKey} text={vnDisplayText} onComplete={handleTypingComplete} />
+          <div className={`border-t flex-1 overflow-y-auto ${
+            lightBg ? "border-pink-200/30 bg-white/30" : "border-white/5 bg-black/30"
+          }`}>
+            <DialogueDisplay key={vnKey} text={vnDisplayText} onComplete={handleTypingComplete} lightBg={lightBg} />
 
             <VoiceIndicator transcript={transcript} isListening={isListening} locale={locale} />
 
             {typingDone && rootNode.choices && (
-              <ChoiceButtons choices={rootNode.choices} locale={locale} onSelect={handleChoiceSelect} />
+              <ChoiceButtons choices={rootNode.choices} locale={locale} onSelect={handleChoiceSelect} lightBg={lightBg} />
             )}
 
             {typingDone && (
@@ -908,6 +962,7 @@ function ChatWindow({
                 micSupported={micSupported}
                 isListening={isListening}
                 onMicToggle={handleMicToggle}
+                lightBg={lightBg}
               />
             )}
           </div>
@@ -927,32 +982,34 @@ function ChatWindow({
                   actions={msg.actions}
                   locale={locale}
                   onAction={handleChatAction}
+                  lightBg={lightBg}
                 />
               ) : (
-                <UserMessageBubble key={msg.id} text={msg.text} />
+                <UserMessageBubble key={msg.id} text={msg.text} lightBg={lightBg} />
               ),
             )}
 
             {currentChoices && !aiLoading && (
-              <ChoiceButtons choices={currentChoices} locale={locale} onSelect={handleChoiceSelect} compact />
+              <ChoiceButtons choices={currentChoices} locale={locale} onSelect={handleChoiceSelect} compact lightBg={lightBg} />
             )}
 
             {latestVideoKey && <VideoSuggestion videoKey={latestVideoKey} locale={locale} indent />}
 
-            {aiLoading && <TypingIndicator />}
+            {aiLoading && <TypingIndicator lightBg={lightBg} />}
 
             <VoiceIndicator transcript={transcript} isListening={isListening} locale={locale} />
 
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="border-t border-white/5 shrink-0">
+          <div className={`border-t shrink-0 ${lightBg ? "border-pink-200/30" : "border-white/5"}`}>
             <TextInputWithMic
               locale={locale}
               onSubmit={handleFreeText}
               micSupported={micSupported}
               isListening={isListening}
               onMicToggle={handleMicToggle}
+              lightBg={lightBg}
             />
           </div>
         </>
@@ -965,12 +1022,14 @@ function ChatWindow({
 
 const HIDDEN_PATHS_MOBILE = ["/onboarding", "/staking"];
 const HIDDEN_PATHS_ALL = ["/lottery"];
+const LIGHT_BG_PATHS = ["/event", "/lottery"];
 
 export default function TokiChat() {
   const [open, setOpen] = useState(false);
   const { locale, t } = useTranslation();
   const { trackActivity } = useAchievement();
   const pathname = usePathname();
+  const isLightBg = LIGHT_BG_PATHS.some((p) => pathname.startsWith(p));
 
   const handleOpen = () => {
     if (!open) {
@@ -990,12 +1049,13 @@ export default function TokiChat() {
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3">
       {open && (
-        <ChatWindow onClose={() => setOpen(false)} locale={locale} />
+        <ChatWindow onClose={() => setOpen(false)} locale={locale} lightBg={isLightBg} />
       )}
       <ChatBubble
         onClick={handleOpen}
         hasNewMessage={!open}
         greeting={!open ? t.chat.bubbleGreet : undefined}
+        lightBg={isLightBg}
       />
     </div>
   );
