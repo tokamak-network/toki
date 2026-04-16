@@ -18,9 +18,57 @@ export interface DialogueNode {
   autoNext?: string;
 }
 
+// Maintenance fallback choices (shown when AI server is down)
+export const MAINTENANCE_CHOICES: DialogueChoice[] = [
+  { labelKo: "토카막 네트워크가 뭐야?", labelEn: "What is Tokamak Network?", next: "what-is-tokamak" },
+  { labelKo: "스테이킹이 뭐야?", labelEn: "What is staking?", next: "what-is-staking" },
+  { labelKo: "수익률 알려줘", labelEn: "Tell me about APR", next: "apr-info" },
+  { labelKo: "TON 어디서 사?", labelEn: "Where to buy TON?", next: "buy-ton" },
+  { labelKo: "복권 이벤트가 뭐야?", labelEn: "What's the lottery event?", next: "lottery-info" },
+];
+
 // Keyword → node id mapping for free-text input
 // Order matters: more specific patterns are checked first
 export const KEYWORD_MAP: Record<string, string> = {
+  // Korean keywords — greetings & small talk
+  "안녕": "greeting",
+  "반가워": "greeting",
+  "하이": "greeting",
+  "헬로": "greeting",
+  "ㅎㅇ": "greeting",
+  "고마워": "thanks",
+  "감사": "thanks",
+  "땡큐": "thanks",
+  "잘가": "bye",
+  "바이": "bye",
+  "또 봐": "bye",
+  "ㅂㅂ": "bye",
+  // Korean keywords — Tokamak/TON info
+  "토카막": "what-is-tokamak",
+  "토카막 네트워크": "what-is-tokamak",
+  "TON이 뭐": "what-is-ton",
+  "톤이 뭐": "what-is-ton",
+  "톤 코인": "what-is-ton",
+  "토키가 뭐": "what-is-toki",
+  "토키 뭐야": "what-is-toki",
+  // Korean keywords — lottery/event
+  "복권": "lottery-info",
+  "럭키": "lottery-info",
+  "래플": "lottery-info",
+  "당첨": "lottery-info",
+  "이벤트": "lottery-info",
+  "경품": "lottery-info",
+  "할인": "lottery-info",
+  "쿠폰": "lottery-info",
+  "더 그린": "lottery-info",
+  "the green": "lottery-info",
+  // Korean keywords — price/market
+  "시세": "price-info",
+  "가격": "price-info",
+  "얼마야": "price-info",
+  "몇 원": "price-info",
+  "차트": "price-info",
+  "코인마켓캡": "price-info",
   // Korean keywords — intent to stake (must come before generic "스테이킹")
   "스테이킹 하고": "want-to-stake",
   "스테이킹하고": "want-to-stake",
@@ -60,6 +108,43 @@ export const KEYWORD_MAP: Record<string, string> = {
   "언스테이킹": "unstaking",
   "출금": "unstaking",
   "인출": "unstaking",
+  // Korean keywords — help/general
+  "뭐 할 수 있": "help-menu",
+  "뭐 물어볼": "help-menu",
+  "도와줘": "help-menu",
+  "도움": "help-menu",
+  "메뉴": "help-menu",
+  "뭐해": "what-can-you-do",
+  "심심해": "bored",
+  // English keywords — greetings & small talk
+  "hello": "greeting",
+  "hi": "greeting",
+  "hey": "greeting",
+  "thanks": "thanks",
+  "thank you": "thanks",
+  "bye": "bye",
+  "goodbye": "bye",
+  "see you": "bye",
+  // English keywords — Tokamak/TON info
+  "tokamak": "what-is-tokamak",
+  "what is ton": "what-is-ton",
+  "ton coin": "what-is-ton",
+  "what is toki": "what-is-toki",
+  "who is toki": "what-is-toki",
+  // English keywords — lottery/event
+  "lottery": "lottery-info",
+  "lucky": "lottery-info",
+  "raffle": "lottery-info",
+  "prize": "lottery-info",
+  "event": "lottery-info",
+  "discount": "lottery-info",
+  "coupon": "lottery-info",
+  // English keywords — price/market
+  "price": "price-info",
+  "how much is ton": "price-info",
+  "market": "price-info",
+  "chart": "price-info",
+  "coinmarketcap": "price-info",
   // English keywords — intent to stake (must come before generic "staking")
   "want to stake": "want-to-stake",
   "start staking": "want-to-stake",
@@ -90,6 +175,11 @@ export const KEYWORD_MAP: Record<string, string> = {
   "wallet": "wallet-info",
   "unstake": "unstaking",
   "withdraw": "unstaking",
+  // English keywords — help/general
+  "help": "help-menu",
+  "what can you do": "what-can-you-do",
+  "menu": "help-menu",
+  "bored": "bored",
 };
 
 export const DIALOGUE_TREE: DialogueNode[] = [
@@ -321,6 +411,130 @@ export const DIALOGUE_TREE: DialogueNode[] = [
     textEn: "Let's go to the ecosystem page! There's a lot of cool stuff!",
   },
 
+  // ─── Greetings & Small Talk ───
+  {
+    id: "greeting",
+    mood: "welcome",
+    textKo: "안녕~! 반가워! 나는 토키야 🐰 토카막 네트워크에 대해 뭐든 물어봐!",
+    textEn: "Hey there~! Nice to meet you! I'm Toki 🐰 Ask me anything about Tokamak Network!",
+    choices: [
+      { labelKo: "토카막 네트워크가 뭐야?", labelEn: "What is Tokamak Network?", next: "what-is-tokamak" },
+      { labelKo: "복권 이벤트가 뭐야?", labelEn: "What's the lottery event?", next: "lottery-info" },
+      { labelKo: "스테이킹이 뭐야?", labelEn: "What is staking?", next: "what-is-staking" },
+    ],
+  },
+  {
+    id: "thanks",
+    mood: "cheer",
+    textKo: "에헤~ 도움이 됐다니 기뻐! 또 궁금한 거 있으면 언제든 말해줘~",
+    textEn: "Yay~ Glad I could help! Feel free to ask me anything anytime~",
+    choices: [
+      { labelKo: "다른 거 물어볼래", labelEn: "Ask something else", next: "root" },
+    ],
+  },
+  {
+    id: "bye",
+    mood: "peace",
+    textKo: "또 봐~ 언제든 돌아와! 기다리고 있을게 👋",
+    textEn: "See you~ Come back anytime! I'll be waiting 👋",
+  },
+
+  // ─── What is TON ───
+  {
+    id: "what-is-ton",
+    mood: "explain",
+    textKo: "TON은 토카막 네트워크의 네이티브 토큰이야! 스테이킹하면 보상을 받을 수 있고, 업비트·빗썸·코인원·코빗에서 살 수 있어. 국내 4대 거래소 모두 상장돼 있지!",
+    textEn: "TON is the native token of Tokamak Network! You can earn rewards by staking, and buy it on Upbit, Bithumb, Coinone, or Korbit — all major Korean exchanges!",
+    choices: [
+      { labelKo: "스테이킹은 뭐야?", labelEn: "What is staking?", next: "what-is-staking" },
+      { labelKo: "어디서 사?", labelEn: "Where to buy?", next: "buy-ton" },
+      { labelKo: "처음으로", labelEn: "Back to start", next: "root" },
+    ],
+  },
+
+  // ─── What is Toki ───
+  {
+    id: "what-is-toki",
+    mood: "proud",
+    textKo: "나 토키! 토카막 네트워크의 마스코트이자 가이드야. 스테이킹도 도와주고, 생태계도 소개해주고, 궁금한 건 뭐든 대답해줄게! 사실 나 엄청 똑똑해 😎",
+    textEn: "I'm Toki! The mascot and guide for Tokamak Network. I help with staking, introduce the ecosystem, and answer all your questions! I'm actually super smart 😎",
+    choices: [
+      { labelKo: "토카막 네트워크가 뭐야?", labelEn: "What is Tokamak Network?", next: "what-is-tokamak" },
+      { labelKo: "스테이킹 시작!", labelEn: "Start staking!", next: "want-to-stake" },
+      { labelKo: "처음으로", labelEn: "Back to start", next: "root" },
+    ],
+  },
+
+  // ─── Lottery / Event ───
+  {
+    id: "lottery-info",
+    mood: "excited",
+    textKo: "토키 럭키 복권 이벤트! 더 그린(THE GREEN)에서 무료로 복권 카드를 받을 수 있어. 100% 당첨이고, 최대 100 TON까지 받을 수 있어! 할인 쿠폰도 바로 사용 가능하지~",
+    textEn: "Toki Lucky Lottery event! Get a free lottery card at THE GREEN. 100% win rate, up to 100 TON! Discount coupons can be used right away~",
+    choices: [
+      { labelKo: "복권 하러 가기", labelEn: "Go to lottery", next: "go-lottery" },
+      { labelKo: "TON이 뭐야?", labelEn: "What is TON?", next: "what-is-ton" },
+      { labelKo: "처음으로", labelEn: "Back to start", next: "root" },
+    ],
+  },
+  {
+    id: "go-lottery",
+    mood: "cheer",
+    textKo: "좋아! 복권 페이지로 이동할게. 행운을 빌어! 🍀",
+    textEn: "Great! Let's go to the lottery page. Good luck! 🍀",
+  },
+
+  // ─── Price Info ───
+  {
+    id: "price-info",
+    mood: "wink",
+    textKo: "TON 시세는 업비트나 코인마켓캡에서 실시간으로 확인할 수 있어! 나는 투자 조언은 못 해주지만, 스테이킹하면 보유량을 늘릴 수 있다는 건 알려줄게~",
+    textEn: "You can check TON prices on Upbit or CoinMarketCap in real-time! I can't give investment advice, but I can tell you that staking helps grow your holdings~",
+    choices: [
+      { labelKo: "스테이킹 수익률은?", labelEn: "What's the staking APR?", next: "apr-info" },
+      { labelKo: "TON 어디서 사?", labelEn: "Where to buy TON?", next: "buy-ton" },
+      { labelKo: "처음으로", labelEn: "Back to start", next: "root" },
+    ],
+  },
+
+  // ─── Help / Menu ───
+  {
+    id: "help-menu",
+    mood: "pointing",
+    textKo: "내가 도와줄 수 있는 것들이야! 👇\n• 토카막 네트워크 & TON 소개\n• 스테이킹 방법 안내\n• 수익률(APR) 확인\n• TON 구매 방법\n• 지갑 관련 도움\n• 복권 이벤트 안내\n뭐가 궁금해?",
+    textEn: "Here's what I can help with! 👇\n• Tokamak Network & TON intro\n• How to stake\n• APR info\n• Where to buy TON\n• Wallet help\n• Lottery event info\nWhat are you curious about?",
+    choices: [
+      { labelKo: "스테이킹이 뭐야?", labelEn: "What is staking?", next: "what-is-staking" },
+      { labelKo: "TON 어디서 사?", labelEn: "Where to buy TON?", next: "buy-ton" },
+      { labelKo: "복권 이벤트", labelEn: "Lottery event", next: "lottery-info" },
+      { labelKo: "처음으로", labelEn: "Back to start", next: "root" },
+    ],
+  },
+
+  // ─── Fun / Misc ───
+  {
+    id: "what-can-you-do",
+    mood: "wink",
+    textKo: "나? 토카막 네트워크의 모든 걸 알려줄 수 있어! 스테이킹, TON 구매, 지갑, 이벤트... 뭐든 물어봐!",
+    textEn: "Me? I can tell you everything about Tokamak Network! Staking, buying TON, wallets, events... ask away!",
+    choices: [
+      { labelKo: "스테이킹 알려줘", labelEn: "Tell me about staking", next: "what-is-staking" },
+      { labelKo: "복권 이벤트", labelEn: "Lottery event", next: "lottery-info" },
+      { labelKo: "처음으로", labelEn: "Back to start", next: "root" },
+    ],
+  },
+  {
+    id: "bored",
+    mood: "laughing",
+    textKo: "심심해? 그러면 복권 한 장 긁어볼래? 아니면 스테이킹으로 TON 모아보는 건 어때!",
+    textEn: "Bored? How about scratching a lottery card? Or maybe start staking to grow your TON!",
+    choices: [
+      { labelKo: "복권 하러 가기", labelEn: "Go to lottery", next: "go-lottery" },
+      { labelKo: "스테이킹 시작!", labelEn: "Start staking!", next: "want-to-stake" },
+      { labelKo: "처음으로", labelEn: "Back to start", next: "root" },
+    ],
+  },
+
   // ─── Fallback ───
   {
     id: "fallback",
@@ -330,6 +544,7 @@ export const DIALOGUE_TREE: DialogueNode[] = [
     choices: [
       { labelKo: "스테이킹이 뭐야?", labelEn: "What is staking?", next: "what-is-staking" },
       { labelKo: "수익률 알려줘", labelEn: "Tell me about APR", next: "apr-info" },
+      { labelKo: "복권 이벤트", labelEn: "Lottery event", next: "lottery-info" },
       { labelKo: "처음으로", labelEn: "Back to start", next: "root" },
     ],
   },
