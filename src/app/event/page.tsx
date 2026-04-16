@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import EventPoster from "@/components/event/EventPoster";
 
 export default function EventPage() {
   const { t } = useTranslation();
@@ -43,7 +44,7 @@ export default function EventPage() {
       title: e.tokiMain,
       subtitle: e.tokiMainDesc,
       href: "/",
-      iconSrc: "/toki-main-icon.png",
+      iconSrc: "/toki-main-wave.png",
       color: "",
       borderColor: "border-cyan-400/30",
       external: false,
@@ -157,31 +158,8 @@ export default function EventPage() {
 
         <div className="mb-8" />
 
-        {/* Lottery card preview */}
-        <div
-          className="animate-holo-tilt relative w-full rounded-2xl overflow-hidden mb-6"
-          style={{
-            transformStyle: "preserve-3d",
-            boxShadow: "0 8px 40px rgba(244,114,182,0.2), 0 2px 12px rgba(0,0,0,0.08)",
-          }}
-        >
-          <Image
-            src="/lottery-card-preview.png"
-            alt="Toki Lucky Lottery Card"
-            width={600}
-            height={400}
-            className="w-full h-auto"
-            priority
-          />
-          <div
-            className="animate-holo-shine absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.2) 30%, rgba(251,207,232,0.12) 40%, rgba(196,181,253,0.08) 50%, transparent 60%)",
-              backgroundSize: "200% 200%",
-            }}
-          />
-        </div>
+        {/* Event poster */}
+        <EventPoster />
 
         {/* Title */}
         <div className="text-center mb-6 animate-fade-in">
