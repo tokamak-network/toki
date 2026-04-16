@@ -40,11 +40,11 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description:
-    "원클릭으로 TON을 스테이킹하고 세뇨리지 보상을 받으세요. 20%+ APR, 가스비 무료, 복잡한 설정 없이.",
+    "원클릭으로 TON을 스테이킹하고 시뇨리지 보상을 받으세요. 20%+ APR, 가스비 무료, 복잡한 설정 없이.",
   keywords: [
     "토카막 네트워크",
     "스테이킹",
-    "세뇨리지",
+    "시뇨리지",
     "TON 스테이킹",
     "TON",
     "Tokamak Network",
@@ -55,9 +55,9 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Toki - TON 스테이킹을 쉽게 | 토카막 네트워크",
+    title: "Toki — Stake TON in One Click | Tokamak Network Staking",
     description:
-      "원클릭으로 TON을 스테이킹하고 세뇨리지 보상을 받으세요. 20%+ APR.",
+      "Stake your TON tokens with one click and earn 20%+ APR seigniorage rewards. Zero gas fees, no complex setup. Powered by Tokamak Network.",
     type: "website",
     locale: "ko_KR",
     siteName: SITE_NAME,
@@ -65,17 +65,17 @@ export const metadata: Metadata = {
     images: [
       {
         url: `${SITE_URL}/toki-promo-poster.jpg`,
-        width: 1280,
-        height: 720,
-        alt: "Toki - TON 스테이킹을 쉽게",
+        width: 1200,
+        height: 630,
+        alt: "Toki — Stake TON in One Click | Tokamak Network",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Toki - TON 스테이킹을 쉽게",
+    title: "Toki — Stake TON in One Click | Tokamak Network Staking",
     description:
-      "원클릭으로 TON을 스테이킹하고 세뇨리지 보상을 받으세요. 20%+ APR.",
+      "Stake your TON tokens with one click and earn 20%+ APR seigniorage rewards. Zero gas fees, no complex setup. Powered by Tokamak Network.",
     images: [`${SITE_URL}/toki-promo-poster.jpg`],
   },
   robots: {
