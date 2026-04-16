@@ -62,14 +62,21 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     siteName: SITE_NAME,
     url: SITE_URL,
-    images: ["/toki-promo-poster.jpg"],
+    images: [
+      {
+        url: `${SITE_URL}/toki-promo-poster.jpg`,
+        width: 1280,
+        height: 720,
+        alt: "Toki - TON 스테이킹을 쉽게",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Toki - TON 스테이킹을 쉽게",
     description:
       "원클릭으로 TON을 스테이킹하고 세뇨리지 보상을 받으세요. 20%+ APR.",
-    images: ["/toki-promo-poster.jpg"],
+    images: [`${SITE_URL}/toki-promo-poster.jpg`],
   },
   robots: {
     index: true,

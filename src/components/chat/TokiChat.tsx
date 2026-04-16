@@ -12,6 +12,7 @@ import {
   type DialogueChoice,
   getNode,
   matchKeyword,
+  MAINTENANCE_CHOICES,
 } from "@/lib/toki-dialogue";
 import { parseIntent } from "@/lib/toki-intent-parser";
 import { executeAction, type ActionContext, type ChatActionButton } from "@/lib/toki-actions";
@@ -83,6 +84,7 @@ const NAV_ROUTES: Record<string, string> = {
   "go-onboarding": "/onboarding",
   "go-staking": "/staking",
   "go-explore": "/explore",
+  "go-lottery": "/lottery",
 };
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -806,11 +808,23 @@ function ChatWindow({
         addTokiMessage(data.reply, (data.mood as Mood) || "explain");
         if (data.videoKey) setLatestVideoKey(data.videoKey);
       } else {
-        addTokiMessage(locale === "ko" ? "음... 다시 한번 말해줄래?" : "Hmm... could you say that again?", "confused");
+        addTokiMessage(
+          locale === "ko"
+            ? "지금 내 두뇌가 점검 중이라 복잡한 질문은 잠시 어려워~ 😅 대신 아래 버튼으로 궁금한 거 골라줘!"
+            : "My brain is under maintenance right now, so complex questions are tough for a bit~ 😅 Pick from the buttons below!",
+          "shy",
+          MAINTENANCE_CHOICES,
+        );
       }
     } catch {
       setAiLoading(false);
-      addTokiMessage(locale === "ko" ? "앗, 잠시 문제가 생겼어. 다시 말해줘!" : "Oops, something went wrong. Try again!", "worried");
+      addTokiMessage(
+        locale === "ko"
+          ? "지금 내 두뇌가 점검 중이라 복잡한 질문은 잠시 어려워~ 😅 대신 아래 버튼으로 궁금한 거 골라줘!"
+          : "My brain is under maintenance right now, so complex questions are tough for a bit~ 😅 Pick from the buttons below!",
+        "shy",
+        MAINTENANCE_CHOICES,
+      );
     }
   };
 
