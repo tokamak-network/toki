@@ -84,32 +84,6 @@ export default function EventPoster() {
         }}
       />
 
-      {/* 5. Gold stamp — only after poster lands */}
-      {landed && (
-        <div
-          className="absolute z-[3] whitespace-nowrap animate-stamp-in-out pointer-events-none"
-          style={{
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%) rotate(-15deg) scale(3)",
-            opacity: 0,
-            fontSize: "clamp(28px, 8vw, 42px)",
-            fontWeight: 900,
-            letterSpacing: "4px",
-            background: "linear-gradient(135deg, #d4a017 0%, #f5d060 30%, #d4a017 50%, #f5d060 70%, #d4a017 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            filter: "drop-shadow(0 2px 8px rgba(212,160,23,0.4))",
-            padding: "8px 20px",
-            border: "3px solid",
-            borderImage: "linear-gradient(135deg, #d4a017, #f5d060, #d4a017) 1",
-          }}
-        >
-          SEASON 1
-        </div>
-      )}
-
       {/* 1. Cherry blossom petals */}
       <div className="absolute z-[2] pointer-events-none overflow-hidden" style={{ inset: "-30px" }}>
         {PETALS.map((p, i) => (
