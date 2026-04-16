@@ -40,39 +40,36 @@ export default function EventPoster() {
         handlePointer(t.clientX, t.clientY);
       }}
     >
-      {/* 6. Neon border — only after poster lands */}
-      {landed && (
-        <>
-          <div
-            className="absolute rounded-[18px] animate-neon-rotate animate-fade-in"
-            style={{
-              inset: "-3px",
-              background: "conic-gradient(from var(--neon-angle, 0deg), #ec4899, #22d3ee, #a855f7, #ec4899)",
-              filter: "blur(1px)",
-              zIndex: 0,
-            }}
-          />
-          <div
-            className="absolute rounded-[18px] animate-neon-rotate opacity-50 animate-fade-in"
-            style={{
-              inset: "-3px",
-              background: "conic-gradient(from var(--neon-angle, 0deg), #ec4899, #22d3ee, #a855f7, #ec4899)",
-              filter: "blur(12px)",
-              zIndex: 0,
-            }}
-          />
-        </>
-      )}
+      {/* 6. Neon border — always rendered, fade in after landing */}
+      <div
+        className={`absolute rounded-[18px] animate-neon-rotate transition-opacity duration-700 ${landed ? "opacity-100" : "opacity-0"}`}
+        style={{
+          inset: "-3px",
+          background: "conic-gradient(from var(--neon-angle, 0deg), #ec4899, #22d3ee, #a855f7, #ec4899)",
+          filter: "blur(1px)",
+          zIndex: 0,
+        }}
+      />
+      <div
+        className={`absolute rounded-[18px] animate-neon-rotate transition-opacity duration-700 ${landed ? "opacity-50" : "opacity-0"}`}
+        style={{
+          inset: "-3px",
+          background: "conic-gradient(from var(--neon-angle, 0deg), #ec4899, #22d3ee, #a855f7, #ec4899)",
+          filter: "blur(12px)",
+          zIndex: 0,
+        }}
+      />
 
       {/* 7. Poster image with drop animation */}
-      <Image
-        src="/event-poster.png"
-        alt="Toki Lottery Event Poster"
-        width={600}
-        height={849}
-        className={`relative z-[1] w-full h-auto rounded-2xl ${entered ? "animate-ticket-drop" : "opacity-0"}`}
-        priority
-      />
+      <div className="relative z-[1] w-full rounded-2xl" style={{ aspectRatio: "600/849" }}>
+        <Image
+          src="/event-poster.webp"
+          alt="Toki Lottery Event Poster"
+          fill
+          className={`rounded-2xl object-cover ${entered ? "animate-ticket-drop" : "invisible"}`}
+          priority
+        />
+      </div>
 
       {/* 4. Spotlight overlay */}
       <div
