@@ -161,6 +161,50 @@ export default function EventPage() {
         {/* Event poster */}
         <EventPoster />
 
+        {/* Trailer */}
+        <div
+          className="w-full mb-6 rounded-2xl p-[2px]"
+          style={{
+            background: "linear-gradient(135deg, #f9a8d4 0%, #c084fc 40%, #f472b6 70%, #fbbf24 100%)",
+            boxShadow: "0 4px 24px rgba(244,114,182,0.25), 0 0 40px rgba(192,132,252,0.1)",
+          }}
+        >
+          <div
+            className="rounded-[14px] overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(252,231,243,0.7) 100%)",
+              backdropFilter: "blur(12px)",
+            }}
+          >
+            {/* Label */}
+            <div className="flex items-center justify-center gap-2 py-2.5">
+              <span className="inline-block w-5 h-[1px] bg-gradient-to-r from-transparent to-pink-300" />
+              <span className="text-[11px] font-bold tracking-[3px] uppercase"
+                style={{
+                  background: "linear-gradient(90deg, #ec4899, #a855f7)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Launch Trailer
+              </span>
+              <span className="inline-block w-5 h-[1px] bg-gradient-to-l from-transparent to-purple-300" />
+            </div>
+            {/* Video */}
+            <div className="relative w-full px-2 pb-2" style={{ paddingTop: "0" }}>
+              <div className="relative w-full rounded-lg overflow-hidden" style={{ paddingBottom: "56.25%" }}>
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src="https://www.youtube.com/embed/Kw-KYhbWMmA?rel=0"
+                  title="Toki Launch Trailer"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Title */}
         <div className="text-center mb-6 animate-fade-in">
           <h1
