@@ -154,6 +154,7 @@ export default function EventPage() {
           <span className="text-emerald-500/70 font-bold text-[16px] tracking-[1.5px] uppercase">
             THE GREEN
           </span>
+          <span className="w-6 shrink-0" aria-hidden="true" />
         </div>
 
         {/* Event description */}
