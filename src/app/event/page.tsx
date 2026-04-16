@@ -147,16 +147,22 @@ export default function EventPage() {
             height={24}
             className="rounded-full"
           />
-          <span className="text-pink-800/60 text-[14px] font-bold tracking-[1.5px] uppercase">
+          <span className="text-pink-800/60 text-[16px] font-bold tracking-[1.5px] uppercase">
             Tokamak Network
           </span>
-          <span className="text-emerald-400/50 font-serif italic text-[14px]">×</span>
-          <span className="text-emerald-500/70 font-bold text-[14px] tracking-[1.5px] uppercase">
+          <span className="text-emerald-400/50 font-serif italic text-[16px]">×</span>
+          <span className="text-emerald-500/70 font-bold text-[16px] tracking-[1.5px] uppercase">
             THE GREEN
           </span>
         </div>
 
-        <div className="mb-8" />
+        {/* Event description */}
+        <p className="text-center text-[17px] font-semibold text-pink-800/50 tracking-wide mt-2">
+          {e.eventFlow}
+        </p>
+        <p className="text-center text-[12px] text-pink-600/50 font-semibold mt-1 mb-6">
+          {e.eventBonus}
+        </p>
 
         {/* Event poster */}
         <EventPoster />
