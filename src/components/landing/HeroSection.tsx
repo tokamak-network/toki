@@ -26,7 +26,6 @@ export default function HeroSection({ apr }: { apr: number | null }) {
         loop
         muted
         playsInline
-        poster="/toki-promo-poster.jpg"
         className="absolute inset-0 w-full h-full object-cover"
       >
         <source src="/toki-promo.webm" type="video/webm" />
