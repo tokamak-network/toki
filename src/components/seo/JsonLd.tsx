@@ -35,7 +35,7 @@ export function WebApplicationJsonLd() {
       priceCurrency: "USD",
     },
     description:
-      "TON 스테이킹을 쉽게. 원클릭으로 토카막 네트워크에서 세뇨리지 보상을 받으세요.",
+      "TON 스테이킹을 쉽게. 원클릭으로 토카막 네트워크에서 시뇨리지 보상을 받으세요.",
   };
 
   return (
