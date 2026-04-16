@@ -62,13 +62,14 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     siteName: SITE_NAME,
     url: SITE_URL,
-    images: ["/opengraph-image"],
+    images: ["/toki-promo-poster.jpg"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Toki — Stake TON in One Click | Tokamak Network Staking",
     description:
       "Stake your TON tokens with one click and earn 20%+ APR seigniorage rewards. Zero gas fees, no complex setup. Powered by Tokamak Network.",
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
