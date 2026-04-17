@@ -10,6 +10,7 @@ import Image from "next/image";
 export default function LotteryClaimContent() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
+  const isRetry = searchParams.get("retry") === "1";
   const { user } = usePrivy();
 
   const {
@@ -104,8 +105,9 @@ export default function LotteryClaimContent() {
   if (!tier || !cardNumber) return null;
 
   const handleChooseReward = async (choice: "discount" | "ton") => {
-    if (!user?.id) return {};
-    const result = await chooseReward(choice, user.id);
+    // Login is optional for the discount path; TON path still needs user.id
+    // but its button is currently disabled in the UI.
+    const result = await chooseReward(choice, user?.id ?? null);
     return {
       txHash: result?.txHash,
       showMission: result?.showMission,
@@ -121,6 +123,7 @@ export default function LotteryClaimContent() {
       txHash={txHash}
       walletAddress={walletAddress}
       loading={loading}
+      isRetry={isRetry}
     />
   );
 }

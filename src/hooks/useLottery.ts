@@ -74,7 +74,7 @@ export function useLottery() {
   const chooseReward = useCallback(
     async (
       choice: "discount" | "ton",
-      userId: string,
+      userId?: string | null,
     ): Promise<{ txHash?: string; showMission?: boolean } | undefined> => {
       if (!state.cardNumber) return;
 
@@ -86,7 +86,7 @@ export function useLottery() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             cardNumber: state.cardNumber,
-            userId,
+            userId: userId ?? null,
             walletAddress: state.walletAddress,
             choice,
           }),
