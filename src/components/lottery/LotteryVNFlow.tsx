@@ -6,6 +6,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { QRCodeSVG } from "qrcode.react";
 import { PRIZE_TIERS, type PrizeTier } from "@/constants/lottery";
 import { fetchStakingData } from "@/lib/staking";
+import { trackEvent } from "@/lib/analytics";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -72,8 +73,7 @@ function getPhaseData(
       };
     case "awaiting_login":
       return {
-        text:
-          "당첨금을 받으려면 계정이 필요해! 걱정 마, 개인정보는 안 가져가고 지갑은 온전히 네 거야~ 구글로 시작해볼까?",
+        text: "토큰을 받고 쓰려면 지갑이 필요해. 아주 간단해~ 구글로 로그인만 하면 끝이야!",
         mood: "presenting",
       };
     case "onboarding":
@@ -212,16 +212,10 @@ function PrizeRevealPanel({ prize, tier }: { prize: (typeof PRIZE_TIERS)[PrizeTi
 }
 
 function LoginPanel() {
-  const trustPoints = [
-    { icon: "🙅", text: "개인정보 수집·저장 안 해" },
-    { icon: "🔑", text: "지갑 소유권은 100% 너한테 있어" },
-    { icon: "🚪", text: "언제든 네 지갑으로 출금·이동 가능" },
-  ];
-
   return (
     <div className="w-full max-w-md animate-fade-in-up">
       <div
-        className="rounded-3xl p-6 border space-y-5"
+        className="rounded-3xl p-6 border text-center space-y-4"
         style={{
           background: "linear-gradient(135deg, rgba(255,255,255,0.78) 0%, rgba(252,231,243,0.55) 100%)",
           borderColor: "rgba(244,114,182,0.3)",
@@ -229,48 +223,20 @@ function LoginPanel() {
           boxShadow: "0 8px 32px rgba(244,114,182,0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
         }}
       >
-        {/* Header */}
-        <div className="text-center space-y-3">
-          <div
-            className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl"
-            style={{
-              background: "linear-gradient(135deg,#fce7f3,#fbcfe8)",
-              border: "1px solid rgba(244,114,182,0.3)",
-            }}
-          >
-            🔐
-          </div>
-          <h3 className="font-black text-lg text-pink-950">지갑 준비하기</h3>
-          <p className="text-xs text-pink-900/60 leading-relaxed">
-            구글 계정으로 간편 로그인하면
-            <br />
-            전용 지갑이 자동으로 만들어져~
-          </p>
+        <div
+          className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl"
+          style={{
+            background: "linear-gradient(135deg,#fce7f3,#fbcfe8)",
+            border: "1px solid rgba(244,114,182,0.3)",
+          }}
+        >
+          🔐
         </div>
-
-        {/* Trust indicators */}
-        <div className="space-y-2">
-          {trustPoints.map((p, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl"
-              style={{
-                background: "rgba(255,255,255,0.55)",
-                border: "1px solid rgba(244,114,182,0.18)",
-              }}
-            >
-              <span className="text-base shrink-0">{p.icon}</span>
-              <p className="text-[11px] text-pink-900/75 font-semibold leading-snug">{p.text}</p>
-              <span className="ml-auto text-emerald-500 font-black text-xs">✓</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Fine print */}
-        <p className="text-[10px] text-pink-900/45 text-center leading-relaxed">
-          로그인은 Privy 보안 인증을 사용해.
+        <h3 className="font-black text-lg text-pink-950">지갑 준비하기</h3>
+        <p className="text-sm text-pink-900/75 font-semibold leading-relaxed">
+          당첨 토큰을 받고 쓰려면 지갑이 필요해.
           <br />
-          토키·토카막은 네 구글 계정 정보에 접근하지 않아.
+          아주 간단해 — <span className="text-pink-600">구글로 로그인</span>만 하면 끝!
         </p>
       </div>
     </div>
@@ -619,21 +585,29 @@ export default function LotteryVNFlow({
     }
   }, [authenticated, phase]);
 
+  // ─── Analytics: fire GA4 event on every phase transition ────────────────
+  useEffect(() => {
+    trackEvent("lottery_step", { step: phase, tier });
+  }, [phase, tier]);
+
   const handleChoice = useCallback(
     async (choice: "discount" | "ton") => {
       if (!user?.id || choiceLoading) return;
+      trackEvent("lottery_choice", { choice, tier });
       setChoiceLoading(true);
       try {
         const result = await onChooseReward(choice);
         setResultData({ ...result, choice });
         setPhase(choice === "discount" ? "discount_result" : "ton_result");
+        trackEvent("lottery_complete", { choice, tier, show_mission: !!result?.showMission });
       } catch {
+        trackEvent("lottery_choice_error", { choice, tier });
         // error surfaces via `loading`/`error` props upstream; stay in choice phase
       } finally {
         setChoiceLoading(false);
       }
     },
-    [user, choiceLoading, onChooseReward],
+    [user, choiceLoading, onChooseReward, tier],
   );
 
   const qrData =
