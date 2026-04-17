@@ -22,11 +22,11 @@ export const LOTTERY_CONFIG = {
 export const EVENT_KRW_PER_TON = 700;
 
 export const PRIZE_TIERS = {
-  bust: { amount: 0, label: "꽝", emoji: "🌸", tokiMood: "worried" },
-  basic: { amount: 1, label: "1 TON", emoji: "🎉", tokiMood: "welcome" },
-  normal: { amount: 5, label: "5 TON", emoji: "🎉", tokiMood: "excited" },
+  bust: { amount: 0, label: "꽝", emoji: "🫥", tokiMood: "worried" },
+  basic: { amount: 10, label: "10 TON", emoji: "🍀", tokiMood: "welcome" },
   lucky: { amount: 20, label: "20 TON", emoji: "⭐", tokiMood: "cheer" },
-  jackpot: { amount: 100, label: "100 TON", emoji: "👑", tokiMood: "celebrate" },
+  super: { amount: 50, label: "50 TON", emoji: "✨", tokiMood: "excited" },
+  jackpot: { amount: 100, label: "100 TON", emoji: "🏆", tokiMood: "celebrate" },
 } as const;
 
 export type PrizeTier = keyof typeof PRIZE_TIERS;
