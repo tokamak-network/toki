@@ -15,6 +15,7 @@ export const LOTTERY_CONFIG = {
 } as const;
 
 export const PRIZE_TIERS = {
+  bust: { amount: 0, label: "꽝", emoji: "🌸", tokiMood: "worried" },
   basic: { amount: 1, label: "1 TON", emoji: "🎉", tokiMood: "welcome" },
   normal: { amount: 5, label: "5 TON", emoji: "🎉", tokiMood: "excited" },
   lucky: { amount: 20, label: "20 TON", emoji: "⭐", tokiMood: "cheer" },
