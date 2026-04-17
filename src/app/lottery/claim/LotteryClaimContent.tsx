@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { useLottery } from "@/hooks/useLottery";
-import LotteryChatFlow from "@/components/lottery/LotteryChatFlow";
+import LotteryVNFlow from "@/components/lottery/LotteryVNFlow";
 import Image from "next/image";
 
 export default function LotteryClaimContent() {
@@ -113,7 +113,7 @@ export default function LotteryClaimContent() {
   };
 
   return (
-    <LotteryChatFlow
+    <LotteryVNFlow
       cardNumber={cardNumber}
       tier={tier}
       prizeAmount={prizeAmount ?? 0}
