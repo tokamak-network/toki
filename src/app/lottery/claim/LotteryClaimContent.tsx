@@ -18,6 +18,7 @@ export default function LotteryClaimContent() {
     cardNumber,
     tier,
     prizeAmount,
+    cardStatus,
     txHash,
     walletAddress,
     loading,
@@ -124,6 +125,7 @@ export default function LotteryClaimContent() {
       walletAddress={walletAddress}
       loading={loading}
       isRetry={isRetry}
+      cardStatus={cardStatus}
     />
   );
 }

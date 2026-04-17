@@ -24,7 +24,9 @@ export async function POST(request: NextRequest) {
     // Look up the card
     const { data: card, error } = await supabaseAdmin
       .from("cards")
-      .select("card_number, prize_amount, tier, status, campaign_id")
+      .select(
+        "card_number, prize_amount, tier, status, campaign_id, discount_verified_at, expires_at",
+      )
       .eq("card_number", cardNumber)
       .single();
 
@@ -35,11 +37,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (card.status !== "unclaimed") {
+    // A card is "truly used" only once staff has verified the discount or
+    // the TON has been sent. Re-opening the same URL before staff
+    // verification should still resume the flow (show the QR again).
+    const staffVerified = !!card.discount_verified_at;
+    const tonSent = card.status === "ton_claimed";
+    if (staffVerified || tonSent) {
       return NextResponse.json({
         success: false,
         alreadyClaimed: true,
         error: "This card has already been used",
+      });
+    }
+
+    // Expiry still blocks re-entry (end-of-day cutoff for discount cards)
+    if (card.expires_at && new Date(card.expires_at) < new Date()) {
+      return NextResponse.json({
+        success: false,
+        expired: true,
+        error: "This card has expired",
       });
     }
 
@@ -62,6 +78,7 @@ export async function POST(request: NextRequest) {
       card: {
         tier: card.tier,
         prizeAmount: card.prize_amount,
+        status: card.status,
       },
     });
   } catch {

@@ -8,6 +8,9 @@ interface LotteryState {
   cardNumber: string | null;
   tier: PrizeTier | null;
   prizeAmount: number | null;
+  /** Current DB status of the card — matters on re-entry after discount
+   *  selection but before staff verification (show QR again). */
+  cardStatus: string | null;
   walletAddress: string | null;
   txHash: string | null;
   showMission: boolean;
@@ -21,6 +24,7 @@ export function useLottery() {
     cardNumber: null,
     tier: null,
     prizeAmount: null,
+    cardStatus: null,
     walletAddress: null,
     txHash: null,
     showMission: false,
@@ -59,6 +63,7 @@ export function useLottery() {
         loading: false,
         tier: data.card.tier,
         prizeAmount: data.card.prizeAmount,
+        cardStatus: data.card.status ?? "unclaimed",
         step: "prize_reveal",
       }));
     } catch {

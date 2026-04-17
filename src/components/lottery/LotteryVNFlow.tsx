@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
 import { QRCodeSVG } from "qrcode.react";
-import { PRIZE_TIERS, type PrizeTier } from "@/constants/lottery";
+import { PRIZE_TIERS, EVENT_KRW_PER_TON, type PrizeTier } from "@/constants/lottery";
 import { fetchStakingData } from "@/lib/staking";
 import { trackEvent } from "@/lib/analytics";
 import CardNumberInput from "@/components/lottery/CardNumberInput";
@@ -21,6 +21,9 @@ interface LotteryVNFlowProps {
   loading?: boolean;
   /** True when the user has just retried with a second card after a first bust. */
   isRetry?: boolean;
+  /** Current DB status of the card. If "discount_used" (but not yet verified
+   *  by staff), the flow jumps straight to the QR screen. */
+  cardStatus?: string | null;
 }
 
 type Phase =
@@ -244,31 +247,9 @@ function Confetti({ tier }: { tier: PrizeTier }) {
 
 // ─── Panel components ────────────────────────────────────────────────────────
 
-function useTokamakKrwPrice() {
-  const [krw, setKrw] = useState<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/price/tokamak")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (!cancelled && d && typeof d.krw === "number") setKrw(d.krw);
-      })
-      .catch(() => {
-        /* ignore — keep KRW hidden on failure */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return krw;
-}
-
 function PrizeRevealPanel({ prize, tier }: { prize: (typeof PRIZE_TIERS)[PrizeTier]; tier: PrizeTier }) {
   const v = TIER_VISUAL[tier];
-  const krwPrice = useTokamakKrwPrice();
-  const krwValue = krwPrice !== null ? Math.round(prize.amount * krwPrice) : null;
+  const krwValue = prize.amount * EVENT_KRW_PER_TON;
 
   const isPremium = tier === "lucky" || tier === "jackpot";
   const bg =
@@ -316,12 +297,14 @@ function PrizeRevealPanel({ prize, tier }: { prize: (typeof PRIZE_TIERS)[PrizeTi
           >
             {prize.label}
           </p>
-          {krwValue !== null && (
+          <div className="text-center space-y-0.5">
             <p className="text-sm font-bold text-pink-900/70 tracking-tight">
               ≈ {krwValue.toLocaleString("ko-KR")}원
-              <span className="text-[10px] text-pink-900/40 font-medium ml-1.5">(실시간, 업비트 기준)</span>
             </p>
-          )}
+            <p className="text-[10px] text-pink-900/40 font-medium">
+              (이벤트 고정 가격 · 1 TON = {EVENT_KRW_PER_TON}원)
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -817,17 +800,23 @@ export default function LotteryVNFlow({
   walletAddress,
   loading = false,
   isRetry = false,
+  cardStatus = null,
 }: LotteryVNFlowProps) {
   const prize = PRIZE_TIERS[tier];
   const { user } = usePrivy();
 
-  // On retry (2nd card after a bust) skip the Tokamak promo and jump
-  // straight to the result — user has already seen the intro.
-  const initialPhase: Phase = isRetry
-    ? tier === "bust"
-      ? "bust_reveal"
-      : "prize_reveal"
-    : "promo";
+  // Pick the first phase based on the card's current state.
+  //   · Already picked discount (but not yet staff-verified) → jump to QR.
+  //   · Retry after a first bust → skip the promo (user has seen it).
+  //   · Otherwise start with the Tokamak promo.
+  const alreadyDiscount = cardStatus === "discount_used";
+  const initialPhase: Phase = alreadyDiscount
+    ? "discount_result"
+    : isRetry
+      ? tier === "bust"
+        ? "bust_reveal"
+        : "prize_reveal"
+      : "promo";
   const [phase, setPhase] = useState<Phase>(initialPhase);
   const [choiceLoading, setChoiceLoading] = useState(false);
   const [retryLoading, setRetryLoading] = useState(false);
