@@ -13,9 +13,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!userId || !choice || !["discount", "ton"].includes(choice)) {
+    if (!choice || !["discount", "ton"].includes(choice)) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 },
+      );
+    }
+
+    // userId is only required for TON transfers (we need a wallet to credit).
+    // Discount claims are anonymous — staff PIN is the gate.
+    if (choice === "ton" && !userId) {
+      return NextResponse.json(
+        { error: "Login required for TON transfer" },
         { status: 400 },
       );
     }
@@ -52,7 +61,7 @@ export async function POST(request: NextRequest) {
         .from("cards")
         .update({
           status: "discount_used",
-          claimed_by: userId,
+          claimed_by: userId ?? null,
           claimed_at: now,
           expires_at: endOfDay.toISOString(),
         })

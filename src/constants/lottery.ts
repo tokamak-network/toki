@@ -14,6 +14,13 @@ export const LOTTERY_CONFIG = {
   },
 } as const;
 
+/**
+ * Event-fixed KRW-per-TON rate. Shown on both the user's prize reveal and
+ * the staff redeem page so the bar can apply a consistent discount
+ * regardless of live market price.
+ */
+export const EVENT_KRW_PER_TON = 700;
+
 export const PRIZE_TIERS = {
   bust: { amount: 0, label: "꽝", emoji: "🌸", tokiMood: "worried" },
   basic: { amount: 1, label: "1 TON", emoji: "🎉", tokiMood: "welcome" },

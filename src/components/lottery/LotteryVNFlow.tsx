@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
 import { QRCodeSVG } from "qrcode.react";
-import { PRIZE_TIERS, type PrizeTier } from "@/constants/lottery";
+import { PRIZE_TIERS, EVENT_KRW_PER_TON, type PrizeTier } from "@/constants/lottery";
 import { fetchStakingData } from "@/lib/staking";
 import { trackEvent } from "@/lib/analytics";
+import CardNumberInput from "@/components/lottery/CardNumberInput";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -18,13 +19,18 @@ interface LotteryVNFlowProps {
   txHash?: string | null;
   walletAddress?: string | null;
   loading?: boolean;
+  /** True when the user has just retried with a second card after a first bust. */
+  isRetry?: boolean;
+  /** Current DB status of the card. If "discount_used" (but not yet verified
+   *  by staff), the flow jumps straight to the QR screen. */
+  cardStatus?: string | null;
 }
 
 type Phase =
   | "promo"
-  | "awaiting_login"
   | "prize_reveal"
   | "bust_reveal"
+  | "bust_retry_input"
   | "choice"
   | "discount_result"
   | "ton_result"
@@ -68,6 +74,7 @@ function useTypewriter(text: string, speed = 32) {
 function getPhaseData(
   phase: Phase,
   prize: (typeof PRIZE_TIERS)[PrizeTier],
+  isRetry = false,
 ): { text: string; mood: string } {
   switch (phase) {
     case "promo":
@@ -76,21 +83,27 @@ function getPhaseData(
           "TON은 토카막 네트워크의 토큰이야! 2017년부터 이더리움 위에서 꾸준히 개발해온 블록체인 프로젝트로, 국내 4대 거래소에 모두 상장된 검증된 프로젝트야~ 8년 넘게 살아남은 프로젝트는 많지 않거든! 🙌",
         mood: "proud",
       };
-    case "awaiting_login":
-      return {
-        text: "토큰을 받고 쓰려면 지갑이 필요해. 아주 간단해~ 구글로 로그인만 하면 끝이야!",
-        mood: "presenting",
-      };
     case "prize_reveal":
       return {
         text: `와아~ 카드 확인했어! ${prize.label} 당첨됐네! 🎉`,
         mood: "excited",
       };
     case "bust_reveal":
+      return isRetry
+        ? {
+            text:
+              "두 번 연속 꽝이라니… 😢 그래도 잔맥 한 잔은 보장할게! 🍺 바 스태프에게 이 화면 보여주면 돼.",
+            mood: "worried",
+          }
+        : {
+            text:
+              "아쉽다… 이번엔 꽝이야 😢 SNS 포스팅을 스태프에게 보여주면 카드 한 장 더 받을 수 있어!",
+            mood: "worried",
+          };
+    case "bust_retry_input":
       return {
-        text:
-          "아쉽다… 이번엔 꽝이야 😢 그래도 잔맥 한 잔은 보장이고, 아까 올린 SNS 포스팅을 스태프에게 보여주면 카드 한 장 더 받을 수 있어! 🍺",
-        mood: "worried",
+        text: "새 카드 받았어? 번호 입력해줘~ 이번엔 당첨이길!",
+        mood: "cheer",
       };
     case "choice":
       return {
@@ -234,31 +247,9 @@ function Confetti({ tier }: { tier: PrizeTier }) {
 
 // ─── Panel components ────────────────────────────────────────────────────────
 
-function useTokamakKrwPrice() {
-  const [krw, setKrw] = useState<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/price/tokamak")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (!cancelled && d && typeof d.krw === "number") setKrw(d.krw);
-      })
-      .catch(() => {
-        /* ignore — keep KRW hidden on failure */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return krw;
-}
-
 function PrizeRevealPanel({ prize, tier }: { prize: (typeof PRIZE_TIERS)[PrizeTier]; tier: PrizeTier }) {
   const v = TIER_VISUAL[tier];
-  const krwPrice = useTokamakKrwPrice();
-  const krwValue = krwPrice !== null ? Math.round(prize.amount * krwPrice) : null;
+  const krwValue = prize.amount * EVENT_KRW_PER_TON;
 
   const isPremium = tier === "lucky" || tier === "jackpot";
   const bg =
@@ -306,45 +297,15 @@ function PrizeRevealPanel({ prize, tier }: { prize: (typeof PRIZE_TIERS)[PrizeTi
           >
             {prize.label}
           </p>
-          {krwValue !== null && (
+          <div className="text-center space-y-0.5">
             <p className="text-sm font-bold text-pink-900/70 tracking-tight">
               ≈ {krwValue.toLocaleString("ko-KR")}원
-              <span className="text-[10px] text-pink-900/40 font-medium ml-1.5">(실시간, 업비트 기준)</span>
             </p>
-          )}
+            <p className="text-[10px] text-pink-900/40 font-medium">
+              (이벤트 고정 가격 · 1 TON = {EVENT_KRW_PER_TON}원)
+            </p>
+          </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function LoginPanel() {
-  return (
-    <div className="w-full max-w-md animate-fade-in-up">
-      <div
-        className="rounded-3xl p-6 border text-center space-y-4"
-        style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.78) 0%, rgba(252,231,243,0.55) 100%)",
-          borderColor: "rgba(244,114,182,0.3)",
-          backdropFilter: "blur(16px)",
-          boxShadow: "0 8px 32px rgba(244,114,182,0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
-        }}
-      >
-        <div
-          className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl"
-          style={{
-            background: "linear-gradient(135deg,#fce7f3,#fbcfe8)",
-            border: "1px solid rgba(244,114,182,0.3)",
-          }}
-        >
-          🔐
-        </div>
-        <h3 className="font-black text-lg text-pink-950">지갑 준비하기</h3>
-        <p className="text-sm text-pink-900/75 font-semibold leading-relaxed">
-          당첨 토큰을 받고 쓰려면 지갑이 필요해.
-          <br />
-          아주 간단해 — <span className="text-pink-600">구글로 로그인</span>만 하면 끝!
-        </p>
       </div>
     </div>
   );
@@ -510,7 +471,7 @@ function ExchangeIcon({ domain, name, color }: { domain: string; name: string; c
   );
 }
 
-function BustPanel() {
+function BustPanel({ isRetry }: { isRetry: boolean }) {
   return (
     <div className="w-full max-w-md animate-fade-in-up space-y-4">
       {/* Main bust card */}
@@ -535,75 +496,125 @@ function BustPanel() {
           <p className="text-[11px] font-bold text-slate-500 tracking-[0.25em] uppercase">Better Luck Next Time</p>
           <p className="text-4xl font-black tracking-tight text-slate-500">꽝</p>
           <p className="text-xs text-slate-600/80 font-semibold leading-relaxed max-w-[280px]">
-            아쉽지만 이번 카드는 꽝이야…
-            <br />
-            하지만 빈손으로는 안 보내!
+            {isRetry ? (
+              <>
+                두 번 연속 꽝이라니… 😢
+                <br />
+                대신 <span className="text-amber-600 font-black">잔맥 한 잔</span>은 보장할게!
+              </>
+            ) : (
+              <>
+                아쉽지만 이번 카드는 꽝이야…
+                <br />
+                하지만 빈손으로는 안 보내!
+              </>
+            )}
           </p>
         </div>
       </div>
 
-      {/* Consolation guarantee — beer on the house */}
-      <div
-        className="rounded-2xl p-4 border flex items-center gap-3"
-        style={{
-          background: "linear-gradient(135deg, rgba(254,243,199,0.75) 0%, rgba(255,237,213,0.6) 100%)",
-          borderColor: "rgba(245,158,11,0.45)",
-          boxShadow: "0 4px 18px rgba(245,158,11,0.15), inset 0 1px 0 rgba(255,255,255,0.55)",
-        }}
-      >
+      {/* First bust → Share & Win section (hashtag + staff flow) */}
+      {!isRetry && (
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0"
+          className="rounded-2xl p-4 border space-y-3"
           style={{
-            background: "linear-gradient(135deg,#fbbf24,#f59e0b)",
-            boxShadow: "0 3px 12px rgba(245,158,11,0.35)",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(252,231,243,0.55) 100%)",
+            borderColor: "rgba(244,114,182,0.35)",
+            boxShadow: "0 4px 20px rgba(244,114,182,0.12)",
           }}
         >
-          🍺
-        </div>
-        <div className="flex-1">
-          <p className="text-[10px] font-black text-amber-700 tracking-[0.2em] uppercase">참여 감사상</p>
-          <p className="text-sm font-black text-pink-950">잔맥 한 잔 보장!</p>
-          <p className="text-[11px] text-amber-800/75 font-semibold mt-0.5">바 스태프에게 이 화면 보여주기</p>
-        </div>
-      </div>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0"
+                 style={{ background: "linear-gradient(135deg,#ec4899,#a855f7)", boxShadow: "0 3px 10px rgba(236,72,153,0.3)" }}>
+              🎁
+            </div>
+            <div className="shrink-0">
+              <p className="text-[10px] font-black text-pink-500 tracking-[0.2em] uppercase">Share &amp; Win</p>
+              <p className="text-sm font-black text-pink-950 leading-tight whitespace-nowrap">카드 한 장 더 받는 법</p>
+            </div>
+            <div className="flex-1 flex justify-center">
+              <span
+                className="text-xs font-black text-amber-700 whitespace-nowrap px-2.5 py-1 rounded-full border"
+                style={{
+                  background: "linear-gradient(135deg, rgba(254,243,199,0.95), rgba(255,237,213,0.85))",
+                  borderColor: "rgba(245,158,11,0.5)",
+                  boxShadow: "0 1px 4px rgba(245,158,11,0.15)",
+                }}
+              >
+                또 꽝이어도 🍺 보장
+              </span>
+            </div>
+          </div>
 
-      {/* Second chance instructions */}
+          <ol className="space-y-2 text-xs text-pink-900/80 font-medium leading-snug">
+            <li className="flex gap-2">
+              <span className="text-pink-500 font-black shrink-0">1.</span>
+              <span>복사한 해시태그로 SNS에 포스팅</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-pink-500 font-black shrink-0">2.</span>
+              <span>포스팅 화면을 보여주기</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-pink-500 font-black shrink-0">3.</span>
+              <span>확인 후 새 카드 한 장 지급 받기</span>
+            </li>
+          </ol>
+
+          <HashtagBlock />
+        </div>
+      )}
+
+      {/* Retry bust → Consolation beer banner only */}
+      {isRetry && (
+        <div
+          className="rounded-2xl p-4 border flex items-center gap-3"
+          style={{
+            background: "linear-gradient(135deg, rgba(254,243,199,0.78) 0%, rgba(255,237,213,0.65) 100%)",
+            borderColor: "rgba(245,158,11,0.5)",
+            boxShadow: "0 4px 22px rgba(245,158,11,0.2), inset 0 1px 0 rgba(255,255,255,0.6)",
+          }}
+        >
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center text-2xl shrink-0"
+            style={{
+              background: "linear-gradient(135deg,#fbbf24,#f59e0b)",
+              boxShadow: "0 4px 14px rgba(245,158,11,0.4)",
+            }}
+          >
+            🍺
+          </div>
+          <div className="flex-1">
+            <p className="text-[10px] font-black text-amber-700 tracking-[0.2em] uppercase">참여 감사상</p>
+            <p className="text-base font-black text-pink-950">잔맥 한 잔 보장!</p>
+            <p className="text-[11px] text-amber-800/80 font-semibold mt-0.5">바 스태프에게 이 화면을 보여주세요</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BustRetryInputPanel({ onSubmit, loading }: { onSubmit: (cardNumber: string) => void; loading: boolean }) {
+  return (
+    <div className="w-full max-w-md animate-fade-in-up">
       <div
-        className="rounded-2xl p-4 border space-y-3"
+        className="rounded-3xl p-5 sm:p-6 border space-y-4"
         style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(252,231,243,0.55) 100%)",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(252,231,243,0.55) 100%)",
           borderColor: "rgba(244,114,182,0.35)",
-          boxShadow: "0 4px 20px rgba(244,114,182,0.12)",
+          backdropFilter: "blur(16px)",
+          boxShadow: "0 8px 32px rgba(244,114,182,0.14), inset 0 1px 0 rgba(255,255,255,0.65)",
         }}
       >
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0"
-               style={{ background: "linear-gradient(135deg,#ec4899,#a855f7)", boxShadow: "0 3px 10px rgba(236,72,153,0.3)" }}>
-            🎁
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-pink-500 tracking-[0.2em] uppercase">Share &amp; Win</p>
-            <p className="text-sm font-black text-pink-950 leading-tight">카드 한 장 더 받는 법</p>
-          </div>
+        <div className="text-center space-y-1">
+          <p className="text-[10px] font-bold text-pink-500 tracking-[0.2em] uppercase">Second Chance</p>
+          <p className="text-lg font-black text-pink-950 leading-tight">새 카드 번호 입력</p>
+          <p className="text-xs text-pink-900/60 font-medium">
+            바에서 받은 새 카드의 번호를 입력해주세요
+          </p>
         </div>
-
-        <ol className="space-y-2 text-xs text-pink-900/80 font-medium leading-snug">
-          <li className="flex gap-2">
-            <span className="text-pink-500 font-black shrink-0">1.</span>
-            <span>아까 복사한 해시태그로 <b>SNS에 포스팅</b>했는지 확인!</span>
-          </li>
-          <li className="flex gap-2">
-            <span className="text-pink-500 font-black shrink-0">2.</span>
-            <span>바 스태프에게 <b>포스팅 화면을 보여주기</b></span>
-          </li>
-          <li className="flex gap-2">
-            <span className="text-pink-500 font-black shrink-0">3.</span>
-            <span>스태프 확인 후 <b>새 카드 한 장 지급</b> 받기</span>
-          </li>
-        </ol>
-
-        {/* Reminder hashtag (compact) */}
-        <HashtagBlock />
+        <CardNumberInput onSubmit={onSubmit} loading={loading} />
       </div>
     </div>
   );
@@ -788,12 +799,27 @@ export default function LotteryVNFlow({
   txHash,
   walletAddress,
   loading = false,
+  isRetry = false,
+  cardStatus = null,
 }: LotteryVNFlowProps) {
   const prize = PRIZE_TIERS[tier];
-  const { login, authenticated, user } = usePrivy();
+  const { user } = usePrivy();
 
-  const [phase, setPhase] = useState<Phase>("promo");
+  // Pick the first phase based on the card's current state.
+  //   · Already picked discount (but not yet staff-verified) → jump to QR.
+  //   · Retry after a first bust → skip the promo (user has seen it).
+  //   · Otherwise start with the Tokamak promo.
+  const alreadyDiscount = cardStatus === "discount_used";
+  const initialPhase: Phase = alreadyDiscount
+    ? "discount_result"
+    : isRetry
+      ? tier === "bust"
+        ? "bust_reveal"
+        : "prize_reveal"
+      : "promo";
+  const [phase, setPhase] = useState<Phase>(initialPhase);
   const [choiceLoading, setChoiceLoading] = useState(false);
+  const [retryLoading, setRetryLoading] = useState(false);
   const [resultData, setResultData] = useState<{
     txHash?: string | null;
     showMission?: boolean;
@@ -801,15 +827,8 @@ export default function LotteryVNFlow({
   }>({});
 
   const addr = user?.wallet?.address ?? walletAddress ?? null;
-  const { text: dialogueText, mood } = getPhaseData(phase, prize);
+  const { text: dialogueText, mood } = getPhaseData(phase, prize, isRetry);
   const { displayed, done, skip } = useTypewriter(dialogueText);
-
-  // After successful login, jump straight to the result reveal (branch on tier).
-  useEffect(() => {
-    if (authenticated && phase === "awaiting_login") {
-      setPhase(tier === "bust" ? "bust_reveal" : "prize_reveal");
-    }
-  }, [authenticated, phase, tier]);
 
   // ─── Analytics: fire GA4 event on every phase transition ────────────────
   useEffect(() => {
@@ -818,7 +837,7 @@ export default function LotteryVNFlow({
 
   const handleChoice = useCallback(
     async (choice: "discount" | "ton") => {
-      if (!user?.id || choiceLoading) return;
+      if (choiceLoading) return;
       trackEvent("lottery_choice", { choice, tier });
       setChoiceLoading(true);
       try {
@@ -833,7 +852,7 @@ export default function LotteryVNFlow({
         setChoiceLoading(false);
       }
     },
-    [user, choiceLoading, onChooseReward, tier],
+    [choiceLoading, onChooseReward, tier],
   );
 
   const qrData =
@@ -846,12 +865,25 @@ export default function LotteryVNFlow({
     switch (phase) {
       case "promo":
         return <PromoPanel />;
-      case "awaiting_login":
-        return <LoginPanel />;
       case "prize_reveal":
         return <PrizeRevealPanel prize={prize} tier={tier} />;
       case "bust_reveal":
-        return <BustPanel />;
+        return <BustPanel isRetry={isRetry} />;
+      case "bust_retry_input":
+        return (
+          <BustRetryInputPanel
+            loading={retryLoading}
+            onSubmit={(newCard) => {
+              setRetryLoading(true);
+              trackEvent("lottery_bust_retry_submit", { from: cardNumber });
+              // Hard navigation: router.push would keep the old useLottery
+              // state (cardNumber, tier, step) in memory and never re-run
+              // claimCard, leaving the page stuck. A full page load rebuilds
+              // the state machine from scratch for the new card.
+              window.location.href = `/lottery/claim?code=${encodeURIComponent(newCard)}&retry=1`;
+            }}
+          />
+        );
       case "choice":
         return <ChoicePanel prize={prize} loading={choiceLoading} onChoose={handleChoice} />;
       case "discount_result":
@@ -869,33 +901,16 @@ export default function LotteryVNFlow({
       case "promo":
         return (
           <button
-            onClick={() => setPhase("awaiting_login")}
+            onClick={() => setPhase(tier === "bust" ? "bust_reveal" : "prize_reveal")}
             className="w-full py-3.5 rounded-2xl font-bold text-base text-white hover:scale-[1.02] active:scale-[0.98] transition-all"
             style={{
               background: "linear-gradient(135deg,#ec4899,#a855f7)",
               boxShadow: "0 4px 20px rgba(236,72,153,0.3)",
             }}
           >
-            다음 →
+            결과 보러 가기 →
           </button>
         );
-
-      case "awaiting_login":
-        return !authenticated ? (
-          <button
-            onClick={() => login()}
-            className="w-full py-3.5 rounded-2xl font-black text-base text-gray-900 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all"
-            style={{
-              background: "linear-gradient(180deg, #ffffff 0%, #fef6fa 100%)",
-              border: "1.5px solid rgba(244,114,182,0.55)",
-              boxShadow:
-                "0 6px 20px rgba(236,72,153,0.28), 0 2px 6px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
-            }}
-          >
-            <GoogleIcon />
-            Google로 시작하기
-          </button>
-        ) : null;
 
       case "prize_reveal":
         return (
@@ -912,17 +927,18 @@ export default function LotteryVNFlow({
         );
 
       case "bust_reveal":
+        if (isRetry) return null;
         return (
-          <a
-            href="/lottery"
-            className="block w-full py-3.5 rounded-2xl font-bold text-base text-center text-white hover:scale-[1.02] active:scale-[0.98] transition-all"
+          <button
+            onClick={() => setPhase("bust_retry_input")}
+            className="w-full py-3.5 rounded-2xl font-bold text-base text-white hover:scale-[1.02] active:scale-[0.98] transition-all"
             style={{
               background: "linear-gradient(135deg,#ec4899,#a855f7)",
               boxShadow: "0 4px 20px rgba(236,72,153,0.3)",
             }}
           >
             새 카드 받으셨나요? 번호 입력 →
-          </a>
+          </button>
         );
 
       case "ton_result":
@@ -1065,27 +1081,3 @@ export default function LotteryVNFlow({
   );
 }
 
-// ─── Google icon ──────────────────────────────────────────────────────────────
-
-function GoogleIcon() {
-  return (
-    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-      <path
-        fill="#4285F4"
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-      />
-    </svg>
-  );
-}

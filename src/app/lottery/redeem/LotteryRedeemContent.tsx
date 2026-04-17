@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { EVENT_KRW_PER_TON } from "@/constants/lottery";
 
 interface CardInfo {
   cardNumber: string;
@@ -163,12 +164,17 @@ export default function LotteryRedeemContent() {
           </div>
           {cardInfo && (
             <div
-              className="rounded-2xl p-5 space-y-3"
+              className="rounded-2xl p-5 space-y-1.5 text-center"
               style={cardStyle}
             >
               <div className="text-4xl">{cardInfo.emoji}</div>
-              <p className="text-2xl font-black text-pink-600">{cardInfo.label}</p>
-              <div className="text-xs text-pink-900/40 space-y-1">
+              <p className="text-2xl font-black text-pink-600 tracking-tight">
+                {(cardInfo.prizeAmount * EVENT_KRW_PER_TON).toLocaleString("ko-KR")}원 할인
+              </p>
+              <p className="text-[11px] text-pink-900/50 font-semibold font-mono">
+                {cardInfo.label}
+              </p>
+              <div className="text-[10px] text-pink-900/40 pt-1">
                 <p>카드번호: {cardInfo.cardNumber}</p>
               </div>
             </div>
@@ -194,10 +200,18 @@ export default function LotteryRedeemContent() {
         {cardInfo && (
           <div className="rounded-2xl p-5 space-y-4" style={cardStyle}>
             {/* Prize */}
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-1.5">
               <div className="text-5xl">{cardInfo.emoji}</div>
-              <p className="text-3xl font-black text-pink-600">{cardInfo.label}</p>
-              <p className="text-sm text-pink-900/50">할인 금액</p>
+              <p className="text-[11px] font-bold text-pink-900/50 tracking-[0.2em] uppercase mt-1">할인 금액</p>
+              <p className="text-4xl sm:text-5xl font-black text-pink-600 tracking-tight">
+                {(cardInfo.prizeAmount * EVENT_KRW_PER_TON).toLocaleString("ko-KR")}원
+              </p>
+              <p className="text-xs text-pink-900/55 font-semibold font-mono">
+                {cardInfo.label}
+              </p>
+              <p className="text-[10px] text-pink-900/40 font-medium mt-1">
+                이벤트 고정 가격 (1 TON = {EVENT_KRW_PER_TON}원)
+              </p>
             </div>
 
             {/* Divider */}
