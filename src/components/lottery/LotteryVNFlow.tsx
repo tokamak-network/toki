@@ -149,7 +149,7 @@ const TIER_VISUAL: Record<
   }
 > = {
   bust: {
-    emoji: "🌸",
+    emoji: "🫥",
     tag: "꽝",
     gradient: "linear-gradient(90deg,#94a3b8,#cbd5e1,#94a3b8)",
     border: "rgba(148,163,184,0.35)",
@@ -158,37 +158,37 @@ const TIER_VISUAL: Record<
     confettiPalette: [],
   },
   basic: {
-    emoji: "🎊",
-    tag: "🎊 당첨!",
-    gradient: "linear-gradient(90deg,#ec4899,#fb7185,#ec4899)",
-    border: "rgba(244,114,182,0.4)",
+    emoji: "🍀",
+    tag: "🍀 당첨!",
+    gradient: "linear-gradient(90deg,#10b981,#34d399,#10b981)",
+    border: "rgba(16,185,129,0.4)",
     glow:
-      "0 0 36px rgba(244,114,182,0.25), inset 0 1px 0 rgba(255,255,255,0.7)",
-    emojiGlow: "drop-shadow(0 0 10px rgba(244,114,182,0.55))",
-    confettiPalette: ["#f9a8d4", "#fbcfe8", "#f472b6", "#fda4af", "#ffffff", "#fce7f3"],
-  },
-  normal: {
-    emoji: "🎁",
-    tag: "🎁 당첨! 축하해~",
-    gradient: "linear-gradient(90deg,#ec4899,#d946ef,#a855f7)",
-    border: "rgba(217,70,239,0.5)",
-    glow:
-      "0 0 44px rgba(217,70,239,0.28), inset 0 1px 0 rgba(255,255,255,0.7)",
-    emojiGlow: "drop-shadow(0 0 12px rgba(217,70,239,0.65))",
-    confettiPalette: ["#e879f9", "#d946ef", "#f472b6", "#a855f7", "#ffffff", "#fbcfe8"],
+      "0 0 36px rgba(16,185,129,0.22), inset 0 1px 0 rgba(255,255,255,0.7)",
+    emojiGlow: "drop-shadow(0 0 10px rgba(16,185,129,0.55))",
+    confettiPalette: ["#10b981", "#34d399", "#6ee7b7", "#a7f3d0", "#ffffff", "#d1fae5"],
   },
   lucky: {
-    emoji: "🌟",
-    tag: "🌟 LUCKY · 행운 당첨!",
-    gradient: "linear-gradient(90deg,#a855f7,#d946ef,#ec4899,#fb923c)",
-    border: "rgba(168,85,247,0.5)",
+    emoji: "⭐",
+    tag: "⭐ LUCKY · 행운 당첨!",
+    gradient: "linear-gradient(90deg,#ec4899,#f472b6,#d946ef)",
+    border: "rgba(236,72,153,0.5)",
     glow:
-      "0 0 50px rgba(168,85,247,0.32), inset 0 1px 0 rgba(255,255,255,0.7)",
-    emojiGlow: "drop-shadow(0 0 14px rgba(168,85,247,0.7))",
-    confettiPalette: ["#a855f7", "#d946ef", "#f472b6", "#fbbf24", "#fda4af", "#ffffff"],
+      "0 0 48px rgba(236,72,153,0.3), inset 0 1px 0 rgba(255,255,255,0.7)",
+    emojiGlow: "drop-shadow(0 0 13px rgba(236,72,153,0.7))",
+    confettiPalette: ["#ec4899", "#f472b6", "#fbcfe8", "#a855f7", "#ffffff", "#fda4af"],
+  },
+  super: {
+    emoji: "✨",
+    tag: "✨ SUPER · 슈퍼 당첨!",
+    gradient: "linear-gradient(90deg,#a855f7,#d946ef,#ec4899,#fb923c)",
+    border: "rgba(168,85,247,0.55)",
+    glow:
+      "0 0 55px rgba(168,85,247,0.35), 0 0 100px rgba(236,72,153,0.18), inset 0 1px 0 rgba(255,255,255,0.75)",
+    emojiGlow: "drop-shadow(0 0 16px rgba(168,85,247,0.75))",
+    confettiPalette: ["#a855f7", "#d946ef", "#f472b6", "#fbbf24", "#fb923c", "#ffffff", "#fda4af", "#c084fc"],
   },
   jackpot: {
-    emoji: "👑",
+    emoji: "🏆",
     tag: "🏆 JACKPOT · 대박 당첨!",
     gradient: "linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)",
     border: "rgba(245,158,11,0.5)",
@@ -251,15 +251,15 @@ function PrizeRevealPanel({ prize, tier }: { prize: (typeof PRIZE_TIERS)[PrizeTi
   const v = TIER_VISUAL[tier];
   const krwValue = prize.amount * EVENT_KRW_PER_TON;
 
-  const isPremium = tier === "lucky" || tier === "jackpot";
+  const isPremium = tier === "lucky" || tier === "super" || tier === "jackpot";
   const bg =
     tier === "jackpot"
       ? "linear-gradient(160deg, rgba(255,255,255,0.9) 0%, rgba(254,243,199,0.55) 50%, rgba(252,231,243,0.5) 100%)"
+      : tier === "super"
+      ? "linear-gradient(160deg, rgba(255,255,255,0.9) 0%, rgba(243,232,255,0.55) 45%, rgba(254,215,226,0.5) 100%)"
       : tier === "lucky"
-      ? "linear-gradient(160deg, rgba(255,255,255,0.88) 0%, rgba(243,232,255,0.5) 50%, rgba(252,231,243,0.55) 100%)"
-      : tier === "normal"
-      ? "linear-gradient(160deg, rgba(255,255,255,0.85) 0%, rgba(250,232,255,0.5) 50%, rgba(252,231,243,0.6) 100%)"
-      : "linear-gradient(160deg, rgba(255,255,255,0.85) 0%, rgba(252,231,243,0.55) 60%, rgba(255,228,236,0.55) 100%)";
+      ? "linear-gradient(160deg, rgba(255,255,255,0.88) 0%, rgba(252,231,243,0.55) 50%, rgba(253,242,248,0.5) 100%)"
+      : "linear-gradient(160deg, rgba(255,255,255,0.88) 0%, rgba(236,253,243,0.5) 50%, rgba(220,252,231,0.45) 100%)";
 
   return (
     <div className="w-full max-w-md animate-fade-in-up">
@@ -491,7 +491,7 @@ function BustPanel({ isRetry }: { isRetry: boolean }) {
               animation: "float 3.5s ease-in-out infinite",
             }}
           >
-            🌸
+            🫥
           </div>
           <p className="text-[11px] font-bold text-slate-500 tracking-[0.25em] uppercase">Better Luck Next Time</p>
           <p className="text-4xl font-black tracking-tight text-slate-500">꽝</p>

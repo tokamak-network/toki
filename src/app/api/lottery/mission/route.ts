@@ -14,10 +14,12 @@ function generateCardNumber(campaignPrefix: string): string {
 }
 
 function randomTier(): PrizeTier {
+  // Bonus cards always win something (no bust). Distribution mirrors Option A
+  // roughly — heavy on basic, rare super/jackpot.
   const roll = Math.random() * 100;
-  if (roll < 60) return "basic";
-  if (roll < 85) return "normal";
-  if (roll < 97) return "lucky";
+  if (roll < 70) return "basic";
+  if (roll < 90) return "lucky";
+  if (roll < 98) return "super";
   return "jackpot";
 }
 
