@@ -21,14 +21,18 @@ interface LotteryVNFlowProps {
 }
 
 type Phase =
-  | "prize_reveal"
+  | "promo"
   | "awaiting_login"
-  | "onboarding"
-  | "wallet_ready"
+  | "prize_reveal"
+  | "bust_reveal"
   | "choice"
   | "discount_result"
   | "ton_result"
   | "done";
+
+// ─── Promotion hashtag ────────────────────────────────────────────────────────
+
+const PROMO_HASHTAG = "#tokamaknetwork #더그린";
 
 // ─── Typewriter hook ──────────────────────────────────────────────────────────
 
@@ -66,26 +70,27 @@ function getPhaseData(
   prize: (typeof PRIZE_TIERS)[PrizeTier],
 ): { text: string; mood: string } {
   switch (phase) {
-    case "prize_reveal":
+    case "promo":
       return {
-        text: `와아~ 카드 확인했어! ${prize.label} 당첨됐네! 🎉`,
-        mood: "excited",
+        text:
+          "TON은 토카막 네트워크의 토큰이야! 2017년부터 이더리움 위에서 꾸준히 개발해온 블록체인 프로젝트로, 국내 4대 거래소에 모두 상장된 검증된 프로젝트야~ 8년 넘게 살아남은 프로젝트는 많지 않거든! 🙌",
+        mood: "proud",
       };
     case "awaiting_login":
       return {
         text: "토큰을 받고 쓰려면 지갑이 필요해. 아주 간단해~ 구글로 로그인만 하면 끝이야!",
         mood: "presenting",
       };
-    case "onboarding":
+    case "prize_reveal":
+      return {
+        text: `와아~ 카드 확인했어! ${prize.label} 당첨됐네! 🎉`,
+        mood: "excited",
+      };
+    case "bust_reveal":
       return {
         text:
-          "TON은 토카막 네트워크의 토큰이야! 2017년부터 이더리움 위에서 꾸준히 개발해온 블록체인 프로젝트로, 국내 4대 거래소에 모두 상장된 검증된 프로젝트야~ 8년 넘게 살아남은 프로젝트는 많지 않거든! 🙌",
-        mood: "proud",
-      };
-    case "wallet_ready":
-      return {
-        text: "지갑이 준비됐어! 🎉 안에 TON이 들어갈 거야~",
-        mood: "cheer",
+          "아쉽다… 이번엔 꽝이야 😢 그래도 잔맥 한 잔은 보장이고, 아까 올린 SNS 포스팅을 스태프에게 보여주면 카드 한 장 더 받을 수 있어! 🍺",
+        mood: "worried",
       };
     case "choice":
       return {
@@ -130,6 +135,15 @@ const TIER_VISUAL: Record<
     confettiPalette: string[];
   }
 > = {
+  bust: {
+    emoji: "🌸",
+    tag: "꽝",
+    gradient: "linear-gradient(90deg,#94a3b8,#cbd5e1,#94a3b8)",
+    border: "rgba(148,163,184,0.35)",
+    glow: "0 0 24px rgba(148,163,184,0.18), inset 0 1px 0 rgba(255,255,255,0.55)",
+    emojiGlow: "drop-shadow(0 0 6px rgba(148,163,184,0.4))",
+    confettiPalette: [],
+  },
   basic: {
     emoji: "🎊",
     tag: "🎊 당첨!",
@@ -336,7 +350,52 @@ function LoginPanel() {
   );
 }
 
-function OnboardingPanel() {
+function HashtagBlock() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(PROMO_HASHTAG);
+      setCopied(true);
+      trackEvent("lottery_hashtag_copied");
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      /* clipboard API unavailable — stay idle */
+    }
+  };
+  return (
+    <div
+      className="rounded-2xl p-3.5 border relative"
+      style={{
+        background: "linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(252,231,243,0.6) 100%)",
+        borderColor: "rgba(244,114,182,0.4)",
+        boxShadow: "0 4px 16px rgba(244,114,182,0.12), inset 0 1px 0 rgba(255,255,255,0.7)",
+      }}
+    >
+      <p className="text-[10px] font-bold text-pink-500 tracking-[0.15em] uppercase mb-1.5">Copy &amp; Post</p>
+      <div className="flex items-center gap-2">
+        <p className="flex-1 font-mono text-sm sm:text-base font-bold text-pink-950 break-all select-all">
+          {PROMO_HASHTAG}
+        </p>
+        <button
+          onClick={copy}
+          className="shrink-0 px-3 py-2 rounded-xl font-bold text-xs text-white transition-all hover:scale-[1.04] active:scale-95"
+          style={{
+            background: copied
+              ? "linear-gradient(135deg,#10b981,#34d399)"
+              : "linear-gradient(135deg,#ec4899,#a855f7)",
+            boxShadow: copied
+              ? "0 4px 14px rgba(16,185,129,0.35)"
+              : "0 4px 14px rgba(236,72,153,0.3)",
+          }}
+        >
+          {copied ? "✓ 복사됨" : "복사"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PromoPanel() {
   const [apr, setApr] = useState<number | null>(null);
   useEffect(() => {
     fetchStakingData()
@@ -451,32 +510,100 @@ function ExchangeIcon({ domain, name, color }: { domain: string; name: string; c
   );
 }
 
-function WalletReadyPanel({ address }: { address: string | null | undefined }) {
+function BustPanel() {
   return (
-    <div className="w-full max-w-md animate-fade-in-up">
+    <div className="w-full max-w-md animate-fade-in-up space-y-4">
+      {/* Main bust card */}
       <div
-        className="rounded-3xl p-5 border space-y-3"
+        className="relative rounded-3xl p-6 overflow-hidden border"
         style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.78) 0%, rgba(252,231,243,0.58) 100%)",
-          borderColor: "rgba(244,114,182,0.3)",
-          backdropFilter: "blur(16px)",
-          boxShadow: "0 8px 32px rgba(244,114,182,0.12), inset 0 1px 0 rgba(255,255,255,0.65)",
+          background: "linear-gradient(160deg, rgba(255,255,255,0.85) 0%, rgba(241,245,249,0.55) 60%, rgba(252,231,243,0.4) 100%)",
+          borderColor: "rgba(148,163,184,0.35)",
+          boxShadow: "0 0 24px rgba(148,163,184,0.15), inset 0 1px 0 rgba(255,255,255,0.6)",
+        }}
+      >
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div
+            className="text-5xl opacity-80"
+            style={{
+              filter: "drop-shadow(0 0 6px rgba(148,163,184,0.45))",
+              animation: "float 3.5s ease-in-out infinite",
+            }}
+          >
+            🌸
+          </div>
+          <p className="text-[11px] font-bold text-slate-500 tracking-[0.25em] uppercase">Better Luck Next Time</p>
+          <p className="text-4xl font-black tracking-tight text-slate-500">꽝</p>
+          <p className="text-xs text-slate-600/80 font-semibold leading-relaxed max-w-[280px]">
+            아쉽지만 이번 카드는 꽝이야…
+            <br />
+            하지만 빈손으로는 안 보내!
+          </p>
+        </div>
+      </div>
+
+      {/* Consolation guarantee — beer on the house */}
+      <div
+        className="rounded-2xl p-4 border flex items-center gap-3"
+        style={{
+          background: "linear-gradient(135deg, rgba(254,243,199,0.75) 0%, rgba(255,237,213,0.6) 100%)",
+          borderColor: "rgba(245,158,11,0.45)",
+          boxShadow: "0 4px 18px rgba(245,158,11,0.15), inset 0 1px 0 rgba(255,255,255,0.55)",
+        }}
+      >
+        <div
+          className="w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0"
+          style={{
+            background: "linear-gradient(135deg,#fbbf24,#f59e0b)",
+            boxShadow: "0 3px 12px rgba(245,158,11,0.35)",
+          }}
+        >
+          🍺
+        </div>
+        <div className="flex-1">
+          <p className="text-[10px] font-black text-amber-700 tracking-[0.2em] uppercase">참여 감사상</p>
+          <p className="text-sm font-black text-pink-950">잔맥 한 잔 보장!</p>
+          <p className="text-[11px] text-amber-800/75 font-semibold mt-0.5">바 스태프에게 이 화면 보여주기</p>
+        </div>
+      </div>
+
+      {/* Second chance instructions */}
+      <div
+        className="rounded-2xl p-4 border space-y-3"
+        style={{
+          background: "linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(252,231,243,0.55) 100%)",
+          borderColor: "rgba(244,114,182,0.35)",
+          boxShadow: "0 4px 20px rgba(244,114,182,0.12)",
         }}
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-emerald-100 border border-emerald-300/60 flex items-center justify-center text-emerald-600 font-black">
-            ✓
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0"
+               style={{ background: "linear-gradient(135deg,#ec4899,#a855f7)", boxShadow: "0 3px 10px rgba(236,72,153,0.3)" }}>
+            🎁
           </div>
           <div>
-            <p className="text-[11px] font-bold text-emerald-600/80 tracking-wider uppercase">준비 완료</p>
-            <p className="font-black text-pink-950">내 지갑 주소</p>
+            <p className="text-[10px] font-black text-pink-500 tracking-[0.2em] uppercase">Share &amp; Win</p>
+            <p className="text-sm font-black text-pink-950 leading-tight">카드 한 장 더 받는 법</p>
           </div>
         </div>
-        {address && (
-          <p className="font-mono text-[11px] text-pink-950/70 break-all leading-relaxed px-1">
-            {address}
-          </p>
-        )}
+
+        <ol className="space-y-2 text-xs text-pink-900/80 font-medium leading-snug">
+          <li className="flex gap-2">
+            <span className="text-pink-500 font-black shrink-0">1.</span>
+            <span>아까 복사한 해시태그로 <b>SNS에 포스팅</b>했는지 확인!</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-pink-500 font-black shrink-0">2.</span>
+            <span>바 스태프에게 <b>포스팅 화면을 보여주기</b></span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-pink-500 font-black shrink-0">3.</span>
+            <span>스태프 확인 후 <b>새 카드 한 장 지급</b> 받기</span>
+          </li>
+        </ol>
+
+        {/* Reminder hashtag (compact) */}
+        <HashtagBlock />
       </div>
     </div>
   );
@@ -519,26 +646,32 @@ function ChoicePanel({
       </button>
       <button
         onClick={() => onChoose("ton")}
-        disabled={loading}
-        className="group w-full p-4 rounded-2xl text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+        disabled
+        aria-disabled="true"
+        className="group w-full p-4 rounded-2xl text-left transition-all duration-200 cursor-not-allowed"
         style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(252,231,243,0.55) 100%)",
-          border: "1px solid rgba(244,114,182,0.35)",
+          background: "linear-gradient(135deg, rgba(248,250,252,0.7) 0%, rgba(241,245,249,0.5) 100%)",
+          border: "1px dashed rgba(148,163,184,0.45)",
           backdropFilter: "blur(12px)",
-          boxShadow: "0 4px 20px rgba(244,114,182,0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
+          opacity: 0.7,
         }}
       >
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-pink-100 border border-pink-300/50 flex items-center justify-center text-2xl shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-300/50 flex items-center justify-center text-2xl shrink-0 grayscale">
             💎
           </div>
           <div className="flex-1">
-            <p className="font-black text-pink-950 text-sm leading-snug">내 지갑으로 받기</p>
-            <p className="text-[11px] text-pink-900/55 mt-0.5 leading-relaxed">
-              {prize.label}을 내 지갑으로 전송
+            <div className="flex items-center gap-2">
+              <p className="font-black text-slate-500 text-sm leading-snug">내 지갑으로 받기</p>
+              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black tracking-wider uppercase bg-slate-200 text-slate-600">
+                준비 중
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+              {prize.label}을 내 지갑으로 전송 (곧 오픈)
             </p>
           </div>
-          <span className="text-pink-500 font-bold text-xl">›</span>
+          <span className="text-slate-400 font-bold text-xl">·</span>
         </div>
       </button>
     </div>
@@ -659,7 +792,7 @@ export default function LotteryVNFlow({
   const prize = PRIZE_TIERS[tier];
   const { login, authenticated, user } = usePrivy();
 
-  const [phase, setPhase] = useState<Phase>("prize_reveal");
+  const [phase, setPhase] = useState<Phase>("promo");
   const [choiceLoading, setChoiceLoading] = useState(false);
   const [resultData, setResultData] = useState<{
     txHash?: string | null;
@@ -671,12 +804,12 @@ export default function LotteryVNFlow({
   const { text: dialogueText, mood } = getPhaseData(phase, prize);
   const { displayed, done, skip } = useTypewriter(dialogueText);
 
-  // Auto-advance after successful login
+  // After successful login, jump straight to the result reveal (branch on tier).
   useEffect(() => {
     if (authenticated && phase === "awaiting_login") {
-      setPhase("wallet_ready");
+      setPhase(tier === "bust" ? "bust_reveal" : "prize_reveal");
     }
-  }, [authenticated, phase]);
+  }, [authenticated, phase, tier]);
 
   // ─── Analytics: fire GA4 event on every phase transition ────────────────
   useEffect(() => {
@@ -711,14 +844,14 @@ export default function LotteryVNFlow({
   // ─── Render content panel per phase ────────────────────────────────────────
   const panel = (() => {
     switch (phase) {
-      case "prize_reveal":
-        return <PrizeRevealPanel prize={prize} tier={tier} />;
+      case "promo":
+        return <PromoPanel />;
       case "awaiting_login":
         return <LoginPanel />;
-      case "onboarding":
-        return <OnboardingPanel />;
-      case "wallet_ready":
-        return <WalletReadyPanel address={addr} />;
+      case "prize_reveal":
+        return <PrizeRevealPanel prize={prize} tier={tier} />;
+      case "bust_reveal":
+        return <BustPanel />;
       case "choice":
         return <ChoicePanel prize={prize} loading={choiceLoading} onChoose={handleChoice} />;
       case "discount_result":
@@ -733,10 +866,10 @@ export default function LotteryVNFlow({
   // ─── Render action button per phase ────────────────────────────────────────
   const action = (() => {
     switch (phase) {
-      case "prize_reveal":
+      case "promo":
         return (
           <button
-            onClick={() => setPhase("onboarding")}
+            onClick={() => setPhase("awaiting_login")}
             className="w-full py-3.5 rounded-2xl font-bold text-base text-white hover:scale-[1.02] active:scale-[0.98] transition-all"
             style={{
               background: "linear-gradient(135deg,#ec4899,#a855f7)",
@@ -764,21 +897,7 @@ export default function LotteryVNFlow({
           </button>
         ) : null;
 
-      case "onboarding":
-        return (
-          <button
-            onClick={() => setPhase("awaiting_login")}
-            className="w-full py-3.5 rounded-2xl font-bold text-base text-white hover:scale-[1.02] active:scale-[0.98] transition-all"
-            style={{
-              background: "linear-gradient(135deg,#ec4899,#a855f7)",
-              boxShadow: "0 4px 20px rgba(236,72,153,0.3)",
-            }}
-          >
-            다음 →
-          </button>
-        );
-
-      case "wallet_ready":
+      case "prize_reveal":
         return (
           <button
             onClick={() => setPhase("choice")}
@@ -788,8 +907,22 @@ export default function LotteryVNFlow({
               boxShadow: "0 4px 20px rgba(236,72,153,0.3)",
             }}
           >
-            당첨금 선택하러 가기
+            당첨금 선택하러 가기 →
           </button>
+        );
+
+      case "bust_reveal":
+        return (
+          <a
+            href="/lottery"
+            className="block w-full py-3.5 rounded-2xl font-bold text-base text-center text-white hover:scale-[1.02] active:scale-[0.98] transition-all"
+            style={{
+              background: "linear-gradient(135deg,#ec4899,#a855f7)",
+              boxShadow: "0 4px 20px rgba(236,72,153,0.3)",
+            }}
+          >
+            새 카드 받으셨나요? 번호 입력 →
+          </a>
         );
 
       case "ton_result":
