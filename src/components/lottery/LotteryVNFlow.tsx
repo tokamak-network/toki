@@ -116,22 +116,83 @@ const EXCHANGES = [
   { name: "GOPAX",   url: "https://www.gopax.co.kr/exchange/tokamak-krw",               domain: "gopax.co.kr",   color: "#00a3ff" },
 ];
 
+// ─── Tier visual presets ──────────────────────────────────────────────────────
+
+const TIER_VISUAL: Record<
+  PrizeTier,
+  {
+    emoji: string;
+    tag: string;
+    gradient: string;
+    border: string;
+    glow: string;
+    emojiGlow: string;
+    confettiPalette: string[];
+  }
+> = {
+  basic: {
+    emoji: "🎊",
+    tag: "🎊 당첨!",
+    gradient: "linear-gradient(90deg,#ec4899,#fb7185,#ec4899)",
+    border: "rgba(244,114,182,0.4)",
+    glow:
+      "0 0 36px rgba(244,114,182,0.25), inset 0 1px 0 rgba(255,255,255,0.7)",
+    emojiGlow: "drop-shadow(0 0 10px rgba(244,114,182,0.55))",
+    confettiPalette: ["#f9a8d4", "#fbcfe8", "#f472b6", "#fda4af", "#ffffff", "#fce7f3"],
+  },
+  normal: {
+    emoji: "🎁",
+    tag: "🎁 당첨! 축하해~",
+    gradient: "linear-gradient(90deg,#ec4899,#d946ef,#a855f7)",
+    border: "rgba(217,70,239,0.5)",
+    glow:
+      "0 0 44px rgba(217,70,239,0.28), inset 0 1px 0 rgba(255,255,255,0.7)",
+    emojiGlow: "drop-shadow(0 0 12px rgba(217,70,239,0.65))",
+    confettiPalette: ["#e879f9", "#d946ef", "#f472b6", "#a855f7", "#ffffff", "#fbcfe8"],
+  },
+  lucky: {
+    emoji: "🌟",
+    tag: "🌟 LUCKY · 행운 당첨!",
+    gradient: "linear-gradient(90deg,#a855f7,#d946ef,#ec4899,#fb923c)",
+    border: "rgba(168,85,247,0.5)",
+    glow:
+      "0 0 50px rgba(168,85,247,0.32), inset 0 1px 0 rgba(255,255,255,0.7)",
+    emojiGlow: "drop-shadow(0 0 14px rgba(168,85,247,0.7))",
+    confettiPalette: ["#a855f7", "#d946ef", "#f472b6", "#fbbf24", "#fda4af", "#ffffff"],
+  },
+  jackpot: {
+    emoji: "👑",
+    tag: "🏆 JACKPOT · 대박 당첨!",
+    gradient: "linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)",
+    border: "rgba(245,158,11,0.5)",
+    glow:
+      "0 0 50px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.7)",
+    emojiGlow: "drop-shadow(0 0 14px rgba(245,158,11,0.8))",
+    confettiPalette: ["#f59e0b", "#fbbf24", "#fcd34d", "#f9a8d4", "#ffffff", "#f97316"],
+  },
+};
+
 // ─── Confetti particles (prize reveal) ────────────────────────────────────────
 
-function Confetti({ tier }: { tier: PrizeTier }) {
-  const isJackpot = tier === "jackpot";
-  const colors = isJackpot
-    ? ["#f59e0b", "#fbbf24", "#fcd34d", "#f9a8d4", "#ffffff", "#f97316"]
-    : ["#f9a8d4", "#fbcfe8", "#f472b6", "#c4b5fd", "#fda4af", "#ffffff"];
+const STAR_CLIP =
+  "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
 
-  const particles = Array.from({ length: 14 }, (_, i) => ({
-    color: colors[i % colors.length],
-    left: `${5 + (i * 7) % 90}%`,
-    delay: `${(i * 0.12).toFixed(2)}s`,
-    size: i % 3 === 0 ? 6 : i % 3 === 1 ? 4 : 5,
-    duration: `${1.8 + (i % 4) * 0.3}s`,
-    shape: i % 4 === 0 ? "50%" : i % 4 === 1 ? "0%" : i % 4 === 2 ? "2px" : "50%",
-  }));
+function Confetti({ tier }: { tier: PrizeTier }) {
+  const { confettiPalette: colors } = TIER_VISUAL[tier];
+
+  const COUNT = 36;
+  const particles = Array.from({ length: COUNT }, (_, i) => {
+    const kind = i % 4; // 0,1,2 = star, 3 = dot  (3/4 stars, 1/4 dots)
+    const isStar = kind !== 3;
+    return {
+      color: colors[i % colors.length],
+      left: `${2 + (i * 13) % 96}%`,
+      delay: `${((i * 0.07) % 1.8).toFixed(2)}s`,
+      size: isStar ? (i % 3 === 0 ? 11 : i % 3 === 1 ? 9 : 7) : 4,
+      duration: `${1.7 + (i % 5) * 0.25}s`,
+      isStar,
+    };
+  });
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -144,7 +205,9 @@ function Confetti({ tier }: { tier: PrizeTier }) {
             width: p.size,
             height: p.size,
             backgroundColor: p.color,
-            borderRadius: p.shape,
+            borderRadius: p.isStar ? undefined : "50%",
+            clipPath: p.isStar ? STAR_CLIP : undefined,
+            filter: p.isStar ? `drop-shadow(0 0 3px ${p.color})` : undefined,
             animationDelay: p.delay,
             animationDuration: p.duration,
             animationFillMode: "forwards",
@@ -157,26 +220,50 @@ function Confetti({ tier }: { tier: PrizeTier }) {
 
 // ─── Panel components ────────────────────────────────────────────────────────
 
+function useTokamakKrwPrice() {
+  const [krw, setKrw] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/price/tokamak")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d && typeof d.krw === "number") setKrw(d.krw);
+      })
+      .catch(() => {
+        /* ignore — keep KRW hidden on failure */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return krw;
+}
+
 function PrizeRevealPanel({ prize, tier }: { prize: (typeof PRIZE_TIERS)[PrizeTier]; tier: PrizeTier }) {
-  const isJackpot = tier === "jackpot";
-  const isLucky = tier === "lucky";
-  const label = isJackpot ? "🏆 JACKPOT · 대박 당첨" : isLucky ? "⭐ LUCKY · 행운 당첨" : "🎉 당첨!";
-  const gradient = isJackpot
-    ? "linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)"
-    : "linear-gradient(90deg,#ec4899,#f472b6,#ec4899)";
-  const border = isJackpot ? "rgba(245,158,11,0.4)" : "rgba(244,114,182,0.4)";
-  const glow = isJackpot
-    ? "0 0 50px rgba(245,158,11,0.3), inset 0 1px 0 rgba(255,255,255,0.7)"
-    : "0 0 40px rgba(244,114,182,0.25), inset 0 1px 0 rgba(255,255,255,0.7)";
+  const v = TIER_VISUAL[tier];
+  const krwPrice = useTokamakKrwPrice();
+  const krwValue = krwPrice !== null ? Math.round(prize.amount * krwPrice) : null;
+
+  const isPremium = tier === "lucky" || tier === "jackpot";
+  const bg =
+    tier === "jackpot"
+      ? "linear-gradient(160deg, rgba(255,255,255,0.9) 0%, rgba(254,243,199,0.55) 50%, rgba(252,231,243,0.5) 100%)"
+      : tier === "lucky"
+      ? "linear-gradient(160deg, rgba(255,255,255,0.88) 0%, rgba(243,232,255,0.5) 50%, rgba(252,231,243,0.55) 100%)"
+      : tier === "normal"
+      ? "linear-gradient(160deg, rgba(255,255,255,0.85) 0%, rgba(250,232,255,0.5) 50%, rgba(252,231,243,0.6) 100%)"
+      : "linear-gradient(160deg, rgba(255,255,255,0.85) 0%, rgba(252,231,243,0.55) 60%, rgba(255,228,236,0.55) 100%)";
 
   return (
     <div className="w-full max-w-md animate-fade-in-up">
       <div
         className="relative rounded-3xl p-6 overflow-hidden border"
         style={{
-          background: "linear-gradient(160deg, rgba(255,255,255,0.85) 0%, rgba(254,243,199,0.45) 60%, rgba(252,231,243,0.6) 100%)",
-          borderColor: border,
-          boxShadow: glow,
+          background: bg,
+          borderColor: v.border,
+          boxShadow: v.glow,
         }}
       >
         <Confetti tier={tier} />
@@ -184,27 +271,33 @@ function PrizeRevealPanel({ prize, tier }: { prize: (typeof PRIZE_TIERS)[PrizeTi
           <div
             className="text-6xl"
             style={{
-              filter: isJackpot
-                ? "drop-shadow(0 0 14px rgba(245,158,11,0.7))"
-                : "drop-shadow(0 0 10px rgba(244,114,182,0.6))",
+              filter: v.emojiGlow,
               animation: "float 2.5s ease-in-out infinite",
             }}
           >
-            {prize.emoji}
+            {v.emoji}
           </div>
-          <p className="text-[11px] font-bold text-pink-700/70 tracking-[0.25em] uppercase">{label}</p>
+          <p className="text-[11px] font-bold text-pink-700/70 tracking-[0.25em] uppercase">{v.tag}</p>
           <p
             className="text-5xl sm:text-6xl font-black tracking-tight"
             style={{
-              background: gradient,
+              background: v.gradient,
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              filter: "drop-shadow(0 2px 8px rgba(244,114,182,0.3))",
+              filter: isPremium
+                ? "drop-shadow(0 2px 8px rgba(168,85,247,0.35))"
+                : "drop-shadow(0 2px 8px rgba(244,114,182,0.3))",
             }}
           >
             {prize.label}
           </p>
+          {krwValue !== null && (
+            <p className="text-sm font-bold text-pink-900/70 tracking-tight">
+              ≈ {krwValue.toLocaleString("ko-KR")}원
+              <span className="text-[10px] text-pink-900/40 font-medium ml-1.5">(실시간, 업비트 기준)</span>
+            </p>
+          )}
         </div>
       </div>
     </div>
