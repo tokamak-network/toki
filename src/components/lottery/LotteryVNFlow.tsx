@@ -72,7 +72,8 @@ function getPhaseData(
       };
     case "awaiting_login":
       return {
-        text: "당첨금을 받으려면 계정이 필요해! 구글로 간편하게 시작하자~",
+        text:
+          "당첨금을 받으려면 계정이 필요해! 걱정 마, 개인정보는 안 가져가고 지갑은 온전히 네 거야~ 구글로 시작해볼까?",
         mood: "presenting",
       };
     case "onboarding":
@@ -211,31 +212,65 @@ function PrizeRevealPanel({ prize, tier }: { prize: (typeof PRIZE_TIERS)[PrizeTi
 }
 
 function LoginPanel() {
+  const trustPoints = [
+    { icon: "🙅", text: "개인정보 수집·저장 안 해" },
+    { icon: "🔑", text: "지갑 소유권은 100% 너한테 있어" },
+    { icon: "🚪", text: "언제든 네 지갑으로 출금·이동 가능" },
+  ];
+
   return (
     <div className="w-full max-w-md animate-fade-in-up">
       <div
-        className="rounded-3xl p-6 border text-center space-y-4"
+        className="rounded-3xl p-6 border space-y-5"
         style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(252,231,243,0.55) 100%)",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.78) 0%, rgba(252,231,243,0.55) 100%)",
           borderColor: "rgba(244,114,182,0.3)",
           backdropFilter: "blur(16px)",
           boxShadow: "0 8px 32px rgba(244,114,182,0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
         }}
       >
-        <div
-          className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl"
-          style={{
-            background: "linear-gradient(135deg,#fce7f3,#fbcfe8)",
-            border: "1px solid rgba(244,114,182,0.3)",
-          }}
-        >
-          🔐
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <div
+            className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl"
+            style={{
+              background: "linear-gradient(135deg,#fce7f3,#fbcfe8)",
+              border: "1px solid rgba(244,114,182,0.3)",
+            }}
+          >
+            🔐
+          </div>
+          <h3 className="font-black text-lg text-pink-950">지갑 준비하기</h3>
+          <p className="text-xs text-pink-900/60 leading-relaxed">
+            구글 계정으로 간편 로그인하면
+            <br />
+            전용 지갑이 자동으로 만들어져~
+          </p>
         </div>
-        <h3 className="font-black text-lg text-pink-950">지갑 준비하기</h3>
-        <p className="text-xs text-pink-900/60 leading-relaxed">
-          구글 계정으로 안전하게 로그인하면
+
+        {/* Trust indicators */}
+        <div className="space-y-2">
+          {trustPoints.map((p, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl"
+              style={{
+                background: "rgba(255,255,255,0.55)",
+                border: "1px solid rgba(244,114,182,0.18)",
+              }}
+            >
+              <span className="text-base shrink-0">{p.icon}</span>
+              <p className="text-[11px] text-pink-900/75 font-semibold leading-snug">{p.text}</p>
+              <span className="ml-auto text-emerald-500 font-black text-xs">✓</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Fine print */}
+        <p className="text-[10px] text-pink-900/45 text-center leading-relaxed">
+          로그인은 Privy 보안 인증을 사용해.
           <br />
-          전용 지갑이 자동으로 만들어져요.
+          토키·토카막은 네 구글 계정 정보에 접근하지 않아.
         </p>
       </div>
     </div>
@@ -649,8 +684,13 @@ export default function LotteryVNFlow({
         return !authenticated ? (
           <button
             onClick={() => login()}
-            className="w-full py-3.5 rounded-2xl font-bold text-base bg-white flex items-center justify-center gap-3 hover:bg-gray-50 active:scale-[0.98] transition-all"
-            style={{ boxShadow: "0 4px 24px rgba(244,114,182,0.2)" }}
+            className="w-full py-3.5 rounded-2xl font-black text-base text-gray-900 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            style={{
+              background: "linear-gradient(180deg, #ffffff 0%, #fef6fa 100%)",
+              border: "1.5px solid rgba(244,114,182,0.55)",
+              boxShadow:
+                "0 6px 20px rgba(236,72,153,0.28), 0 2px 6px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
+            }}
           >
             <GoogleIcon />
             Google로 시작하기
