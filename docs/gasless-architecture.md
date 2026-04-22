@@ -2,7 +2,7 @@
 
 ## Overview
 
-ttoni enables TON token staking on the Tokamak Network **without holding any ETH**. Three technologies converge to make this possible:
+toki enables TON token staking on the Tokamak Network **without holding any ETH**. Three technologies converge to make this possible:
 
 | Layer | Technology | Role |
 |-------|-----------|------|
