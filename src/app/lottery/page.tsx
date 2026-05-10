@@ -11,6 +11,8 @@ import { useTranslation } from "@/components/providers/LanguageProvider";
  * User enters card number from the physical scratch card.
  * Spring / cherry-blossom theme to match the physical card design.
  */
+const isPaused = process.env.NEXT_PUBLIC_LOTTERY_PAUSED === "true";
+
 export default function LotteryPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -177,7 +179,7 @@ export default function LotteryPage() {
               boxShadow: "0 2px 12px rgba(244,114,182,0.2)",
             }}
           >
-            {l.speechBubble}
+            {isPaused ? l.pausedSpeechBubble : l.speechBubble}
             {/* Tail pointing right toward Toki */}
             <span
               className="absolute top-1/2 -translate-y-1/2 -right-[10px]"
@@ -263,7 +265,7 @@ export default function LotteryPage() {
             />
           </div>
 
-          {/* ── Glassmorphism input card ─────────────────────────────────── */}
+          {/* ── Glassmorphism input card / paused notice ────────────────── */}
           <div
             className="animate-border-glow-pink w-full rounded-2xl p-5"
             style={{
@@ -273,48 +275,64 @@ export default function LotteryPage() {
               boxShadow: "0 4px 24px rgba(244,114,182,0.1), inset 0 1px 0 rgba(255,255,255,0.6)",
             }}
           >
-            <CardNumberInput onSubmit={handleSubmit} loading={loading} />
+            {isPaused ? (
+              <div className="text-center py-4 px-2 space-y-3">
+                <h2 className="text-xl font-black text-pink-700">
+                  {l.pausedTitle}
+                </h2>
+                <p className="text-sm text-pink-900/80 whitespace-pre-line leading-relaxed">
+                  {l.pausedMessage}
+                </p>
+                <p className="text-xs text-pink-600/70 pt-1">
+                  {l.pausedNote}
+                </p>
+              </div>
+            ) : (
+              <CardNumberInput onSubmit={handleSubmit} loading={loading} />
+            )}
           </div>
 
           {/* ── Footer guide ─────────────────────────────────────────────── */}
           <div className="relative z-20 w-full space-y-3 animate-fade-in">
-            {/* Card number location hint */}
-            <div
-              className="flex items-center gap-3 rounded-xl px-4 py-3"
-              style={{
-                background: "rgba(255,255,255,0.45)",
-                border: "1px solid rgba(244,114,182,0.2)",
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              {/* Mini card diagram */}
+            {/* Card number location hint — hidden when paused */}
+            {!isPaused && (
               <div
-                className="flex-shrink-0 w-10 h-7 rounded relative overflow-hidden"
+                className="flex items-center gap-3 rounded-xl px-4 py-3"
                 style={{
-                  background: "linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)",
-                  border: "1px solid rgba(244,114,182,0.3)",
+                  background: "rgba(255,255,255,0.45)",
+                  border: "1px solid rgba(244,114,182,0.2)",
+                  backdropFilter: "blur(8px)",
                 }}
               >
-                {/* Scratch area indicator */}
+                {/* Mini card diagram */}
                 <div
-                  className="absolute bottom-0.5 left-0.5 right-0.5 h-2 rounded-sm"
+                  className="flex-shrink-0 w-10 h-7 rounded relative overflow-hidden"
                   style={{
-                    background: "repeating-linear-gradient(90deg, rgba(236,72,153,0.35) 0px, rgba(236,72,153,0.35) 2px, rgba(236,72,153,0.12) 2px, rgba(236,72,153,0.12) 4px)",
-                    border: "1px solid rgba(236,72,153,0.3)",
+                    background: "linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)",
+                    border: "1px solid rgba(244,114,182,0.3)",
                   }}
-                />
-                {/* Arrow */}
-                <div
-                  className="absolute right-[-6px] bottom-[3px] text-[8px] text-pink-500"
-                  style={{ lineHeight: 1 }}
                 >
-                  ←
+                  {/* Scratch area indicator */}
+                  <div
+                    className="absolute bottom-0.5 left-0.5 right-0.5 h-2 rounded-sm"
+                    style={{
+                      background: "repeating-linear-gradient(90deg, rgba(236,72,153,0.35) 0px, rgba(236,72,153,0.35) 2px, rgba(236,72,153,0.12) 2px, rgba(236,72,153,0.12) 4px)",
+                      border: "1px solid rgba(236,72,153,0.3)",
+                    }}
+                  />
+                  {/* Arrow */}
+                  <div
+                    className="absolute right-[-6px] bottom-[3px] text-[8px] text-pink-500"
+                    style={{ lineHeight: 1 }}
+                  >
+                    ←
+                  </div>
                 </div>
+                <p className="text-xs text-gray-600 leading-snug">
+                  <span className="text-pink-600 font-semibold">{l.scratchHint}</span>{l.scratchHintSuffix}
+                </p>
               </div>
-              <p className="text-xs text-gray-600 leading-snug">
-                <span className="text-pink-600 font-semibold">{l.scratchHint}</span>{l.scratchHintSuffix}
-              </p>
-            </div>
+            )}
 
             {/* Powered by */}
             <div className="flex items-center justify-center gap-1.5">

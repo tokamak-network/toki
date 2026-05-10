@@ -941,6 +941,10 @@ const ko = {
     submit: "당첨 확인하기",
     submitting: "확인 중...",
     poweredBy: "Powered by Tokamak Network",
+    pausedSpeechBubble: "잠깐 쉬고 있어!",
+    pausedTitle: "이벤트 일시 정지",
+    pausedMessage: "토키 복권이 잠시 멈춰 있어요.\n곧 다시 돌아올게요!",
+    pausedNote: "카드는 그대로 유효해요. 재개되면 알려드릴게요.",
   },
 } as const;
 

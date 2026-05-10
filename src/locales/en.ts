@@ -904,6 +904,10 @@ const en = {
     submit: "Check Prize",
     submitting: "Checking...",
     poweredBy: "Powered by Tokamak Network",
+    pausedSpeechBubble: "Taking a quick break!",
+    pausedTitle: "Event Paused",
+    pausedMessage: "The Toki Lottery is on a brief pause.\nWe'll be back soon!",
+    pausedNote: "Your card stays valid. We'll let you know once we resume.",
   },
 } as const;
 
