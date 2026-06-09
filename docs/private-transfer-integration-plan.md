@@ -252,6 +252,65 @@ src/app/private-transfer/page.tsx
 
 ---
 
+## 12. M0 findings — 로컬 그라운드-트루스 (2026-06-09, 실측)
+
+> 이 섹션은 **로컬에 실제 설치된 것**을 직접 확인한 결과다. 위 §1~§11은 2.4.3 기준 *연구본*이라 일부 어긋난다 — **구현은 본 섹션(1.0.1)을 기준으로** 한다.
+
+- **CLI 버전 = `@tokamak-private-dapps/private-state-cli@1.0.1`** (전역 설치, bin `private-state-bridge-cli.mjs`). 문서의 2.4.3 아님. `main:null`/`exports:null` → **importable 아님, shell-out만**. deps: `@tokamak-zk-evm/cli`, `@tokamak-private-dapps/groth16`, `common-library`, `tokamak-l2js`, `ethers`, `@noble/curves`.
+- **런타임 = 동작함 (`doctor: OK`).** zk-EVM CLI 2.1.0 런타임(`~/.tokamak-zk-evm/macos/runtime`) + groth16 0.2.0 + **CRS 설치 완료**(`~/tokamak-private-channels/groth16/crs/circuit_final.zkey` 등) + tokamak-l2js 0.1.4. → **macOS 네이티브에서 로컬 증명 생성이 실제로 가능.**
+- **워크스페이스:** 사용자가 **메인넷 `the-great-first-channel`에 이미 join** (`~/tokamak-private-channels/workspace/mainnet/the-great-first-channel/{channel,wallets}`, `secrets/mainnet/{accounts,wallets}`). **Sepolia(11155111) 배포 아티팩트 존재**하나 채널 join은 아직 없음.
+
+### 실제 1.0.1 명령 surface (단일 토큰 verb — 문서 §5 표를 대체)
+`install` · `uninstall` · `doctor [--gpu]` · `guide` · `transaction-fees` · `account import --account --network --private-key-file` · `create-channel` · `recover-workspace` · `get-channel` · `deposit-bridge --amount --network --account` · `withdraw-bridge` · `get-my-bridge-fund` · `recover-wallet` · `join-channel --channel-name --network --account --wallet-secret-path` · `get-my-wallet-meta` · `get-my-l1-address` · `list-local-wallets` · `deposit-channel --wallet --network --amount` · `withdraw-channel` · `get-my-channel-fund` · `exit-channel` · `mint-notes --wallet --network --amounts [--tx-submitter]` · **`transfer-notes --wallet --network --note-ids --recipients --amounts [--tx-submitter]`** · `redeem-notes` · `get-my-notes`. 글로벌: `--json` (모든 명령), `--version`. 시크릿: account secret(`account import`) + wallet-secret(`join-channel --wallet-secret-path`), RPC는 `~/tokamak-private-channels/secrets/<network>/.env`의 `RPC_URL`.
+
+### 실측 컨트랙트 주소 (로컬 아티팩트)
+- **메인넷(chain-id-1):** BridgeCore `0x992E2Ae206620d811832a8F697c526c4f95974b6` · bridgeTokenVault `0xf127Aef661c815ad46c5159146078f6F1E9f5F61` · dAppManager `0x88Ab290a9dc0a169240EBC282Ec1F7C8524645aA` · controller(PrivateStateController) `0x67c6233a99d9f122fef9dc111e89948107b34c2f` · l2AccountingVault `0x9a6c9eb158269bbed8885649f95acefa8aafc3aa` · channelDeployer `0xE9B3d20e5925DEB506B5F5cCA94F753B6A34Af7C` · grothVerifier `0xC1523baF508B5d45663Cb69fc0cA7F35e82101eB` · canonical TON `0x2be5e8c109e2197D077D13A82dAead6a9b3433C5`. (BridgeCore/Vault/dAppManager는 §10과 일치 ✓)
+- **세폴리아(chain-id-11155111):** 아티팩트 일체 존재(`bridge.11155111.json`, `deployment.11155111.latest.json`, `dapp-registration`, `circuit_final.zkey`).
+
+### M0 게이트 상태
+- 증명 런타임 동작 ✅ (doctor OK) · 메인넷 채널 가입됨 ✅ · 주소 확인 ✅
+- 미확정(착수 전 결정 필요): ① 통합 검증을 **메인넷(실자금)** 으로 할 순 없음 → **Sepolia 채널 생성/가입 + 테스트 지갑 펀딩** 필요. ② 로컬 CLI를 감싸는 **로컬 Node 워커**(서버 호스팅은 추후) 아키텍처 확정. ③ `transfer-notes` 등 `--json` 출력 스키마 캡처(파싱 정확도).
+
+### M0 검증 결과 — "서버 쓰면 브라우저-온리 자가수탁 가능?" → **YES** (소스 확정, 2026-06-09)
+CLI 1.0.1 소스(`lib/private-state-cli-shared.mjs`, `private-state-tokamak-helpers.mjs`, `private-state-bridge-cli.mjs`) 직접 확인:
+- **L2 키 = 서명 기반 (브라우저 가능).** `deriveParticipantIdentityFromSigner({channelName, walletSecret, signer})` = `signer.signMessage([DOMAIN, "channel:"+name, "walletSecret:"+secret].join("\n"))` → `deriveL2KeysFromSignature(sig)`(tokamak-l2js), `l2Address = getAddress(fromEdwardsToAddress(pub))`. note-receive 키 = `eth_signTypedData_v4`(NoteReceiveKey, protocol `PRIVATE_STATE_NOTE_RECEIVE_KEY_V2`). channelId = `toBigInt(keccak256(toUtf8Bytes(channelName)))`. → **유저 지갑 서명만으로 L2 키 재현 가능, raw 키 서버 미전송.**
+- **L1 서명 = import 키 전용 (외부서명 경로 없음).** `account import` → `new Wallet(privateKey)` 로컬 저장 후 그 키로 deposit-bridge/join 서명. → **CLI로는 브라우저 외부서명 불가.**
+- **그러나 `recover-workspace`가 온체인 로그로 워크스페이스 재구성**(`fromBlock`, getLogs, `--from-genesis`). → **해결책(Plan A 확정): 브라우저가 viem으로 L1(approve/deposit/join)을 직접 실행(유저 서명, toki paymaster 가스리스) → 서버가 `recover-workspace`로 체인에서 동기화.** L1 키를 서버에 절대 안 넘김 = 자가수탁 유지.
+- **증명/제출 = 서버.** mint/transfer/redeem은 Rust 프루버(서버), 제출은 `--tx-submitter`(릴레이어 EOA)로 분리 가능. L2 spending key는 유저 서명에서 파생해 **서버 메모리 일시 사용·미영속**(채널 내부 자산만 통제).
+
+**결론 아키텍처:** 브라우저(로그인·L2키 파생·L1 자금이동 서명·UI) ↔ 서버 워커(프루빙·recover-workspace·릴레이 제출). **단, 이는 별도 상시 워커 호스트**(Ubuntu+Node+Rust+CRS) — Vercel 서버리스 불가(증명 수분·서브프로세스·FS). 실측 주소는 `src/lib/private-transfer/constants.ts`.
+
 ## 11. 토키 허브 논의에 합류할 때 한 줄 요약
 
 > "프라이빗 전송"은 **Tokamak Private App Channels(zk note pool, 같은 TON·같은 L1)** 위에 얹는다. 무거운 prover/제출은 **toki 서버 워커**가 호스팅하고(유저는 브라우저 서명만), 메인 자금 L1 tx는 사용자 지갑 클라 서명으로 유지한다. Sepolia 자체배포 파일럿(M0~M3) → 메인넷 게이트(M4). 프라이버시는 채널 내부 한정이며 익명성 집합 한계를 정직히 고지한다.
+
+---
+
+## 13. 작업 상태 & 이어서 하기 (handoff — 여기서부터 재개)
+
+> **상태(2026-06-09):** M0 검증 **완료**(소스로 확정), 기반 코드 착수. 풀빌드는 미완(자금 필요한 E2E 게이트 존재).
+
+### 지금까지 한 것 (DONE)
+- **M0 검증 완료** — "서버 쓰면 브라우저-온리 자가수탁 프라이빗 송금 가능?" → **YES** (§12 참조, CLI 1.0.1 소스로 확정). 아키텍처 확정: 브라우저(로그인·L2키 파생·L1 서명·UI) ↔ 상시 워커(프루빙·`recover-workspace`·릴레이 제출).
+- **`src/lib/private-transfer/constants.ts`** 생성 — 메인넷+세폴리아 실측 컨트랙트 주소, 채널명(`the-great-first-channel`), L2 파생 도메인 상수. `tsc --noEmit` 통과.
+- 본 문서 §12에 1.0.1 실제 명령 surface + 서명/키 모델 + recover-workspace 우회 + 실측 주소 기록.
+
+### 로컬 환경 (재개 시 그대로 사용 가능)
+- CLI: `@tokamak-private-dapps/private-state-cli@**1.0.1**` 전역 설치(`private-state-cli` bin). `doctor: OK` — zk-EVM 2.1.0 런타임(`~/.tokamak-zk-evm/macos/runtime`) + groth16 0.2.0 + **CRS 설치 완료** → **로컬 증명 동작**.
+- 워크스페이스 `~/tokamak-private-channels/`: 메인넷 `the-great-first-channel` **가입됨**(secrets/mainnet + workspace/mainnet 존재), 세폴리아 배포 아티팩트 존재(채널 미가입).
+- 키 파생 원본: `$(npm root -g)/@tokamak-private-dapps/private-state-cli/lib/private-state-cli-shared.mjs` (`deriveParticipantIdentityFromSigner`), `.../private-state-tokamak-helpers.mjs` (note-receive, jubjub/poseidon).
+
+### 다음 증분 (순서 + 정확한 시작점)
+1. `npm i tokamak-l2js@0.1.4` (CLI와 **버전 일치 필수** — 아니면 키 불일치). → `src/lib/private-transfer/keys.ts` — §12의 파생식을 그대로 미러(`signMessage` 바인딩 + `deriveL2KeysFromSignature`, note-receive `eth_signTypedData_v4`). 클라이언트 사이드. 검증: 고정 서명으로 키 재현 단위 테스트.
+2. `src/lib/private-transfer/cli.ts` — 1.0.1 커맨드 빌더(§12 surface, 전부 `--json`). + **로컬 Node 워커** `services/private-transfer-worker/`(shell-out). **읽기 명령부터**(doctor/get-channel/get-my-notes) 검증.
+3. BFF `src/app/api/private-transfer/{keys,onboard,transfer,redeem-withdraw,notes,status}/route.ts` + `src/lib/private-transfer/service.ts`.
+4. UI: `src/components/private-transfer/{PrivateTransferPanel,ProvingProgress,PrivateBalancePanel}.tsx` + `src/hooks/usePrivateTransfer.ts` → `src/app/private-transfer/page.tsx` 자리표시를 실제 패널로 교체(허브 런처가 이미 연결).
+5. **진짜 E2E 검증(자금 필요):** Sepolia 채널 생성/가입(`create-channel`/`join-channel`) + 테스트 지갑 펀딩(test-wallet/testnet-faucet 스킬) → 실제 테스트넷 프라이빗 송금 1건 + recover/get-my-notes로 수신 확인.
+
+### 결정 대기 / 안전수칙
+- **메인넷 실자금은 자동으로 절대 건드리지 않음.** 라이브 검증은 Sepolia로만.
+- 진행 전 사용자 확인 필요: ① Sepolia 셋업·테스트지갑 펀딩 허락, ② 워커 호스팅(서버는 추후, 지금은 로컬 워커).
+- 함정: CLI는 importable 아님→shell-out. Vercel 서버리스 불가(증명 수분·FS). `transfer-notes` 입력 모양은 1→1/1→2/2→1만.
+
+### 한 줄 재개
+> §12(확정 아키텍처·주소·명령)와 `src/lib/private-transfer/constants.ts`에서 시작. 다음 = `npm i tokamak-l2js@0.1.4` + `keys.ts`.
