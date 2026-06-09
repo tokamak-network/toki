@@ -6,9 +6,11 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { loadOnboarding } from "@/lib/onboarding";
 import {
   ACHIEVEMENTS,
   EMPTY_STORAGE,
@@ -41,14 +43,9 @@ interface AchievementContextValue {
 const AchievementContext = createContext<AchievementContextValue | null>(null);
 
 const STORAGE_PREFIX = "toki-achievements";
-const ONBOARDING_PREFIX = "toki-onboarding";
 
 function storageKey(userId: string) {
   return `${STORAGE_PREFIX}-${userId}`;
-}
-
-function onboardingKey(userId: string) {
-  return `${ONBOARDING_PREFIX}-${userId}`;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -109,12 +106,8 @@ function saveStorage(userId: string, storage: AchievementStorage) {
 function migrateOnboarding(userId: string, storage: AchievementStorage): AchievementStorage {
   if (typeof window === "undefined") return storage;
   try {
-    // Check per-user key first, then legacy global key
-    const raw = localStorage.getItem(onboardingKey(userId))
-      || localStorage.getItem(ONBOARDING_PREFIX);
-    if (!raw) return storage;
-    const data = JSON.parse(raw);
-    const completed: string[] = data.completed || [];
+    // Read completed quests from the single onboarding source of truth.
+    const completed = loadOnboarding(userId).completed;
     if (completed.length === 0) return storage;
 
     // Check if already migrated
@@ -144,6 +137,9 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
   const [storage, setStorage] = useState<AchievementStorage>(EMPTY_STORAGE);
   const [unlockQueue, setUnlockQueue] = useState<Achievement[]>([]);
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
+  // Activities fired before the user id is available — replayed on login so a
+  // quest completion during auth hydration isn't silently dropped.
+  const pendingActivities = useRef<{ type: ActivityType; meta?: Record<string, unknown> }[]>([]);
 
   // Resolve current user ID
   const userId = authenticated && user?.id ? user.id : null;
@@ -186,7 +182,16 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
 
   const trackActivity = useCallback(
     (type: ActivityType, meta?: Record<string, unknown>) => {
-      if (!userId) return; // Not logged in — ignore activity
+      if (!userId) {
+        // Not logged in yet — queue ONLY quest-complete (the event whose loss
+        // caused the onboarding bug). It dedupes by questId on replay, so it's
+        // safe; non-idempotent events (stake/chat-freetext) are dropped to avoid
+        // double-counting on replay.
+        if (type === "quest-complete") {
+          pendingActivities.current.push({ type, meta });
+        }
+        return;
+      }
       const currentUserId = userId;
       setStorage((prev) => {
         const next = structuredClone(prev);
@@ -279,6 +284,15 @@ export function AchievementProvider({ children }: { children: ReactNode }) {
     },
     [userId]
   );
+
+  // Replay any activities that were queued before login.
+  useEffect(() => {
+    if (!userId) return;
+    if (pendingActivities.current.length === 0) return;
+    const queued = pendingActivities.current;
+    pendingActivities.current = [];
+    queued.forEach(({ type, meta }) => trackActivity(type, meta));
+  }, [userId, trackActivity]);
 
   const dismissToast = useCallback(() => {
     setUnlockQueue((q) => q.slice(1));

@@ -17,7 +17,7 @@
     "endowment:keyring": {
       "allowedOrigins": [
         "http://localhost:3000",
-        "https://ttoni.tokamak.network"
+        "https://toki.tokamak.network"
       ]
     },
     "endowment:rpc": {

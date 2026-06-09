@@ -1,5 +1,7 @@
 // ─── Achievement System - Phase 1 (localStorage) ────────────────────────────
 
+import { TOTAL_QUESTS } from "./onboarding";
+
 export type AchievementCategory = "onboarding" | "staking" | "explore" | "social" | "special";
 
 export interface Achievement {
@@ -130,7 +132,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     descKo: "모든 온보딩 퀘스트를 완료했습니다",
     descEn: "Completed all onboarding quests",
     points: 500,
-    condition: (s) => s.metadata.questsCompleted.length >= 5,
+    condition: (s) => s.metadata.questsCompleted.length >= TOTAL_QUESTS,
   },
 
   // ── Staking (6) ──

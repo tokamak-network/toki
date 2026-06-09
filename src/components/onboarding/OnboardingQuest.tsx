@@ -10,6 +10,12 @@ import IntroCinematic from "./IntroCinematic";
 import LaptopVideoOverlay from "./LaptopVideoOverlay";
 import ProfitSimulator from "@/components/landing/ProfitSimulator";
 import { fetchStakingData, type StakingData } from "@/lib/staking";
+import {
+  loadOnboarding,
+  saveOnboarding,
+  buildOnboardingState,
+  TOTAL_QUESTS,
+} from "@/lib/onboarding";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 import { publicClient } from "@/lib/chain";
 import { CONTRACTS } from "@/constants/contracts";
@@ -473,9 +479,6 @@ function TokiCharacter({ mood, phase, compact }: { mood?: Mood; phase?: Phase; c
 
 type Phase = "intro" | "action" | "verifying" | "success" | "badge";
 
-// Old quest IDs for localStorage migration
-const OLD_QUEST_IDS = ["install-metamask", "connect-toki", "verify-upbit"];
-
 export default function OnboardingQuest() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -507,37 +510,54 @@ export default function OnboardingQuest() {
   const [_cinematicComplete, setCinematicComplete] = useState(false);
   const [cinematicJustFinished, setCinematicJustFinished] = useState(false);
   const [assetsReady, setAssetsReady] = useState(false);
+  // True once we've finished restoring saved progress for the current user.
+  // Gates auto-advance / render so a returning user's stored questIndex can't
+  // race against effects that assume a fresh start.
+  const [restored, setRestored] = useState(false);
+  const restoredOnce = useRef(false);
   const questAreaRef = useRef<HTMLDivElement>(null);
 
   // Per-account localStorage keys
   const userId = user?.id;
-  const obKey = userId ? `toki-onboarding-${userId}` : null;
   const introKey = userId ? `toki-intro-seen-${userId}` : null;
 
-  // Load progress from localStorage (with migration)
+  // Load progress from localStorage (single source of truth + migration).
+  // Waits for Privy to resolve the user so we never start a returning user at
+  // quest 0 and then jump — which used to race the quest-1 auto-advance effect.
   useEffect(() => {
-    if (!obKey) return;
+    if (!ready) return;
+    // Authenticated but the user id isn't available yet — wait, don't start fresh.
+    if (authenticated && !userId) return;
 
-    try {
-      // Try per-user key first, then legacy global key for migration
-      const saved = localStorage.getItem(obKey) || localStorage.getItem("toki-onboarding");
-      if (saved) {
-        const data = JSON.parse(saved);
-        const completed: string[] = data.completed || [];
-        // Migrate: if old quest IDs detected, reset progress
-        const hasOldIds = completed.some((id: string) => OLD_QUEST_IDS.includes(id));
-        if (hasOldIds) {
-          localStorage.removeItem(obKey);
-          return;
-        }
-        setQuestIndex(data.questIndex || 0);
-        setTotalXp(data.totalXp || 0);
-        setCompletedQuests(new Set(completed));
+    if (userId) {
+      const state = loadOnboarding(userId);
+      // Only reposition when there is actual saved progress, so a brand-new user
+      // logging in mid-quest-1 isn't bounced back to the intro.
+      if (state.status === "completed" || state.questIndex > 0 || state.completed.length > 0) {
+        setQuestIndex(state.questIndex);
+        setTotalXp(state.totalXp);
+        setCompletedQuests(new Set(state.completed));
+        // Keep phase consistent with the restored quest to avoid phase/index mismatch.
+        setPhase("intro");
+        setDialogueIndex(0);
+        setConfirmed(false);
+        setSubStepIndex(0);
+        setSubStepConfirmed(false);
       }
-    } catch {
-      // ignore
     }
-  }, [obKey]);
+    restoredOnce.current = true;
+    setRestored(true);
+  }, [ready, authenticated, userId]);
+
+  // Safety backstop — never block the UI forever if Privy never resolves a user
+  // id. Skips if the real restore already ran, so it can't open the gate
+  // mid-restore and re-enable the auto-advance race.
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!restoredOnce.current) setRestored(true);
+    }, 6000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   // Show intro cinematic on first visit only (skip on mobile)
   // Check both per-user key AND global key to prevent re-showing after login
@@ -592,24 +612,13 @@ export default function OnboardingQuest() {
     };
   }, []);
 
-  // Save progress
+  // Save progress (writes the explicit completion flag via buildOnboardingState).
   const saveProgress = useCallback(
     (qi: number, xp: number, completed: Set<string>) => {
-      if (!obKey) return;
-      try {
-        localStorage.setItem(
-          obKey,
-          JSON.stringify({
-            questIndex: qi,
-            totalXp: xp,
-            completed: Array.from(completed),
-          })
-        );
-      } catch {
-        // iOS private browsing or quota exceeded
-      }
+      if (!userId) return;
+      saveOnboarding(userId, buildOnboardingState(qi, xp, Array.from(completed)));
     },
-    [obKey]
+    [userId]
   );
 
   const quest = QUESTS[questIndex];
@@ -618,7 +627,8 @@ export default function OnboardingQuest() {
       ? quest?.intro
       : quest?.success;
   const currentLine = dialogues?.[dialogueIndex];
-  const isAllComplete = questIndex >= QUESTS.length;
+  // Completion uses the canonical constant, not the runtime (i18n-built) array length.
+  const isAllComplete = questIndex >= TOTAL_QUESTS;
 
   // Auto-fetch staking data when Quest 4 action phase starts
   useEffect(() => {
@@ -660,6 +670,9 @@ export default function OnboardingQuest() {
   // Auto-detect Privy authentication for Quest 1
   // Also handles page reload after Google login — skip intro if already authenticated
   useEffect(() => {
+    // Don't auto-advance until saved progress is restored, or a returning user's
+    // stored questIndex could collide with a quest-1 auto-advance mid-restore.
+    if (!restored) return;
     if (quest?.action?.type === "privy-login" && authenticated && embeddedWallet) {
       if (phase === "action") {
         handleVerifySuccess();
@@ -668,7 +681,7 @@ export default function OnboardingQuest() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, embeddedWallet, phase, quest?.action?.type, quest?.id]);
+  }, [restored, authenticated, embeddedWallet, phase, quest?.action?.type, quest?.id]);
 
   const handleNextDialogue = () => {
     if (!dialogues) return;
@@ -790,8 +803,15 @@ export default function OnboardingQuest() {
     setQuestIndex(newIndex);
     setPhase("intro");
     setDialogueIndex(0);
+    // Persist FIRST so the durable `status:"completed"` flag is written before we
+    // navigate — if the push is interrupted, the All-Clear screen + staking
+    // guidance still recognize completion from storage.
     saveProgress(newIndex, newXp, newCompleted);
 
+    // INVARIANT: the only quest with a "navigate" action is the final one
+    // (first-stake → /staking), so this transition coincides with onboarding
+    // completion (newIndex === TOTAL_QUESTS). If a quest is ever added AFTER a
+    // navigate quest, gate this on `newIndex >= TOTAL_QUESTS` instead.
     if (quest.action?.type === "navigate" && quest.action.route) {
       router.push(quest.action.route);
     }
@@ -799,7 +819,7 @@ export default function OnboardingQuest() {
 
   // ─── Render: Loading ────────────────────────────────────────────────
 
-  if (!assetsReady) {
+  if (!assetsReady || !restored) {
     return (
       <div className="fixed inset-0 bg-[#0a0a0f] flex flex-col items-center justify-center gap-4 z-50">
         <div className="w-10 h-10 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" />
@@ -940,7 +960,7 @@ export default function OnboardingQuest() {
                 onClick={handleBadgeDone}
                 className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500 hover:scale-[1.02] transition-all"
               >
-                {questIndex < QUESTS.length - 1
+                {questIndex < TOTAL_QUESTS - 1
                   ? t.onboarding.nextQuest
                   : t.onboarding.complete}
               </button>
@@ -956,7 +976,7 @@ export default function OnboardingQuest() {
               canGoBack={dialogueIndex > 0}
               isLast={dialogueIndex === dialogues.length - 1}
               moodLabel={currentLine.mood ? getMoodLabel(currentLine.mood, t.onboarding) : undefined}
-              questProgress={`${questIndex + 1} / ${QUESTS.length}`}
+              questProgress={`${questIndex + 1} / ${TOTAL_QUESTS}`}
             />
           )}
 
@@ -964,7 +984,7 @@ export default function OnboardingQuest() {
           {phase === "action" && quest.action && (
             <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs text-gray-500 tabular-nums">{questIndex + 1} / {QUESTS.length}</span>
+                <span className="text-xs text-gray-500 tabular-nums">{questIndex + 1} / {TOTAL_QUESTS}</span>
                 <button
                   onClick={() => {
                     setPhase("intro");

@@ -28,8 +28,8 @@ import { buildStakingCalls } from "@/lib/staking-calls";
 import { chain, publicClient, pimlicoUrl } from "@/lib/chain";
 
 // LocalStorage keys
-const SESSION_KEY_STORAGE = "ttoni_session_key";
-const DELEGATION_STORAGE = "ttoni_delegation";
+const SESSION_KEY_STORAGE = "toki_session_key";
+const DELEGATION_STORAGE = "toki_delegation";
 
 interface StoredSessionKey {
   privateKey: Hex;
