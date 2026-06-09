@@ -26,6 +26,7 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEip7702 } from "@/hooks/useEip7702";
 import { useSessionKey } from "@/hooks/useSessionKey";
 import { calculateLevel, CARD_TIERS, type CardTier } from "@/lib/achievements";
+import { isOnboardingComplete } from "@/lib/onboarding";
 import { fetchStakingData } from "@/lib/staking";
 import OperatorCard from "@/components/dashboard/OperatorCard";
 import { chain, publicClient, isTestnet } from "@/lib/chain";
@@ -138,7 +139,7 @@ function useTypewriter(text: string, speed = 35) {
 export default function StakingScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { authenticated, ready } = usePrivy();
+  const { authenticated, ready, user } = usePrivy();
   const { wallets } = useWallets();
   const { smartAccountClient, paymasterMode } = useEip7702();
   const { storage, trackActivity } = useAchievement();
@@ -201,9 +202,13 @@ export default function StakingScreen() {
   // ─── Auth redirect ─────────────────────────────────────────────────
 
   useEffect(() => {
-    if (ready && !authenticated) {
-      router.push("/");
-    }
+    if (!ready) return;
+    if (authenticated) return;
+    // Grace window: a user arriving straight from onboarding can read as
+    // `ready && !authenticated` for a tick while Privy rehydrates the session.
+    // Wait briefly so we don't bounce a freshly-finished user back to the landing.
+    const timer = setTimeout(() => router.push("/"), 1500);
+    return () => clearTimeout(timer);
   }, [ready, authenticated, router]);
 
   // ─── Fetch TON Balance (independent, runs first) ─────────────────
@@ -387,7 +392,9 @@ export default function StakingScreen() {
   useEffect(() => {
     if (loading) return;
     const hasTon = Number(tonBalance) > 0;
-    const isNewUser = storage.unlocked.length === 0;
+    // "New user" = hasn't finished onboarding, read from the single source of
+    // truth (not `unlocked.length`, which can lag behind a completed tutorial).
+    const isNewUser = !isOnboardingComplete(user?.id);
     const hasStaked = operators.some((o) => Number(o.myStaked) > 0);
 
     if (hasStaked) {
@@ -400,7 +407,7 @@ export default function StakingScreen() {
       setGuidanceType("no-ton");
       setStep(0);
     }
-  }, [loading, storage.unlocked.length, tonBalance, operators]);
+  }, [loading, tonBalance, operators, user?.id]);
 
   // ─── Handlers ──────────────────────────────────────────────────────
 
