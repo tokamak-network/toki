@@ -4,11 +4,11 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { formatUnits, encodeFunctionData, createWalletClient, custom } from "viem";
-import Link from "next/link";
 import Header from "@/components/layout/Header";
 import CardCollection from "./CardCollection";
-import LobbyView from "./LobbyView";
 import StakingSummaryCard from "./StakingSummaryCard";
+import AppLauncher from "./AppLauncher";
+import ReceiveModal from "./ReceiveModal";
 import { useEip7702 } from "@/hooks/useEip7702";
 import { useStakingSubgraph } from "@/hooks/useStakingSubgraph";
 import { useWithdrawalStatus } from "@/hooks/useWithdrawalStatus";
@@ -64,17 +64,8 @@ export default function DashboardContent() {
   const [balances, setBalances] = useState<Balances | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [showReceive, setShowReceive] = useState(false);
   const { t } = useTranslation();
-
-  // Track screen size for lobby vs list view
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    setIsDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
   const externalWallet = wallets.find((w) => w.walletClientType !== "privy");
@@ -91,7 +82,7 @@ export default function DashboardContent() {
   const balanceAddress = primaryWallet?.address;
 
   // Subgraph: seigniorage earnings breakdown
-  const { data: subgraphData, loading: subgraphLoading, refresh: refreshSubgraph } = useStakingSubgraph(balanceAddress);
+  const { data: subgraphData, refresh: refreshSubgraph } = useStakingSubgraph(balanceAddress);
 
   // Withdrawal status (shared between mobile dashboard + lobby)
   const withdrawalStatus = useWithdrawalStatus(balanceAddress);
@@ -297,29 +288,36 @@ export default function DashboardContent() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
-    <div className={`min-h-screen bg-grid ${isDesktop ? "h-screen overflow-hidden" : ""}`}>
-      <Header />
+  const stakedNum = parseFloat((balances?.staked || "0").replace(/,/g, "")) || 0;
+  const tonNum = parseFloat((balances?.ton || "0").replace(/,/g, "")) || 0;
+  const greeting =
+    stakedNum > 0
+      ? t.hub.greetingStaked.replace("{name}", displayName)
+      : tonNum > 0
+        ? t.hub.greetingHasTon.replace("{name}", displayName)
+        : t.hub.greetingNew.replace("{name}", displayName);
+  // Gateway nudge: has TON but isn't staking yet → "don't let it sit, stake it".
+  const showStakingNudge = !loading && tonNum > 0 && stakedNum === 0;
 
-      {/* Desktop: 2.5D Lobby View */}
-      {isDesktop ? (
-        <LobbyView
-          balances={balances}
-          loading={loading}
-          walletAddress={addr}
-          shortAddr={shortAddr}
-          displayName={displayName}
-          onRefreshBalances={handleRefresh}
-          isTestnet={isTestnet}
-          subgraphData={subgraphData}
-          subgraphLoading={subgraphLoading}
-          withdrawalStatus={withdrawalStatus}
-          smartAccountClient={smartAccountClient}
-          getEthereumProvider={primaryWallet ? () => primaryWallet.getEthereumProvider() : undefined}
-        />
-      ) : (
-        /* Mobile: Original list layout */
-        <main className="max-w-4xl mx-auto px-4 py-12">
+  return (
+    <div className="min-h-screen bg-grid">
+      <Header />
+      {showReceive && addr && (
+        <ReceiveModal address={addr} onClose={() => setShowReceive(false)} />
+      )}
+
+      <main className="max-w-4xl mx-auto px-4 py-12">
+          {/* Greeting (non-blocking) */}
+          <div className="flex items-center gap-3 mb-6">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/characters/toki-welcome.png"
+              alt="Toki"
+              className="w-14 h-14 object-contain shrink-0"
+            />
+            <p className="text-sm text-gray-200 leading-snug">{greeting}</p>
+          </div>
+
           {/* Profile */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-1">
@@ -333,7 +331,7 @@ export default function DashboardContent() {
           {/* Wallet Card */}
           <div className="card p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">{t.dashboard.wallet}</h2>
+              <h2 className="text-lg font-semibold">{t.hub.myWallet}</h2>
               <div className="flex items-center gap-2">
                 {smartAccountClient && paymasterMode === "sponsor" && (
                   <span className="px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
@@ -461,6 +459,12 @@ export default function DashboardContent() {
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
               <button
+                onClick={() => setShowReceive(true)}
+                className="px-4 py-2 rounded-lg bg-accent-cyan/15 border border-accent-cyan/30 text-sm text-accent-cyan hover:bg-accent-cyan/25 transition-colors"
+              >
+                {t.hub.receive}
+              </button>
+              <button
                 onClick={handleRefresh}
                 className="px-4 py-2 rounded-lg bg-white/10 text-sm text-gray-300 hover:bg-white/15 transition-colors"
               >
@@ -490,27 +494,18 @@ export default function DashboardContent() {
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="flex gap-3 mb-6">
-            <Link
-              href="/staking"
-              className="flex-1 p-4 rounded-xl bg-gradient-to-r from-accent-blue/10 to-accent-cyan/10 border border-accent-cyan/20 hover:border-accent-cyan/40 transition-all group"
-            >
-              <div className="text-accent-cyan font-semibold text-sm mb-1 group-hover:translate-x-1 transition-transform">
-                {t.dashboard.staking} →
-              </div>
-              <div className="text-xs text-gray-500">{t.dashboard.stakingDesc}</div>
-            </Link>
+          {/* Gateway nudge */}
+          {showStakingNudge && (
             <a
-              href="/explore"
-              className="flex-1 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:border-purple-500/40 transition-all group"
+              href="/staking"
+              className="block mb-4 p-3 rounded-xl bg-gradient-to-r from-accent-amber/15 to-accent-cyan/15 border border-accent-amber/30 text-center text-sm font-semibold text-accent-amber hover:scale-[1.01] transition-transform"
             >
-              <div className="text-purple-400 font-semibold text-sm mb-1 group-hover:translate-x-1 transition-transform">
-                {t.dashboard.exploreButton} →
-              </div>
-              <div className="text-xs text-gray-500">{t.dashboard.exploreDesc}</div>
+              {t.hub.stakingNudge} →
             </a>
-          </div>
+          )}
+
+          {/* App Launcher (ecosystem gateway) */}
+          <AppLauncher />
 
           {/* Card Collection */}
           <CardCollection />
@@ -569,7 +564,6 @@ export default function DashboardContent() {
             </div>
           )}
         </main>
-      )}
     </div>
   );
 }
