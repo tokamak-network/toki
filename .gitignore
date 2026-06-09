@@ -64,3 +64,6 @@ toki-extension/
 .omc/
 .claude/
 .playwright-mcp/
+
+# paymaster foundry secrets
+paymaster/.env
