@@ -1,0 +1,10 @@
+node_modules/
+build/
+.plasmo/
+*.tsbuildinfo
+.env
+.env.*
+
+# local e2e screenshots (verification artifacts)
+e2e-*.png
+.omc/
