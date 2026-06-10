@@ -8,6 +8,7 @@ import Header from "@/components/layout/Header";
 import CardCollection from "./CardCollection";
 import StakingSummaryCard from "./StakingSummaryCard";
 import AppLauncher from "./AppLauncher";
+import AiAccessCard from "./AiAccessCard";
 import ReceiveModal from "./ReceiveModal";
 import { useEip7702 } from "@/hooks/useEip7702";
 import { useStakingSubgraph } from "@/hooks/useStakingSubgraph";
@@ -506,6 +507,9 @@ export default function DashboardContent() {
 
           {/* App Launcher (ecosystem gateway) */}
           <AppLauncher />
+
+          {/* AI Access (stake TON → unlock the Tokamak AI server) */}
+          <AiAccessCard stakedTon={stakedNum} loading={loading} />
 
           {/* Card Collection */}
           <CardCollection />
