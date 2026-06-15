@@ -11,6 +11,7 @@ const HubLobby = dynamic(() => import("@/components/hub/HubLobby"), {
   ),
 });
 
+// No-auth visual preview of the hub lobby (empty data). Not linked in nav.
 export default function HubPreviewPage() {
-  return <HubLobby />;
+  return <HubLobby preview />;
 }
