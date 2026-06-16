@@ -31,11 +31,19 @@ export default function SquadSection() {
         <div className="top">TOKI <b>SQUAD</b></div>
 
         <div className="stage">
-          <div className="wedge w1"><img src="/characters/toki-staking.png" alt="" /><div className="ov ov1" /><div className="dk" /><div className="lab">Staking</div></div>
-          <div className="wedge w2"><img src="/characters/toki-wallet.png" alt="" /><div className="ov ov2" /><div className="dk" /><div className="lab">Wallet</div></div>
-          <div className="wedge w3"><img src="/characters/toki-private.png" alt="" /><div className="ov ov3" /><div className="dk" /><div className="lab">Private</div></div>
-          <div className="wedge w4"><img src="/characters/toki-ai.png" alt="" /><div className="ov ov4" /><div className="dk" /><div className="lab">AI Access</div></div>
-          <div className="wedge w5"><img src="/characters/toki-lottery.png" alt="" /><div className="ov ov5" /><div className="dk" /><div className="lab">Lottery</div></div>
+          <div className="wedge w1"><img src="/characters/toki-staking.png" alt="" /><div className="ov ov1" /><div className="dk" /></div>
+          <div className="wedge w2"><img src="/characters/toki-wallet.png" alt="" /><div className="ov ov2" /><div className="dk" /></div>
+          <div className="wedge w3"><img src="/characters/toki-private.png" alt="" /><div className="ov ov3" /><div className="dk" /></div>
+          <div className="wedge w4"><img src="/characters/toki-ai.png" alt="" /><div className="ov ov4" /><div className="dk" /></div>
+          <div className="wedge w5"><img src="/characters/toki-lottery.png" alt="" /><div className="ov ov5" /><div className="dk" /></div>
+          {/* labels live on a top layer so no neighbouring wedge can paint over them */}
+          <div className="labels">
+            <span className="lab l1">Staking</span>
+            <span className="lab l2">Wallet</span>
+            <span className="lab l3">Private</span>
+            <span className="lab l4">AI Access</span>
+            <span className="lab l5">Lottery</span>
+          </div>
         </div>
 
         <div className="script">Stake &amp; Play<small>start on-chain</small></div>
@@ -58,12 +66,14 @@ const css = `
 .tk-squad .wedge img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 16%}
 .tk-squad .wedge .ov{position:absolute;inset:0;mix-blend-mode:screen;opacity:.28}
 .tk-squad .wedge .dk{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,6,14,0) 45%,rgba(5,6,14,.82))}
-.tk-squad .wedge .lab{position:absolute;left:0;right:0;bottom:14px;text-align:center;white-space:nowrap;z-index:3;font-family:"Permanent Marker",cursive;font-size:clamp(13px,1.5vw,18px);letter-spacing:0;color:#fff;text-shadow:0 0 12px rgba(255,77,109,.6),0 2px 6px #000;transform:rotate(-3deg)}
-/* shift each label to its wedge's VISIBLE trapezoid center so clip-path doesn't cut the text */
-.tk-squad .w1 .lab{left:24%;right:0}
-.tk-squad .w2 .lab{left:0;right:24%}
-.tk-squad .w4 .lab{left:24%;right:0}
-.tk-squad .w5 .lab{left:0;right:24%}
+.tk-squad .labels{position:absolute;inset:0;z-index:5;pointer-events:none}
+.tk-squad .lab{position:absolute;bottom:14px;white-space:nowrap;font-family:"Permanent Marker",cursive;font-size:clamp(13px,1.5vw,18px);letter-spacing:0;color:#fff;text-shadow:0 0 12px rgba(255,77,109,.6),0 2px 6px #000;transform:translateX(-50%) rotate(-3deg)}
+/* anchor each label to its wedge's visual centre (top layer → no neighbour can clip it) */
+.tk-squad .l1{left:14%}
+.tk-squad .l2{left:34%}
+.tk-squad .l3{left:51%}
+.tk-squad .l4{left:71%}
+.tk-squad .l5{left:87%}
 .tk-squad .w1{left:1%;clip-path:polygon(0 0,72% 0,100% 100%,28% 100%);background:#1b1030}
 .tk-squad .w2{left:21%;clip-path:polygon(0 0,80% 0,72% 100%,0 100%);background:#102036}
 .tk-squad .w3{left:38%;clip-path:polygon(8% 0,92% 0,100% 100%,0 100%);background:#0b2630;z-index:3}
