@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Toki 게임식 화면 전환 프로토 (메뉴별 7종)</title>
+<style>
+  :root{ --cyan:#22d3ee; --gold:#f59e0b; --violet:#a78bfa; --sky:#60a5fa; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#05070d;color:#e5e7eb;overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo",sans-serif}
+
+  /* ── Toolbar ── */
+  .toolbar{position:fixed;top:0;left:0;right:0;height:46px;display:flex;align-items:center;gap:10px;
+    padding:0 14px;background:rgba(6,9,16,.92);border-bottom:1px solid rgba(255,255,255,.08);z-index:200}
+  .toolbar b{font-size:13px}
+  .toolbar .hint{margin-left:auto;font-size:12px;color:#6b7280}
+  .tg{font-size:12px;padding:6px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.05);color:#cbd5e1;cursor:pointer}
+  .tg.on{background:var(--cyan);color:#05070d;border-color:var(--cyan);font-weight:700}
+
+  .viewport{position:fixed;inset:46px 0 0 0;overflow:hidden}
+
+  /* ── Hub (lobby) ── */
+  .scene{position:absolute;inset:0}
+  #hub{background:#0a1018 url('backgrounds/hub-bg.jpg') center/cover no-repeat}
+  #hub::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5),transparent 45%)}
+  .char{position:absolute;left:32%;bottom:0;transform:translateX(-50%);height:92%;z-index:6;pointer-events:none;
+    user-select:none;filter:drop-shadow(0 14px 34px rgba(0,0,0,.5));animation:flo 5.5s ease-in-out infinite}
+  @keyframes flo{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-1.2%)}}
+  .dlg{position:absolute;left:32%;bottom:18px;transform:translateX(-50%);z-index:8;width:min(460px,40vw);
+    background:rgba(6,18,30,.72);backdrop-filter:blur(14px);border:1px solid rgba(34,211,238,.3);
+    border-radius:16px;padding:11px 18px}
+  .dlg .nm{display:inline-block;font-size:11px;font-weight:800;color:var(--cyan);background:rgba(34,211,238,.12);
+    border:1px solid rgba(34,211,238,.34);border-radius:999px;padding:2px 10px;margin-bottom:6px}
+  .dlg p{margin:0;font-size:14px;line-height:1.5;color:#f1f5f9}
+
+  /* left HUD */
+  .hud{position:absolute;left:16px;top:14px;z-index:9;width:210px;display:flex;flex-direction:column;gap:9px}
+  .chip{background:rgba(8,16,24,.66);backdrop-filter:blur(10px);border:1px solid rgba(34,211,238,.24);
+    border-radius:13px;padding:10px 13px}
+  .chip .l{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#9ca3af}
+  .chip .v{font-size:20px;font-weight:800;color:#fff}
+  .chip .v span{font-size:12px;color:var(--cyan);font-weight:500}
+  .ltab{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;
+    background:linear-gradient(100deg,rgba(8,30,48,.82),rgba(8,30,48,.42));border:1px solid rgba(34,211,238,.22);
+    border-left:3px solid var(--sky);border-radius:10px;padding:9px 12px;color:#eaf6fb;font:inherit;
+    transition:transform .18s,filter .18s}
+  .ltab:hover{transform:translateX(3px);filter:brightness(1.14)}
+  .ltab .ic{font-size:18px}
+  .ltab b{display:block;font-size:13px;font-weight:800}
+  .ltab em{font-style:normal;font-size:10px;color:#9fd9e8}
+
+  /* menu collage (right) */
+  .menu{position:absolute;right:1.8vw;top:50%;z-index:7;width:46vw;height:74vh;
+    transform:translateY(-50%) perspective(1700px) rotateY(-13deg);transform-origin:right center;
+    background:rgba(255,255,255,.22);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,.5);
+    border-radius:20px;padding:10px}
+  .menuTag{position:absolute;top:12px;left:20px;z-index:5;font-size:clamp(13px,1.2vw,20px);font-weight:900;
+    letter-spacing:5px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+  .collage{position:relative;width:100%;height:100%}
+  .piece{position:absolute;overflow:hidden;cursor:pointer;border:0;padding:0;background:none;
+    transform:scale(.984);transition:transform .18s,filter .18s}
+  .piece .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top}
+  .piece .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,12,20,.02) 32%,rgba(4,12,20,.9))}
+  .piece .lbl{position:absolute;left:12px;bottom:12px;z-index:2;text-align:left}
+  .piece .lbl b{display:block;font-size:clamp(13px,1.3vw,24px);font-weight:800;color:#fff;text-shadow:0 1px 6px #000}
+  .piece .lbl em{font-style:normal;font-size:clamp(9px,.85vw,13px);color:#cfeef7;text-shadow:0 1px 5px #000}
+  .piece .badge{position:absolute;top:10px;right:12px;z-index:2;font-size:11px;font-weight:800;
+    padding:3px 8px;border-radius:999px;color:#04141d;background:var(--cyan)}
+  .piece .tname{position:absolute;top:10px;left:12px;z-index:2;font-size:10px;font-weight:700;color:#04141d;
+    background:rgba(255,255,255,.85);padding:2px 7px;border-radius:6px}
+  .piece:hover{transform:scale(1.015);filter:brightness(1.08);z-index:4}
+  .piece.feat .lbl b{font-size:clamp(18px,2vw,36px)}
+
+  /* ── Service screen ── */
+  #svc{display:none;z-index:30;background:#0a0f18 center/cover no-repeat}
+  #svc.show{display:block}
+  #svc::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55),transparent 50%)}
+  .svc-wrap{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;padding:18px 22px}
+  .svc-top{display:flex;align-items:center;gap:12px}
+  .back{display:flex;align-items:center;gap:7px;cursor:pointer;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.18);
+    color:#fff;border-radius:10px;padding:8px 13px;font:inherit;font-weight:700;font-size:14px}
+  .svc-top h2{margin:0;font-size:clamp(20px,2.4vw,30px);color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+  .svc-emoji{font-size:26px}
+  .svc-body{flex:1;display:flex;flex-direction:column;gap:12px;margin-top:18px;max-width:560px}
+  .mock{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:15px}
+  .mock h4{margin:0 0 9px;font-size:12px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .mrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px}
+  .mrow:last-child{border:0}
+  .cta{margin-top:6px;padding:13px;border-radius:12px;border:none;color:#04141d;font-weight:800;font-size:15px;cursor:pointer}
+
+  /* ── Transition cover + ghost ── */
+  #cover{position:absolute;inset:0;z-index:60;pointer-events:none;opacity:0}
+  .ghost{position:fixed;z-index:70;pointer-events:none;object-fit:cover;border-radius:14px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);will-change:transform,opacity}
+  .streak{position:absolute;inset:0;z-index:65;pointer-events:none;opacity:0;
+    background:repeating-linear-gradient(115deg,transparent 0 22px,rgba(34,211,238,.0) 22px 24px)}
+
+  /* scene animation helpers */
+  .zoomOut{animation:zoomOut .42s cubic-bezier(.5,0,.75,0) forwards}
+  @keyframes zoomOut{to{transform:scale(1.12);opacity:0;filter:blur(6px)}}
+  .zoomIn{animation:zoomIn .5s cubic-bezier(.16,1,.3,1) forwards}
+  @keyframes zoomIn{from{transform:scale(1.14);opacity:0}to{transform:scale(1);opacity:1}}
+  .slideLeft{animation:slideLeft .5s cubic-bezier(.22,1,.36,1) forwards}
+  @keyframes slideLeft{to{transform:translateX(-30%);filter:brightness(.5)}}
+  .slideInR{animation:slideInR .5s cubic-bezier(.22,1,.36,1) forwards}
+  @keyframes slideInR{from{transform:translateX(100%)}to{transform:translateX(0)}}
+  .flipOut{animation:flipOut .4s ease-in forwards}
+  @keyframes flipOut{to{transform:perspective(1400px) rotateY(90deg);opacity:.2}}
+  .flipIn{animation:flipIn .5s cubic-bezier(.16,1,.3,1) forwards}
+  @keyframes flipIn{from{transform:perspective(1400px) rotateY(-90deg);opacity:.2}to{transform:none;opacity:1}}
+  .glitchOut{animation:glitchOut .34s steps(2,end) forwards}
+  @keyframes glitchOut{
+    0%{clip-path:inset(0 0 0 0);transform:translateX(0);filter:none}
+    20%{clip-path:inset(20% 0 40% 0);transform:translateX(-8px);filter:hue-rotate(40deg) saturate(2)}
+    40%{clip-path:inset(60% 0 10% 0);transform:translateX(10px)}
+    60%{clip-path:inset(10% 0 70% 0);transform:translateX(-6px);filter:hue-rotate(-30deg)}
+    100%{opacity:0;transform:translateX(0)}}
+  .glitchIn{animation:glitchIn .42s steps(3,end) forwards}
+  @keyframes glitchIn{
+    0%{opacity:0;clip-path:inset(45% 0 45% 0);transform:translateX(12px)}
+    50%{opacity:1;clip-path:inset(10% 0 20% 0);transform:translateX(-6px);filter:hue-rotate(30deg)}
+    100%{opacity:1;clip-path:inset(0 0 0 0);transform:none;filter:none}}
+  .fadeOut{animation:fO .18s linear forwards}@keyframes fO{to{opacity:0}}
+  .fadeIn{animation:fI .2s linear forwards}@keyframes fI{from{opacity:0}to{opacity:1}}
+  .desat{filter:grayscale(.85) brightness(.7);transition:filter .35s}
+
+  .scanlines{background:
+    repeating-linear-gradient(0deg,rgba(34,211,238,.12) 0 1px,transparent 1px 3px),
+    rgba(5,10,16,.4)}
+  .beam{background:radial-gradient(120% 60% at 50% 50%,rgba(245,158,11,.35),transparent 60%)}
+  .iris{background:#05070d}
+  .gridfx{background:
+    linear-gradient(rgba(96,165,250,.18) 1px,transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg,rgba(96,165,250,.18) 1px,transparent 1px) 0 0/40px 40px,
+    rgba(5,12,22,.5)}
+  .sparkfx{background:radial-gradient(60% 50% at 50% 55%,rgba(245,158,11,.4),transparent 60%)}
+
+  /* reduced motion */
+  body.rm .zoomOut,body.rm .zoomIn,body.rm .slideLeft,body.rm .slideInR,
+  body.rm .flipOut,body.rm .flipIn,body.rm .glitchOut,body.rm .glitchIn{animation:none!important}
+
+  @media (max-width:900px){
+    .char{left:50%;height:54%}
+    .dlg{left:50%;width:min(92vw,460px)}
+    .menu{position:absolute;right:50%;transform:translate(50%,-50%);width:92vw;height:52vh;top:64%}
+    .hud{width:160px}
+  }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <b>🎮 Toki 게임식 화면 전환</b>
+    <span style="font-size:12px;color:#9fd9e8">메뉴마다 전환이 달라요 — 눌러보고, 화면에서 ← 뒤로(또는 브라우저 뒤로)로 복귀</span>
+    <button class="tg" id="rmBtn">감속 모드(reduced-motion): OFF</button>
+    <span class="hint" id="curT">현재: —</span>
+  </div>
+
+  <div class="viewport">
+    <!-- HUB -->
+    <div class="scene" id="hub">
+      <div class="hud">
+        <div class="chip"><div class="l">Total assets</div><div class="v">1,240 <span>TON</span></div></div>
+        <button class="ltab" data-key="explore"><span class="ic">🧭</span><span><b>생태계</b><em>맵 슬라이드</em></span></button>
+      </div>
+
+      <img class="char" src="characters/toki-fullbody.png" alt="Toki" />
+      <div class="dlg"><span class="nm">Toki</span><p id="dlgtext">안녕! 메뉴를 눌러서 뭘 할지 골라봐.</p></div>
+
+      <div class="menu">
+        <div class="menuTag">MENU</div>
+        <div class="collage" id="collage"></div>
+      </div>
+    </div>
+
+    <!-- SERVICE -->
+    <div class="scene" id="svc"></div>
+
+    <!-- transition layers -->
+    <div id="cover"></div>
+  </div>
+
+<script>
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  const rm = ()=>document.body.classList.contains('rm');
+
+  // ── Menu registry: tile + per-menu transition ────────────────────────────
+  const MENUS = {
+    wallet:    {title:"내 지갑",      emoji:"👜", trans:"zoom",   tname:"가방 줌",     accent:"#f59e0b", bg:"backgrounds/1.png",            img:"toki-bag-full.png",            badge:null,
+                style:{left:"0",top:"0",width:"34%",height:"48%",clipPath:"polygon(0 0,100% 0,92.7% 100%,0 100%)"}},
+    private:   {title:"프라이빗 전송", emoji:"🕶️", trans:"iris",   tname:"스텔스 아이리스", accent:"#a78bfa", bg:"backgrounds/2.png",         img:"characters/toki-peeking.png",  badge:"NEW",
+                style:{left:"31.53%",top:"0",width:"32.47%",height:"48%",clipPath:"polygon(7.6% 0,100% 0,92.1% 100%,0 100%)"}},
+    staking:   {title:"스테이킹",     emoji:"🚀", trans:"launch", tname:"로켓 발사 줌", accent:"#22d3ee", bg:"backgrounds/staking-night.png", img:"toki-rocket.png",              badge:"LIVE", feat:true,
+                style:{left:"60%",top:"0",width:"40%",height:"75.2%",clipPath:"polygon(10% 0,100% 0,100% 95.7%,0 100%)"}},
+    lottery:   {title:"복권",         emoji:"🎟️", trans:"flip",   tname:"카드 플립",   accent:"#f59e0b", bg:"backgrounds/lottery-chat.png",  img:"toki-lottery.png",             badge:"HOT",
+                style:{left:"0",top:"48%",width:"31.53%",height:"32%",clipPath:"polygon(0 0,100% 0,95.1% 92.5%,0 100%)"}},
+    ai:        {title:"AI 액세스",    emoji:"🤖", trans:"glitch", tname:"글리치 디졸브", accent:"#22d3ee", bg:"backgrounds/3.png",          img:"characters/toki-thinking.png", badge:"AI",
+                style:{left:"30%",top:"48%",width:"31.45%",height:"29.6%",clipPath:"polygon(4.9% 0,100% 0,95.4% 91.9%,0 100%)"}},
+    collection:{title:"컬렉션",       emoji:"🃏", trans:"spread", tname:"카드 스프레드", accent:"#f59e0b", bg:"backgrounds/4.png",          img:"toki-card-gold-v2.png",        badge:null,
+                style:{left:"0",top:"72%",width:"100%",height:"28%",clipPath:"polygon(0 28.6%,100% 0,100% 100%,0 100%)"}},
+    explore:   {title:"생태계",       emoji:"🧭", trans:"map",    tname:"맵 슬라이드",  accent:"#60a5fa", bg:"backgrounds/explore.png",       img:null},
+  };
+
+  const hub = document.getElementById('hub');
+  const svc = document.getElementById('svc');
+  const cover = document.getElementById('cover');
+  const curT = document.getElementById('curT');
+  const dlg = document.getElementById('dlgtext');
+
+  // build collage
+  const collage = document.getElementById('collage');
+  for(const [key,m] of Object.entries(MENUS)){
+    if(!m.style) continue;
+    const b=document.createElement('button');
+    b.className='piece'+(m.feat?' feat':''); b.dataset.key=key;
+    Object.assign(b.style,m.style);
+    b.innerHTML=`<img class="art" src="${m.img}" alt=""><div class="scrim"></div>
+      <span class="tname">${m.tname}</span>${m.badge?`<span class="badge">${m.badge}</span>`:''}
+      <div class="lbl"><b>${m.title}</b><em>${m.emoji} 눌러봐</em></div>`;
+    b.onclick=()=>go(key,b);
+    collage.appendChild(b);
+  }
+  document.querySelectorAll('.ltab').forEach(t=> t.onclick=()=>go(t.dataset.key,t));
+
+  // build a service screen's content
+  function paintSvc(m){
+    svc.style.backgroundImage=`url('${m.bg}')`;
+    svc.innerHTML=`<div class="svc-wrap">
+      <div class="svc-top">
+        <button class="back" id="backBtn">← 뒤로</button>
+        <span class="svc-emoji">${m.emoji}</span><h2>${m.title}</h2>
+      </div>
+      <div class="svc-body">
+        <div class="mock"><h4>${m.title} 화면 (목업)</h4>
+          <div class="mrow"><span>항목 A</span><span style="color:${m.accent}">12.4%</span></div>
+          <div class="mrow"><span>항목 B</span><span style="color:${m.accent}">11.8%</span></div>
+          <div class="mrow"><span>항목 C</span><span style="color:${m.accent}">10.2%</span></div>
+        </div>
+        <div class="mock"><h4>액션</h4>
+          <button class="cta" style="background:${m.accent}">${m.title} 실행</button>
+        </div>
+        <p style="color:#6b7280;font-size:13px">※ 프로토타입 — 실제 ${m.title} 화면이 여기에 들어옵니다.</p>
+      </div>
+    </div>`;
+    svc.querySelector('#backBtn').onclick=()=>back();
+  }
+
+  function setCover(cls,opacity){ cover.className=''; if(cls) cover.classList.add(cls); cover.style.opacity=opacity??0; }
+
+  let busy=false, openKey=null;
+
+  async function go(key,el){
+    if(busy||openKey) return; busy=true; openKey=key;
+    const m=MENUS[key];
+    curT.textContent='현재: '+m.title+' — '+m.tname;
+    paintSvc(m);
+    history.pushState({svc:key},'', '#'+key);
+
+    if(rm()){ svc.classList.add('show','fadeIn'); hub.classList.add('fadeOut'); await sleep(220);
+      hub.style.visibility='hidden'; clearAnims(); busy=false; return; }
+
+    const rect = el ? el.getBoundingClientRect() : null;
+    if(m.trans==='zoom'||m.trans==='launch') await tZoom(m,rect,m.trans==='launch');
+    else if(m.trans==='iris') await tIris(m,rect);
+    else if(m.trans==='flip') await tFlip(m);
+    else if(m.trans==='glitch') await tGlitch(m);
+    else if(m.trans==='spread') await tSpread(m);
+    else if(m.trans==='map') await tMap(m);
+    else { svc.classList.add('show','fadeIn'); await sleep(260); }
+    hub.style.visibility='hidden';
+    clearAnims(); busy=false;
+  }
+
+  function clearAnims(){
+    hub.className='scene'; hub.id='hub';
+    [...svc.classList].forEach(c=>{if(c!=='scene'&&c!=='show')svc.classList.remove(c);});
+    setCover(null,0);
+    document.querySelectorAll('.ghost,.spread-strip').forEach(n=>n.remove());
+  }
+
+  // ── transitions ───────────────────────────────────────────────────────────
+  async function tZoom(m,rect,launch){
+    hub.classList.add('zoomOut');
+    if(rect){
+      const g=document.createElement('img'); g.className='ghost'; g.src=m.img;
+      Object.assign(g.style,{left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px',
+        transition:'transform .5s cubic-bezier(.16,1,.3,1),opacity .5s'});
+      document.body.appendChild(g);
+      const tw=Math.min(innerWidth*0.5,520), th=tw*1.15;
+      const tx=(innerWidth/2-(rect.left+rect.width/2)), ty=(innerHeight/2-(rect.top+rect.height/2));
+      requestAnimationFrame(()=>{ g.style.transform=`translate(${tx}px,${ty}px) scale(${tw/rect.width}) ${launch?'rotate(-6deg)':''}`;
+        if(launch){ setCover('streak',1); cover.style.background='linear-gradient(0deg,rgba(34,211,238,.25),transparent 60%)'; } });
+      setTimeout(()=>{ g.style.opacity='0'; },360);
+    }
+    svc.style.backgroundImage=svc.style.backgroundImage; svc.classList.add('show');
+    await sleep(launch?260:300);
+    svc.classList.add('zoomIn'); setCover(launch?'sparkfx':'sparkfx',launch?.6:.5);
+    await sleep(launch?280:240); setCover(null,0);
+  }
+
+  async function tIris(m,rect){
+    const cx = rect? (rect.left+rect.width/2)/innerWidth*100 : 50;
+    const cy = rect? (rect.top+rect.height/2)/innerHeight*100 : 50;
+    hub.classList.add('desat');
+    setCover('iris',1);
+    cover.style.clipPath=`circle(0% at ${cx}% ${cy}%)`;
+    cover.style.transition='clip-path .42s cubic-bezier(.5,0,.75,0)';
+    requestAnimationFrame(()=>{ cover.style.clipPath=`circle(150% at ${cx}% ${cy}%)`; });
+    await sleep(430);
+    svc.classList.add('show'); // svc now under cover
+    cover.style.transition='clip-path .5s cubic-bezier(.16,1,.3,1)';
+    cover.style.clipPath=`circle(0% at 50% 50%)`;
+    await sleep(520); cover.style.clipPath=''; cover.style.transition='';
+  }
+
+  async function tFlip(m){
+    setCover('beam',.0);
+    hub.classList.add('flipOut');
+    await sleep(200); setCover('beam',.9);
+    svc.classList.add('show','flipIn');
+    await sleep(300); setCover('beam',0);
+    await sleep(220);
+  }
+
+  async function tGlitch(m){
+    setCover('scanlines',.0);
+    hub.classList.add('glitchOut'); setCover('scanlines',.9);
+    await sleep(300);
+    svc.classList.add('show','glitchIn');
+    await sleep(120); setCover('scanlines',0);
+    await sleep(320);
+  }
+
+  async function tSpread(m){
+    svc.classList.add('show'); svc.style.opacity='0';
+    const N=7;
+    for(let i=0;i<N;i++){
+      const s=document.createElement('div'); s.className='spread-strip';
+      Object.assign(s.style,{position:'absolute',top:'0',bottom:'0',left:(i*100/N)+'%',width:(100/N)+'%',
+        zIndex:50,background:`linear-gradient(180deg,${m.accent}cc,${m.accent}44)`,
+        transform:'translateY(-110%) rotate(2deg)',
+        transition:`transform .5s cubic-bezier(.16,1,.3,1) ${i*0.05}s`});
+      document.querySelector('.viewport').appendChild(s);
+      requestAnimationFrame(()=>{ s.style.transform='translateY(0) rotate(0)'; });
+    }
+    await sleep(380); svc.style.opacity='1';
+    document.querySelectorAll('.spread-strip').forEach((s,i)=>{
+      s.style.transition=`transform .4s ease ${i*0.03}s,opacity .4s`;
+      s.style.transform='translateY(110%)'; s.style.opacity='0';
+    });
+    await sleep(520); document.querySelectorAll('.spread-strip').forEach(n=>n.remove());
+  }
+
+  async function tMap(m){
+    setCover('gridfx',.0);
+    hub.classList.add('slideLeft'); setCover('gridfx',.5);
+    svc.classList.add('show','slideInR');
+    await sleep(500); setCover(null,0);
+  }
+
+  // ── back ──────────────────────────────────────────────────────────────────
+  async function back(){
+    if(busy||!openKey) return; busy=true;
+    if(history.state&&history.state.svc){ history.back(); /* triggers popstate→doBack */ return; }
+    await doBack();
+  }
+  async function doBack(){
+    const m=MENUS[openKey];
+    hub.style.visibility='visible';
+    if(rm()){ svc.classList.add('fadeOut'); hub.classList.add('fadeIn');
+      await sleep(200); finishBack(); return; }
+    // uniform "pop back to lobby": service zooms down + fades, hub eases back in
+    svc.style.transition='transform .32s cubic-bezier(.5,0,.75,0),opacity .32s';
+    svc.style.transformOrigin='center'; svc.style.transform='scale(.9)'; svc.style.opacity='0';
+    hub.style.transition='transform .4s cubic-bezier(.16,1,.3,1),opacity .4s,filter .4s';
+    hub.style.transform='scale(1.04)'; hub.style.opacity='0'; hub.style.filter='blur(4px)';
+    requestAnimationFrame(()=>{ hub.style.transform='scale(1)'; hub.style.opacity='1'; hub.style.filter='none'; });
+    await sleep(340); finishBack();
+  }
+  function finishBack(){
+    svc.classList.remove('show'); svc.style.cssText='';
+    hub.style.transition=''; hub.style.transform=''; hub.style.opacity=''; hub.style.filter='';
+    hub.className='scene'; hub.id='hub'; svc.className='scene';
+    setCover(null,0); document.querySelectorAll('.ghost,.spread-strip').forEach(n=>n.remove());
+    curT.textContent='현재: —'; openKey=null; busy=false;
+  }
+
+  window.addEventListener('popstate',()=>{ if(openKey){ busy=false; doBack(); } });
+
+  // reduced-motion toggle
+  document.getElementById('rmBtn').onclick=function(){
+    document.body.classList.toggle('rm');
+    const on=document.body.classList.contains('rm');
+    this.classList.toggle('on',on);
+    this.textContent='감속 모드(reduced-motion): '+(on?'ON':'OFF');
+  };
+</script>
+</body>
+</html>

@@ -15,6 +15,7 @@ import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { AchievementProvider } from "@/components/providers/AchievementProvider";
 import { AudioProvider } from "@/components/audio/AudioProvider";
+import TransitionProvider from "@/components/transitions/TransitionProvider";
 import { OrganizationJsonLd, WebApplicationJsonLd } from "@/components/seo/JsonLd";
 import { SITE_URL, SITE_NAME } from "@/constants/seo";
 import "./globals.css";
@@ -90,6 +91,20 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        {/* Bubble display fonts for the cozy hero */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        {/* Korean display font (Jua) needs full glyph coverage — a plain
+            stylesheet link is simpler/safer than next/font's subset handling. */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&family=Jua&display=swap"
+          rel="stylesheet"
+        />
         {/* Google Analytics 4 */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
@@ -129,7 +144,7 @@ export default function RootLayout({
           <AudioProvider>
             <PrivyClientProvider>
               <AchievementProvider>
-                {children}
+                <TransitionProvider>{children}</TransitionProvider>
                 <TokiChat />
                 <AchievementToast />
               </AchievementProvider>

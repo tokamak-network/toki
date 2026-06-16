@@ -12,6 +12,7 @@ import { useTranslation } from "@/components/providers/LanguageProvider";
 import { publicClient as client } from "@/lib/chain";
 import { CONTRACTS } from "@/constants/contracts";
 import ReceiveModal from "@/components/dashboard/ReceiveModal";
+import { useScreenTransition } from "@/components/transitions/TransitionProvider";
 import HubBackground from "./HubBackground";
 import AiAccessKeyModal from "./AiAccessKeyModal";
 import {
@@ -77,6 +78,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const { wallets } = useWallets();
   const router = useRouter();
   const { t } = useTranslation();
+  const { navigate } = useScreenTransition();
 
   const [showReceive, setShowReceive] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
@@ -329,7 +331,19 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       );
     }
     return (
-      <Link key={c.key} className={cls} style={c.style} href={c.href ?? "#"}>
+      <Link
+        key={c.key}
+        className={cls}
+        style={c.style}
+        href={c.href ?? "#"}
+        onClick={(e) => {
+          // Let modifier-clicks open a new tab; otherwise play the menu's
+          // signature game transition instead of an instant route swap.
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          navigate(c.href ?? "/", c.key);
+        }}
+      >
         {inner}
       </Link>
     );
