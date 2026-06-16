@@ -2,9 +2,10 @@
 "use client";
 
 import { usePrivy } from "@privy-io/react-auth";
-import { useRouter } from "next/navigation";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
+import { useScreenTransition } from "@/components/transitions/TransitionProvider";
+import { getStartTransition } from "@/components/transitions/registry";
 
 /**
  * Landing hero — cozy "movie poster" title screen over an ambient beach video.
@@ -13,13 +14,14 @@ import { useAuthModal } from "@/components/auth/AuthModalProvider";
  */
 export default function VideoHero() {
   const { ready, authenticated } = usePrivy();
-  const router = useRouter();
   const { t } = useTranslation();
   const { open: openAuthChoice } = useAuthModal();
+  const { navigate } = useScreenTransition();
 
   const handleStart = () => {
     if (!ready) return;
-    if (authenticated) router.push("/dashboard");
+    // Returning user → hub, with the signature transition chosen in /transitions.
+    if (authenticated) navigate("/dashboard", undefined, getStartTransition());
     else openAuthChoice();
   };
 
