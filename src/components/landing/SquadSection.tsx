@@ -6,6 +6,11 @@ import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useScreenTransition } from "@/components/transitions/TransitionProvider";
 import { getStartTransition } from "@/components/transitions/registry";
 
+// One pass of the ticker. Rendered twice inside each <span class="seq"> so a
+// single seq always exceeds the poster width — then translateX(-50%) on the
+// flex track (two seqs) wraps with no visible gap (nowrap keeps it on one line).
+const TICKER_SEQ = "STAKING · WALLET · PRIVATE · AI ACCESS · LOTTERY · ";
+
 /**
  * "TOKI SQUAD" feature section below the hero — a 1:1 port of the
  * poster-squad prototype (portrait 3:4.1 poster centered in the section).
@@ -48,7 +53,12 @@ export default function SquadSection() {
 
         <div className="script">Stake &amp; Play<small>start on-chain</small></div>
 
-        <div className="ticker"><span className="track">STAKING&nbsp;·&nbsp;WALLET&nbsp;·&nbsp;PRIVATE&nbsp;·&nbsp;AI ACCESS&nbsp;·&nbsp;LOTTERY&nbsp;·&nbsp;STAKING&nbsp;·&nbsp;WALLET&nbsp;·&nbsp;PRIVATE&nbsp;·&nbsp;AI ACCESS&nbsp;·&nbsp;LOTTERY&nbsp;·&nbsp;</span></div>
+        <div className="ticker">
+          <div className="track">
+            <span className="seq">{TICKER_SEQ.repeat(2)}</span>
+            <span className="seq" aria-hidden="true">{TICKER_SEQ.repeat(2)}</span>
+          </div>
+        </div>
 
         <button type="button" className="sale" onClick={start}>NOW LIVE</button>
       </div>
@@ -57,8 +67,8 @@ export default function SquadSection() {
 }
 
 const css = `
-.tk-squad{background:#05060c;padding:clamp(40px,6vw,72px) 16px;display:flex;justify-content:center}
-.tk-squad .poster{position:relative;width:min(720px,100%);aspect-ratio:3/4.1;overflow:hidden;background:#080a16;box-shadow:0 30px 80px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.06)}
+.tk-squad{background:radial-gradient(135% 80% at 50% 0%,rgba(255,140,75,.20),transparent 52%),radial-gradient(90% 55% at 84% 6%,rgba(255,205,140,.13),transparent 55%),radial-gradient(120% 70% at 50% 100%,rgba(34,211,238,.10),transparent 60%),linear-gradient(180deg,#1a0f0b 0%,#140d16 42%,#08070f 100%);padding:clamp(40px,6vw,72px) 16px;display:flex;justify-content:center}
+.tk-squad .poster{position:relative;width:min(720px,100%);aspect-ratio:3/4.1;overflow:hidden;background:#080a16;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 80px rgba(255,150,80,.12);border:1px solid rgba(255,255,255,.06)}
 .tk-squad .top{position:absolute;left:0;right:0;top:18px;text-align:center;z-index:5;font-family:"Anton";font-size:min(9vw,64px);color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.5);letter-spacing:.02em}
 .tk-squad .top b{color:#fff;-webkit-text-stroke:0}
 .tk-squad .stage{position:absolute;left:0;right:0;top:74px;bottom:190px;z-index:2}
@@ -68,7 +78,6 @@ const css = `
 .tk-squad .wedge .dk{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,6,14,0) 45%,rgba(5,6,14,.82))}
 .tk-squad .labels{position:absolute;inset:0;z-index:5;pointer-events:none}
 .tk-squad .lab{position:absolute;bottom:14px;white-space:nowrap;font-family:"Permanent Marker",cursive;font-size:clamp(13px,1.5vw,18px);letter-spacing:0;color:#fff;text-shadow:0 0 12px rgba(255,77,109,.6),0 2px 6px #000;transform:translateX(-50%) rotate(-3deg)}
-/* anchor each label to its wedge's visual centre (top layer → no neighbour can clip it) */
 .tk-squad .l1{left:14%}
 .tk-squad .l2{left:34%}
 .tk-squad .l3{left:51%}
@@ -86,22 +95,11 @@ const css = `
 .tk-squad .ov5{background:linear-gradient(180deg,#60a5fa,#1e3a8a)}
 .tk-squad .script{position:absolute;left:0;right:0;top:46%;text-align:center;z-index:6;font-family:"Permanent Marker",cursive;font-size:min(13vw,86px);color:#ff4d6d;transform:rotate(-7deg);text-shadow:0 0 18px rgba(255,77,109,.6),3px 3px 0 rgba(0,0,0,.4);line-height:.8;pointer-events:none}
 .tk-squad .script small{display:block;font-size:.5em;color:#22d3ee;transform:rotate(3deg);margin-top:-6px}
-.tk-squad .info{position:absolute;left:30px;right:30px;bottom:62px;z-index:6;background:rgba(9,11,22,.8);backdrop-filter:blur(12px);border:1px solid rgba(34,211,238,.5);border-radius:10px;padding:12px 18px 13px;box-shadow:0 0 50px rgba(34,211,238,.16),inset 0 1px 0 rgba(255,255,255,.06)}
-.tk-squad .info .h{display:flex;align-items:baseline;gap:9px;font-family:"Anton";font-size:20px;color:#fff;letter-spacing:.02em}
-.tk-squad .info .h em{font-family:"Archivo";font-weight:800;font-style:normal;font-size:10px;letter-spacing:.2em;color:#22d3ee}
-.tk-squad .info .squad{font-family:"Archivo";font-weight:800;color:#7fe3f2;font-size:10px;margin-top:2px;letter-spacing:.18em}
-.tk-squad .svc{display:grid;grid-template-columns:1fr 1fr;column-gap:20px;margin-top:9px}
-.tk-squad .row{display:flex;align-items:center;gap:9px;padding:5px 0}
-.tk-squad .row .no{font-family:"Anton";font-size:23px;line-height:.78;color:var(--c);min-width:28px}
-.tk-squad .row .en{font-family:"Archivo";font-weight:800;font-size:12.5px;letter-spacing:.05em;color:#fff}
-.tk-squad .row .kr{font-family:"Noto Sans KR",sans-serif;font-weight:500;font-size:11px;color:#aab6d8;margin-left:auto}
-.tk-squad .c1{--c:#b06bff}.tk-squad .c2{--c:#22d3ee}.tk-squad .c3{--c:#34e1c4}.tk-squad .c4{--c:#c084fc}.tk-squad .c5{--c:#60a5fa}
-.tk-squad .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;border-top:1px solid rgba(34,211,238,.2);padding-top:9px}
-.tk-squad .meta span{font-family:"Archivo";font-weight:700;font-size:10px;letter-spacing:.04em;color:#cdd6e6;padding:3px 9px;border:1px solid rgba(34,211,238,.35);border-radius:4px}
-.tk-squad .meta span b{color:#22d3ee}
 .tk-squad .ticker{position:absolute;left:0;right:0;bottom:104px;z-index:6;overflow:hidden;white-space:nowrap;border-top:1px solid rgba(34,211,238,.3);border-bottom:1px solid rgba(34,211,238,.3);padding:9px 0;background:rgba(9,11,22,.55)}
-.tk-squad .ticker .track{display:inline-block;font-family:"Anton";font-size:20px;color:#22d3ee;letter-spacing:.12em;animation:tkmarq 16s linear infinite}
+.tk-squad .ticker .track{display:flex;width:max-content;animation:tkmarq 22s linear infinite;will-change:transform}
+.tk-squad .ticker .seq{flex:0 0 auto;white-space:nowrap;font-family:"Anton";font-size:20px;color:#22d3ee;letter-spacing:.12em}
 @keyframes tkmarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .tk-squad .sale{position:absolute;left:0;right:0;bottom:34px;z-index:6;border:0;background:transparent;cursor:pointer;font-family:"Permanent Marker",cursive;font-size:min(56px,12vw);color:#ff4d6d;letter-spacing:.01em;text-shadow:0 0 22px rgba(255,77,109,.7),3px 3px 0 rgba(0,0,0,.4);transform:rotate(-4deg);transition:transform .15s}
 .tk-squad .sale:hover{transform:rotate(-4deg) scale(1.05)}
+@media (prefers-reduced-motion:reduce){.tk-squad .ticker .track{animation:none}}
 `;
