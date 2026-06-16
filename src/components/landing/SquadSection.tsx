@@ -67,8 +67,8 @@ export default function SquadSection() {
 }
 
 const css = `
-.tk-squad{background:radial-gradient(135% 80% at 50% 0%,rgba(255,140,75,.20),transparent 52%),radial-gradient(90% 55% at 84% 6%,rgba(255,205,140,.13),transparent 55%),radial-gradient(120% 70% at 50% 100%,rgba(34,211,238,.10),transparent 60%),linear-gradient(180deg,#1a0f0b 0%,#140d16 42%,#08070f 100%);padding:clamp(40px,6vw,72px) 16px;display:flex;justify-content:center}
-.tk-squad .poster{position:relative;width:min(720px,100%);aspect-ratio:3/4.1;overflow:hidden;background:#080a16;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 80px rgba(255,150,80,.12);border:1px solid rgba(255,255,255,.06)}
+.tk-squad{background:radial-gradient(130% 80% at 50% -8%,rgba(150,235,255,.22),transparent 52%),radial-gradient(70% 45% at 50% 2%,rgba(255,246,214,.12),transparent 60%),radial-gradient(120% 72% at 50% 102%,rgba(20,165,205,.16),transparent 62%),linear-gradient(180deg,#0a2c4f 0%,#0a1c33 44%,#061018 100%);padding:clamp(40px,6vw,72px) 16px;display:flex;justify-content:center}
+.tk-squad .poster{position:relative;width:min(720px,100%);aspect-ratio:3/4.1;overflow:hidden;background:#080a16;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 80px rgba(120,220,255,.16);border:1px solid rgba(255,255,255,.06)}
 .tk-squad .top{position:absolute;left:0;right:0;top:18px;text-align:center;z-index:5;font-family:"Anton";font-size:min(9vw,64px);color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.5);letter-spacing:.02em}
 .tk-squad .top b{color:#fff;-webkit-text-stroke:0}
 .tk-squad .stage{position:absolute;left:0;right:0;top:74px;bottom:190px;z-index:2}
