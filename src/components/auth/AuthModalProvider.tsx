@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { usePrivy, useConnectWallet } from "@privy-io/react-auth";
+import { usePrivy } from "@privy-io/react-auth";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
 type AuthModalCtx = { open: () => void; close: () => void };
@@ -25,19 +25,21 @@ export const useAuthModal = () => useContext(Ctx);
 export default function AuthModalProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const { login } = usePrivy();
-  const { connectWallet } = useConnectWallet();
   const { t } = useTranslation();
 
   const openModal = useCallback(() => setOpen(true), []);
   const closeModal = useCallback(() => setOpen(false), []);
 
+  // Both paths must AUTHENTICATE (not just connect) so `authenticated` flips and
+  // the header/CTA update. login({loginMethods}) opens a filtered Privy modal;
+  // the wallet path runs SIWE so the external wallet becomes a logged-in session.
   const chooseGoogle = () => {
     setOpen(false);
-    login();
+    login({ loginMethods: ["google", "email"] });
   };
   const chooseWallet = () => {
     setOpen(false);
-    connectWallet();
+    login({ loginMethods: ["wallet"] });
   };
 
   return (
