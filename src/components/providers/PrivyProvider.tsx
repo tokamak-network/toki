@@ -20,11 +20,14 @@ export default function PrivyProvider({
     <Provider
       appId={appId}
       config={{
-        loginMethods: ["google", "email"],
+        // Google/email = beginner path (embedded wallet + gasless paymaster).
+        // wallet = advanced path: connect MetaMask/other external wallets.
+        loginMethods: ["google", "email", "wallet"],
         appearance: {
           theme: "dark",
           accentColor: "#4a90d9",
           logo: "/toki-logo.png",
+          walletList: ["detected_wallets", "metamask", "coinbase_wallet", "rainbow"],
         },
         embeddedWallets: {
           ethereum: {

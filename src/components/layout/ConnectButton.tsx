@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import {
   ACHIEVEMENTS,
   calculateLevel,
@@ -14,10 +15,11 @@ import {
 } from "@/lib/achievements";
 
 export default function ConnectButton() {
-  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { ready, authenticated, logout, user } = usePrivy();
   const { wallets } = useWallets();
   const { t } = useTranslation();
   const { storage } = useAchievement();
+  const { open: openAuthChoice } = useAuthModal();
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -301,7 +303,7 @@ export default function ConnectButton() {
 
   return (
     <button
-      onClick={login}
+      onClick={openAuthChoice}
       className="px-5 py-2 rounded-lg bg-gradient-to-r from-accent-blue/80 to-accent-navy/80 text-white text-sm font-medium hover:from-accent-blue hover:to-accent-navy transition-all"
     >
       {t.header.connect}

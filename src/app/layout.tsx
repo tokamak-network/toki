@@ -14,6 +14,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { AchievementProvider } from "@/components/providers/AchievementProvider";
+import AuthModalProvider from "@/components/auth/AuthModalProvider";
 import { AudioProvider } from "@/components/audio/AudioProvider";
 import TransitionProvider from "@/components/transitions/TransitionProvider";
 import { OrganizationJsonLd, WebApplicationJsonLd } from "@/components/seo/JsonLd";
@@ -143,11 +144,13 @@ export default function RootLayout({
         <LanguageProvider>
           <AudioProvider>
             <PrivyClientProvider>
-              <AchievementProvider>
-                <TransitionProvider>{children}</TransitionProvider>
-                <TokiChat />
-                <AchievementToast />
-              </AchievementProvider>
+              <AuthModalProvider>
+                <AchievementProvider>
+                  <TransitionProvider>{children}</TransitionProvider>
+                  <TokiChat />
+                  <AchievementToast />
+                </AchievementProvider>
+              </AuthModalProvider>
             </PrivyClientProvider>
           </AudioProvider>
         </LanguageProvider>

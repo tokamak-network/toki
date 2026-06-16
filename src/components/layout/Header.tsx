@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { isTestnet } from "@/lib/chain";
+import GasBadge from "./GasBadge";
 
 const ConnectButton = dynamic(() => import("./ConnectButton"), {
   ssr: false,
@@ -102,6 +103,7 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          <GasBadge />
           <div className="hidden sm:block">
             <LanguageToggle />
           </div>
