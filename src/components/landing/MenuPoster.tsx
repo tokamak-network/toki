@@ -132,12 +132,12 @@ const css = `
 .tk-menu .brand .bk b{font-family:"Baloo 2";font-weight:800;font-size:30px;letter-spacing:.04em;display:block;line-height:.9;color:var(--ink)}
 .tk-menu .brand .bk span{font-family:"Fredoka";font-size:11.5px;letter-spacing:.01em;color:var(--muted);max-width:250px;display:block;margin-top:6px}
 .tk-menu .menus{position:relative;z-index:5;margin-top:24px;margin-left:clamp(8px,3vw,48px);display:flex;flex-direction:column;gap:13px;max-width:min(55%,640px)}
-.tk-menu .panel{position:relative;display:grid;grid-template-columns:104px 1fr;gap:0;background:var(--paper);border:2px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:6px 6px 0 rgba(14,120,170,.45);cursor:pointer;text-align:left;font-family:inherit;color:inherit;appearance:none;-webkit-appearance:none;padding:0;transition:transform .16s,box-shadow .16s}
+.tk-menu .panel{position:relative;display:grid;grid-template-columns:94px 1fr;gap:0;background:var(--paper);border:2px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:6px 6px 0 rgba(14,120,170,.45);cursor:pointer;text-align:left;font-family:inherit;color:inherit;appearance:none;-webkit-appearance:none;padding:0;transition:transform .16s,box-shadow .16s}
 .tk-menu .panel:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 var(--cyan)}
 .tk-menu .panel.c:hover{box-shadow:11px 11px 0 var(--coral)}
 .tk-menu .panel .face{position:relative;border-right:2px solid var(--line);overflow:hidden;background:var(--foam)}
-.tk-menu .panel .face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%}
-.tk-menu .panel .face .tag{position:absolute;left:0;top:0;font-family:"Baloo 2";font-weight:800;font-size:11px;letter-spacing:.08em;color:#eaf8ff;background:var(--ink);padding:2px 8px;border-bottom-right-radius:8px}
+.tk-menu .panel .face img{position:absolute;inset:6px;object-fit:cover;object-position:center 14%;border-radius:10px}
+.tk-menu .panel .face .tag{position:absolute;left:3px;top:3px;z-index:2;font-family:"Baloo 2";font-weight:800;font-size:9px;letter-spacing:.06em;color:#eaf8ff;background:var(--ink);padding:1px 5px;border-radius:7px}
 .tk-menu .panel .body{padding:12px 14px;display:flex;flex-direction:column;justify-content:center;position:relative}
 .tk-menu .panel .no{font-family:"Baloo 2";font-weight:700;font-size:12px;letter-spacing:.16em;color:#8fb0c1}
 .tk-menu .panel .ko{font-family:"Jua",sans-serif;font-size:clamp(20px,2.4vw,29px);line-height:1;color:var(--ink);margin-top:2px}
