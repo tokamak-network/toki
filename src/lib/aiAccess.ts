@@ -8,7 +8,7 @@
 import { createSiweMessage } from "viem/siwe";
 import { getAddress } from "viem";
 
-export const MIN_TON_AI_ACCESS = 10;
+export const MIN_TON_AI_ACCESS = 100;
 export const AI_ACCESS_URL = "https://tokamak-ai-access.vercel.app";
 
 // Native in-app issuance (Arch B): toki calls a delegated, CORS-gated endpoint on

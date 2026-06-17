@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
@@ -8,6 +8,7 @@ import {
   AI_ACCESS_URL,
   MIN_TON_AI_ACCESS,
   isNativeIssueEnabled,
+  loadIssuedKey,
   type Eip1193Provider,
 } from "@/lib/aiAccess";
 import AiAccessKeyModal from "./AiAccessKeyModal";
@@ -48,6 +49,12 @@ export default function HudRail({
 }) {
   const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
+  // Once a key has been issued (and stored), the AI node becomes a direct
+  // shortcut to the in-app Agent Workspace chat.
+  const [hasKey, setHasKey] = useState(false);
+  useEffect(() => {
+    setHasKey(!!loadIssuedKey());
+  }, []);
   const eligible = stakedTon >= MIN_TON_AI_ACCESS;
   const needed = Math.max(0, MIN_TON_AI_ACCESS - stakedTon);
   const fmt = (n: number) =>
@@ -56,7 +63,16 @@ export default function HudRail({
   const canIssueNative =
     isNativeIssueEnabled && eligible && !!address && !!getProvider;
 
-  const aiItem: RailItem = !eligible
+  const aiItem: RailItem = hasKey
+    ? {
+        id: "ai",
+        icon: "🤖",
+        label: t.hub.aiAccessTitle,
+        href: "/agent",
+        status: "ai-ready",
+        statusText: t.hub.aiAccessChatReady,
+      }
+    : !eligible
     ? {
         id: "ai",
         icon: "🤖",
