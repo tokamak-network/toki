@@ -63,7 +63,7 @@ export default function MenuPoster() {
           </button>
 
           <button type="button" className="panel c" onClick={start}>
-            <span className="face"><span className="tag">02</span><img src="/characters/toki-beach.png" alt="" /></span>
+            <span className="face"><span className="tag">02</span><img src="/characters/toki-summer-tank.png" alt="" /></span>
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.02</span>
