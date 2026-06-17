@@ -107,6 +107,13 @@ export function track(event: AnalyticsEvent, opts: TrackOptions = {}): void {
   } catch {
     /* analytics must never break the app */
   }
+
+  // Mirror meaningful product events into GA4 (no-op if gtag isn't loaded).
+  // page_view is skipped — GA4 enhanced measurement already tracks navigations,
+  // so forwarding it here would double-count pageviews.
+  if (event !== "page_view") {
+    trackEvent(event, { ...(opts.meta ?? {}), page: payload.path });
+  }
 }
 
 /** Fire wallet_created at most once per wallet, ever (deduped in localStorage). */
