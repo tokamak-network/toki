@@ -51,7 +51,7 @@ export default function MenuPoster() {
         {/* menu panels */}
         <div className="menus">
           <button type="button" className="panel live" onClick={start}>
-            <span className="face"><span className="tag">01</span><img src="/characters/toki-proud.png" alt="" /></span>
+            <span className="face"><span className="tag">01</span><img src="/characters/toki-summer-stripe.png" alt="" /></span>
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.01</span>
@@ -74,7 +74,7 @@ export default function MenuPoster() {
           </button>
 
           <button type="button" className="panel new" onClick={start}>
-            <span className="face"><span className="tag">03</span><img src="/characters/toki-wink.png" alt="" /></span>
+            <span className="face"><span className="tag">03</span><img src="/characters/toki-summer-offshoulder.png" alt="" /></span>
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.03</span>
@@ -86,7 +86,7 @@ export default function MenuPoster() {
           </button>
 
           <button type="button" className="panel c" onClick={start}>
-            <span className="face"><span className="tag">04</span><img src="/characters/toki-thinking.png" alt="" /></span>
+            <span className="face"><span className="tag">04</span><img src="/characters/toki-summer-dress.png" alt="" /></span>
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.04</span>
@@ -97,7 +97,7 @@ export default function MenuPoster() {
           </button>
 
           <button type="button" className="panel" onClick={start}>
-            <span className="face"><span className="tag">05</span><img src="/characters/toki-cheer.png" alt="" /></span>
+            <span className="face"><span className="tag">05</span><img src="/characters/toki-summer-beach.png" alt="" /></span>
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.05</span>
@@ -136,7 +136,7 @@ const css = `
 .tk-menu .panel:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 var(--cyan)}
 .tk-menu .panel.c:hover{box-shadow:11px 11px 0 var(--coral)}
 .tk-menu .panel .face{position:relative;border-right:2px solid var(--line);overflow:hidden;background:var(--foam)}
-.tk-menu .panel .face img{width:100%;height:100%;object-fit:cover;object-position:center 12%}
+.tk-menu .panel .face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%}
 .tk-menu .panel .face .tag{position:absolute;left:0;top:0;font-family:"Baloo 2";font-weight:800;font-size:11px;letter-spacing:.08em;color:#eaf8ff;background:var(--ink);padding:2px 8px;border-bottom-right-radius:8px}
 .tk-menu .panel .body{padding:12px 14px;display:flex;flex-direction:column;justify-content:center;position:relative}
 .tk-menu .panel .no{font-family:"Baloo 2";font-weight:700;font-size:12px;letter-spacing:.16em;color:#8fb0c1}
