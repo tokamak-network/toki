@@ -104,7 +104,7 @@ export default function RootLayout({
             stylesheet link is simpler/safer than next/font's subset handling. */}
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&family=Jua&family=Anton&family=Archivo:wght@700;800;900&family=Permanent+Marker&family=Noto+Sans+KR:wght@500;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&family=Jua&family=Anton&family=Black+Han+Sans&family=Archivo:wght@700;800;900&family=Permanent+Marker&family=Noto+Sans+KR:wght@500;700&display=swap"
           rel="stylesheet"
         />
         {/* Google Analytics 4 */}

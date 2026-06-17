@@ -116,6 +116,13 @@ const META: Record<TransKey, Meta> = {
     accent: "#22d3ee",
     icon: "👥",
   },
+  manga: {
+    label: "토키 합체 (시안 망가)",
+    menu: "시작하기 · 기본값",
+    desc: "시안 망가 포스터가 스스로 조립돼요. 의상·구도가 다른 토키 패널 5개 + 큰 '토키' 타이틀 + 사이드 텍스트 + 토큰 심볼 푸터가 사방에서 하나씩 날아와 합체했다가, 다시 흩어지며 화면을 열어줍니다. 대시보드 진입 기본 전환. poster-allmight-toki 모션 버전.",
+    accent: "#22d3ee",
+    icon: "💥",
+  },
   fade: {
     label: "페이드",
     menu: "기본값",
@@ -127,6 +134,7 @@ const META: Record<TransKey, Meta> = {
 
 const ORDER: TransKey[] = [
   "squad",
+  "manga",
   "launch",
   "zoom",
   "iris",

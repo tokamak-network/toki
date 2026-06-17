@@ -17,6 +17,7 @@ export type TransKey =
   | "swipe" //  solid panel push from right
   | "flash" //  light burst
   | "squad" //  5-character wedge assemble (hub entry)
+  | "manga" //  yellow-manga poster self-assembles (hub entry)
   | "fade"; //  default fallback
 
 export const TRANSITIONS: Record<TransKey, { inMs: number; outMs: number }> = {
@@ -32,6 +33,7 @@ export const TRANSITIONS: Record<TransKey, { inMs: number; outMs: number }> = {
   swipe: { inMs: 320, outMs: 400 },
   flash: { inMs: 260, outMs: 340 },
   squad: { inMs: 1160, outMs: 960 }, // half speed (2× duration) for a calmer assemble
+  manga: { inMs: 1150, outMs: 880 }, // staggered fly-in assemble needs time to read
   // fade is the landing "시작하기" → /dashboard transition. Run it at HALF speed
   // (2× duration) so the cover lingers long enough to mask the dashboard load —
   // we'd rather the reveal start late than flash a half-loaded screen.
@@ -53,7 +55,7 @@ export const MENU_TRANS: Record<string, TransKey> = {
 // The landing CTA has no menu key, so its transition is a standalone choice the
 // user picks in the catalog page and we persist here. VideoHero reads it on click.
 export const START_TRANS_STORAGE = "toki.startTransition";
-export const DEFAULT_START_TRANS: TransKey = "squad";
+export const DEFAULT_START_TRANS: TransKey = "manga";
 
 export function getStartTransition(): TransKey {
   try {

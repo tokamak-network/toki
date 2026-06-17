@@ -61,9 +61,53 @@ export function SquadWedgeArt() {
   );
 }
 
+// Manga assemble (manga): a cyan "manga cover" poster builds itself — five Toki
+// character panels (each a different outfit / gaze / composition), the big
+// vertical 토키 title, the side labels, and a token-symbol footer each fly in
+// from a different direction and snap into the poster grid, then scatter back out
+// to reveal the new screen. Cyan-clean port of public/poster-allmight-toki.html.
+// Geometry/timing live in COVER_CSS (.sc-manga .ma*).
+const MANGA: { cls: string; img: string; lab: string }[] = [
+  { cls: "mp1", img: "/characters/toki-beach-sarong.png", lab: "01 STAKING" },
+  { cls: "mp2", img: "/characters/toki-wallet.png", lab: "02 WALLET" },
+  { cls: "mp3", img: "/characters/toki-ai.png", lab: "04 AI" },
+  { cls: "mp4", img: "/characters/toki-private.png", lab: "03 PRIVATE" },
+  { cls: "mp5", img: "/characters/toki-surf-portrait.png", lab: "05 LOTTERY" },
+];
+
+export function MangaAssembleArt() {
+  return (
+    <div className="maw">
+      <div className="ma-rband" />
+      <div className="ma-title">토키</div>
+      <div className="ma-vsub">TOKI</div>
+      <div className="ma-ltxt">TOKAMAK NETWORK</div>
+      <div className="ma-ltxt2">MINI-WALLET &amp; HUB</div>
+      <div className="ma-panels">
+        {MANGA.map((p) => (
+          <div key={p.cls} className={`ma-pan ${p.cls}`}>
+            <img src={p.img} alt="" />
+            <span className="ma-scr" />
+            <span className="ma-lab">{p.lab}</span>
+          </div>
+        ))}
+      </div>
+      <div className="ma-footer">
+        <img className="ma-tok" src="/toki-logo.png" alt="" />
+        <span className="ma-ft">
+          <b>APP HUB</b>
+          <small>STAKING · MINI-WALLET · ECOSYSTEM</small>
+        </span>
+        <img className="ma-tok" src="/toki-logo.png" alt="" />
+      </div>
+    </div>
+  );
+}
+
 /** Inner content for a cover of the given transition key (null = empty cover). */
 export function coverChildren(k: TransKey): React.ReactNode {
   if (k === "spread") return <CardShutterArt />;
   if (k === "squad") return <SquadWedgeArt />;
+  if (k === "manga") return <MangaAssembleArt />;
   return null;
 }

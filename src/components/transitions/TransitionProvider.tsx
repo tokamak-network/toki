@@ -251,5 +251,88 @@ export const COVER_CSS = `
 @keyframes scSqTopOut{from{transform:translateY(0)}to{transform:translateY(-118%)}}
 @keyframes scSqBotOut{from{transform:translateY(0)}to{transform:translateY(118%)}}
 
+/* manga — a cyan "manga cover" poster self-assembles (port of
+   public/poster-allmight-toki.html; art rendered by CoverArt). The cyan paper
+   snaps in as the mask, then each Toki panel + the big 토키 title + side labels +
+   token-symbol footer fly in one-by-one from a different direction and lock into
+   the grid; on reveal they scatter back out and the paper fades. */
+/* sized for the FULL cover (100vw×100vh in real use). Positions are % of .maw and
+   fonts use container units so the same CSS also renders correctly in the small
+   /transitions catalog tile. Layout mirrors public/poster-allmight-toki.html:
+   landscape = big hero (col1) + 2×2; portrait = 2×3 magazine grid. */
+.sc-manga{background:#22d3ee;overflow:hidden;--mband:13%}
+.sc-manga.sc-out{animation:maBg .22s ease both}
+.sc-manga.sc-in{animation:maBgOut .5s ease .3s both}
+@keyframes maBg{from{opacity:0}to{opacity:1}}
+@keyframes maBgOut{from{opacity:1}to{opacity:0}}
+.maw{position:absolute;inset:0;container-type:size}
+.ma-rband{position:absolute;right:0;top:0;bottom:0;width:var(--mband);background:#04141b}
+.ma-title{position:absolute;right:0;top:0;bottom:0;width:var(--mband);display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;text-orientation:upright;font-family:"Black Han Sans","Jua",sans-serif;font-size:min(10cqw,32cqh);line-height:.92;color:#22d3ee;letter-spacing:.02em;text-shadow:.3cqw 0 0 rgba(0,0,0,.28)}
+.ma-vsub{position:absolute;right:.5%;bottom:3%;writing-mode:vertical-rl;text-orientation:upright;font-family:"Anton",Impact,sans-serif;font-weight:800;font-size:min(2.4cqw,3cqh);letter-spacing:.22em;color:#22d3ee;opacity:.7}
+.ma-ltxt{position:absolute;left:1%;top:3%;writing-mode:vertical-rl;font-family:"Anton",Impact,sans-serif;font-weight:800;font-size:min(1.8cqw,2.4cqh);letter-spacing:.28em;color:#04141b}
+.ma-ltxt2{position:absolute;left:1%;bottom:14%;writing-mode:vertical-rl;font-family:"Anton",Impact,sans-serif;font-weight:700;font-size:min(1.6cqw,2.1cqh);letter-spacing:.16em;color:#04141b;opacity:.85}
+.ma-panels{position:absolute;left:4%;right:calc(var(--mband) + 2%);top:3%;bottom:13%;display:grid;grid-template-columns:1.25fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:.7cqw}
+.ma-pan{position:relative;overflow:hidden;background:#0c1116;border:.3cqw solid #e8feff}
+.ma-pan img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 14%;filter:grayscale(1) contrast(1.32) brightness(1.05)}
+.ma-scr{position:absolute;inset:0;background:#22d3ee;mix-blend-mode:screen;opacity:.2;pointer-events:none}
+.ma-lab{position:absolute;left:.5cqw;bottom:.5cqw;z-index:2;font-family:"Anton",Impact,sans-serif;font-weight:700;font-size:min(1.5cqw,1.9cqh);color:#04141b;background:#22d3ee;padding:.1cqh .7cqw;letter-spacing:.04em}
+.mp1{grid-row:1 / span 2;clip-path:polygon(0 0,100% 0,100% 92%,0 100%)}
+.mp1 img{object-position:center 18%}
+.mp2 img{object-position:center 8%}
+.mp3 img{object-position:center 16%}
+.mp4{clip-path:polygon(0 8%,100% 0,100% 100%,0 100%)}
+.mp4 img{object-position:center 16%}
+.mp5 img{object-position:center 10%}
+.ma-footer{position:absolute;left:4%;right:calc(var(--mband) + 2%);bottom:3%;height:8%;background:#08272f;display:flex;align-items:center;justify-content:center;gap:1.4cqw;color:#dffafe}
+.ma-tok{height:72%;aspect-ratio:1;object-fit:contain;flex:none;background:#fff;border-radius:50%;padding:.5cqh;box-shadow:0 .3cqh .7cqh rgba(0,0,0,.35)}
+.ma-ft{display:flex;flex-direction:column;align-items:center;text-align:center;line-height:1.05}
+.ma-ft b{font-family:"Anton",Impact,sans-serif;font-weight:800;font-size:min(2.4cqw,3.2cqh);letter-spacing:.06em;color:#22d3ee}
+.ma-ft small{font-family:"Anton",Impact,sans-serif;font-weight:700;font-size:min(1.3cqw,1.7cqh);letter-spacing:.06em;color:#8fd8e6;margin-top:.4cqh}
+@container (orientation:portrait){
+.sc-manga{--mband:19%}
+.ma-panels{left:5%;right:calc(var(--mband) + 2%);top:2%;bottom:13%;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:1.4cqw}
+.ma-title{font-size:min(15cqw,15cqh)}
+.ma-vsub{font-size:min(4cqw,2.4cqh)}
+.ma-ltxt{font-size:min(3cqw,1.8cqh)}
+.ma-ltxt2{font-size:min(2.6cqw,1.6cqh)}
+.ma-lab{font-size:min(2.6cqw,1.7cqh)}
+.ma-footer{left:5%;right:calc(var(--mband) + 2%);height:9%}
+.ma-ft b{font-size:min(5cqw,3cqh)}
+.ma-ft small{font-size:min(2.6cqw,1.6cqh)}}
+/* assemble (out): each piece flies in from its own direction, staggered. */
+.sc-manga.sc-out .ma-rband{animation:maInR .5s cubic-bezier(.16,1,.3,1) .06s both}
+.sc-manga.sc-out .mp1{animation:maInL .56s cubic-bezier(.16,1,.3,1) .16s both}
+.sc-manga.sc-out .mp2{animation:maInT .56s cubic-bezier(.16,1,.3,1) .26s both}
+.sc-manga.sc-out .mp3{animation:maInR .56s cubic-bezier(.16,1,.3,1) .36s both}
+.sc-manga.sc-out .mp4{animation:maInB .56s cubic-bezier(.16,1,.3,1) .46s both}
+.sc-manga.sc-out .mp5{animation:maInBR .56s cubic-bezier(.16,1,.3,1) .56s both}
+.sc-manga.sc-out .ma-footer{animation:maInB .54s cubic-bezier(.16,1,.3,1) .5s both}
+.sc-manga.sc-out .ma-title{animation:maInR .52s cubic-bezier(.16,1,.3,1) .64s both}
+.sc-manga.sc-out .ma-vsub{animation:maInR .5s cubic-bezier(.16,1,.3,1) .72s both}
+.sc-manga.sc-out .ma-ltxt{animation:maInL .5s cubic-bezier(.16,1,.3,1) .72s both}
+.sc-manga.sc-out .ma-ltxt2{animation:maInL .5s cubic-bezier(.16,1,.3,1) .78s both}
+/* reveal (in): pieces scatter back out, then the paper fades. */
+.sc-manga.sc-in .ma-title{animation:maOutR .44s cubic-bezier(.5,0,.75,0) 0s both}
+.sc-manga.sc-in .ma-vsub{animation:maOutR .42s cubic-bezier(.5,0,.75,0) 0s both}
+.sc-manga.sc-in .ma-ltxt2{animation:maOutL .42s cubic-bezier(.5,0,.75,0) 0s both}
+.sc-manga.sc-in .ma-ltxt{animation:maOutL .42s cubic-bezier(.5,0,.75,0) .04s both}
+.sc-manga.sc-in .mp1{animation:maOutL .46s cubic-bezier(.5,0,.75,0) .06s both}
+.sc-manga.sc-in .mp2{animation:maOutT .46s cubic-bezier(.5,0,.75,0) .1s both}
+.sc-manga.sc-in .mp3{animation:maOutR .46s cubic-bezier(.5,0,.75,0) .06s both}
+.sc-manga.sc-in .mp4{animation:maOutB .46s cubic-bezier(.5,0,.75,0) .12s both}
+.sc-manga.sc-in .mp5{animation:maOutBR .46s cubic-bezier(.5,0,.75,0) .08s both}
+.sc-manga.sc-in .ma-rband{animation:maOutR .46s cubic-bezier(.5,0,.75,0) .12s both}
+.sc-manga.sc-in .ma-footer{animation:maOutB .44s cubic-bezier(.5,0,.75,0) .14s both}
+@keyframes maInL{from{opacity:0;transform:translateX(-135%) rotate(-12deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+@keyframes maInR{from{opacity:0;transform:translateX(135%) rotate(12deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+@keyframes maInT{from{opacity:0;transform:translateY(-150%) rotate(8deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
+@keyframes maInB{from{opacity:0;transform:translateY(150%) rotate(-8deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
+@keyframes maInBR{from{opacity:0;transform:translate(135%,135%) rotate(16deg)}to{opacity:1;transform:translate(0,0) rotate(0)}}
+@keyframes maOutL{from{opacity:1;transform:translateX(0) rotate(0)}to{opacity:0;transform:translateX(-135%) rotate(-12deg)}}
+@keyframes maOutR{from{opacity:1;transform:translateX(0) rotate(0)}to{opacity:0;transform:translateX(135%) rotate(12deg)}}
+@keyframes maOutT{from{opacity:1;transform:translateY(0) rotate(0)}to{opacity:0;transform:translateY(-150%) rotate(8deg)}}
+@keyframes maOutB{from{opacity:1;transform:translateY(0) rotate(0)}to{opacity:0;transform:translateY(150%) rotate(-8deg)}}
+@keyframes maOutBR{from{opacity:1;transform:translate(0,0) rotate(0)}to{opacity:0;transform:translate(135%,135%) rotate(16deg)}}
+
 @media (prefers-reduced-motion: reduce){.screen-cover{display:none!important}}
 `;
