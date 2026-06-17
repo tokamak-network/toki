@@ -73,6 +73,7 @@ const en = {
     vSub: "A mascot mini-wallet & hub for Tokamak Network",
     vStart: "Start",
     vHint: "Sign in with Google in 3s",
+    vHintReturning: "Jump straight into your Toki hub",
     vCredit: "now live · ethereum mainnet · non-custodial · live on-chain APR",
   },
   howItWorks: {

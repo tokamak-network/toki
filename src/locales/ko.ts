@@ -67,6 +67,7 @@ const ko = {
     vSub: "스테이킹으로 시작하는 토카막 미니 월렛 & 허브",
     vStart: "시작하기",
     vHint: "구글로 3초 만에 입장",
+    vHintReturning: "바로 토키 허브로 입장하기!",
     vCredit: "now live · ethereum mainnet · non-custodial · 실시간 온체인 APR",
   },
   howItWorks: {

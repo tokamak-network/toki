@@ -61,7 +61,9 @@ export default function VideoHero() {
             <span className="ar">▶</span>
             {t.hero.vStart}
           </button>
-          <div className="hint">{t.hero.vHint}</div>
+          <div className="hint">
+            {authenticated ? t.hero.vHintReturning : t.hero.vHint}
+          </div>
         </div>
 
         <div className="credit">{t.hero.vCredit}</div>
