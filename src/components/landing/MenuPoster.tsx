@@ -122,7 +122,7 @@ export default function MenuPoster() {
 
 const css = `
 .tk-menu{--paper:#ffffff;--ink:#0c3d57;--muted:#5b7f93;--line:#0ea5e9;--cyan:#22d3ee;--coral:#ff7a59;--sun:#ffc24b;--foam:#eaf8ff;background:#06212e;color:var(--ink);font-family:"Fredoka",-apple-system,sans-serif}
-.tk-menu .poster{position:relative;min-height:100vh;width:100%;overflow:hidden;background:linear-gradient(180deg,#9fe3ff 0%,#c9edff 32%,#eaf4ec 64%,#fde6c4 100%);padding:34px clamp(18px,4vw,64px)}
+.tk-menu .poster{position:relative;min-height:100vh;width:100%;overflow:hidden;background:linear-gradient(180deg,#9fe3ff 0%,#c9edff 30%,#eaf4ec 54%,#fde6c4 78%,#a9dfe6 100%);padding:34px clamp(18px,4vw,64px)}
 .tk-menu .sun{position:absolute;right:-6vw;top:-6vw;z-index:0;width:46vw;height:46vw;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,214,120,.55) 0%,rgba(255,214,120,.18) 38%,transparent 64%)}
 .tk-menu .poster::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;z-index:0;background:repeating-linear-gradient(0deg,transparent 0 38px,#0ea5e9 38px 39px)}
 .tk-menu .waves{position:absolute;left:0;right:0;bottom:0;height:54px;z-index:2;pointer-events:none;background:radial-gradient(circle at 12px -8px,transparent 14px,rgba(255,255,255,.9) 15px) 0 0/40px 26px repeat-x,linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.85) 60%);opacity:.9}

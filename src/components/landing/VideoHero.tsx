@@ -43,6 +43,8 @@ export default function VideoHero() {
       {/* reduced-motion fallback (CSS shows this, hides the video) */}
       <img className="bgfallback" src="/backgrounds/toki-surf.jpg" alt="" />
       <div className="scrim" />
+      {/* fade the video bottom into the next section's sky tone for a seamless seam */}
+      <div className="botfade" />
 
       <div className="scene">
         <div className="tagline">
@@ -73,6 +75,7 @@ const css = `
 .tk-vhero .bgvid,.tk-vhero .bgfallback{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0}
 .tk-vhero .bgfallback{display:none}
 .tk-vhero .scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(3,11,20,.62) 0%,rgba(3,11,20,.28) 34%,rgba(3,11,20,0) 60%)}
+.tk-vhero .botfade{position:absolute;left:0;right:0;bottom:0;height:16%;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(159,227,255,0) 0%,rgba(159,227,255,.55) 60%,#9fe3ff 100%)}
 .tk-vhero .scene{position:absolute;top:64px;left:0;right:0;bottom:0;z-index:2}
 .tk-vhero .tagline{position:absolute;left:5vw;top:17%}
 .tk-vhero .tagline .k{font-family:"Jua","Apple SD Gothic Neo",sans-serif;font-size:clamp(22px,3.2vw,44px);color:#fff;text-shadow:0 2px 0 rgba(150,80,40,.5),0 6px 22px rgba(0,0,0,.55)}

@@ -67,7 +67,7 @@ export default function SquadSection() {
 }
 
 const css = `
-.tk-squad{background:radial-gradient(130% 80% at 50% -8%,rgba(150,235,255,.22),transparent 52%),radial-gradient(70% 45% at 50% 2%,rgba(255,246,214,.12),transparent 60%),radial-gradient(120% 72% at 50% 102%,rgba(20,165,205,.16),transparent 62%),linear-gradient(180deg,#0a2c4f 0%,#0a1c33 44%,#061018 100%);padding:clamp(40px,6vw,72px) 16px;display:flex;justify-content:center}
+.tk-squad{background:radial-gradient(120% 72% at 50% 102%,rgba(20,165,205,.16),transparent 62%),linear-gradient(180deg,#a9dfe6 0%,#2f7da3 9%,#0c3252 26%,#0a1c33 52%,#061018 100%);padding:clamp(48px,7vw,88px) 16px;display:flex;justify-content:center}
 .tk-squad .poster{container-type:inline-size;position:relative;width:min(900px,100%);aspect-ratio:3/4.1;overflow:hidden;background:#080a16;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 80px rgba(120,220,255,.16);border:1px solid rgba(255,255,255,.06)}
 .tk-squad .top{position:absolute;left:0;right:0;top:2.5cqw;text-align:center;z-index:5;font-family:"Anton";font-size:min(9vw,80px);color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.5);letter-spacing:.02em}
 .tk-squad .top b{color:#fff;-webkit-text-stroke:0}
