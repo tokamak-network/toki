@@ -124,7 +124,7 @@ const css = `
 .tk-menu .sun{position:absolute;right:-6vw;top:-6vw;z-index:0;width:46vw;height:46vw;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,214,120,.55) 0%,rgba(255,214,120,.18) 38%,transparent 64%)}
 .tk-menu .poster::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;z-index:0;background:repeating-linear-gradient(0deg,transparent 0 38px,#0ea5e9 38px 39px)}
 .tk-menu .waves{position:absolute;left:0;right:0;bottom:0;height:54px;z-index:2;pointer-events:none;background:radial-gradient(circle at 12px -8px,transparent 14px,rgba(255,255,255,.9) 15px) 0 0/40px 26px repeat-x,linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.85) 60%);opacity:.9}
-.tk-menu .bgtype{position:absolute;right:0.5vw;top:50%;transform:translateY(-50%);z-index:1;writing-mode:vertical-rl;text-orientation:upright;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:min(18vh,185px);line-height:.9;letter-spacing:.01em;user-select:none;white-space:nowrap;filter:drop-shadow(0 6px 0 rgba(14,120,170,.16))}
+.tk-menu .bgtype{position:absolute;right:1vw;top:50%;transform:translateY(-50%);z-index:1;writing-mode:vertical-rl;text-orientation:upright;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:min(11vh,105px);line-height:1;letter-spacing:.02em;user-select:none;white-space:nowrap;filter:drop-shadow(0 6px 0 rgba(14,120,170,.16))}
 .tk-menu .bgtype b{color:var(--cyan)}.tk-menu .bgtype i{color:var(--coral);font-style:normal}
 .tk-menu .hero{position:absolute;left:57%;right:auto;bottom:0;height:96%;width:auto;z-index:4;filter:drop-shadow(-10px 16px 22px rgba(20,90,130,.30))}
 .tk-menu .brand{position:relative;z-index:6;display:flex;align-items:flex-start;gap:14px;max-width:58%}
