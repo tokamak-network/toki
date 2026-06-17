@@ -1,0 +1,168 @@
+/* eslint-disable @next/next/no-img-element */
+"use client";
+
+import { usePrivy } from "@privy-io/react-auth";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
+import { useScreenTransition } from "@/components/transitions/TransitionProvider";
+import { getStartTransition } from "@/components/transitions/registry";
+
+/**
+ * Summer "menu poster" — the bridge section between the hero and the squad
+ * poster. A bright beach editorial layout: big STAKE typography, the summer
+ * Toki mascot, and five clickable feature panels. 1:1 port of the
+ * poster-menu-summer prototype.
+ * NOTE: copy is hardcoded (Korean) for this WIP section; localize when locked.
+ */
+export default function MenuPoster() {
+  const { ready, authenticated } = usePrivy();
+  const { open: openAuthChoice } = useAuthModal();
+  const { navigate } = useScreenTransition();
+
+  const start = () => {
+    if (!ready) return;
+    if (authenticated) navigate("/dashboard", undefined, getStartTransition());
+    else openAuthChoice();
+  };
+
+  return (
+    <section className="tk-menu">
+      <style>{css}</style>
+      <div className="poster">
+        <div className="sun" />
+
+        {/* big background type */}
+        <div className="bgtype"><b>STA</b><i>KE</i></div>
+
+        {/* standing summer hero */}
+        <img className="hero" src="/characters/toki-beach.png" alt="Toki" />
+
+        {/* summer issue badge */}
+        <div className="issue">☀ SUMMER ISSUE · 2K25</div>
+
+        {/* top brand */}
+        <div className="brand">
+          <span className="ast">✱</span>
+          <div className="bk">
+            <b>TOKI</b>
+            <span>토키 — 스테이킹으로 시작해 토카막 생태계를 누비는 마스코트 미니 월렛 &amp; 허브.</span>
+          </div>
+        </div>
+
+        {/* menu panels */}
+        <div className="menus">
+          <button type="button" className="panel live" onClick={start}>
+            <span className="face"><span className="tag">01</span><img src="/characters/toki-proud.png" alt="" /></span>
+            <span className="body">
+              <span className="accent">✱</span>
+              <span className="no">NO.01</span>
+              <span className="ko">스테이킹</span>
+              <span className="en">STAKING</span>
+              <span className="desc">TON 맡기고 세뇨리지 보상 받기</span>
+              <span className="pill">LIVE</span>
+            </span>
+          </button>
+
+          <button type="button" className="panel c" onClick={start}>
+            <span className="face"><span className="tag">02</span><img src="/characters/toki-welcome.png" alt="" /></span>
+            <span className="body">
+              <span className="accent">✱</span>
+              <span className="no">NO.02</span>
+              <span className="ko">내 지갑</span>
+              <span className="en">WALLET</span>
+              <span className="desc">잔액 확인 · 입출금</span>
+            </span>
+          </button>
+
+          <button type="button" className="panel new" onClick={start}>
+            <span className="face"><span className="tag">03</span><img src="/characters/toki-wink.png" alt="" /></span>
+            <span className="body">
+              <span className="accent">✱</span>
+              <span className="no">NO.03</span>
+              <span className="ko">프라이빗 전송</span>
+              <span className="en">PRIVATE TRANSFER</span>
+              <span className="desc">받는 사람을 숨기고 TON 보내기 (zk)</span>
+              <span className="pill">NEW</span>
+            </span>
+          </button>
+
+          <button type="button" className="panel c" onClick={start}>
+            <span className="face"><span className="tag">04</span><img src="/characters/toki-thinking.png" alt="" /></span>
+            <span className="body">
+              <span className="accent">✱</span>
+              <span className="no">NO.04</span>
+              <span className="ko">AI 액세스</span>
+              <span className="en">AI ACCESS</span>
+              <span className="desc">스테이킹하면 토카막 AI 서버 키 발급</span>
+            </span>
+          </button>
+
+          <button type="button" className="panel" onClick={start}>
+            <span className="face"><span className="tag">05</span><img src="/characters/toki-cheer.png" alt="" /></span>
+            <span className="body">
+              <span className="accent">✱</span>
+              <span className="no">NO.05</span>
+              <span className="ko">복권 이벤트</span>
+              <span className="en">LOTTERY</span>
+              <span className="desc">카드 소진까지 진행되는 행운의 이벤트</span>
+            </span>
+          </button>
+        </div>
+
+        {/* editorial accents */}
+        <div className="side">TOKI IS THE MAIN MASCOT OF THE TOKAMAK NETWORK ECOSYSTEM.</div>
+        <div className="barcode"><span>TOKI · L1</span></div>
+        <div className="yr">2K25</div>
+        <div className="footmark">✱ TOKAMAK NETWORK</div>
+
+        <div className="waves" />
+      </div>
+    </section>
+  );
+}
+
+const css = `
+.tk-menu{--paper:#ffffff;--ink:#0c3d57;--muted:#5b7f93;--line:#0ea5e9;--cyan:#22d3ee;--coral:#ff7a59;--sun:#ffc24b;--foam:#eaf8ff;background:#06212e;color:var(--ink);font-family:"Fredoka",-apple-system,sans-serif}
+.tk-menu .poster{position:relative;min-height:100vh;width:100%;overflow:hidden;background:linear-gradient(180deg,#9fe3ff 0%,#c9edff 32%,#eaf4ec 64%,#fde6c4 100%);padding:34px clamp(18px,4vw,64px)}
+.tk-menu .sun{position:absolute;right:-6vw;top:-6vw;z-index:0;width:46vw;height:46vw;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,214,120,.55) 0%,rgba(255,214,120,.18) 38%,transparent 64%)}
+.tk-menu .poster::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;z-index:0;background:repeating-linear-gradient(0deg,transparent 0 38px,#0ea5e9 38px 39px)}
+.tk-menu .waves{position:absolute;left:0;right:0;bottom:0;height:54px;z-index:2;pointer-events:none;background:radial-gradient(circle at 12px -8px,transparent 14px,rgba(255,255,255,.9) 15px) 0 0/40px 26px repeat-x,linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.85) 60%);opacity:.9}
+.tk-menu .bgtype{position:absolute;right:0.5vw;top:50%;transform:translateY(-50%);z-index:1;writing-mode:vertical-rl;text-orientation:upright;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:min(18vh,185px);line-height:.9;letter-spacing:.01em;user-select:none;white-space:nowrap;filter:drop-shadow(0 6px 0 rgba(14,120,170,.16))}
+.tk-menu .bgtype b{color:var(--cyan)}.tk-menu .bgtype i{color:var(--coral);font-style:normal}
+.tk-menu .hero{position:absolute;left:49%;right:auto;bottom:0;height:93%;width:auto;z-index:4;filter:drop-shadow(-10px 16px 22px rgba(20,90,130,.30))}
+.tk-menu .brand{position:relative;z-index:6;display:flex;align-items:flex-start;gap:14px;max-width:58%}
+.tk-menu .brand .ast{font-family:"Baloo 2";font-weight:800;font-size:34px;line-height:.8;color:var(--coral)}
+.tk-menu .brand .bk b{font-family:"Baloo 2";font-weight:800;font-size:30px;letter-spacing:.04em;display:block;line-height:.9;color:var(--ink)}
+.tk-menu .brand .bk span{font-family:"Fredoka";font-size:11.5px;letter-spacing:.01em;color:var(--muted);max-width:250px;display:block;margin-top:6px}
+.tk-menu .issue{position:absolute;right:18px;top:22px;z-index:7;transform:rotate(4deg);font-family:"Baloo 2";font-weight:800;font-size:11px;letter-spacing:.14em;color:#04303f;background:linear-gradient(180deg,#9ff0ff,#22d3ee);padding:6px 12px;border-radius:999px;box-shadow:0 6px 16px rgba(34,211,238,.45)}
+.tk-menu .menus{position:relative;z-index:5;margin-top:24px;display:flex;flex-direction:column;gap:13px;max-width:min(50%,540px)}
+.tk-menu .panel{position:relative;display:grid;grid-template-columns:104px 1fr;gap:0;background:var(--paper);border:2px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:6px 6px 0 rgba(14,120,170,.45);cursor:pointer;text-align:left;font-family:inherit;color:inherit;appearance:none;-webkit-appearance:none;padding:0;transition:transform .16s,box-shadow .16s}
+.tk-menu .panel:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 var(--cyan)}
+.tk-menu .panel.c:hover{box-shadow:11px 11px 0 var(--coral)}
+.tk-menu .panel .face{position:relative;border-right:2px solid var(--line);overflow:hidden;background:var(--foam)}
+.tk-menu .panel .face img{width:100%;height:100%;object-fit:cover;object-position:center 12%}
+.tk-menu .panel .face .tag{position:absolute;left:0;top:0;font-family:"Baloo 2";font-weight:800;font-size:11px;letter-spacing:.08em;color:#eaf8ff;background:var(--ink);padding:2px 8px;border-bottom-right-radius:8px}
+.tk-menu .panel .body{padding:12px 14px;display:flex;flex-direction:column;justify-content:center;position:relative}
+.tk-menu .panel .no{font-family:"Baloo 2";font-weight:700;font-size:12px;letter-spacing:.16em;color:#8fb0c1}
+.tk-menu .panel .ko{font-family:"Jua",sans-serif;font-size:clamp(20px,2.4vw,29px);line-height:1;color:var(--ink);margin-top:2px}
+.tk-menu .panel .en{font-family:"Baloo 2";font-weight:700;font-size:11px;letter-spacing:.2em;color:#8fb0c1;margin-top:3px}
+.tk-menu .panel .desc{font-family:"Fredoka";font-size:11.5px;color:var(--muted);margin-top:7px}
+.tk-menu .panel .accent{position:absolute;right:12px;top:10px;font-family:"Baloo 2";font-weight:800;color:var(--cyan);font-size:20px;line-height:.7}
+.tk-menu .panel.c .accent{color:var(--coral)}
+.tk-menu .panel .pill{position:absolute;right:12px;bottom:11px;font-family:"Baloo 2";font-weight:800;font-size:10px;letter-spacing:.1em;padding:2px 8px;border-radius:999px;color:#fff}
+.tk-menu .panel.live .pill{background:var(--cyan);color:#04141d}
+.tk-menu .panel.new .pill{background:var(--coral);color:#3a1404}
+.tk-menu .side{position:absolute;left:14px;top:40%;z-index:6;writing-mode:vertical-rl;font-family:"Baloo 2";font-weight:700;font-size:12px;letter-spacing:.3em;color:#8fb0c1}
+.tk-menu .yr{position:absolute;left:14px;bottom:30px;z-index:6;font-family:"Baloo 2";font-weight:800;font-size:42px;color:var(--ink);letter-spacing:.02em}
+.tk-menu .barcode{position:absolute;left:14px;bottom:92px;z-index:6;width:120px;height:40px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 9px)}
+.tk-menu .barcode span{position:absolute;left:0;bottom:-14px;font-family:"Baloo 2";font-weight:700;font-size:10px;letter-spacing:.26em;color:#8fb0c1}
+.tk-menu .footmark{position:absolute;right:18px;bottom:18px;z-index:6;font-family:"Baloo 2";font-weight:800;font-size:12px;letter-spacing:.18em;color:var(--ink);opacity:.6}
+@media (max-width:720px){
+  .tk-menu .poster{min-height:auto;display:flex;flex-direction:column;padding:24px 16px 40px}
+  .tk-menu .brand{order:1;max-width:100%}
+  .tk-menu .hero{order:2;position:relative;left:auto;bottom:auto;height:auto;width:min(62%,240px);align-self:center;margin-top:10px;filter:drop-shadow(-6px 10px 16px rgba(20,90,130,.3))}
+  .tk-menu .menus{order:3;max-width:100%;margin-top:14px}
+  .tk-menu .bgtype{font-size:26vw;opacity:.4;right:-3vw}
+  .tk-menu .side,.tk-menu .barcode,.tk-menu .yr,.tk-menu .waves{display:none}
+  .tk-menu .issue{top:14px;right:12px}
+}
+`;
