@@ -32,6 +32,21 @@ const ko = {
     selfGasHint: "페이마스터 불가 · 가스 직접",
     switchNetwork: "메인넷으로 전환",
   },
+  features: {
+    eyebrow: "토키 기능",
+    title: "토키로 할 수 있는 것들",
+    lead: "스테이킹부터 생태계까지, 한 곳에서.",
+    loadMore: "더 보기",
+  },
+  menuPoster: {
+    tagline:
+      "토키 — 스테이킹으로 시작해 토카막 생태계를 누비는 마스코트 미니 월렛 & 허브.",
+    staking: { title: "스테이킹", desc: "TON 맡기고 세뇨리지 보상 받기" },
+    wallet: { title: "내 지갑", desc: "잔액 확인 · 입출금" },
+    private: { title: "프라이빗 전송", desc: "받는 사람을 숨기고 TON 보내기 (zk)" },
+    ai: { title: "AI 액세스", desc: "스테이킹하면 토카막 AI 서버 키 발급" },
+    lottery: { title: "복권 이벤트", desc: "카드 소진까지 진행되는 행운의 이벤트" },
+  },
   hero: {
     badge: "토카막 네트워크 스테이킹",
     title1: "안녕, 나는 토키!",

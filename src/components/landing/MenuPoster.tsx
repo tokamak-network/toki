@@ -5,6 +5,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useScreenTransition } from "@/components/transitions/TransitionProvider";
 import { getStartTransition } from "@/components/transitions/registry";
+import { useTranslation } from "@/components/providers/LanguageProvider";
 
 /**
  * Summer "menu poster" — the bridge section between the hero and the squad
@@ -17,6 +18,8 @@ export default function MenuPoster() {
   const { ready, authenticated } = usePrivy();
   const { open: openAuthChoice } = useAuthModal();
   const { navigate } = useScreenTransition();
+  const { t } = useTranslation();
+  const m = t.menuPoster;
 
   const start = () => {
     if (!ready) return;
@@ -31,7 +34,7 @@ export default function MenuPoster() {
         <div className="sun" />
 
         {/* big background type */}
-        <div className="bgtype"><b>STA</b><i>KE</i></div>
+        <div className="bgtype"><b>TO</b><i>KI</i></div>
 
         {/* standing summer hero */}
         <img className="hero" src="/characters/toki-beach.png" alt="Toki" />
@@ -44,7 +47,7 @@ export default function MenuPoster() {
           <span className="ast">✱</span>
           <div className="bk">
             <b>TOKI</b>
-            <span>토키 — 스테이킹으로 시작해 토카막 생태계를 누비는 마스코트 미니 월렛 &amp; 허브.</span>
+            <span>{m.tagline}</span>
           </div>
         </div>
 
@@ -55,9 +58,9 @@ export default function MenuPoster() {
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.01</span>
-              <span className="ko">스테이킹</span>
+              <span className="ko">{m.staking.title}</span>
               <span className="en">STAKING</span>
-              <span className="desc">TON 맡기고 세뇨리지 보상 받기</span>
+              <span className="desc">{m.staking.desc}</span>
               <span className="pill">LIVE</span>
             </span>
           </button>
@@ -67,9 +70,9 @@ export default function MenuPoster() {
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.02</span>
-              <span className="ko">내 지갑</span>
+              <span className="ko">{m.wallet.title}</span>
               <span className="en">WALLET</span>
-              <span className="desc">잔액 확인 · 입출금</span>
+              <span className="desc">{m.wallet.desc}</span>
             </span>
           </button>
 
@@ -78,9 +81,9 @@ export default function MenuPoster() {
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.03</span>
-              <span className="ko">프라이빗 전송</span>
+              <span className="ko">{m.private.title}</span>
               <span className="en">PRIVATE TRANSFER</span>
-              <span className="desc">받는 사람을 숨기고 TON 보내기 (zk)</span>
+              <span className="desc">{m.private.desc}</span>
               <span className="pill">NEW</span>
             </span>
           </button>
@@ -90,9 +93,9 @@ export default function MenuPoster() {
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.04</span>
-              <span className="ko">AI 액세스</span>
+              <span className="ko">{m.ai.title}</span>
               <span className="en">AI ACCESS</span>
-              <span className="desc">스테이킹하면 토카막 AI 서버 키 발급</span>
+              <span className="desc">{m.ai.desc}</span>
             </span>
           </button>
 
@@ -101,17 +104,15 @@ export default function MenuPoster() {
             <span className="body">
               <span className="accent">✱</span>
               <span className="no">NO.05</span>
-              <span className="ko">복권 이벤트</span>
+              <span className="ko">{m.lottery.title}</span>
               <span className="en">LOTTERY</span>
-              <span className="desc">카드 소진까지 진행되는 행운의 이벤트</span>
+              <span className="desc">{m.lottery.desc}</span>
             </span>
           </button>
         </div>
 
         {/* editorial accents */}
         <div className="side">TOKI IS THE MAIN MASCOT OF THE TOKAMAK NETWORK ECOSYSTEM.</div>
-        <div className="barcode"><span>TOKI · L1</span></div>
-        <div className="yr">2K25</div>
         <div className="footmark">✱ TOKAMAK NETWORK</div>
 
         <div className="waves" />
@@ -134,7 +135,7 @@ const css = `
 .tk-menu .brand .bk b{font-family:"Baloo 2";font-weight:800;font-size:30px;letter-spacing:.04em;display:block;line-height:.9;color:var(--ink)}
 .tk-menu .brand .bk span{font-family:"Fredoka";font-size:11.5px;letter-spacing:.01em;color:var(--muted);max-width:250px;display:block;margin-top:6px}
 .tk-menu .issue{position:absolute;right:18px;top:22px;z-index:7;transform:rotate(4deg);font-family:"Baloo 2";font-weight:800;font-size:11px;letter-spacing:.14em;color:#04303f;background:linear-gradient(180deg,#9ff0ff,#22d3ee);padding:6px 12px;border-radius:999px;box-shadow:0 6px 16px rgba(34,211,238,.45)}
-.tk-menu .menus{position:relative;z-index:5;margin-top:24px;display:flex;flex-direction:column;gap:13px;max-width:min(50%,540px)}
+.tk-menu .menus{position:relative;z-index:5;margin-top:24px;margin-left:clamp(8px,4vw,72px);display:flex;flex-direction:column;gap:13px;max-width:min(48%,520px)}
 .tk-menu .panel{position:relative;display:grid;grid-template-columns:104px 1fr;gap:0;background:var(--paper);border:2px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:6px 6px 0 rgba(14,120,170,.45);cursor:pointer;text-align:left;font-family:inherit;color:inherit;appearance:none;-webkit-appearance:none;padding:0;transition:transform .16s,box-shadow .16s}
 .tk-menu .panel:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 var(--cyan)}
 .tk-menu .panel.c:hover{box-shadow:11px 11px 0 var(--coral)}
@@ -152,17 +153,14 @@ const css = `
 .tk-menu .panel.live .pill{background:var(--cyan);color:#04141d}
 .tk-menu .panel.new .pill{background:var(--coral);color:#3a1404}
 .tk-menu .side{position:absolute;left:14px;top:40%;z-index:6;writing-mode:vertical-rl;font-family:"Baloo 2";font-weight:700;font-size:12px;letter-spacing:.3em;color:#8fb0c1}
-.tk-menu .yr{position:absolute;left:14px;bottom:30px;z-index:6;font-family:"Baloo 2";font-weight:800;font-size:42px;color:var(--ink);letter-spacing:.02em}
-.tk-menu .barcode{position:absolute;left:14px;bottom:92px;z-index:6;width:120px;height:40px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 9px)}
-.tk-menu .barcode span{position:absolute;left:0;bottom:-14px;font-family:"Baloo 2";font-weight:700;font-size:10px;letter-spacing:.26em;color:#8fb0c1}
 .tk-menu .footmark{position:absolute;right:18px;bottom:18px;z-index:6;font-family:"Baloo 2";font-weight:800;font-size:12px;letter-spacing:.18em;color:var(--ink);opacity:.6}
 @media (max-width:720px){
   .tk-menu .poster{min-height:auto;display:flex;flex-direction:column;padding:24px 16px 40px}
   .tk-menu .brand{order:1;max-width:100%}
   .tk-menu .hero{order:2;position:relative;left:auto;bottom:auto;height:auto;width:min(62%,240px);align-self:center;margin-top:10px;filter:drop-shadow(-6px 10px 16px rgba(20,90,130,.3))}
-  .tk-menu .menus{order:3;max-width:100%;margin-top:14px}
+  .tk-menu .menus{order:3;max-width:100%;margin-top:14px;margin-left:0}
   .tk-menu .bgtype{font-size:26vw;opacity:.4;right:-3vw}
-  .tk-menu .side,.tk-menu .barcode,.tk-menu .yr,.tk-menu .waves{display:none}
+  .tk-menu .side,.tk-menu .waves{display:none}
   .tk-menu .issue{top:14px;right:12px}
 }
 `;

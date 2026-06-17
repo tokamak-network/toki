@@ -32,6 +32,27 @@ const en = {
     selfGasHint: "Paymaster N/A · you pay gas",
     switchNetwork: "Switch to Mainnet",
   },
+  features: {
+    eyebrow: "FEATURES",
+    title: "Everything Toki can do",
+    lead: "From staking to the whole ecosystem — all in one place.",
+    loadMore: "Load more",
+  },
+  menuPoster: {
+    tagline:
+      "Toki — a mascot mini-wallet & hub: start with staking, roam the whole Tokamak ecosystem.",
+    staking: { title: "Staking", desc: "Stake TON, earn seigniorage rewards" },
+    wallet: { title: "Wallet", desc: "Check balances · deposit & withdraw" },
+    private: {
+      title: "Private Transfer",
+      desc: "Send TON while hiding the recipient (zk)",
+    },
+    ai: { title: "AI Access", desc: "Stake to get a Tokamak AI server key" },
+    lottery: {
+      title: "Lottery Event",
+      desc: "A lucky event running until the cards run out",
+    },
+  },
   hero: {
     badge: "Tokamak Network Staking",
     title1: "Hi, I'm Toki!",
