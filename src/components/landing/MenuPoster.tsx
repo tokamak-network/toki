@@ -110,7 +110,7 @@ export default function MenuPoster() {
 
         {/* editorial accents */}
         <div className="side">TOKI IS THE MAIN MASCOT OF THE TOKAMAK NETWORK ECOSYSTEM.</div>
-        <div className="footmark">✱ TOKAMAK NETWORK</div>
+        <div className="footmark"><img className="tokmark" src="/toki-logo.png" alt="" />TOKAMAK NETWORK</div>
 
         <div className="waves" />
       </div>
@@ -149,7 +149,8 @@ const css = `
 .tk-menu .panel.live .pill{background:var(--cyan);color:#04141d}
 .tk-menu .panel.new .pill{background:var(--coral);color:#3a1404}
 .tk-menu .side{position:absolute;left:14px;top:40%;z-index:6;writing-mode:vertical-rl;font-family:"Baloo 2";font-weight:700;font-size:12px;letter-spacing:.3em;color:#8fb0c1}
-.tk-menu .footmark{position:absolute;right:18px;bottom:18px;z-index:6;font-family:"Baloo 2";font-weight:800;font-size:12px;letter-spacing:.18em;color:var(--ink);opacity:.6}
+.tk-menu .footmark{position:absolute;right:18px;bottom:18px;z-index:6;display:flex;align-items:center;gap:6px;font-family:"Baloo 2";font-weight:800;font-size:12px;letter-spacing:.18em;color:var(--ink);opacity:.72}
+.tk-menu .footmark .tokmark{width:16px;height:16px;object-fit:contain;flex:none}
 @media (max-width:720px){
   .tk-menu .poster{min-height:auto;display:flex;flex-direction:column;padding:24px 16px 40px}
   .tk-menu .brand{order:1;max-width:100%}
