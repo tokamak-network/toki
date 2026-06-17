@@ -39,6 +39,17 @@ export default function MenuPoster() {
         {/* standing summer hero */}
         <img className="hero" src="/characters/toki-beach.png" alt="Toki" />
 
+        {/* summer decor doodles filling the negative space */}
+        <div className="deco" aria-hidden="true">
+          <span className="d palm">🌴</span>
+          <span className="d ball">🏐</span>
+          <span className="d shell">🐚</span>
+          <span className="d sun">☀️</span>
+          <span className="d sp sp1">✦</span>
+          <span className="d sp sp2">✦</span>
+          <span className="d sp sp3">✦</span>
+        </div>
+
         {/* top brand */}
         <div className="brand">
           <span className="ast">✱</span>
@@ -126,12 +137,22 @@ const css = `
 .tk-menu .waves{position:absolute;left:0;right:0;bottom:0;height:54px;z-index:2;pointer-events:none;background:radial-gradient(circle at 12px -8px,transparent 14px,rgba(255,255,255,.9) 15px) 0 0/40px 26px repeat-x,linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.85) 60%);opacity:.9}
 .tk-menu .bgtype{position:absolute;right:0.5vw;top:50%;transform:translateY(-50%);z-index:1;writing-mode:vertical-rl;text-orientation:upright;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:min(18vh,185px);line-height:.9;letter-spacing:.01em;user-select:none;white-space:nowrap;filter:drop-shadow(0 6px 0 rgba(14,120,170,.16))}
 .tk-menu .bgtype b{color:var(--cyan)}.tk-menu .bgtype i{color:var(--coral);font-style:normal}
-.tk-menu .hero{position:absolute;left:49%;right:auto;bottom:0;height:93%;width:auto;z-index:4;filter:drop-shadow(-10px 16px 22px rgba(20,90,130,.30))}
+.tk-menu .hero{position:absolute;left:60%;right:auto;bottom:0;height:96%;width:auto;z-index:4;filter:drop-shadow(-10px 16px 22px rgba(20,90,130,.30))}
+.tk-menu .deco{position:absolute;inset:0;z-index:3;pointer-events:none}
+.tk-menu .deco .d{position:absolute;filter:drop-shadow(0 4px 6px rgba(20,90,130,.22))}
+.tk-menu .deco .palm{left:53%;top:22%;font-size:46px;transform:rotate(-12deg)}
+.tk-menu .deco .ball{left:55%;top:56%;font-size:40px;transform:rotate(8deg)}
+.tk-menu .deco .shell{left:52%;top:80%;font-size:28px;transform:rotate(-6deg)}
+.tk-menu .deco .sun{left:60%;top:10%;font-size:34px}
+.tk-menu .deco .sp{font-family:"Baloo 2",sans-serif;font-weight:800;filter:none}
+.tk-menu .deco .sp1{left:57%;top:38%;font-size:22px;color:var(--cyan)}
+.tk-menu .deco .sp2{left:51%;top:48%;font-size:15px;color:var(--coral)}
+.tk-menu .deco .sp3{left:58%;top:72%;font-size:18px;color:var(--sun)}
 .tk-menu .brand{position:relative;z-index:6;display:flex;align-items:flex-start;gap:14px;max-width:58%}
 .tk-menu .brand .ast{font-family:"Baloo 2";font-weight:800;font-size:34px;line-height:.8;color:var(--coral)}
 .tk-menu .brand .bk b{font-family:"Baloo 2";font-weight:800;font-size:30px;letter-spacing:.04em;display:block;line-height:.9;color:var(--ink)}
 .tk-menu .brand .bk span{font-family:"Fredoka";font-size:11.5px;letter-spacing:.01em;color:var(--muted);max-width:250px;display:block;margin-top:6px}
-.tk-menu .menus{position:relative;z-index:5;margin-top:24px;margin-left:clamp(8px,4vw,72px);display:flex;flex-direction:column;gap:13px;max-width:min(48%,520px)}
+.tk-menu .menus{position:relative;z-index:5;margin-top:24px;margin-left:clamp(8px,3vw,48px);display:flex;flex-direction:column;gap:13px;max-width:min(54%,620px)}
 .tk-menu .panel{position:relative;display:grid;grid-template-columns:104px 1fr;gap:0;background:var(--paper);border:2px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:6px 6px 0 rgba(14,120,170,.45);cursor:pointer;text-align:left;font-family:inherit;color:inherit;appearance:none;-webkit-appearance:none;padding:0;transition:transform .16s,box-shadow .16s}
 .tk-menu .panel:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 var(--cyan)}
 .tk-menu .panel.c:hover{box-shadow:11px 11px 0 var(--coral)}
@@ -156,6 +177,6 @@ const css = `
   .tk-menu .hero{order:2;position:relative;left:auto;bottom:auto;height:auto;width:min(62%,240px);align-self:center;margin-top:10px;filter:drop-shadow(-6px 10px 16px rgba(20,90,130,.3))}
   .tk-menu .menus{order:3;max-width:100%;margin-top:14px;margin-left:0}
   .tk-menu .bgtype{font-size:26vw;opacity:.4;right:-3vw}
-  .tk-menu .side,.tk-menu .waves{display:none}
+  .tk-menu .side,.tk-menu .waves,.tk-menu .deco{display:none}
 }
 `;
