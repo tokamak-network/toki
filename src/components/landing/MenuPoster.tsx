@@ -39,9 +39,6 @@ export default function MenuPoster() {
         {/* standing summer hero */}
         <img className="hero" src="/characters/toki-beach.png" alt="Toki" />
 
-        {/* summer issue badge */}
-        <div className="issue">☀ SUMMER ISSUE · 2K25</div>
-
         {/* top brand */}
         <div className="brand">
           <span className="ast">✱</span>
@@ -134,7 +131,6 @@ const css = `
 .tk-menu .brand .ast{font-family:"Baloo 2";font-weight:800;font-size:34px;line-height:.8;color:var(--coral)}
 .tk-menu .brand .bk b{font-family:"Baloo 2";font-weight:800;font-size:30px;letter-spacing:.04em;display:block;line-height:.9;color:var(--ink)}
 .tk-menu .brand .bk span{font-family:"Fredoka";font-size:11.5px;letter-spacing:.01em;color:var(--muted);max-width:250px;display:block;margin-top:6px}
-.tk-menu .issue{position:absolute;right:18px;top:22px;z-index:7;transform:rotate(4deg);font-family:"Baloo 2";font-weight:800;font-size:11px;letter-spacing:.14em;color:#04303f;background:linear-gradient(180deg,#9ff0ff,#22d3ee);padding:6px 12px;border-radius:999px;box-shadow:0 6px 16px rgba(34,211,238,.45)}
 .tk-menu .menus{position:relative;z-index:5;margin-top:24px;margin-left:clamp(8px,4vw,72px);display:flex;flex-direction:column;gap:13px;max-width:min(48%,520px)}
 .tk-menu .panel{position:relative;display:grid;grid-template-columns:104px 1fr;gap:0;background:var(--paper);border:2px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:6px 6px 0 rgba(14,120,170,.45);cursor:pointer;text-align:left;font-family:inherit;color:inherit;appearance:none;-webkit-appearance:none;padding:0;transition:transform .16s,box-shadow .16s}
 .tk-menu .panel:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 var(--cyan)}
@@ -161,6 +157,5 @@ const css = `
   .tk-menu .menus{order:3;max-width:100%;margin-top:14px;margin-left:0}
   .tk-menu .bgtype{font-size:26vw;opacity:.4;right:-3vw}
   .tk-menu .side,.tk-menu .waves{display:none}
-  .tk-menu .issue{top:14px;right:12px}
 }
 `;
