@@ -463,7 +463,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
           {toast && <div className="tk-toast">{toast}</div>}
 
           {/* Centered-left full-body Toki */}
-          <img className="char" src="/characters/toki-fullbody.png" alt="Toki" />
+          <img className="char" src="/characters/toki-fullbody-upper.png" alt="Toki" />
 
           {/* Dialogue under the character */}
           <div className="dlg">
@@ -486,11 +486,14 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
 
 const lobbyCss = `
 .tk-lobby{position:absolute;top:64px;left:0;right:0;bottom:0;z-index:10}
-.tk-lobby .char{position:absolute;left:36%;bottom:0;transform:translateX(-50%);height:97%;width:auto;z-index:6;pointer-events:none;user-select:none;animation:tkFloat 5.5s ease-in-out infinite}
+/* Upper-body close-up (waist-up) sprite — size by width so the wider crop never
+   overflows / overlaps the right-side MENU, bottom-anchored so the waist sits at
+   the viewport bottom. (Full-body variant used height:97%.) */
+.tk-lobby .char{position:absolute;left:34%;bottom:-22px;transform:translateX(-50%);width:clamp(300px,34vw,580px);height:auto;max-height:96%;z-index:6;pointer-events:none;user-select:none;animation:tkFloat 5.5s ease-in-out infinite}
 @keyframes tkFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-1.1%)}}
-.tk-lobby .dlg{position:absolute;left:36%;bottom:22px;transform:translateX(-50%);z-index:22;width:min(520px,40vw);background:rgba(6,18,30,.74);backdrop-filter:blur(16px);border:1px solid rgba(34,211,238,.32);border-radius:18px;padding:13px 22px;box-shadow:0 14px 44px rgba(0,0,0,.55)}
-.tk-lobby .dlg .nm{display:inline-block;font-size:12px;font-weight:800;color:#22d3ee;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);border-radius:999px;padding:2px 11px;margin-bottom:7px}
-.tk-lobby .dlg p{margin:0;font-size:15px;line-height:1.5;color:#f1f5f9}
+.tk-lobby .dlg{position:absolute;left:34%;bottom:26px;transform:translateX(-50%);z-index:22;width:min(600px,44vw);background:rgba(6,18,30,.76);backdrop-filter:blur(16px);border:1px solid rgba(34,211,238,.32);border-radius:20px;padding:17px 28px;box-shadow:0 16px 48px rgba(0,0,0,.55)}
+.tk-lobby .dlg .nm{display:inline-block;font-size:13px;font-weight:800;color:#22d3ee;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);border-radius:999px;padding:3px 13px;margin-bottom:9px}
+.tk-lobby .dlg p{margin:0;font-size:17px;line-height:1.6;color:#f1f5f9}
 .tk-lobby .hud-left{position:absolute;left:18px;top:14px;z-index:20;width:236px;display:flex;flex-direction:column;gap:10px}
 .tk-lobby .notice{position:relative;display:flex;align-items:center;gap:8px;background:rgba(8,24,38,.62);backdrop-filter:blur(10px);border:1px solid rgba(34,211,238,.28);border-left:3px solid #22d3ee;border-radius:12px;padding:9px 12px;box-shadow:0 8px 24px rgba(0,0,0,.4);overflow:hidden}
 .tk-lobby .notice .ndot{flex:none;width:7px;height:7px;border-radius:50%;background:#22d3ee;box-shadow:0 0 8px #22d3ee;animation:tkPulse 1.6s ease-in-out infinite}
@@ -539,7 +542,7 @@ const lobbyCss = `
   .tk-lobby .ltab{transform:none}
   .tk-lobby .ltab:hover{transform:translateX(3px)}
   .tk-lobby .char{position:relative;left:auto;bottom:auto;transform:none;height:auto;width:auto;max-height:40vh;animation:none}
-  .tk-lobby .dlg{position:relative;left:auto;bottom:auto;transform:none;width:100%;max-width:520px}
+  .tk-lobby .dlg{position:relative;left:auto;bottom:auto;transform:none;width:100%;max-width:560px}
   .tk-lobby .menu{position:relative;right:auto;top:auto;transform:none;width:100%;max-width:560px;height:auto;aspect-ratio:1/1}
 }
 `;
