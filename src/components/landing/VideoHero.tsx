@@ -36,13 +36,12 @@ export default function VideoHero() {
         muted
         playsInline
         preload="auto"
-        poster="/backgrounds/toki-beach-sunset.jpg"
+        poster="/backgrounds/toki-surf.jpg"
       >
-        <source src="/backgrounds/toki-beach-sunset.webm" type="video/webm" />
-        <source src="/backgrounds/toki-beach-sunset.mp4" type="video/mp4" />
+        <source src="/backgrounds/toki-surf.mp4" type="video/mp4" />
       </video>
       {/* reduced-motion fallback (CSS shows this, hides the video) */}
-      <img className="bgfallback" src="/backgrounds/toki-beach-sunset.jpg" alt="" />
+      <img className="bgfallback" src="/backgrounds/toki-surf.jpg" alt="" />
       <div className="scrim" />
 
       <div className="scene">
@@ -71,9 +70,9 @@ export default function VideoHero() {
 
 const css = `
 .tk-vhero{position:relative;height:100vh;width:100%;overflow:hidden;background:#05070d}
-.tk-vhero .bgvid,.tk-vhero .bgfallback{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:70% center;z-index:0}
+.tk-vhero .bgvid,.tk-vhero .bgfallback{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0}
 .tk-vhero .bgfallback{display:none}
-.tk-vhero .scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(18,9,4,.5) 0%,rgba(18,9,4,.18) 34%,rgba(18,9,4,0) 58%)}
+.tk-vhero .scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(3,11,20,.62) 0%,rgba(3,11,20,.28) 34%,rgba(3,11,20,0) 60%)}
 .tk-vhero .scene{position:absolute;top:64px;left:0;right:0;bottom:0;z-index:2}
 .tk-vhero .tagline{position:absolute;left:5vw;top:17%}
 .tk-vhero .tagline .k{font-family:"Jua","Apple SD Gothic Neo",sans-serif;font-size:clamp(22px,3.2vw,44px);color:#fff;text-shadow:0 2px 0 rgba(150,80,40,.5),0 6px 22px rgba(0,0,0,.55)}
@@ -91,7 +90,7 @@ const css = `
 .tk-vhero .cta .hint{font-family:"Fredoka",sans-serif;font-size:13px;letter-spacing:.04em;color:#ffe2c2;text-shadow:0 1px 5px rgba(0,0,0,.6)}
 .tk-vhero .credit{position:absolute;left:5.5vw;bottom:5vh;z-index:3;font-family:"Fredoka",sans-serif;font-weight:600;font-size:clamp(10px,1vw,13px);letter-spacing:.06em;color:#e7d8c6;text-shadow:0 1px 5px rgba(0,0,0,.6)}
 @media (max-width:720px){
-  .tk-vhero .bgvid,.tk-vhero .bgfallback{object-position:68% center}
+  .tk-vhero .bgvid,.tk-vhero .bgfallback{object-position:center}
   .tk-vhero .title{left:5vw;top:38%;font-size:34vw}
   .tk-vhero .tagline{top:12%;left:5vw}
   .tk-vhero .cta{bottom:13vh;left:5vw}
