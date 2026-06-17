@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 
@@ -80,58 +81,101 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer ref={footerRef} className="relative bg-[#EBEBE6] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 pt-14 pb-0">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-0 items-end">
-          {/* Left: Logo + links + socials */}
-          <div className={`md:col-span-4 pb-10 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+    <footer
+      ref={footerRef}
+      className="relative overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(180deg,#d8f1ff 0%,#bfe9f2 26%,#a7e2dd 44%,#eae7d0 64%,#f6e6c6 100%)",
+      }}
+    >
+      {/* warm sun glow, top-right behind Toki */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 right-[9%] w-[420px] h-[420px] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle,rgba(255,221,138,.7) 0%,rgba(255,210,120,.26) 42%,rgba(255,210,120,0) 66%)",
+        }}
+      />
+      {/* soft fade from the dark section above into the sky — no hard line, no scallops */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-24"
+        style={{
+          background:
+            "linear-gradient(180deg,rgba(8,18,29,.82) 0%,rgba(8,18,29,.3) 34%,rgba(8,18,29,0) 100%)",
+        }}
+      />
+      {/* drifting clouds in the sky + sparkles around Toki (kept off the text) */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <span className="absolute left-[10%] top-[10%] w-44 h-11 rounded-full bg-white/55" style={{ filter: "blur(18px)" }} />
+        <span className="absolute left-[40%] top-[7%] w-32 h-9 rounded-full bg-white/45" style={{ filter: "blur(16px)" }} />
+        <span className="absolute left-[66%] top-[12%] w-40 h-10 rounded-full bg-white/45" style={{ filter: "blur(18px)" }} />
+        <span className="absolute right-[7%] top-[34%] text-base text-white/85">✦</span>
+        <span className="absolute right-[17%] top-[44%] text-xs text-cyan-100/85">✦</span>
+        <span className="absolute right-[11%] top-[56%] text-sm text-white/80">✦</span>
+        <span className="absolute right-[21%] top-[30%] text-xs text-cyan-100/75">✦</span>
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-14 pb-10">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-x-6 gap-y-10 items-end">
+          {/* Brand + socials */}
+          <div className={`col-span-2 md:col-span-4 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
             <div className="flex items-center gap-3 mb-2">
               <Image src="/toki-icon.png" alt="Toki" width={44} height={44} />
-              <h2 className="text-3xl font-bold uppercase text-black">TOKI</h2>
+              <h2 className="text-3xl font-bold uppercase text-[#0c3d57]">TOKI</h2>
             </div>
-            <p className="text-xs font-bold uppercase text-[#525252] mb-8">{t.footer.builtOn}</p>
+            <p className="text-xs font-bold uppercase text-[#5b7f93] mb-6 max-w-[260px]">{t.footer.builtOn}</p>
 
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6">
-              <a href="https://github.com/tokamak-network/toki" target="_blank" rel="noopener noreferrer" className="text-sm uppercase text-black/60 hover:text-black transition-colors">
-                GitHub
-              </a>
-              <span className="text-black/20">|</span>
-              <a href="https://medium.com/tokamak-network" target="_blank" rel="noopener noreferrer" className="text-sm uppercase text-black/60 hover:text-black transition-colors">
-                {t.footer.blog}
-              </a>
-              <span className="text-black/20">|</span>
-              <a href="https://tokamak.network" target="_blank" rel="noopener noreferrer" className="text-sm uppercase text-black/60 hover:text-black transition-colors">
-                Tokamak Network
-              </a>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <a href="https://twitter.com/tokamak_network" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" className="text-black/40 hover:text-black transition-colors">
+            <div className="flex flex-wrap items-center gap-4">
+              <a href="https://twitter.com/tokamak_network" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" className="text-[#0c3d57]/40 hover:text-[#0ea5e9] transition-colors">
                 <XIcon className="w-5 h-5" />
               </a>
-              <a href="https://github.com/tokamak-network" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-black/40 hover:text-black transition-colors">
+              <a href="https://github.com/tokamak-network" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-[#0c3d57]/40 hover:text-[#0ea5e9] transition-colors">
                 <GitHubIcon className="w-5 h-5" />
               </a>
-              <a href="https://discord.com/invite/J4chV2zuAK" target="_blank" rel="noopener noreferrer" aria-label="Discord" className="text-black/40 hover:text-black transition-colors">
+              <a href="https://discord.com/invite/J4chV2zuAK" target="_blank" rel="noopener noreferrer" aria-label="Discord" className="text-[#0c3d57]/40 hover:text-[#0ea5e9] transition-colors">
                 <DiscordIcon className="w-5 h-5" />
               </a>
-              <a href="https://www.youtube.com/@Toki-x1u" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-black/40 hover:text-black transition-colors">
+              <a href="https://www.youtube.com/@Toki-x1u" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-[#0c3d57]/40 hover:text-[#0ea5e9] transition-colors">
                 <YouTubeIcon className="w-5 h-5" />
               </a>
-              <a href="https://medium.com/tokamak-network" target="_blank" rel="noopener noreferrer" aria-label="Medium" className="text-black/40 hover:text-black transition-colors">
+              <a href="https://medium.com/tokamak-network" target="_blank" rel="noopener noreferrer" aria-label="Medium" className="text-[#0c3d57]/40 hover:text-[#0ea5e9] transition-colors">
                 <MediumIcon className="w-5 h-5" />
               </a>
-              <a href="https://t.me/tokamak_network" target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="text-black/40 hover:text-black transition-colors">
+              <a href="https://t.me/tokamak_network" target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="text-[#0c3d57]/40 hover:text-[#0ea5e9] transition-colors">
                 <TelegramIcon className="w-5 h-5" />
               </a>
-              <a href="https://www.linkedin.com/company/tokamaknetwork/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-black/40 hover:text-black transition-colors">
+              <a href="https://www.linkedin.com/company/tokamaknetwork/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-[#0c3d57]/40 hover:text-[#0ea5e9] transition-colors">
                 <LinkedInIcon className="w-5 h-5" />
               </a>
             </div>
           </div>
 
-          {/* Right: Characters with glow - larger area */}
-          <div className="md:col-span-8 relative h-[420px] hidden md:block">
+          {/* Product */}
+          <nav className={`md:col-span-3 transition-all duration-700 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5b7f93] mb-3">Product</h3>
+            <Link href="/staking" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">Staking</Link>
+            <Link href="/wallet" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">Wallet</Link>
+            <Link href="/private-transfer" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">Private Transfer</Link>
+            <Link href="/agent" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">AI Access</Link>
+            <Link href="/lottery" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">Lottery</Link>
+            <Link href="/collection" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">Collection</Link>
+          </nav>
+
+          {/* Resources */}
+          <nav className={`md:col-span-3 transition-all duration-700 delay-200 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5b7f93] mb-3">Resources</h3>
+            <a href="https://github.com/tokamak-network/toki" target="_blank" rel="noopener noreferrer" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">GitHub</a>
+            <a href="https://medium.com/tokamak-network" target="_blank" rel="noopener noreferrer" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">Blog</a>
+            <a href="https://tokamak.network" target="_blank" rel="noopener noreferrer" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">Tokamak Network</a>
+            <a href="https://discord.com/invite/J4chV2zuAK" target="_blank" rel="noopener noreferrer" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">Discord</a>
+            <a href="https://www.youtube.com/@Toki-x1u" target="_blank" rel="noopener noreferrer" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">YouTube</a>
+            <a href="https://twitter.com/tokamak_network" target="_blank" rel="noopener noreferrer" className="block text-sm text-[#0c3d57]/65 hover:text-[#0ea5e9] transition-colors py-1">X (Twitter)</a>
+          </nav>
+
+          {/* Right: summer beach Toki standing on the sand */}
+          <div className="md:col-span-2 relative h-[440px] hidden md:block">
             {/* Glow aura behind Toki */}
             <div
               className={`absolute bottom-[10%] right-[18%] w-[280px] h-[280px] rounded-full transition-all duration-1000 delay-300 ${
@@ -140,37 +184,47 @@ export default function Footer() {
                   : "opacity-0 scale-75"
               }`}
               style={{
-                background: "radial-gradient(circle, rgba(74,144,217,0.35) 0%, rgba(74,144,217,0.15) 40%, rgba(74,144,217,0) 70%)",
+                background: "radial-gradient(circle, rgba(34,211,238,0.4) 0%, rgba(34,211,238,0.16) 40%, rgba(34,211,238,0) 70%)",
                 filter: "blur(40px)",
               }}
             />
 
-            {/* Toki character - original position */}
+            {/* soft shadow on the sand under Toki */}
+            <div
+              aria-hidden="true"
+              className={`absolute bottom-[7%] right-[12%] w-[190px] h-[24px] rounded-[50%] transition-opacity duration-700 delay-300 ${
+                isVisible ? "opacity-100" : "opacity-0"
+              }`}
+              style={{
+                background: "radial-gradient(ellipse,rgba(18,70,90,.3),rgba(18,70,90,0) 70%)",
+                filter: "blur(3px)",
+              }}
+            />
+
+            {/* summer beach Toki */}
             <Image
-              src="/toki-footer-leaning.png"
+              src="/characters/toki-footer-summer.png"
               alt="Toki"
-              width={480}
-              height={480}
-              className={`absolute bottom-0 right-8 object-contain drop-shadow-[0_4px_30px_rgba(74,144,217,0.25)] transition-all duration-700 delay-150 ${
+              width={164}
+              height={474}
+              className={`absolute bottom-0 right-10 object-contain object-bottom drop-shadow-[0_8px_24px_rgba(20,90,120,0.3)] transition-all duration-700 delay-150 ${
                 isVisible
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-12"
               }`}
               priority
             />
-
-
           </div>
         </div>
       </div>
 
       {/* Copyright bar */}
-      <div className="border-t border-black/10">
+      <div className="relative z-10 border-t border-[#0c3d57]/10">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-black/40 uppercase">
+          <p className="text-xs text-[#0c3d57]/45 uppercase">
             &copy; {new Date().getFullYear()} Tokamak Network
           </p>
-          <p className="text-xs text-black/40 uppercase">
+          <p className="text-xs text-[#0c3d57]/45 uppercase">
             {t.footer.allRightsReserved}
           </p>
         </div>
