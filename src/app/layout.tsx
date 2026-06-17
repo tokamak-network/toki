@@ -23,6 +23,7 @@ import "./globals.css";
 
 const TokiChat = dynamic(() => import("@/components/chat/TokiChat"), { ssr: false });
 const AchievementToast = dynamic(() => import("@/components/achievements/AchievementToast"), { ssr: false });
+const AnalyticsTracker = dynamic(() => import("@/components/analytics/AnalyticsTracker"), { ssr: false });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -149,6 +150,7 @@ export default function RootLayout({
                   <TransitionProvider>{children}</TransitionProvider>
                   <TokiChat />
                   <AchievementToast />
+                  <AnalyticsTracker />
                 </AchievementProvider>
               </AuthModalProvider>
             </PrivyClientProvider>
