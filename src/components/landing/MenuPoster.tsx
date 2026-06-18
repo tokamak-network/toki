@@ -112,7 +112,8 @@ export default function MenuPoster() {
         <div className="side">TOKI IS THE MAIN MASCOT OF THE TOKAMAK NETWORK ECOSYSTEM.</div>
         <div className="footmark"><img className="tokmark" src="/toki-logo.png" alt="" />TOKAMAK NETWORK</div>
 
-        <div className="waves" />
+        {/* fade the menu bottom into the squad section's top tone for a seamless seam */}
+        <div className="botfade" />
       </div>
     </section>
   );
@@ -123,7 +124,7 @@ const css = `
 .tk-menu .poster{position:relative;min-height:100vh;width:100%;overflow:hidden;background:linear-gradient(180deg,#9fe3ff 0%,#c9edff 30%,#eaf4ec 54%,#fde6c4 78%,#a9dfe6 100%);padding:34px clamp(18px,4vw,64px)}
 .tk-menu .sun{position:absolute;right:-6vw;top:-6vw;z-index:0;width:46vw;height:46vw;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,214,120,.55) 0%,rgba(255,214,120,.18) 38%,transparent 64%)}
 .tk-menu .poster::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;z-index:0;background:repeating-linear-gradient(0deg,transparent 0 38px,#0ea5e9 38px 39px)}
-.tk-menu .waves{position:absolute;left:0;right:0;bottom:0;height:54px;z-index:2;pointer-events:none;background:radial-gradient(circle at 12px -8px,transparent 14px,rgba(255,255,255,.9) 15px) 0 0/40px 26px repeat-x,linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.85) 60%);opacity:.9}
+.tk-menu .botfade{position:absolute;left:0;right:0;bottom:0;height:18%;z-index:7;pointer-events:none;background:linear-gradient(180deg,rgba(169,223,230,0) 0%,rgba(169,223,230,.5) 50%,#a9dfe6 100%)}
 .tk-menu .bgtype{position:absolute;right:1vw;top:50%;transform:translateY(-50%);z-index:1;writing-mode:vertical-rl;text-orientation:upright;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:min(11vh,105px);line-height:1;letter-spacing:.02em;user-select:none;white-space:nowrap;filter:drop-shadow(0 6px 0 rgba(14,120,170,.16))}
 .tk-menu .bgtype b{color:var(--cyan)}.tk-menu .bgtype i{color:var(--coral);font-style:normal}
 .tk-menu .hero{position:absolute;left:57%;right:auto;bottom:0;height:96%;width:auto;z-index:4;filter:drop-shadow(-10px 16px 22px rgba(20,90,130,.30))}
@@ -149,7 +150,7 @@ const css = `
 .tk-menu .panel.live .pill{background:var(--cyan);color:#04141d}
 .tk-menu .panel.new .pill{background:var(--coral);color:#3a1404}
 .tk-menu .side{position:absolute;left:14px;top:40%;z-index:6;writing-mode:vertical-rl;font-family:"Baloo 2";font-weight:700;font-size:12px;letter-spacing:.3em;color:#8fb0c1}
-.tk-menu .footmark{position:absolute;right:18px;bottom:18px;z-index:6;display:flex;align-items:center;gap:6px;font-family:"Baloo 2";font-weight:800;font-size:12px;letter-spacing:.18em;color:var(--ink);opacity:.72}
+.tk-menu .footmark{position:absolute;right:18px;bottom:18px;z-index:8;display:flex;align-items:center;gap:6px;font-family:"Baloo 2";font-weight:800;font-size:12px;letter-spacing:.18em;color:var(--ink);opacity:.72}
 .tk-menu .footmark .tokmark{width:16px;height:16px;object-fit:contain;flex:none}
 @media (max-width:720px){
   .tk-menu .poster{min-height:auto;display:flex;flex-direction:column;padding:24px 16px 40px}
@@ -157,6 +158,6 @@ const css = `
   .tk-menu .hero{order:2;position:relative;left:auto;bottom:auto;height:auto;width:min(62%,240px);align-self:center;margin-top:10px;filter:drop-shadow(-6px 10px 16px rgba(20,90,130,.3))}
   .tk-menu .menus{order:3;max-width:100%;margin-top:14px;margin-left:0}
   .tk-menu .bgtype{font-size:26vw;opacity:.4;right:-3vw}
-  .tk-menu .side,.tk-menu .waves{display:none}
+  .tk-menu .side{display:none}
 }
 `;
