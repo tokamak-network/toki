@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useScreenTransition } from "@/components/transitions/TransitionProvider";
@@ -20,11 +21,18 @@ export default function MenuPoster() {
   const { navigate } = useScreenTransition();
   const { t } = useTranslation();
   const m = t.menuPoster;
+  const [toast, setToast] = useState<string | null>(null);
 
   const start = () => {
     if (!ready) return;
     if (authenticated) navigate("/dashboard", undefined, getStartTransition());
     else openAuthChoice();
+  };
+
+  // In-development feature: block entry, show a transient coming-soon toast.
+  const ping = (msg: string) => {
+    setToast(msg);
+    window.setTimeout(() => setToast(null), 1800);
   };
 
   return (
@@ -73,7 +81,7 @@ export default function MenuPoster() {
             </span>
           </button>
 
-          <button type="button" className="panel new" onClick={start}>
+          <button type="button" className="panel soon" onClick={() => ping(`${m.private.title} — ${t.hub.comingSoonToast}`)}>
             <span className="face"><span className="tag">03</span><img src="/characters/toki-summer-offshoulder.png" alt="" /></span>
             <span className="body">
               <span className="accent">✱</span>
@@ -81,7 +89,7 @@ export default function MenuPoster() {
               <span className="ko">{m.private.title}</span>
               <span className="en">PRIVATE TRANSFER</span>
               <span className="desc">{m.private.desc}</span>
-              <span className="pill">NEW</span>
+              <span className="pill">SOON</span>
             </span>
           </button>
 
@@ -114,6 +122,8 @@ export default function MenuPoster() {
 
         {/* fade the menu bottom into the squad section's top tone for a seamless seam */}
         <div className="botfade" />
+
+        {toast && <div className="tk-toast">{toast}</div>}
       </div>
     </section>
   );
@@ -148,7 +158,8 @@ const css = `
 .tk-menu .panel.c .accent{color:var(--coral)}
 .tk-menu .panel .pill{position:absolute;right:12px;bottom:11px;font-family:"Baloo 2";font-weight:800;font-size:10px;letter-spacing:.1em;padding:2px 8px;border-radius:999px;color:#fff}
 .tk-menu .panel.live .pill{background:var(--cyan);color:#04141d}
-.tk-menu .panel.new .pill{background:var(--coral);color:#3a1404}
+.tk-menu .panel.soon .pill{background:var(--sun);color:#3a2a04}
+.tk-menu .tk-toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:60;background:rgba(6,18,30,.92);border:1px solid rgba(34,211,238,.4);color:#eaf6fb;font-family:"Fredoka",sans-serif;font-size:13px;font-weight:600;padding:10px 18px;border-radius:999px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
 .tk-menu .side{position:absolute;left:14px;top:40%;z-index:6;writing-mode:vertical-rl;font-family:"Baloo 2";font-weight:700;font-size:12px;letter-spacing:.3em;color:#8fb0c1}
 .tk-menu .footmark{position:absolute;right:18px;bottom:18px;z-index:8;display:flex;align-items:center;gap:6px;font-family:"Baloo 2";font-weight:800;font-size:12px;letter-spacing:.18em;color:var(--ink);opacity:.72}
 .tk-menu .footmark .tokmark{width:16px;height:16px;object-fit:contain;flex:none}

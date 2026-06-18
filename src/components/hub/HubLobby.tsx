@@ -14,13 +14,10 @@ import { CONTRACTS } from "@/constants/contracts";
 import ReceiveModal from "@/components/dashboard/ReceiveModal";
 import { useScreenTransition } from "@/components/transitions/TransitionProvider";
 import HubBackground from "./HubBackground";
-import AiAccessKeyModal from "./AiAccessKeyModal";
 import {
-  AI_ACCESS_URL,
   MIN_TON_AI_ACCESS,
-  isNativeIssueEnabled,
   loadIssuedKey,
-  type Eip1193Provider,
+  getKeyUsage,
 } from "@/lib/aiAccess";
 
 const erc20Abi = [
@@ -50,7 +47,7 @@ const accStakedAccountAbi = [
   },
 ] as const;
 
-type CardBadge = { kind: "live" | "new" | "hot"; text: string };
+type CardBadge = { kind: "live" | "new" | "hot" | "soon"; text: string };
 type Card = {
   key: string;
   title: string;
@@ -59,12 +56,17 @@ type Card = {
   imgStyle?: CSSProperties;
   badge?: CardBadge;
   feat?: boolean;
+  spotlight?: boolean;
   locked?: boolean;
   style: CSSProperties;
   href?: string;
   external?: boolean;
   onClick?: () => void;
 };
+
+// Chrome Web Store listing for the Toki browser extension.
+// TODO: replace with the published listing URL once the extension is live.
+const TOKI_EXTENSION_URL = "https://chromewebstore.google.com/";
 
 /**
  * "Toki Lobby" hub home (replaces /dashboard) — anime gacha-lobby layout.
@@ -81,8 +83,8 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const { navigate } = useScreenTransition();
 
   const [showReceive, setShowReceive] = useState(false);
-  const [showAiModal, setShowAiModal] = useState(false);
   const [hasKey, setHasKey] = useState(false);
+  const [aiUsagePct, setAiUsagePct] = useState<number | null>(null);
   const [ton, setTon] = useState<number | null>(null);
   const [staked, setStaked] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -90,7 +92,16 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    setHasKey(!!loadIssuedKey());
+    const stored = loadIssuedKey();
+    setHasKey(!!stored);
+    if (stored) {
+      getKeyUsage(stored.key)
+        .then((u) => {
+          if (u.maxBudget)
+            setAiUsagePct(Math.min(100, Math.round((u.spend / u.maxBudget) * 100)));
+        })
+        .catch(() => {});
+    }
   }, []);
 
   // Rotate the top-left notice/event banner.
@@ -110,10 +121,6 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const primaryWallet =
     (hasLinkedExternalWallet && externalWallet) || embeddedWallet;
   const balanceAddress = primaryWallet?.address;
-  const getProvider = primaryWallet
-    ? async () =>
-        (await primaryWallet.getEthereumProvider()) as Eip1193Provider
-    : undefined;
 
   useEffect(() => {
     if (!preview && ready && !authenticated) router.push("/");
@@ -222,13 +229,31 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   // ── Right-side MENU collage cards ──────────────────────────────────────────
   const eligible = stakedNum >= MIN_TON_AI_ACCESS;
   const needed = Math.max(0, MIN_TON_AI_ACCESS - stakedNum);
-  const canIssueNative =
-    isNativeIssueEnabled && eligible && !!balanceAddress && !!getProvider;
+  // Nothing staked yet → spotlight the Staking tile as the obvious first step.
+  const noStake = stakedNum <= 0;
 
-  const aiBase = {
+  // AI Access always opens the dedicated /agent page, which owns every state
+  // (stake-gated quest → key issuance → "chat with Toki"). The tile just mirrors
+  // the current state in its badge/subtitle; "locked" only dims the art.
+  const aiCard: Card = {
     key: "ai",
     title: t.hub.aiAccessTitle,
-    img: "/characters/toki-thinking.png",
+    img: "/characters/menu-ai.png",
+    href: "/agent",
+    locked: !hasKey && !eligible,
+    sub: hasKey
+      ? aiUsagePct != null
+        ? t.hub.aiUsage.replace("{pct}", String(aiUsagePct))
+        : t.hub.aiAccessChatReady
+      : eligible
+        ? t.hub.aiAccessBadge
+        : loading
+          ? t.hub.aiAccessChecking
+          : `+${fmt(needed)} TON`,
+    badge:
+      hasKey || eligible
+        ? { kind: "live", text: "AI" }
+        : { kind: "new", text: "LOCK" },
     style: {
       left: "30%",
       top: "48%",
@@ -236,23 +261,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       height: "29.6%",
       clipPath: "polygon(4.9% 0,100% 0,95.4% 91.9%,0 100%)",
     },
-  } as const;
-  let aiCard: Card;
-  if (hasKey) {
-    aiCard = { ...aiBase, sub: t.hub.aiAccessChatReady, href: "/agent", badge: { kind: "live", text: "AI" } };
-  } else if (!eligible) {
-    aiCard = {
-      ...aiBase,
-      sub: loading ? t.hub.aiAccessChecking : `+${fmt(needed)} TON`,
-      href: "/staking",
-      locked: true,
-      badge: { kind: "new", text: "LOCK" },
-    };
-  } else if (canIssueNative) {
-    aiCard = { ...aiBase, sub: t.hub.aiAccessBadge, onClick: () => setShowAiModal(true), badge: { kind: "live", text: "AI" } };
-  } else {
-    aiCard = { ...aiBase, sub: t.hub.aiAccessBadge, href: AI_ACCESS_URL, external: true, badge: { kind: "live", text: "AI" } };
-  }
+  };
 
   const cards: Card[] = [
     {
@@ -267,44 +276,49 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       key: "private",
       title: t.hub.appPrivateTransfer,
       sub: t.hub.cardPrivateSub,
-      img: "/characters/toki-peeking.png",
-      href: "/private-transfer",
-      badge: { kind: "new", text: "NEW" },
+      img: "/characters/toki-menu-private.png",
+      // in development — block navigation, show a coming-soon toast instead
+      onClick: () => ping(`${t.hub.appPrivateTransfer} — ${t.hub.comingSoonToast}`),
+      badge: { kind: "soon", text: "SOON" },
       style: { left: "31.53%", top: "0", width: "32.47%", height: "48%", clipPath: "polygon(7.6% 0,100% 0,92.1% 100%,0 100%)" },
     },
     {
       key: "staking",
       title: t.hub.appStaking,
       sub: t.hub.cardStakingSub,
-      img: "/toki-rocket.png",
+      img: "/characters/toki-menu-staking.png",
+      imgStyle: { objectFit: "contain", objectPosition: "center bottom", transform: "scale(1.6)", transformOrigin: "center bottom" },
       href: "/staking",
       feat: true,
-      badge: { kind: "live", text: "LIVE" },
+      spotlight: noStake,
+      badge: noStake ? { kind: "hot", text: t.hub.startHere } : { kind: "live", text: "LIVE" },
       style: { left: "60%", top: "0", width: "40%", height: "75.2%", clipPath: "polygon(10% 0,100% 0,100% 95.7%,0 100%)" },
     },
     {
       key: "lottery",
       title: t.hub.cardLottery,
       sub: t.hub.cardLotterySub,
-      img: "/toki-lottery.png",
+      img: "/characters/toki-menu-lottery.png",
       href: "/lottery",
       badge: { kind: "hot", text: t.hub.badgeLive },
       style: { left: "0", top: "48%", width: "31.53%", height: "32%", clipPath: "polygon(0 0,100% 0,95.1% 92.5%,0 100%)" },
     },
     aiCard,
     {
-      key: "collection",
-      title: t.hub.navCollection,
-      sub: t.hub.cardCollectionSub,
-      img: "/toki-card-gold-v2.png",
-      imgStyle: { objectPosition: "center 30%" },
-      href: "/collection",
+      key: "extension",
+      title: t.hub.cardExtension,
+      sub: t.hub.cardExtensionSub,
+      img: "/toki-logo.png",
+      imgStyle: { objectFit: "contain" },
+      href: TOKI_EXTENSION_URL,
+      external: true,
+      badge: { kind: "new", text: "NEW" },
       style: { left: "0", top: "72%", width: "100%", height: "28%", clipPath: "polygon(0 28.6%,100% 0,100% 100%,0 100%)" },
     },
   ];
 
   const renderPiece = (c: Card) => {
-    const cls = `piece${c.feat ? " feat" : ""}${c.locked ? " locked" : ""}`;
+    const cls = `piece${c.feat ? " feat" : ""}${c.spotlight ? " spotlight" : ""}${c.locked ? " locked" : ""}`;
     const inner = (
       <>
         <img className="art" src={c.img} alt="" style={c.imgStyle} />
@@ -356,14 +370,6 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       {showReceive && addr && (
         <ReceiveModal address={addr} onClose={() => setShowReceive(false)} />
       )}
-      {showAiModal && canIssueNative && balanceAddress && getProvider && (
-        <AiAccessKeyModal
-          address={balanceAddress}
-          getProvider={getProvider}
-          onClose={() => setShowAiModal(false)}
-        />
-      )}
-
       <main className="relative flex-1 overflow-x-hidden overflow-y-auto lg:overflow-hidden">
         <HubBackground />
 
@@ -532,10 +538,14 @@ const lobbyCss = `
 .tk-lobby .piece .badge.live{background:#22d3ee}
 .tk-lobby .piece .badge.new{background:#a78bfa;color:#fff}
 .tk-lobby .piece .badge.hot{background:#f59e0b}
+.tk-lobby .piece .badge.soon{background:#ffc24b;color:#3a2a04}
 .tk-lobby .piece:hover{transform:scale(1.012);filter:brightness(1.08);z-index:4}
 .tk-lobby .piece.locked{filter:grayscale(.45) brightness(.78)}
 .tk-lobby .piece.feat .lbl b{font-size:clamp(20px,2.2vw,40px)}
 .tk-lobby .piece.feat .lbl em{font-size:clamp(12px,1.1vw,18px)}
+.tk-lobby .piece.spotlight{z-index:5;animation:tkSpot 1.7s ease-in-out infinite}
+@keyframes tkSpot{0%,100%{filter:drop-shadow(0 0 6px rgba(34,211,238,.5))}50%{filter:drop-shadow(0 0 20px rgba(34,211,238,.95))}}
+@media (prefers-reduced-motion:reduce){.tk-lobby .piece.spotlight{animation:none;filter:drop-shadow(0 0 12px rgba(34,211,238,.7))}}
 @media (max-width:1023px){
   .tk-lobby{position:static;top:auto;left:auto;right:auto;bottom:auto;display:flex;flex-direction:column;align-items:center;gap:14px;height:auto;padding:76px 12px 28px}
   .tk-lobby .hud-left{position:static;width:100%;max-width:520px;margin:0 auto}
