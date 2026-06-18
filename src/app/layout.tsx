@@ -22,6 +22,7 @@ import { SITE_URL, SITE_NAME } from "@/constants/seo";
 import "./globals.css";
 
 const TokiChat = dynamic(() => import("@/components/chat/TokiChat"), { ssr: false });
+const NetworkGuard = dynamic(() => import("@/components/layout/NetworkGuard"), { ssr: false });
 const AchievementToast = dynamic(() => import("@/components/achievements/AchievementToast"), { ssr: false });
 const AnalyticsTracker = dynamic(() => import("@/components/analytics/AnalyticsTracker"), { ssr: false });
 
@@ -148,6 +149,7 @@ export default function RootLayout({
               <AuthModalProvider>
                 <AchievementProvider>
                   <TransitionProvider>{children}</TransitionProvider>
+                  <NetworkGuard />
                   <TokiChat />
                   <AchievementToast />
                   <AnalyticsTracker />

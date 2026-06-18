@@ -44,6 +44,11 @@ export async function POST(req: NextRequest) {
         messages: safeMessages,
         max_tokens: 1024,
         temperature: 0.7,
+        // qwen-3.6 is a reasoning model — with thinking ON it spends the whole
+        // token budget on `reasoning_content` and returns an empty `content`
+        // (verified against api2.ai.tokamak.network). Turn thinking off so the
+        // chat gets a direct answer.
+        chat_template_kwargs: { enable_thinking: false },
       }),
       signal: controller.signal,
     });
@@ -61,7 +66,10 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content ?? "";
+    const msg = data.choices?.[0]?.message;
+    // Prefer the answer; fall back to reasoning text if a model still returns
+    // empty content (so the chat never shows a blank reply).
+    const reply = msg?.content || msg?.reasoning_content || "";
     return NextResponse.json({ reply });
   } catch (e) {
     const isTimeout = e instanceof DOMException && e.name === "AbortError";

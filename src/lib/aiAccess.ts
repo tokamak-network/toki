@@ -7,16 +7,27 @@
 // wallet view (AiAccessCard) so the threshold and handoff URL never drift apart.
 import { createSiweMessage } from "viem/siwe";
 import { getAddress } from "viem";
+import { isTestnet } from "@/lib/chain";
 
 export const MIN_TON_AI_ACCESS = 100;
-export const AI_ACCESS_URL = "https://tokamak-ai-access.vercel.app";
+
+// AI Access service domain — network-aware so Sepolia testnet and mainnet each
+// talk to their own deploy (toki's network is driven by NEXT_PUBLIC_NETWORK).
+// Used as the external handoff link AND the native-issuance origin.
+export const AI_ACCESS_URL = isTestnet
+  ? "https://tokamak-ai-access-git-sepolia-theo-3096s-projects.vercel.app"
+  : "https://tokamak-ai-access.vercel.app";
 
 // Native in-app issuance (Arch B): toki calls a delegated, CORS-gated endpoint on
-// the AI Access service. The master key + key ledger stay on AI Access; toki only
-// proves the user via a SIWE signature. Disabled until this env var points at a
-// deployment that exposes /api/keys/issue-delegated and allowlists toki's origin.
-export const AI_ACCESS_BASE = process.env.NEXT_PUBLIC_AI_ACCESS_BASE ?? "";
-export const isNativeIssueEnabled = AI_ACCESS_BASE.length > 0;
+// the AI Access service (master key + key ledger stay there; toki only proves the
+// user via SIWE). It hits the SAME network domain as AI_ACCESS_URL above — no
+// separate URL to configure. Flip on per-deploy with NEXT_PUBLIC_AI_ACCESS_NATIVE=1
+// once that deploy's /api/keys/issue-delegated is live and allowlists this app's
+// origin (DELEGATED_ALLOWED_ORIGINS); otherwise the "issue key" CTA falls back to
+// the external handoff.
+export const AI_ACCESS_BASE = AI_ACCESS_URL;
+export const isNativeIssueEnabled =
+  process.env.NEXT_PUBLIC_AI_ACCESS_NATIVE === "1";
 
 const SIWE_STATEMENT = "Sign in to Tokamak LLM Access with your Ethereum account.";
 
@@ -165,4 +176,33 @@ export async function agentChat(key: string, messages: AgentMessage[]): Promise<
   }
   const data = (await res.json()) as { reply: string };
   return data.reply;
+}
+
+// ── Key usage / daily budget (LiteLLM /key/info via /api/agent/usage) ─────────
+// The issued key has a daily spend budget (max_budget, budget_duration "1d",
+// resets at budget_reset_at) — that is the real enforced cap. Surfaced so the hub
+// + AI Access screen can show today's usage.
+export interface KeyUsage {
+  spend: number;
+  maxBudget: number | null;
+  resetAt: string | null;
+  budgetDuration: string | null;
+  rpmLimit: number | null;
+  tpmLimit: number | null;
+  expiresAt: string | null;
+  blocked: boolean;
+}
+
+/** Read the issued key's budget/usage via toki's CORS-safe proxy. */
+export async function getKeyUsage(key: string): Promise<KeyUsage> {
+  const res = await fetch("/api/agent/usage", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new AiAccessError(body?.error ?? `HTTP ${res.status}`, res.status);
+  }
+  return (await res.json()) as KeyUsage;
 }

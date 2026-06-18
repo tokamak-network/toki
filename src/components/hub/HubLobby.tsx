@@ -18,6 +18,7 @@ import {
   MIN_TON_AI_ACCESS,
   loadIssuedKey,
   getKeyUsage,
+  type KeyUsage,
 } from "@/lib/aiAccess";
 
 const erc20Abi = [
@@ -84,7 +85,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
 
   const [showReceive, setShowReceive] = useState(false);
   const [hasKey, setHasKey] = useState(false);
-  const [aiUsagePct, setAiUsagePct] = useState<number | null>(null);
+  const [aiUsage, setAiUsage] = useState<KeyUsage | null>(null);
   const [ton, setTon] = useState<number | null>(null);
   const [staked, setStaked] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,10 +97,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
     setHasKey(!!stored);
     if (stored) {
       getKeyUsage(stored.key)
-        .then((u) => {
-          if (u.maxBudget)
-            setAiUsagePct(Math.min(100, Math.round((u.spend / u.maxBudget) * 100)));
-        })
+        .then(setAiUsage)
         .catch(() => {});
     }
   }, []);
@@ -211,6 +209,13 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const journeyDoneCount = journey.filter((s) => s.done).length;
   const journeyNext = journey.find((s) => !s.done);
   const journeyPct = Math.round((journeyDoneCount / journey.length) * 100);
+  const aiUsagePct =
+    aiUsage?.maxBudget != null && aiUsage.maxBudget > 0
+      ? Math.min(100, Math.round((aiUsage.spend / aiUsage.maxBudget) * 100))
+      : null;
+  const aiUsageReset = aiUsage?.resetAt
+    ? new Date(aiUsage.resetAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : null;
 
   // Lightweight transient toast for coming-soon menus.
   const ping = (msg: string) => {
@@ -439,6 +444,24 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
               </div>
             </div>
 
+            {/* AI Access usage — daily budget */}
+            {hasKey && aiUsagePct != null && aiUsage?.maxBudget != null && (
+              <div className="chip">
+                <div className="aiu-head">
+                  <span className="text-[10px] uppercase tracking-wide text-gray-300">
+                    {t.hub.aiUsageTitle}
+                  </span>
+                  <span className="text-[11px] font-bold text-white">{aiUsagePct}%</span>
+                </div>
+                <div className="aiu-bar">
+                  <i style={{ width: `${Math.max(2, aiUsagePct)}%` }} />
+                </div>
+                <div className="text-[10px] text-gray-300 mt-1">
+                  {`$${aiUsage.spend.toFixed(3)} / $${aiUsage.maxBudget.toFixed(2)}${aiUsageReset ? " · " + t.hub.aiUsageReset.replace("{time}", aiUsageReset) : ""}`}
+                </div>
+              </div>
+            )}
+
             {/* Meta menu tabs (coming soon) */}
             <button
               type="button"
@@ -501,6 +524,9 @@ const lobbyCss = `
 .tk-lobby .dlg .nm{display:inline-block;font-size:13px;font-weight:800;color:#22d3ee;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);border-radius:999px;padding:3px 13px;margin-bottom:9px}
 .tk-lobby .dlg p{margin:0;font-size:17px;line-height:1.6;color:#f1f5f9}
 .tk-lobby .hud-left{position:absolute;left:18px;top:14px;z-index:20;width:236px;display:flex;flex-direction:column;gap:10px}
+.tk-lobby .aiu-head{display:flex;align-items:center;justify-content:space-between}
+.tk-lobby .aiu-bar{height:6px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:5px}
+.tk-lobby .aiu-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#f59e0b)}
 .tk-lobby .notice{position:relative;display:flex;align-items:center;gap:8px;background:rgba(8,24,38,.62);backdrop-filter:blur(10px);border:1px solid rgba(34,211,238,.28);border-left:3px solid #22d3ee;border-radius:12px;padding:9px 12px;box-shadow:0 8px 24px rgba(0,0,0,.4);overflow:hidden}
 .tk-lobby .notice .ndot{flex:none;width:7px;height:7px;border-radius:50%;background:#22d3ee;box-shadow:0 0 8px #22d3ee;animation:tkPulse 1.6s ease-in-out infinite}
 @keyframes tkPulse{0%,100%{opacity:.4}50%{opacity:1}}
