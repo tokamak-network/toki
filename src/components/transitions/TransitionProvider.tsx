@@ -281,7 +281,7 @@ export const COVER_CSS = `
 .mp2 img{object-position:center 8%}
 .mp3 img{object-position:center 16%}
 .mp4{clip-path:polygon(0 8%,100% 0,100% 100%,0 100%)}
-.mp4 img{object-position:center 16%}
+.mp4 img{object-position:center 16%;transform:scaleX(-1)}
 .mp5 img{object-position:center 10%}
 .ma-footer{position:absolute;left:4%;right:calc(var(--mband) + 2%);bottom:3%;height:8%;background:#08272f;display:flex;align-items:center;justify-content:center;gap:1.4cqw;color:#dffafe}
 .ma-tok{height:72%;aspect-ratio:1;object-fit:contain;flex:none;background:#fff;border-radius:50%;padding:.5cqh;box-shadow:0 .3cqh .7cqh rgba(0,0,0,.35)}

@@ -357,7 +357,9 @@ export default function TransitionsCatalog() {
       {fs && (
         <>
           <div className="tcat-fsmsg">대시보드로 이동 중…</div>
-          <div className={`screen-cover sc-${fs.k} sc-${fs.phase}`} aria-hidden="true" />
+          <div className={`screen-cover sc-${fs.k} sc-${fs.phase}`} aria-hidden="true">
+            {coverChildren(fs.k)}
+          </div>
         </>
       )}
     </main>
