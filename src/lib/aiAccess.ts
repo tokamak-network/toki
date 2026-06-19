@@ -18,6 +18,12 @@ export const AI_ACCESS_URL = isTestnet
   ? "https://tokamak-ai-access-git-sepolia-theo-3096s-projects.vercel.app"
   : "https://tokamak-ai-access.vercel.app";
 
+// Models the AI server exposes (OpenAI-compatible). First entry is the default.
+export const AI_MODELS = ["qwen-3.6", "deepseek-v4-flash", "gemma-4"] as const;
+
+// Where the Advanced "API docs" link points (repoint if a dedicated docs page lands).
+export const AI_ACCESS_DOCS_URL = AI_ACCESS_URL;
+
 // Native in-app issuance (Arch B): toki calls a delegated, CORS-gated endpoint on
 // the AI Access service (master key + key ledger stay there; toki only proves the
 // user via SIWE). It hits the SAME network domain as AI_ACCESS_URL above — no
@@ -114,11 +120,8 @@ export async function issueAiAccessKey(
   return (await res.json()) as IssueResult;
 }
 
-// ── Stage 1 MVP: client-side key storage + agent chat proxy ──────────────
-// The issued key is the user's own credential (LLM inference only, 30-day,
-// revocable, billed to their stake). Stored in localStorage for the in-app
-// Agent Workspace; Stage 2 moves this to server-side encrypted storage + a SIWE
-// session. See docs/ai-agent-workspace.md.
+// ── Legacy localStorage key — kept ONLY to migrate Stage 1 users into the
+// Stage 2 server vault. New code never writes the key to the browser. ──────────
 const STORAGE_KEY = "toki.aiAccessKey";
 
 export interface StoredKey {
@@ -126,30 +129,19 @@ export interface StoredKey {
   expiresAt: string;
 }
 
-export function saveIssuedKey(k: StoredKey): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(k));
-  } catch {
-    // storage unavailable (private mode etc.) — non-fatal
-  }
-}
-
+/** Read a key previously stored in localStorage (Stage 1), for one-time migration. */
 export function loadIssuedKey(): StoredKey | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const k = JSON.parse(raw) as StoredKey;
-    if (!k?.key) return null;
-    if (k.expiresAt && new Date(k.expiresAt).getTime() < Date.now()) {
-      localStorage.removeItem(STORAGE_KEY);
-      return null;
-    }
-    return k;
+    return k?.key ? k : null;
   } catch {
     return null;
   }
 }
 
+/** Remove the legacy localStorage key (after migrating it to the server). */
 export function clearIssuedKey(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
@@ -158,17 +150,73 @@ export function clearIssuedKey(): void {
   }
 }
 
+// ── Stage 2 server vault (Privy-authed) ───────────────────────────────────────
+// Every call carries the Privy access token; the server verifies the user and
+// resolves/decrypts the key. Plaintext is only returned on an explicit reveal.
+export interface KeyStatus {
+  hasKey: boolean;
+  lastFour: string | null;
+  expiresAt: string | null;
+}
+
+function authHeaders(token: string): Record<string, string> {
+  return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+}
+
+/** Encrypt + store the user's key server-side. */
+export async function storeAiKey(
+  token: string,
+  key: string,
+  expiresAt: string,
+  address?: string,
+): Promise<void> {
+  const res = await fetch("/api/aikey", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ key, expiresAt, address }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new AiAccessError(body?.error ?? `HTTP ${res.status}`, res.status);
+  }
+}
+
+/** Whether the user has a stored key (+ masked metadata). Never returns plaintext. */
+export async function getAiKeyStatus(token: string): Promise<KeyStatus> {
+  const res = await fetch("/api/aikey", { headers: authHeaders(token) });
+  if (!res.ok) return { hasKey: false, lastFour: null, expiresAt: null };
+  return (await res.json()) as KeyStatus;
+}
+
+/** Explicitly decrypt + return the plaintext key (for copy / tool export). */
+export async function revealAiKey(token: string): Promise<string | null> {
+  const res = await fetch("/api/aikey?reveal=1", { headers: authHeaders(token) });
+  if (!res.ok) return null;
+  const body = (await res.json()) as { key: string | null };
+  return body.key;
+}
+
+/** Delete the stored key. */
+export async function clearAiKeyServer(token: string): Promise<void> {
+  await fetch("/api/aikey", { method: "DELETE", headers: authHeaders(token) }).catch(() => {});
+}
+
 export interface AgentMessage {
   role: "user" | "assistant" | "system";
   content: string;
 }
 
-/** Send a chat turn through toki's /api/agent proxy using the issued key. */
-export async function agentChat(key: string, messages: AgentMessage[]): Promise<string> {
+/** Chat turn via /api/agent — the server resolves the key from the session.
+ *  opts lets a selected agent inject its system prompt + model. */
+export async function agentChat(
+  token: string,
+  messages: AgentMessage[],
+  opts?: { system?: string; model?: string },
+): Promise<string> {
   const res = await fetch("/api/agent", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key, messages }),
+    headers: authHeaders(token),
+    body: JSON.stringify({ messages, system: opts?.system, model: opts?.model }),
   });
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
@@ -193,16 +241,51 @@ export interface KeyUsage {
   blocked: boolean;
 }
 
-/** Read the issued key's budget/usage via toki's CORS-safe proxy. */
-export async function getKeyUsage(key: string): Promise<KeyUsage> {
+/** Read the user's key budget/usage via toki's proxy (server resolves the key). */
+export async function getKeyUsage(token: string): Promise<KeyUsage> {
   const res = await fetch("/api/agent/usage", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key }),
+    headers: authHeaders(token),
+    body: JSON.stringify({}),
   });
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     throw new AiAccessError(body?.error ?? `HTTP ${res.status}`, res.status);
   }
   return (await res.json()) as KeyUsage;
+}
+
+// The enforced daily cap is a LiteLLM USD budget ($1/day), which the operator
+// sizes as ~1M output tokens/day. Users stake (they don't pay $), so we surface
+// usage in TOKENS: the budget fraction × this cap. /key/info has no daily token
+// counter, so this is derived from the budget fraction. Adjust if the cap changes.
+export const AI_DAILY_TOKEN_LIMIT = 1_000_000;
+
+/** Compact token formatting: 1_000_000 → "1M", 3402 → "3.4K". */
+export function fmtTokens(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1)}K`;
+  return n.toLocaleString("en-US");
+}
+
+// ── Advanced "connect your tool" — copy-paste setup skill ────────────────────
+// A self-contained instruction block the user pastes into their own AI assistant
+// (Claude Code / Cursor / ChatGPT / …), which then configures their local tool to
+// use this OpenAI-compatible endpoint. Lets us skip building per-tool installers.
+export function buildSetupSkill(key: string): string {
+  return `# Tokamak AI Access — connect this to my AI coding tool
+
+I have an OpenAI-compatible API key from Tokamak AI Access. Detect which tool I'm
+using (Claude Code / Codex / Cline / Continue / aider / Cursor / OpenAI SDK) and
+configure it to use this endpoint:
+
+- Base URL: ${AI_ACCESS_URL}/v1
+- API key:  ${key}
+- Model:    ${AI_MODELS[0]}   (also available: ${AI_MODELS.slice(1).join(", ")})
+
+Rules:
+- Store the key in an env var or the tool's config file. Do NOT hardcode it into
+  any file that gets committed to git.
+- After configuring, make one tiny test request and tell me whether it worked.
+- This key has a daily token budget and is metered, so keep the test minimal.`;
 }

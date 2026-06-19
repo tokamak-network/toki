@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyPrivyUser, isPrivyServerConfigured } from "@/lib/privyServer";
+import { getDecryptedKey } from "@/lib/aiKeyStore";
 
-// Agent Workspace proxy (Stage 1 MVP). Forwards a chat turn to the Tokamak AI
-// server using the *user's* issued AI Access key (sent per request). Proxying
-// avoids cross-origin CORS with the AI server, normalizes the model name, and
-// adds server-side guardrails (timeout, clamping). The key is never stored here.
-// See docs/ai-agent-workspace.md.
+// Agent Workspace proxy (Stage 2). The user's AI Access key is resolved
+// server-side from their encrypted vault (keyed by the verified Privy user) — the
+// browser never sends or holds the key. Proxying also avoids CORS, normalizes the
+// model, and adds guardrails (timeout, clamping). See docs/ai-agent-workspace.md.
 const LLM_URL = process.env.AI_ACCESS_LLM_URL ?? "https://api2.ai.tokamak.network";
 const MODEL = process.env.AI_ACCESS_MODEL ?? "qwen-3.6";
+// Models the AI server exposes — gate the per-agent override so only known
+// models reach upstream (unknown strings just error there anyway).
+const ALLOWED_MODELS = ["qwen-3.6", "deepseek-v4-flash", "gemma-4"];
 
 interface InMessage {
   role?: string;
@@ -15,20 +19,36 @@ interface InMessage {
 
 export async function POST(req: NextRequest) {
   try {
-    const { key, messages } = await req.json();
-
-    if (typeof key !== "string" || !key.startsWith("sk-")) {
-      return NextResponse.json({ error: "Missing or invalid key" }, { status: 401 });
+    if (!isPrivyServerConfigured) {
+      return NextResponse.json({ error: "Auth not configured" }, { status: 503 });
     }
+    const userId = await verifyPrivyUser(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const key = await getDecryptedKey(userId);
+    if (!key) {
+      return NextResponse.json({ error: "No key" }, { status: 401 });
+    }
+
+    const { messages, system, model } = await req.json();
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: "No messages" }, { status: 400 });
     }
 
     // Clamp history + content to keep requests bounded.
-    const safeMessages = (messages as InMessage[]).slice(-20).map((m) => ({
+    const history = (messages as InMessage[]).slice(-20).map((m) => ({
       role: m.role === "assistant" || m.role === "system" ? m.role : "user",
       content: String(m.content ?? "").slice(0, 4000),
     }));
+
+    // Optional per-agent system prompt (prepended) + model override (allowlisted).
+    const safeMessages =
+      typeof system === "string" && system.trim()
+        ? [{ role: "system", content: system.slice(0, 4000) }, ...history]
+        : history;
+    const useModel =
+      typeof model === "string" && ALLOWED_MODELS.includes(model) ? model : MODEL;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
@@ -40,7 +60,7 @@ export async function POST(req: NextRequest) {
         Authorization: `Bearer ${key}`,
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: useModel,
         messages: safeMessages,
         max_tokens: 1024,
         temperature: 0.7,

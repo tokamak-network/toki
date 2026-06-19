@@ -47,10 +47,12 @@ toki has **no server-side user auth today** (API routes take input + use `supaba
 - **Why a proxy** (not call the AI server directly from the browser): avoids cross-origin CORS with the AI server, lets toki normalize model names, and adds server-side guardrails (timeout, max tokens, basic rate limiting).
 - **Risk**: an XSS bug could read the key from `localStorage`. Accepted for MVP because the key is the **user's own**, scoped to **LLM inference only**, **30-day**, **revocable**, and **billed to their own stake** — blast radius is limited and self-contained. Mitigate with the usual XSS hygiene (no `dangerouslySetInnerHTML` on model output, CSP).
 
-### Stage 2 hardening — server-side encrypted + SIWE session
-- Establish a lightweight **toki session** via SIWE (the user already signs at issuance — reuse it to mint an httpOnly session cookie).
-- Store the key **encrypted at rest in Supabase** keyed by address; `/api/agent` resolves the key from the session server-side. **Key never touches the browser.**
-- This also enables cross-device use and clean revocation.
+### Stage 2 hardening — server-side encrypted vault + Privy auth  ✅ implemented 2026-06-19
+- **Auth = Privy access token, verified server-side** (`@privy-io/server-auth`, `PRIVY_APP_SECRET`). Every login method (Google / email / MetaMask external wallet) is a Privy session, so one check covers all — chosen over a bespoke SIWE session (simpler, no nonce/cookie infra). `src/lib/privyServer.ts`.
+- Key **AES-256-GCM encrypted at rest in Supabase** (`ai_access_keys`, keyed by Privy user id; `AI_KEY_ENC_SECRET`). `src/lib/crypto.ts` + `src/lib/aiKeyStore.ts`.
+- `/api/agent` + `/api/agent/usage` **resolve+decrypt the key from the verified user** server-side — the browser never sends or holds it. Legacy `localStorage` keys auto-migrate to the vault then clear. Plaintext returned only on explicit reveal (`GET /api/aikey?reveal=1`) for tool export.
+- Endpoints: `/api/aikey` — `POST` store · `GET` status · `GET ?reveal=1` · `DELETE`. Enables cross-device + clean revoke.
+- **Activate**: env `PRIVY_APP_SECRET` + `AI_KEY_ENC_SECRET` (`openssl rand -hex 32`), and apply `supabase/migrations/20260619000000_ai_access_keys.sql`. Until set, the AI endpoints return 503 and the UI shows the gate.
 
 ### Stage 3 — desktop
 - Electron stores the key in the **OS keychain** (Keychain / Credential Manager / libsecret) — strictly better than browser storage. Same `/api/agent` contract (or a local equivalent).

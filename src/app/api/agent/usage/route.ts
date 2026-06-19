@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyPrivyUser, isPrivyServerConfigured } from "@/lib/privyServer";
+import { getDecryptedKey } from "@/lib/aiKeyStore";
 
-// AI Access key usage proxy. Reads the user's LiteLLM virtual-key budget/limits
-// from the AI server's /key/info (the key authenticates for its own info) so the
-// UI can show today's usage. Proxied server-side to avoid CORS; key is not stored.
+// AI Access key usage proxy (Stage 2). Resolves the user's key server-side from
+// their encrypted vault (verified Privy user) and reads the LiteLLM /key/info
+// budget/limits. The browser never sends the key.
 const LLM_URL = process.env.AI_ACCESS_LLM_URL ?? "https://api2.ai.tokamak.network";
 
 export async function POST(req: NextRequest) {
   try {
-    const { key } = await req.json();
-    if (typeof key !== "string" || !key.startsWith("sk-")) {
-      return NextResponse.json({ error: "Missing or invalid key" }, { status: 401 });
+    if (!isPrivyServerConfigured) {
+      return NextResponse.json({ error: "Auth not configured" }, { status: 503 });
+    }
+    const userId = await verifyPrivyUser(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const key = await getDecryptedKey(userId);
+    if (!key) {
+      return NextResponse.json({ error: "No key" }, { status: 401 });
     }
 
     const controller = new AbortController();

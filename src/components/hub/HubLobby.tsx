@@ -16,8 +16,10 @@ import { useScreenTransition } from "@/components/transitions/TransitionProvider
 import HubBackground from "./HubBackground";
 import {
   MIN_TON_AI_ACCESS,
-  loadIssuedKey,
+  getAiKeyStatus,
   getKeyUsage,
+  fmtTokens,
+  AI_DAILY_TOKEN_LIMIT,
   type KeyUsage,
 } from "@/lib/aiAccess";
 
@@ -65,10 +67,6 @@ type Card = {
   onClick?: () => void;
 };
 
-// Chrome Web Store listing for the Toki browser extension.
-// TODO: replace with the published listing URL once the extension is live.
-const TOKI_EXTENSION_URL = "https://chromewebstore.google.com/";
-
 /**
  * "Toki Lobby" hub home (replaces /dashboard) — anime gacha-lobby layout.
  * Full-bleed ambient video, a centered-left full-body Toki with a dialogue box,
@@ -77,7 +75,7 @@ const TOKI_EXTENSION_URL = "https://chromewebstore.google.com/";
  * native in-app key issuance. Reflows to a stacked column under `lg`.
  */
 export default function HubLobby({ preview = false }: { preview?: boolean } = {}) {
-  const { ready, authenticated, user } = usePrivy();
+  const { ready, authenticated, user, getAccessToken } = usePrivy();
   const { wallets } = useWallets();
   const router = useRouter();
   const { t } = useTranslation();
@@ -93,14 +91,26 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = loadIssuedKey();
-    setHasKey(!!stored);
-    if (stored) {
-      getKeyUsage(stored.key)
-        .then(setAiUsage)
-        .catch(() => {});
-    }
-  }, []);
+    let cancelled = false;
+    (async () => {
+      const token = await getAccessToken().catch(() => null);
+      if (!token) return;
+      try {
+        const s = await getAiKeyStatus(token);
+        if (cancelled) return;
+        setHasKey(s.hasKey);
+        if (s.hasKey) {
+          const u = await getKeyUsage(token);
+          if (!cancelled) setAiUsage(u);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [getAccessToken]);
 
   // Rotate the top-left notice/event banner.
   useEffect(() => {
@@ -216,6 +226,10 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const aiUsageReset = aiUsage?.resetAt
     ? new Date(aiUsage.resetAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : null;
+  const aiUsageUsedTokens =
+    aiUsage?.maxBudget != null && aiUsage.maxBudget > 0
+      ? Math.round((aiUsage.spend / aiUsage.maxBudget) * AI_DAILY_TOKEN_LIMIT)
+      : null;
 
   // Lightweight transient toast for coming-soon menus.
   const ping = (msg: string) => {
@@ -234,8 +248,12 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   // ── Right-side MENU collage cards ──────────────────────────────────────────
   const eligible = stakedNum >= MIN_TON_AI_ACCESS;
   const needed = Math.max(0, MIN_TON_AI_ACCESS - stakedNum);
-  // Nothing staked yet → spotlight the Staking tile as the obvious first step.
+  // Wallet connected but no idle TON → the real first step is *acquiring* TON,
+  // so spotlight the Get-TON tile. Once the user holds TON, the spotlight moves
+  // on to Staking. `!loading` avoids a spotlight flash before balances resolve.
+  const noTon = !loading && tonNum <= 0;
   const noStake = stakedNum <= 0;
+  const stakeFirst = noStake && tonNum > 0;
 
   // AI Access always opens the dedicated /agent page, which owns every state
   // (stake-gated quest → key issuance → "chat with Toki"). The tile just mirrors
@@ -247,8 +265,8 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
     href: "/agent",
     locked: !hasKey && !eligible,
     sub: hasKey
-      ? aiUsagePct != null
-        ? t.hub.aiUsage.replace("{pct}", String(aiUsagePct))
+      ? aiUsageUsedTokens != null
+        ? (t.hub.aiUsage ?? "{used}").replace("{used}", fmtTokens(aiUsageUsedTokens))
         : t.hub.aiAccessChatReady
       : eligible
         ? t.hub.aiAccessBadge
@@ -270,11 +288,16 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
 
   const cards: Card[] = [
     {
-      key: "wallet",
-      title: t.hub.myWallet,
-      sub: t.hub.cardWalletSub,
+      // Get-TON takes the prominent top-left slot (formerly My Wallet), inheriting
+      // its exact layout. Wallet stays reachable via the balance chip + header.
+      key: "getton",
+      title: t.hub.cardGetTon,
+      // Empty-wallet users get a "start here" nudge; everyone else a neutral sub.
+      sub: noTon ? t.hub.cardGetTonSubEmpty : t.hub.cardGetTonSub,
       img: "/toki-bag-full.png",
-      href: "/wallet",
+      href: "/get-ton",
+      spotlight: noTon,
+      badge: noTon ? { kind: "hot", text: t.hub.startHere } : { kind: "live", text: "TON" },
       style: { left: "0", top: "0", width: "34%", height: "48%", clipPath: "polygon(0 0,100% 0,92.7% 100%,0 100%)" },
     },
     {
@@ -295,8 +318,8 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       imgStyle: { objectFit: "contain", objectPosition: "center bottom", transform: "scale(1.6)", transformOrigin: "center bottom" },
       href: "/staking",
       feat: true,
-      spotlight: noStake,
-      badge: noStake ? { kind: "hot", text: t.hub.startHere } : { kind: "live", text: "LIVE" },
+      spotlight: stakeFirst,
+      badge: stakeFirst ? { kind: "hot", text: t.hub.startHere } : { kind: "live", text: "LIVE" },
       style: { left: "60%", top: "0", width: "40%", height: "75.2%", clipPath: "polygon(10% 0,100% 0,100% 95.7%,0 100%)" },
     },
     {
@@ -310,12 +333,14 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
     },
     aiCard,
     {
-      key: "extension",
-      title: t.hub.cardExtension,
-      sub: t.hub.cardExtensionSub,
-      img: "/toki-logo.png",
-      imgStyle: { objectFit: "contain" },
-      href: TOKI_EXTENSION_URL,
+      // Games lives on the Tokamak games site → opens in a new tab. Full-width
+      // bottom strip now that Get-TON moved up to the top-left slot.
+      key: "games",
+      title: t.hub.appGames,
+      sub: t.hub.cardGamesSub,
+      img: "/characters/toki-excited.png",
+      imgStyle: { objectFit: "contain", objectPosition: "center" },
+      href: "https://tokamak-games.vercel.app/",
       external: true,
       badge: { kind: "new", text: "NEW" },
       style: { left: "0", top: "72%", width: "100%", height: "28%", clipPath: "polygon(0 28.6%,100% 0,100% 100%,0 100%)" },
@@ -457,7 +482,9 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
                   <i style={{ width: `${Math.max(2, aiUsagePct)}%` }} />
                 </div>
                 <div className="text-[10px] text-gray-300 mt-1">
-                  {`$${aiUsage.spend.toFixed(3)} / $${aiUsage.maxBudget.toFixed(2)}${aiUsageReset ? " · " + t.hub.aiUsageReset.replace("{time}", aiUsageReset) : ""}`}
+                  {`${(t.agent.usageTokens ?? "{used} / {limit}")
+                    .replace("{used}", fmtTokens(aiUsageUsedTokens ?? 0))
+                    .replace("{limit}", fmtTokens(AI_DAILY_TOKEN_LIMIT))}${aiUsageReset ? " · " + (t.hub.aiUsageReset ?? "{time}").replace("{time}", aiUsageReset) : ""}`}
                 </div>
               </div>
             )}
