@@ -158,6 +158,15 @@ export const wtonTokenAbi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    // Burns the caller's WTON and transfers back the equivalent TON (no approval
+    // needed — it acts on msg.sender's own balance). wtonAmount is in RAY (27 dp).
+    inputs: [{ name: "wtonAmount", type: "uint256" }],
+    name: "swapToTON",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ] as const;
 
 // DepositManager (deposit, withdraw)
