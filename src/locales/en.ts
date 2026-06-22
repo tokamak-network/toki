@@ -497,6 +497,12 @@ const en = {
     unwrapSuccess: "Done — TON is in your wallet!",
     unwrapError: "Unwrap failed. Please try again.",
     viewTx: "View transaction",
+    // VN frame (staking-style) — Toki dialogue + menu card subs
+    dlgBase: "You don't have any TON yet! Pick how you'd like to get some — I'll walk you through each one~",
+    dlgCex: "Buying on an exchange is easiest! Just note TON trades under the TOKAMAK ticker. Buy it, withdraw to your wallet, done.",
+    dlgDex: "Already holding other coins on-chain? Swap them to WTON on Uniswap, then unwrap WTON → TON right here!",
+    cexCardSub: "Buy with cash, withdraw",
+    dexCardSub: "Swap WTON, then unwrap",
     // contract
     contractLabel: "TON contract",
     viewOnEtherscan: "View on Etherscan",

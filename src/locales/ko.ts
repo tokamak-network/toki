@@ -494,6 +494,12 @@ const ko = {
     unwrapSuccess: "완료 — TON이 지갑에 들어왔어요!",
     unwrapError: "언랩에 실패했어요. 다시 시도해줘.",
     viewTx: "트랜잭션 보기",
+    // VN 프레임(스테이킹 스타일) — 토키 대사 + 메뉴 카드 서브
+    dlgBase: "아직 TON이 없네! 어떻게 구할지 골라봐 — 내가 하나씩 설명해줄게~",
+    dlgCex: "거래소에서 사는 게 제일 쉬워! 단, TON은 'TOKAMAK' 티커로 거래돼. 사서 지갑으로 출금하면 끝이야.",
+    dlgDex: "이미 다른 코인이 온체인에 있으면, 유니스왑에서 WTON으로 스왑한 다음 여기서 TON으로 언랩하면 돼!",
+    cexCardSub: "현금으로 사서 출금",
+    dexCardSub: "WTON 스왑 후 언랩",
     // 컨트랙트
     contractLabel: "TON 컨트랙트",
     viewOnEtherscan: "이더스캔에서 보기",
