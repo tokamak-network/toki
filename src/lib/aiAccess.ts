@@ -49,10 +49,13 @@ export interface Eip1193Provider {
 
 export class AiAccessError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  /** Disambiguates a 401/429: "budget" | "auth" | "expired" | "revoked" | "nokey". */
+  reason?: string;
+  constructor(message: string, status: number, reason?: string) {
     super(message);
     this.name = "AiAccessError";
     this.status = status;
+    this.reason = reason;
   }
 }
 
@@ -219,8 +222,8 @@ export async function agentChat(
     body: JSON.stringify({ messages, system: opts?.system, model: opts?.model }),
   });
   if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new AiAccessError(body?.error ?? `HTTP ${res.status}`, res.status);
+    const body = (await res.json().catch(() => ({}))) as { error?: string; reason?: string };
+    throw new AiAccessError(body?.error ?? `HTTP ${res.status}`, res.status, body?.reason);
   }
   const data = (await res.json()) as { reply: string };
   return data.reply;

@@ -24,11 +24,12 @@ export async function POST(req: NextRequest) {
     }
     const userId = await verifyPrivyUser(req);
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      // Session token couldn't be verified — NOT a key problem; client should re-auth.
+      return NextResponse.json({ error: "Unauthorized", reason: "auth" }, { status: 401 });
     }
     const key = await getDecryptedKey(userId);
     if (!key) {
-      return NextResponse.json({ error: "No key" }, { status: 401 });
+      return NextResponse.json({ error: "No key", reason: "nokey" }, { status: 401 });
     }
 
     const { messages, system, model } = await req.json();
@@ -74,8 +75,33 @@ export async function POST(req: NextRequest) {
     });
     clearTimeout(timeout);
 
+    // Budget exhausted usually surfaces as 429 — a soft daily limit, not a dead key.
+    if (res.status === 429) {
+      return NextResponse.json({ error: "Daily limit reached", reason: "budget" }, { status: 429 });
+    }
     if (res.status === 401 || res.status === 403) {
-      return NextResponse.json({ error: "Key rejected (expired or revoked)" }, { status: 401 });
+      // An over-budget / blocked key ALSO 401s here. Ask /key/info to disambiguate
+      // budget (soft) vs expired / revoked (dead) so the client reacts correctly.
+      let reason = "revoked";
+      try {
+        const infoRes = await fetch(`${LLM_URL}/key/info`, {
+          headers: { Authorization: `Bearer ${key}` },
+        });
+        if (infoRes.ok) {
+          const info = ((await infoRes.json())?.info ?? {}) as Record<string, unknown>;
+          const spend = typeof info.spend === "number" ? info.spend : 0;
+          const maxBudget = typeof info.max_budget === "number" ? info.max_budget : null;
+          const expires = typeof info.expires === "string" ? info.expires : null;
+          if (info.blocked || (maxBudget != null && spend >= maxBudget)) reason = "budget";
+          else if (expires && new Date(expires).getTime() < Date.now()) reason = "expired";
+        }
+      } catch {
+        // keep default "revoked"
+      }
+      if (reason === "budget") {
+        return NextResponse.json({ error: "Daily limit reached", reason }, { status: 429 });
+      }
+      return NextResponse.json({ error: "Key rejected", reason }, { status: 401 });
     }
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
