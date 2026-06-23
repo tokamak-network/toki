@@ -26,15 +26,19 @@ const erc20Abi = [
 
 type Venue = { name: string; url: string; hint?: string };
 
+// Tokamak Network trades under the ticker "TOKAMAK" on exchanges (NOT "TON" —
+// that's Toncoin, an unrelated token). Each URL deep-links straight to the
+// TOKAMAK market so the right pair is pre-selected. Upbit market codes verified
+// against api.upbit.com/v1/market/all (KRW-TOKAMAK, IDR-TOKAMAK).
 const CEX_KOREAN: Venue[] = [
-  { name: "Upbit", url: "https://upbit.com/exchange?code=CRIX.UPBIT.KRW-TON", hint: "KRW" },
+  { name: "Upbit", url: "https://upbit.com/exchange?code=CRIX.UPBIT.KRW-TOKAMAK", hint: "KRW" },
   { name: "Bithumb", url: "https://www.bithumb.com/react/trade/order/TOKAMAK-KRW", hint: "KRW" },
   { name: "Coinone", url: "https://coinone.co.kr/exchange/trade/tokamak/krw", hint: "KRW" },
 ];
 const CEX_GLOBAL: Venue[] = [
   { name: "Poloniex", url: "https://poloniex.com/trade/TOKAMAK_USDT?type=spot", hint: "USDT" },
   { name: "DigiFinex", url: "https://www.digifinex.com/en-ww/trade/USDT/TOKAMAK", hint: "USDT" },
-  { name: "Upbit Indonesia", url: "https://id.upbit.com/exchange?code=CRIX.UPBIT.IDR-TON", hint: "IDR" },
+  { name: "Upbit Indonesia", url: "https://id.upbit.com/exchange?code=CRIX.UPBIT.IDR-TOKAMAK", hint: "IDR" },
 ];
 const WTON_GUIDE = "https://docs.tokamak.network/home/information/ton-wton";
 
