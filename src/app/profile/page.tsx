@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Header from "@/components/layout/Header";
 
 // Shareable "Toki Passport" — the user's ecosystem profile summary card.
 const ProfileView = dynamic(() => import("@/components/profile/ProfileView"), {
@@ -13,5 +14,10 @@ const ProfileView = dynamic(() => import("@/components/profile/ProfileView"), {
 });
 
 export default function ProfilePage() {
-  return <ProfileView />;
+  return (
+    <>
+      <Header />
+      <ProfileView />
+    </>
+  );
 }

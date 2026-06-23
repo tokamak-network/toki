@@ -205,7 +205,8 @@ export default function ProfileView({ preview = false }: { preview?: boolean }) 
           background-size: cover;
           background-position: center;
           background-attachment: fixed;
-          padding: 22px 16px 64px;
+          /* top clears the fixed global Header (h-16 = 64px) */
+          padding: 86px 16px 64px;
         }
         .pv-wrap {
           max-width: 460px;
