@@ -65,6 +65,8 @@ type Card = {
   href?: string;
   external?: boolean;
   onClick?: () => void;
+  /** Toki's in-character explanation, shown in the dialogue box on hover. */
+  hint?: string;
 };
 
 /**
@@ -89,6 +91,9 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const [loading, setLoading] = useState(true);
   const [noticeIdx, setNoticeIdx] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  // When hovering a menu tile, Toki explains it via the dialogue box (text only —
+  // the character sprite stays put). null = show the default greeting.
+  const [hoverHint, setHoverHint] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -261,15 +266,16 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const aiCard: Card = {
     key: "ai",
     title: t.hub.aiAccessTitle,
-    img: "/characters/menu-ai.png",
+    img: "/characters/toki-menu-ai.png",
     href: "/agent",
+    hint: t.hub.hintAi,
     locked: !hasKey && !eligible,
     sub: hasKey
       ? aiUsageUsedTokens != null
         ? (t.hub.aiUsage ?? "{used}").replace("{used}", fmtTokens(aiUsageUsedTokens))
         : t.hub.aiAccessChatReady
       : eligible
-        ? t.hub.aiAccessBadge
+        ? t.hub.aiAccessReady
         : loading
           ? t.hub.aiAccessChecking
           : `+${fmt(needed)} TON`,
@@ -294,8 +300,9 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       title: t.hub.cardGetTon,
       // Empty-wallet users get a "start here" nudge; everyone else a neutral sub.
       sub: noTon ? t.hub.cardGetTonSubEmpty : t.hub.cardGetTonSub,
-      img: "/toki-bag-full.png",
+      img: "/characters/toki-menu-getton.png",
       href: "/get-ton",
+      hint: t.hub.hintGetTon,
       spotlight: noTon,
       badge: noTon ? { kind: "hot", text: t.hub.startHere } : { kind: "live", text: "TON" },
       style: { left: "0", top: "0", width: "34%", height: "48%", clipPath: "polygon(0 0,100% 0,92.7% 100%,0 100%)" },
@@ -305,6 +312,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       title: t.hub.appPrivateTransfer,
       sub: t.hub.cardPrivateSub,
       img: "/characters/toki-menu-private.png",
+      hint: t.hub.hintPrivate,
       // in development — block navigation, show a coming-soon toast instead
       onClick: () => ping(`${t.hub.appPrivateTransfer} — ${t.hub.comingSoonToast}`),
       badge: { kind: "soon", text: "SOON" },
@@ -317,6 +325,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       img: "/characters/toki-menu-staking.png",
       imgStyle: { objectFit: "contain", objectPosition: "center bottom", transform: "scale(1.6)", transformOrigin: "center bottom" },
       href: "/staking",
+      hint: t.hub.hintStaking,
       feat: true,
       spotlight: stakeFirst,
       badge: stakeFirst ? { kind: "hot", text: t.hub.startHere } : { kind: "live", text: "LIVE" },
@@ -328,27 +337,49 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       sub: t.hub.cardLotterySub,
       img: "/characters/toki-menu-lottery.png",
       href: "/lottery",
+      hint: t.hub.hintLottery,
       badge: { kind: "hot", text: t.hub.badgeLive },
       style: { left: "0", top: "48%", width: "31.53%", height: "32%", clipPath: "polygon(0 0,100% 0,95.1% 92.5%,0 100%)" },
     },
     aiCard,
     {
-      // Games lives on the Tokamak games site → opens in a new tab. Full-width
-      // bottom strip now that Get-TON moved up to the top-left slot.
+      // Bottom strip is split left/right: Games (left) + Toki Passport (right).
+      // Games lives on the Tokamak games site → opens in a new tab.
       key: "games",
       title: t.hub.appGames,
       sub: t.hub.cardGamesSub,
-      img: "/characters/toki-excited.png",
+      img: "/characters/toki-menu-games.png",
       imgStyle: { objectFit: "contain", objectPosition: "center" },
       href: "https://tokamak-games.vercel.app/",
+      hint: t.hub.hintGames,
       external: true,
-      badge: { kind: "new", text: "NEW" },
-      style: { left: "0", top: "72%", width: "100%", height: "28%", clipPath: "polygon(0 28.6%,100% 0,100% 100%,0 100%)" },
+      // No badge — the diagonal top-right cut would clip it.
+      style: { left: "0", top: "72%", width: "50%", height: "28%", clipPath: "polygon(0 28.6%,100% 14.3%,96% 100%,0 100%)" },
+    },
+    {
+      // Toki Passport — profile summary card (/profile). Right half of the strip,
+      // mirrors the "My Toki" entry in the left rail.
+      key: "profile",
+      title: t.hub.navProfile,
+      sub: t.hub.navProfileSub,
+      img: "/characters/toki-menu-profile.png",
+      imgStyle: { objectFit: "contain", objectPosition: "center" },
+      href: "/profile",
+      hint: t.hub.hintProfile,
+      badge: { kind: "live", text: "ME" },
+      style: { left: "50%", top: "72%", width: "50%", height: "28%", clipPath: "polygon(5% 14.3%,100% 0,100% 100%,0 100%)" },
     },
   ];
 
   const renderPiece = (c: Card) => {
     const cls = `piece${c.feat ? " feat" : ""}${c.spotlight ? " spotlight" : ""}${c.locked ? " locked" : ""}`;
+    // Hover/focus a tile → Toki narrates its hint in the dialogue box.
+    const hover = {
+      onMouseEnter: () => c.hint && setHoverHint(c.hint),
+      onMouseLeave: () => setHoverHint(null),
+      onFocus: () => c.hint && setHoverHint(c.hint),
+      onBlur: () => setHoverHint(null),
+    };
     const inner = (
       <>
         <img className="art" src={c.img} alt="" style={c.imgStyle} />
@@ -362,14 +393,14 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
     );
     if (c.onClick) {
       return (
-        <button key={c.key} type="button" className={cls} style={c.style} onClick={c.onClick}>
+        <button key={c.key} type="button" className={cls} style={c.style} onClick={c.onClick} {...hover}>
           {inner}
         </button>
       );
     }
     if (c.external) {
       return (
-        <a key={c.key} className={cls} style={c.style} href={c.href} target="_blank" rel="noopener noreferrer">
+        <a key={c.key} className={cls} style={c.style} href={c.href} target="_blank" rel="noopener noreferrer" {...hover}>
           {inner}
         </a>
       );
@@ -380,6 +411,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
         className={cls}
         style={c.style}
         href={c.href ?? "#"}
+        {...hover}
         onClick={(e) => {
           // Let modifier-clicks open a new tab; otherwise play the menu's
           // signature game transition instead of an instant route swap.
@@ -489,6 +521,16 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
               </div>
             )}
 
+            {/* My Toki — profile / shareable passport (live route) */}
+            <Link href="/profile" className="ltab">
+              <span className="lt-ic">🪪</span>
+              <span className="lt-tx">
+                <b>{t.hub.navProfile}</b>
+                <em>{t.hub.navProfileSub}</em>
+              </span>
+              <span className="lt-dot" style={{ background: "#22d3ee" }} />
+            </Link>
+
             {/* Meta menu tabs (coming soon) */}
             <button
               type="button"
@@ -524,7 +566,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
           {/* Dialogue under the character */}
           <div className="dlg">
             <span className="nm">Toki</span>
-            <p>{dialogue}</p>
+            <p>{hoverHint ?? dialogue}</p>
           </div>
 
           {/* Right-side MENU collage */}
