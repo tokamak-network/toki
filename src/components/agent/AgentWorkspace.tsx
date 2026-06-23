@@ -7,6 +7,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useStakedTon } from "@/hooks/useStakedTon";
+import TokiLoader from "@/components/common/TokiLoader";
 import { AGENTS, type AgentDef } from "@/lib/agents";
 import {
   agentChat,
@@ -359,13 +360,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
 
   // Key status not resolved yet → spinner, so we never flash the gate to a holder.
   if (!preview && checkingKey) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#070b14]">
-        <img src="/characters/toki-welcome.png" alt="" className="w-24 h-24 object-contain animate-pulse" />
-        <div className="w-7 h-7 rounded-full border-2 border-accent-cyan/30 border-t-accent-cyan animate-spin" />
-        <div className="text-[11px] font-bold tracking-[0.2em] text-accent-cyan/70">AI ACCESS</div>
-      </div>
-    );
+    return <TokiLoader label="AI ACCESS" />;
   }
 
   const staked = stakedTon ?? 0;

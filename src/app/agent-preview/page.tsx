@@ -1,17 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import TokiLoader from "@/components/common/TokiLoader";
 
 // Internal visual-QA route for the AI agent workspace (mirrors /hub-preview).
 // Renders AgentWorkspace with preview=true so the auth gate is skipped; seed a
 // key in localStorage to view the gallery/connect screens.
 const AgentWorkspace = dynamic(() => import("@/components/agent/AgentWorkspace"), {
   ssr: false,
-  loading: () => (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-gray-400">Loading...</div>
-    </div>
-  ),
+  loading: () => <TokiLoader />,
 });
 
 export default function AgentPreviewPage() {

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import TokiLoader from "@/components/common/TokiLoader";
 import Footer from "@/components/layout/Footer";
 
 // Detailed wallet view (balances, staking positions, withdrawals, accounts).
@@ -10,11 +11,7 @@ const DashboardContent = dynamic(
   () => import("@/components/dashboard/DashboardContent"),
   {
     ssr: false,
-    loading: () => (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-400">Loading wallet...</div>
-      </div>
-    ),
+    loading: () => <TokiLoader />,
   }
 );
 
