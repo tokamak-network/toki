@@ -252,8 +252,8 @@ export async function getKeyUsage(token: string): Promise<KeyUsage> {
     body: JSON.stringify({}),
   });
   if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new AiAccessError(body?.error ?? `HTTP ${res.status}`, res.status);
+    const body = (await res.json().catch(() => ({}))) as { error?: string; reason?: string };
+    throw new AiAccessError(body?.error ?? `HTTP ${res.status}`, res.status, body?.reason);
   }
   return (await res.json()) as KeyUsage;
 }
@@ -263,6 +263,10 @@ export async function getKeyUsage(token: string): Promise<KeyUsage> {
 // usage in TOKENS: the budget fraction × this cap. /key/info has no daily token
 // counter, so this is derived from the budget fraction. Adjust if the cap changes.
 export const AI_DAILY_TOKEN_LIMIT = 1_000_000;
+
+// Operator daily USD spend cap on issued keys ($1/day ≈ AI_DAILY_TOKEN_LIMIT tokens).
+// Used as a fallback when a key's /key/info omits max_budget, so usage % still renders.
+export const AI_DAILY_BUDGET_USD = 1;
 
 /** Compact token formatting: 1_000_000 → "1M", 3402 → "3.4K". */
 export function fmtTokens(n: number): string {

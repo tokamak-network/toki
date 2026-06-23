@@ -1,17 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useStakedTon } from "@/hooks/useStakedTon";
-import {
-  AGENTS,
-  type AgentDef,
-  type AgentCategory,
-} from "@/lib/agents";
+import { AGENTS, type AgentDef } from "@/lib/agents";
 import {
   agentChat,
   loadIssuedKey,
@@ -26,6 +22,7 @@ import {
   fmtTokens,
   buildSetupSkill,
   AI_DAILY_TOKEN_LIMIT,
+  AI_DAILY_BUDGET_USD,
   AI_ACCESS_URL,
   AI_ACCESS_DOCS_URL,
   AI_MODELS,
@@ -35,41 +32,68 @@ import {
   type KeyUsage,
   type Eip1193Provider,
 } from "@/lib/aiAccess";
+import { SITE_URL } from "@/constants/seo";
 
-type View = "gallery" | "chat";
-const CHIP_CATS: AgentCategory[] = ["research", "onchain", "content"];
-
-// Refined framing (validated against the agent-workspace design + market scan):
-// the on-chain / mascot assistant is the HERO. Dev agents (Solidity / code) fit a
-// browser chat poorly — they're strongest in the user's own IDE via the issued
-// key — so they're kept OUT of the roster entirely; the "Connect" path covers
-// coding use. Tiers are cosmetic (collectible-card framing).
-const HERO_ID = "toki";
-const AGENT_TIER: Record<string, string> = {
-  toki: "gold",
-  "staking-advisor": "platinum",
-  "defi-researcher": "bronze",
-  "x-writer": "black",
-};
-const TIER_BG: Record<string, string> = {
-  gold: "/card-bg-gold.png",
-  platinum: "/card-bg-platinum.png",
-  silver: "/card-bg-silver.png",
-  bronze: "/card-bg-bronze.png",
-  black: "/card-bg-black.png",
-};
-const TIER_COLOR: Record<string, string> = {
-  gold: "#f5b301",
-  platinum: "#7fe3ff",
-  silver: "#cbd5e1",
-  bronze: "#d39a6a",
-  black: "#a78bfa",
+// One Toki, several lenses — each "mode" just swaps the system prompt + starters
+// (same model). Dev agents (Solidity / code) are intentionally excluded: coding
+// belongs in the user's own IDE via the Connect panel, not an in-browser chat.
+const MODE_IDS = ["toki", "staking-advisor", "defi-researcher", "x-writer"];
+const MODES: AgentDef[] = MODE_IDS.map((id) => AGENTS.find((x) => x.id === id)).filter(
+  (x): x is AgentDef => !!x,
+);
+const MODE_LABEL: Record<string, { ko: string; en: string }> = {
+  toki: { ko: "토키", en: "Toki" },
+  "staking-advisor": { ko: "스테이킹", en: "Staking" },
+  "defi-researcher": { ko: "리서치", en: "Research" },
+  "x-writer": { ko: "작가", en: "Writer" },
 };
 
-// AI Access workspace — gacha-roster framing over the existing stake-issued key.
-// Views: no key → quest gate (stake-to-unlock + issue/paste) · has key → agent
-// ROSTER (hero on-chain assistant + collectible cards) → CHAT. Dev agents route
-// to the CONNECT modal (copy key/endpoint/setup-skill into the user's own tools).
+// Typewriter + dialogue bar cloned from the staking / get-ton VN frame so the key
+// gate matches those screens (left Toki · bottom dialogue · right quest panel).
+function useTypewriter(text: string, speed = 24) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    setDisplayed("");
+    setDone(false);
+    let i = 0;
+    const timer = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) {
+        clearInterval(timer);
+        setDone(true);
+      }
+    }, speed);
+    return () => clearInterval(timer);
+  }, [text, speed]);
+  const skip = useCallback(() => {
+    setDisplayed(text);
+    setDone(true);
+  }, [text]);
+  return { displayed, done, skip };
+}
+
+function GateDialogue({ text }: { text: string }) {
+  const { displayed, done, skip } = useTypewriter(text);
+  return (
+    <div className="cursor-pointer select-none w-full" onClick={() => !done && skip()}>
+      <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6 h-[160px] sm:h-[176px] flex flex-col">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-cyan/10 border border-accent-cyan/30 mb-3 self-start">
+          <span className="text-accent-cyan font-bold text-sm tracking-wide">Toki</span>
+        </div>
+        <p className="text-gray-100 text-base sm:text-lg leading-relaxed flex-1">
+          {displayed}
+          {!done && <span className="inline-block w-0.5 h-5 bg-accent-cyan ml-0.5 animate-pulse align-middle" />}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// AI Access workspace over the stake-issued key. No key → quest gate. Has key →
+// "Ask Toki": one assistant with mode chips (lenses that swap the system prompt) +
+// the holographic AI ACCESS PASS. Coding tools connect via the CONNECT modal.
 export default function AgentWorkspace({ preview = false }: { preview?: boolean } = {}) {
   const { ready, authenticated, getAccessToken } = usePrivy();
   const router = useRouter();
@@ -80,9 +104,9 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
   const [hasKey, setHasKey] = useState(false);
   const [keyLastFour, setKeyLastFour] = useState<string | null>(null);
   const [pasteValue, setPasteValue] = useState("");
-  const [view, setView] = useState<View>("gallery");
-  const [agent, setAgent] = useState<AgentDef | null>(null);
-  const [cat, setCat] = useState<AgentCategory | "all">("all");
+  const [agent, setAgent] = useState<AgentDef>(
+    () => AGENTS.find((x) => x.id === "toki") ?? AGENTS[0],
+  );
   const [messages, setMessages] = useState<AgentMessage[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -91,6 +115,8 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
   const [skillCopied, setSkillCopied] = useState(false);
   const [issuing, setIssuing] = useState<"signing" | "issuing" | null>(null);
   const [usage, setUsage] = useState<KeyUsage | null>(null);
+  // Usage fetch lifecycle so the pass card never shows a permanent "loading…".
+  const [usageState, setUsageState] = useState<"loading" | "ok" | "error">("loading");
   const [showConnect, setShowConnect] = useState(false);
   const [checkingKey, setCheckingKey] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -140,27 +166,60 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
 
-  // Refresh daily usage when the key is present and after each reply.
+  // Clear a dead key from the server vault so a reload shows a clean issue gate
+  // (not the dead pass card). Only call on a GENUINE rejection (revoked/expired),
+  // never on soft failures (budget / session).
+  const invalidateKey = useCallback(async () => {
+    const token = await getAccessToken().catch(() => null);
+    if (token) await clearAiKeyServer(token);
+    setHasKey(false);
+    setKeyLastFour(null);
+    setUsage(null);
+    setUsageState("error");
+  }, [getAccessToken]);
+
+  // Refresh daily usage when the key is present and after each reply. Surfaces a
+  // real state (loading | ok | error) so the card never sticks on "loading…",
+  // and self-heals when the key is rejected.
   useEffect(() => {
     if (!hasKey) {
       setUsage(null);
+      setUsageState("loading");
       return;
     }
     let cancelled = false;
+    setUsageState("loading");
     (async () => {
       const token = await getAccessToken().catch(() => null);
-      if (!token) return;
+      if (!token) {
+        if (!cancelled) setUsageState("error");
+        return;
+      }
       try {
         const u = await getKeyUsage(token);
-        if (!cancelled) setUsage(u);
-      } catch {
-        // ignore
+        if (!cancelled) {
+          setUsage(u);
+          setUsageState("ok");
+        }
+      } catch (e) {
+        if (cancelled) return;
+        setUsage(null);
+        setUsageState("error");
+        // A genuinely dead key → drop it so the user gets a clean recovery path.
+        if (
+          e instanceof AiAccessError &&
+          e.status === 401 &&
+          (e.reason === "revoked" || e.reason === "expired")
+        ) {
+          setError(a.keyExpired);
+          if (!cancelled) await invalidateKey();
+        }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [hasKey, messages.length, getAccessToken]);
+  }, [hasKey, messages.length, getAccessToken, invalidateKey, a]);
 
   const sendText = useCallback(
     async (text: string) => {
@@ -173,7 +232,8 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
       setBusy(true);
       try {
         const token = await getAccessToken();
-        if (!token) throw new AiAccessError("No session", 401);
+        // reason "auth" → a transient session miss must NOT delete a good key.
+        if (!token) throw new AiAccessError("No session", 401, "auth");
         const reply = await agentChat(
           token,
           next,
@@ -188,10 +248,10 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
           } else if (e.reason === "auth") {
             setError(a.errorAuth);
           } else if (e.status === 401) {
-            // Genuinely dead (expired / revoked / no key) → reset to the gate.
+            // Genuinely dead (expired / revoked / no key) → drop the stale key and
+            // reset to the gate with a recovery path.
             setError(a.keyExpired);
-            setHasKey(false);
-            setKeyLastFour(null);
+            await invalidateKey();
           } else {
             setError(a.errorGeneric);
           }
@@ -201,14 +261,13 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
       }
       setBusy(false);
     },
-    [hasKey, busy, messages, agent, a, getAccessToken],
+    [hasKey, busy, messages, agent, a, getAccessToken, invalidateKey],
   );
 
-  const openAgent = (ag: AgentDef) => {
-    setAgent(ag);
-    setMessages([]);
+  // Switch lens — keep the conversation; an empty chat shows the new mode's starters.
+  const setMode = (m: AgentDef) => {
+    setAgent(m);
     setError(null);
-    setView("chat");
   };
 
   const usePastedKey = async () => {
@@ -253,8 +312,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
     setHasKey(false);
     setKeyLastFour(null);
     setMessages([]);
-    setAgent(null);
-    setView("gallery");
+    setAgent(MODES[0]);
   };
 
   // Native in-app issuance (delegated SIWE) → store in the server vault.
@@ -294,7 +352,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
   if (!preview && checkingKey) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#070b14]">
-        <img src="/characters/toki-ai.png" alt="" className="w-24 h-24 object-contain animate-pulse" />
+        <img src="/characters/toki-welcome.png" alt="" className="w-24 h-24 object-contain animate-pulse" />
         <div className="w-7 h-7 rounded-full border-2 border-accent-cyan/30 border-t-accent-cyan animate-spin" />
         <div className="text-[11px] font-bold tracking-[0.2em] text-accent-cyan/70">AI ACCESS</div>
       </div>
@@ -307,17 +365,27 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
   const pct = Math.max(4, Math.min(100, Math.round((staked / MIN_TON) * 100)));
   const fmt = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
   const maskedKey = keyLastFour ? `sk-••••••${keyLastFour}` : "sk-••••••";
+  // Daily spend cap (USD): the key's own max_budget, else the documented $1.00/day
+  // (≈ 1M tokens) so usage still renders when the key omits maxBudget.
+  const spendUsd = usage?.spend ?? 0;
+  const dailyBudgetUsd = usage?.maxBudget ?? (usage ? AI_DAILY_BUDGET_USD : null);
   const usagePct =
-    usage?.maxBudget != null && usage.maxBudget > 0
-      ? Math.min(100, Math.round((usage.spend / usage.maxBudget) * 100))
+    dailyBudgetUsd != null && dailyBudgetUsd > 0
+      ? Math.min(100, Math.round((spendUsd / dailyBudgetUsd) * 100))
       : null;
   const usageUsedTokens =
-    usage?.maxBudget != null && usage.maxBudget > 0
-      ? Math.round((usage.spend / usage.maxBudget) * AI_DAILY_TOKEN_LIMIT)
+    dailyBudgetUsd != null && dailyBudgetUsd > 0
+      ? Math.round((spendUsd / dailyBudgetUsd) * AI_DAILY_TOKEN_LIMIT)
       : null;
   const usageReset = usage?.resetAt
     ? new Date(usage.resetAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : null;
+  // Pass hero stat — tokens left in today's budget (or the full cap if unknown).
+  const usageKnown = usageUsedTokens != null;
+  const tokensLeft = usageKnown
+    ? Math.max(0, AI_DAILY_TOKEN_LIMIT - (usageUsedTokens ?? 0))
+    : AI_DAILY_TOKEN_LIMIT;
+  const pctLeft = usagePct != null ? Math.max(0, 100 - usagePct) : null;
   // Proactive key-health surfacing — show WHY chats would fail before the user tries.
   const overBudget = usage?.maxBudget != null && usage.spend >= usage.maxBudget;
   const keyExpired = usage?.expiresAt ? new Date(usage.expiresAt).getTime() < Date.now() : false;
@@ -327,47 +395,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
       ? (a.passWarnBudget ?? "{time}").replace("{time}", usageReset ?? "—")
       : null;
 
-  const catLabel = (c: AgentCategory): string =>
-    c === "dev" ? a.catDev
-    : c === "research" ? a.catResearch
-    : c === "onchain" ? a.catOnchain
-    : c === "content" ? a.catContent
-    : a.catAll;
-
-  // Dev agents (Solidity / code) are excluded from the roster — coding is best
-  // done in the user's own IDE with the key (the Connect panel covers that).
-  const ROSTER = AGENTS.filter((x) => x.category !== "dev");
-  const agents = cat === "all" ? ROSTER : ROSTER.filter((x) => x.category === cat);
-  const tierOf = (id: string) => AGENT_TIER[id] ?? "silver";
-  const heroAgent = AGENTS.find((x) => x.id === HERO_ID) ?? null;
-  const heroVisible = heroAgent && (cat === "all" || cat === heroAgent.category);
-  const rosterAgents = agents.filter((x) => x.id !== HERO_ID);
-
-  const hudTitle = !hasKey
-    ? "AI ACCESS"
-    : view === "chat" && agent
-      ? agent.name[locale]
-      : a.hudAgents;
-
-  // ── usage bar (shared) ──
-  const usageBar = usagePct != null && usage?.maxBudget != null && (
-    <div className="ai-usage">
-      <div className="ai-usage-top">
-        <span>{a.usageLabel}</span>
-        <span>
-          {usagePct}% · {(a.usageTokens ?? "{used} / {limit}")
-            .replace("{used}", fmtTokens(usageUsedTokens ?? 0))
-            .replace("{limit}", fmtTokens(AI_DAILY_TOKEN_LIMIT))}
-        </span>
-      </div>
-      <div className="ai-usage-bar">
-        <i style={{ width: `${Math.max(2, usagePct)}%` }} />
-      </div>
-      {usageReset && (
-        <div className="ai-usage-reset">{(a.usageReset ?? "{time}").replace("{time}", usageReset)}</div>
-      )}
-    </div>
-  );
+  const hudTitle = !hasKey ? "AI ACCESS" : "ASK TOKI";
 
   // ── Connect modal (copy → paste into CLI/IDE) ──
   const connectModal = showConnect && (
@@ -392,6 +420,18 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
             {a.docsLink}
           </a>
         </div>
+        <div className="ai-ccard">
+          <div className="ch">{a.mcpTitle}</div>
+          <p>{a.mcpDesc}</p>
+          <div className="ai-kv">
+            <span>{`claude mcp add --transport http toki ${SITE_URL}/api/mcp`}</span>
+            <button onClick={() => copy(`claude mcp add --transport http toki ${SITE_URL}/api/mcp`)}>{a.copy}</button>
+          </div>
+          <div className="ai-kv">
+            <span>{`${SITE_URL}/api/mcp`}</span>
+            <button onClick={() => copy(`${SITE_URL}/api/mcp`)}>{a.copy}</button>
+          </div>
+        </div>
         <div className="ai-ccard alt">
           <div className="ch">{a.aiTitle}</div>
           <p>{a.aiDesc}</p>
@@ -403,6 +443,109 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
       </div>
     </div>
   );
+
+  // ── KEY GATE — staking-style VN frame: Toki (left) explains, UNLOCK QUEST (right) ──
+  if (!hasKey) {
+    const gateDlg = eligible
+      ? a.gateDlgEligible
+      : (a.gateDlgLocked ?? "").replace("{min}", String(MIN_TON)).replace("{needed}", fmt(needed));
+    const cta =
+      "block w-full rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan py-3 text-center text-sm font-bold text-[#04141d] shadow-lg shadow-accent-cyan/30 transition hover:brightness-110";
+    return (
+      <div className="fixed inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/backgrounds/staking-dawn.png')" }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/30" />
+
+        <Link
+          href="/dashboard"
+          className="absolute left-4 top-20 z-30 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-gray-300 backdrop-blur-md transition-colors hover:text-accent-cyan"
+        >
+          ‹ {a.back}
+        </Link>
+
+        {/* mid: Toki (left 40%) + UNLOCK QUEST panel (right 60%) */}
+        <div className="absolute inset-x-0 top-16 bottom-[176px] z-10 flex items-center justify-center">
+          <div className="max-w-3xl w-full mx-auto flex items-end h-full px-4">
+            <div className="hidden md:flex w-[40%] items-end justify-center">
+              <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] aspect-[3/4]">
+                <div className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 animate-pulse opacity-40" style={{ backgroundColor: "rgba(34,211,238,0.4)" }} />
+                <img src="/characters/toki-welcome.png" alt="Toki" className="relative z-10 w-full h-full object-contain object-bottom drop-shadow-2xl" />
+              </div>
+            </div>
+
+            <div className="w-full md:w-[60%] flex items-end justify-center pb-4">
+              <div className="w-full max-w-sm animate-slide-up">
+                <div className="bg-black/55 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-[0_0_40px_rgba(0,0,0,0.35)]">
+                  <div className="text-[11px] font-bold tracking-[0.22em] text-accent-cyan">{a.gateKicker}</div>
+                  <h2 className="mt-1.5 mb-1 text-xl font-extrabold text-white">{a.gateTitle}</h2>
+                  <p className="mb-4 text-[13px] leading-relaxed text-gray-300">
+                    {eligible ? a.gateEligibleDesc : a.gateLockedDesc.replace("{min}", String(MIN_TON))}
+                  </p>
+                  <div className="mb-2 flex items-baseline justify-between text-[11.5px] font-semibold text-gray-200">
+                    <span>{a.gateProgress}</span>
+                    <span><b className="text-accent-amber">{stakeLoading ? "…" : fmt(staked)}</b> / {MIN_TON} TON</span>
+                  </div>
+                  <div className="mb-4 h-3 overflow-hidden rounded-full border border-white/10 bg-white/10">
+                    <div className="h-full rounded-full bg-gradient-to-r from-accent-cyan to-accent-amber shadow-[0_0_12px_rgba(34,211,238,0.5)] transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="group relative">
+                    {eligible ? (
+                      isNativeIssueEnabled ? (
+                        <button onClick={handleIssue} disabled={!!issuing || !wallet} className={`${cta} disabled:opacity-50`}>
+                          {issuing === "signing" ? a.issueSigning : issuing === "issuing" ? a.issuing : `${a.gateGetKeyCta} →`}
+                        </button>
+                      ) : (
+                        <a href={AI_ACCESS_URL} target="_blank" rel="noopener noreferrer" className={cta}>
+                          {a.gateGetKeyCta} →
+                        </a>
+                      )
+                    ) : (
+                      <Link href="/staking" className={cta}>
+                        {a.gateStakeCta.replace("{needed}", fmt(needed))} →
+                      </Link>
+                    )}
+                    <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 w-max max-w-[260px] -translate-x-1/2 rounded-lg border border-white/10 bg-black/90 px-3 py-2 text-center text-[11px] leading-snug text-gray-200 opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
+                      {eligible ? a.tipIssue : (a.tipStake ?? "").replace("{min}", String(MIN_TON))}
+                    </span>
+                  </div>
+                  {error && <div className="mt-2 text-center text-xs text-red-400">{error}</div>}
+                  <a href={AI_ACCESS_URL} target="_blank" rel="noopener noreferrer" className="mt-3 block text-center text-[11.5px] text-accent-sky hover:underline">
+                    {a.manageOnSite} ↗
+                  </a>
+                  <div className="mt-4">
+                    <label className="mb-1.5 block text-[11.5px] text-gray-400">{a.pasteKeyLabel}</label>
+                    <div className="flex gap-2">
+                      <input
+                        value={pasteValue}
+                        onChange={(e) => setPasteValue(e.target.value)}
+                        placeholder="sk-litellm-…"
+                        className="flex-1 rounded-xl border border-white/15 bg-black/30 px-3 py-2.5 font-mono text-[13px] text-cyan-50 outline-none focus:border-accent-cyan/50"
+                      />
+                      <div className="group relative flex-none">
+                        <button onClick={usePastedKey} className="h-full rounded-xl border border-white/15 bg-white/10 px-4 text-[12.5px] font-bold text-gray-200 hover:bg-white/15">
+                          {a.pasteKeyCta}
+                        </button>
+                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 w-max max-w-[240px] rounded-lg border border-white/10 bg-black/90 px-3 py-2 text-[11px] leading-snug text-gray-200 opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
+                          {a.tipPaste}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* bottom: Toki dialogue */}
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          <div className="max-w-3xl mx-auto">
+            <GateDialogue text={gateDlg} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="ai-screen">
@@ -417,101 +560,105 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
       <div className="ai-wrap">
         {/* HUD top bar */}
         <div className="ai-hud">
-          {!hasKey || view === "gallery" ? (
-            <Link href="/dashboard" className="ai-back">‹ {a.back}</Link>
-          ) : (
-            <button className="ai-back" onClick={() => setView("gallery")}>‹ {a.backGallery}</button>
-          )}
+          <Link href="/dashboard" className="ai-back">‹ {a.back}</Link>
           <span className="ai-htitle">{hudTitle}</span>
-          {hasKey ? (
-            <span className="ai-status on"><i />{a.statusActive}</span>
-          ) : (
-            <span className="ai-status off">AI</span>
-          )}
+          <span className="ai-status on"><i />{a.statusActive}</span>
         </div>
 
-        {!hasKey ? (
-          /* ── LOCKED: quest gate ── */
-          <div className="ai-narrow">
-            <div className="ai-gate">
-              <img className="ai-hero" src="/characters/toki-ai.png" alt="" />
-              <div className="ai-quest glass">
-                <div className="ai-kicker">{a.gateKicker}</div>
-                <h2>{a.gateTitle}</h2>
-                <p className="ai-qdesc">
-                  {eligible ? a.gateEligibleDesc : a.gateLockedDesc.replace("{min}", String(MIN_TON))}
-                </p>
-                <div className="ai-prog">
-                  <div className="top">
-                    <span>{a.gateProgress}</span>
-                    <span><b>{stakeLoading ? "…" : fmt(staked)}</b> / {MIN_TON} TON</span>
-                  </div>
-                  <div className="ai-bar"><i style={{ width: `${pct}%` }} /></div>
+        {/* ── ASK TOKI — one assistant, mode lenses ── */}
+        <div className="ai-uni">
+            {/* AI ACCESS PASS — holographic credential */}
+            <div className="ai-pass">
+              <span className="ap-grid" />
+              <span className="ap-holo" />
+              <div className="ap-body">
+                <div className="ap-top">
+                  <span className="ap-brand"><span className="ap-d" />AI ACCESS PASS</span>
+                  <span className="ap-chip"><i />ACTIVE</span>
                 </div>
-                {eligible ? (
-                  isNativeIssueEnabled ? (
-                    <button className="ai-btn" onClick={handleIssue} disabled={!!issuing || !wallet}>
-                      {issuing === "signing" ? a.issueSigning : issuing === "issuing" ? a.issuing : `${a.gateGetKeyCta} →`}
-                    </button>
-                  ) : (
-                    <a className="ai-btn" href={AI_ACCESS_URL} target="_blank" rel="noopener noreferrer">
-                      {a.gateGetKeyCta} →
-                    </a>
-                  )
-                ) : (
-                  <Link className="ai-btn" href="/staking">{a.gateStakeCta.replace("{needed}", fmt(needed))} →</Link>
-                )}
-                {error && <div className="ai-err" style={{ textAlign: "center" }}>{error}</div>}
-                <div className="ai-paste">
-                  <label>{a.pasteKeyLabel}</label>
-                  <div className="row">
-                    <input
-                      className="ai-input"
-                      value={pasteValue}
-                      onChange={(e) => setPasteValue(e.target.value)}
-                      placeholder="sk-litellm-…"
-                    />
-                    <button className="ai-use" onClick={usePastedKey}>{a.pasteKeyCta}</button>
+
+                <div className="ap-mid">
+                  <div className="ap-cred">
+                    <span className="ap-clbl">CREDENTIAL</span>
+                    <code className="ap-key">{maskedKey}</code>
+                    <div className="ap-cbtns">
+                      <button className="ai-mini" onClick={copyKey}>{copied ? a.copied : a.copy}</button>
+                      <button className="ai-mini" onClick={reset}>{a.clearKey}</button>
+                    </div>
+                  </div>
+                  <div className="ap-stat">
+                    <div className="ap-num">{pctLeft != null ? `${pctLeft}%` : fmtTokens(tokensLeft)}</div>
+                    <div className="ap-nlbl">{pctLeft != null ? "LEFT TODAY" : "DAILY BUDGET"}</div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        ) : view === "chat" && agent ? (
-          /* ── CHAT with a selected agent ── */
-          <div className="ai-narrow ai-chatcol">
-            <div className="ai-persona glass">
-              <img src={agent.sprite} alt="" />
-              <div>
-                <div className="pn">{agent.name[locale]}</div>
-                <div className="pr">{agent.tagline[locale]}</div>
+
+                {/* Daily token usage — always shown: how much used vs the 1M cap, and how much is left. */}
+                <div className="ap-bar"><i style={{ width: `${usagePct ?? 0}%` }} /></div>
+                <div className="ap-urow">
+                  <span>
+                    {usageKnown ? fmtTokens(usageUsedTokens ?? 0) : "—"} / {fmtTokens(AI_DAILY_TOKEN_LIMIT)} used
+                  </span>
+                  <span>
+                    {usageKnown
+                      ? `${fmtTokens(tokensLeft)} left${usageReset ? ` · resets ${usageReset}` : ""}`
+                      : usageState === "loading"
+                        ? "checking usage…"
+                        : a.usageUnavailable}
+                  </span>
+                </div>
+
+                {passWarn && <div className="ai-passwarn">⚠️ {passWarn}</div>}
+
+                <div className="ap-foot">
+                  <span className="ap-models">{AI_MODELS.join(" · ")}</span>
+                  <span className="ap-net">STAKE-FUNDED · ETH MAINNET</span>
+                </div>
+
+                <button className="ai-connect" onClick={() => setShowConnect(true)}>
+                  ⌘ {a.connectCta}
+                </button>
               </div>
             </div>
 
-            {messages.length === 0 && (
-              <div className="ai-starters">
-                {agent.starters[locale].map((s) => (
-                  <button key={s} onClick={() => sendText(s)}>{s}</button>
-                ))}
-              </div>
-            )}
+            {/* mode chips — same Toki, different lens */}
+            <div className="ai-modes">
+              {MODES.map((m) => (
+                <button
+                  key={m.id}
+                  className={agent.id === m.id ? "on" : ""}
+                  onClick={() => setMode(m)}
+                >
+                  <img src={m.sprite} alt="" />
+                  {MODE_LABEL[m.id]?.[locale] ?? m.name[locale]}
+                </button>
+              ))}
+            </div>
 
+            {/* chat */}
             <div className="ai-chat" ref={scrollRef}>
-              {messages.length === 0 && (
-                <div className="ai-row">
-                  <img className="ai-av" src={agent.sprite} alt="" />
-                  <div className="ai-bub"><div className="ai-nm">{agent.name[locale]}</div>{agent.tagline[locale]}</div>
-                </div>
-              )}
-              {messages.map((m, i) =>
-                m.role === "user" ? (
-                  <div key={i} className="ai-row me"><div className="ai-bub">{m.content}</div></div>
-                ) : (
-                  <div key={i} className="ai-row">
+              {messages.length === 0 ? (
+                <>
+                  <div className="ai-row">
                     <img className="ai-av" src={agent.sprite} alt="" />
-                    <div className="ai-bub"><div className="ai-nm">{agent.name[locale]}</div>{m.content}</div>
+                    <div className="ai-bub"><div className="ai-nm">{agent.name[locale]}</div>{agent.tagline[locale]}</div>
                   </div>
-                ),
+                  <div className="ai-starters">
+                    {agent.starters[locale].map((s) => (
+                      <button key={s} onClick={() => sendText(s)}>{s}</button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                messages.map((m, i) =>
+                  m.role === "user" ? (
+                    <div key={i} className="ai-row me"><div className="ai-bub">{m.content}</div></div>
+                  ) : (
+                    <div key={i} className="ai-row">
+                      <img className="ai-av" src={agent.sprite} alt="" />
+                      <div className="ai-bub"><div className="ai-nm">{agent.name[locale]}</div>{m.content}</div>
+                    </div>
+                  ),
+                )
               )}
               {busy && (
                 <div className="ai-row">
@@ -547,78 +694,6 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
               </button>
             </div>
           </div>
-        ) : (
-          /* ── ROSTER (gallery) ── */
-          <div className="ai-scrollcol">
-            {/* AI pass — leads with the stake→AI value */}
-            <div className="ai-pass">
-              <div className="ptitle">
-                <img src="/toki-logo.png" alt="" />
-                {a.passTitle}
-              </div>
-              <div className="plead">{a.passLead}</div>
-              <div className="pkey">
-                <code>{maskedKey}</code>
-                <button className="ai-mini" onClick={copyKey}>{copied ? a.copied : a.copy}</button>
-                <button className="ai-mini" onClick={reset}>{a.clearKey}</button>
-              </div>
-              {usageBar}
-              {passWarn && <div className="ai-passwarn">⚠️ {passWarn}</div>}
-              <button className="ai-connect" onClick={() => setShowConnect(true)}>
-                ⌘ {a.connectCta}
-              </button>
-            </div>
-
-            {/* category filter */}
-            <div className="ai-cats">
-              <button className={cat === "all" ? "on" : ""} onClick={() => setCat("all")}>{a.catAll}</button>
-              {CHIP_CATS.map((c) => (
-                <button key={c} className={cat === c ? "on" : ""} onClick={() => setCat(c)}>{catLabel(c)}</button>
-              ))}
-            </div>
-
-            {/* hero — the on-chain assistant */}
-            {heroVisible && heroAgent && (
-              <button className="ros-hero" onClick={() => openAgent(heroAgent)}>
-                <span className="hglow" />
-                <img className="hart" src={heroAgent.sprite} alt="" />
-                <span className="hmeta">
-                  <span className="hbadge">{a.heroBadge}</span>
-                  <span className="hnm">{heroAgent.name[locale]}</span>
-                  <span className="hsub">{a.heroSub}</span>
-                </span>
-                <span className="hgo">{a.startChat} →</span>
-              </button>
-            )}
-
-            {/* roster grid */}
-            <div className="ros-grid">
-              {rosterAgents.map((ag) => {
-                const tier = tierOf(ag.id);
-                return (
-                  <button
-                    key={ag.id}
-                    className="ros-card"
-                    style={{ ["--rc"]: TIER_COLOR[tier] } as CSSProperties}
-                    onClick={() => openAgent(ag)}
-                  >
-                    <img className="cbg" src={TIER_BG[tier]} alt="" />
-                    <span className="cveil" />
-                    <span className="crib" style={{ background: TIER_COLOR[tier] }}>
-                      {ag.category.toUpperCase()}
-                    </span>
-                    <img className="cpor" src={ag.sprite} alt="" />
-                    <span className="cinfo">
-                      <span className="cnm">{ag.name[locale]}</span>
-                      <span className="ctg">{ag.tagline[locale]}</span>
-                      <span className="cgo">{a.startChat} →</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       {connectModal}
@@ -633,103 +708,56 @@ const aiCss = `
 .ai-bg .img{position:absolute;inset:0;background:url("/backgrounds/hub-bg.jpg") center/cover;opacity:.42}
 .ai-bg .scrim{position:absolute;inset:0;background:radial-gradient(80% 70% at 50% 0,rgba(7,13,24,.5),rgba(7,11,20,.93))}
 .ai-bg .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.05) 1px,transparent 1px);background-size:42px 42px}
-.ai-wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:16px 16px 20px}
+.ai-wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:80px 16px 20px}
 .ai-hud{display:flex;align-items:center;gap:8px;margin-bottom:14px}
 .ai-back{display:flex;align-items:center;gap:5px;font-size:13px;color:#cfe0f2;background:rgba(8,24,38,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:7px 13px;font-weight:600;text-decoration:none;cursor:pointer}
 .ai-back:hover{background:rgba(8,24,38,.85);color:#fff}
 .ai-htitle{font-weight:800;letter-spacing:.16em;font-size:14px;color:#fff;margin-left:2px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ai-status{margin-left:auto;font-size:10.5px;font-weight:800;border-radius:999px;padding:4px 10px;flex:none}
-.ai-status.off{background:#22d3ee;color:#04141d}
 .ai-status.on{background:rgba(34,211,238,.16);color:#22d3ee;border:1px solid rgba(34,211,238,.4);display:flex;align-items:center;gap:6px}
 .ai-status.on i{width:6px;height:6px;border-radius:50%;background:#22d3ee;box-shadow:0 0 8px #22d3ee;animation:aiPulse 1.6s ease-in-out infinite}
 @keyframes aiPulse{0%,100%{opacity:.4}50%{opacity:1}}
-.glass{background:rgba(8,24,38,.62);backdrop-filter:blur(12px);border:1px solid rgba(34,211,238,.28);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
-.ai-narrow{flex:1;width:100%;max-width:600px;margin:0 auto;display:flex;flex-direction:column;min-height:0}
+/* Ask-Toki unified surface: pass + mode chips + chat + input, one column */
+.ai-uni{flex:1;width:100%;max-width:600px;margin:0 auto;display:flex;flex-direction:column;min-height:0}
+.ai-modes{display:flex;gap:7px;overflow-x:auto;margin:0 0 12px;padding-bottom:2px;flex:none}
+.ai-modes button{flex:none;display:flex;align-items:center;gap:7px;font:inherit;font-size:12px;font-weight:600;color:#cfe0f2;background:rgba(8,24,38,.55);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 13px 4px 4px;cursor:pointer;transition:background .15s,border-color .15s}
+.ai-modes button img{width:24px;height:24px;border-radius:50%;object-fit:cover;object-position:center top;border:1.5px solid rgba(34,211,238,.4);background:#0c1116}
+.ai-modes button:hover{background:rgba(8,24,38,.85)}
+.ai-modes button.on{background:rgba(34,211,238,.16);border-color:#22d3ee;color:#fff}
+.ai-modes button.on img{border-color:#22d3ee}
 
-/* gate */
-.ai-gate{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;padding-top:120px}
-.ai-hero{position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(190px,46%);z-index:1;filter:drop-shadow(0 12px 26px rgba(0,0,0,.5));animation:aiFloat 5s ease-in-out infinite}
-@keyframes aiFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3%)}}
-.ai-quest{position:relative;z-index:2;width:100%;padding:20px 18px 18px;text-align:center;margin-bottom:10px}
-.ai-kicker{font-size:11px;letter-spacing:.22em;color:#22d3ee;font-weight:700}
-.ai-quest h2{font-weight:800;font-size:21px;margin:7px 0 5px;color:#fff}
-.ai-qdesc{font-size:13px;color:#bcd0e6;line-height:1.55;margin-bottom:16px}
-.ai-prog{margin-bottom:16px}
-.ai-prog .top{display:flex;justify-content:space-between;font-size:11.5px;color:#cfe0f2;margin-bottom:7px;font-weight:600}
-.ai-prog .top b{color:#f59e0b}
-.ai-bar{height:12px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;border:1px solid rgba(255,255,255,.12)}
-.ai-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#f59e0b);box-shadow:0 0 12px rgba(34,211,238,.5);transition:width .6s ease}
-.ai-btn{display:block;width:100%;font-weight:800;font-size:15px;color:#04141d;text-align:center;background:linear-gradient(135deg,#4a90d9,#22d3ee);border:0;border-radius:14px;padding:13px;cursor:pointer;box-shadow:0 8px 22px rgba(34,211,238,.32);text-decoration:none}
-.ai-btn:hover{filter:brightness(1.06)}
-.ai-paste{margin-top:14px;width:100%}
-.ai-paste label{display:block;font-size:11.5px;color:#8fb0c8;margin-bottom:6px;text-align:left}
-.ai-paste .row{display:flex;gap:8px}
-.ai-input{flex:1;font-family:ui-monospace,monospace;font-size:13px;color:#dffafe;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:10px 12px;outline:none}
-.ai-input:focus{border-color:rgba(34,211,238,.5)}
-.ai-use{font-size:12.5px;font-weight:700;color:#cfe0f2;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:0 14px;cursor:pointer}
-.ai-use:hover{background:rgba(255,255,255,.16)}
-
-/* roster scroll column */
-.ai-scrollcol{flex:1;overflow-y:auto;padding:2px 2px 4px}
-
-/* AI pass */
-.ai-pass{position:relative;overflow:hidden;padding:15px 16px;margin-bottom:14px;background:linear-gradient(135deg,rgba(34,211,238,.2),rgba(167,139,250,.13) 46%,rgba(245,158,11,.12));border:1px solid rgba(34,211,238,.4);border-radius:18px}
-.ai-pass::after{content:"";position:absolute;top:-60%;left:-25%;width:55%;height:220%;transform:rotate(18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);pointer-events:none}
-.ai-pass .ptitle{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;letter-spacing:.06em;color:#eafdff}
-.ai-pass .ptitle img{width:22px;height:22px;object-fit:contain;background:#fff;border-radius:50%;padding:2px}
-.ai-pass .plead{font-size:11px;color:#bcd0e6;margin-top:5px}
-.ai-pass .pkey{display:flex;align-items:center;gap:7px;margin-top:11px}
-.ai-pass .pkey code{flex:1;font-family:ui-monospace,monospace;font-size:12.5px;color:#dffafe;background:rgba(0,0,0,.32);border-radius:9px;padding:9px 11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* AI pass — holographic credential card (Toki Passport tone) */
+.ai-pass{position:relative;overflow:hidden;flex:none;margin-bottom:16px;border-radius:20px;color:#eaf6fb;background:radial-gradient(120% 90% at 88% 0,rgba(34,211,238,.22),transparent 55%),radial-gradient(90% 80% at 0 100%,rgba(167,139,250,.16),transparent 55%),linear-gradient(160deg,#101a2e,#0a0f1c 72%);border:1px solid rgba(34,211,238,.45);box-shadow:0 22px 60px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.04),0 0 36px rgba(34,211,238,.18)}
+.ai-pass .ap-grid{position:absolute;inset:0;z-index:0;opacity:.5;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:30px 30px}
+.ai-pass .ap-holo{position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:.5;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.16) 44%,rgba(127,233,255,.13) 50%,rgba(167,139,250,.18) 56%,transparent 72%);background-size:260% 100%;animation:apHolo 7s ease-in-out infinite}
+@keyframes apHolo{0%,100%{background-position:0 0}50%{background-position:100% 0}}
+.ap-body{position:relative;z-index:2;padding:16px 17px 14px}
+.ap-top{display:flex;align-items:center;justify-content:space-between}
+.ap-brand{display:flex;align-items:center;gap:8px;font-family:"Baloo 2","Fredoka",sans-serif;font-weight:800;font-size:11px;letter-spacing:.2em;color:#cfe0f2}
+.ap-d{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#22d3ee,#a78bfa);transform:rotate(45deg);box-shadow:0 0 10px rgba(34,211,238,.6)}
+.ap-chip{display:flex;align-items:center;gap:6px;font-family:"Anton",sans-serif;font-size:12px;letter-spacing:.08em;color:#04141d;background:linear-gradient(135deg,#7fe3ff,#22d3ee);padding:5px 11px;border-radius:999px;box-shadow:0 4px 14px rgba(34,211,238,.4)}
+.ap-chip i{width:6px;height:6px;border-radius:50%;background:#04141d;animation:aiPulse 1.6s ease-in-out infinite}
+.ap-mid{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:15px}
+.ap-cred{min-width:0;flex:1}
+.ap-clbl{display:block;font-size:9px;letter-spacing:.22em;color:#7fb6c4;font-weight:700;margin-bottom:6px}
+.ap-key{display:block;font-family:ui-monospace,monospace;font-size:13px;letter-spacing:.06em;color:#dffafe;background:rgba(0,0,0,.34);border:1px solid rgba(255,255,255,.08);border-radius:9px;padding:9px 11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ap-cbtns{display:flex;gap:6px;margin-top:7px}
+.ap-stat{text-align:right;flex:none}
+.ap-num{font-family:"Anton",sans-serif;font-size:clamp(32px,9vw,46px);line-height:.84;color:#fff;letter-spacing:-.01em;text-shadow:0 3px 22px rgba(34,211,238,.45)}
+.ap-nlbl{font-size:8.5px;letter-spacing:.14em;color:#a78bfa;font-weight:700;margin-top:5px}
 .ai-mini{font-size:11px;font-weight:700;color:#cfe0f2;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px 9px;cursor:pointer;white-space:nowrap}
 .ai-mini:hover{background:rgba(255,255,255,.2)}
-.ai-usage{margin-top:11px;padding-top:11px;border-top:1px solid rgba(255,255,255,.12)}
-.ai-usage-top{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#cfe0f2;margin-bottom:6px;font-weight:600}
-.ai-usage-bar{height:7px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;border:1px solid rgba(255,255,255,.12)}
-.ai-usage-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#f59e0b);transition:width .5s ease}
-.ai-usage-reset{margin-top:5px;font-size:10px;color:#8fb0c8}
+.ap-bar{height:8px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;border:1px solid rgba(255,255,255,.1);margin-top:14px}
+.ap-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#a78bfa,#f59e0b);box-shadow:0 0 12px rgba(34,211,238,.5);transition:width .5s ease}
+.ap-urow{display:flex;justify-content:space-between;font-size:10px;color:#9fc7d6;margin-top:6px;font-weight:600;letter-spacing:.03em}
+.ap-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px;padding-top:11px;border-top:1px solid rgba(255,255,255,.08);font-size:9px;letter-spacing:.06em}
+.ap-models{font-family:ui-monospace,monospace;color:#9fb4cc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ap-net{flex:none;color:#7fb6c4;font-weight:700}
 .ai-passwarn{margin-top:11px;font-size:11.5px;font-weight:600;color:#fcd9a0;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:9px 11px;line-height:1.45}
 .ai-connect{margin-top:13px;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;font-weight:700;color:#22d3ee;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);border-radius:12px;padding:11px;cursor:pointer}
 .ai-connect:hover{background:rgba(34,211,238,.2)}
 
-/* category chips */
-.ai-cats{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px}
-.ai-cats button{flex:none;font-size:11.5px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#cfe0f2;cursor:pointer}
-.ai-cats button.on{background:#22d3ee;color:#04141d;border-color:#22d3ee;font-weight:700}
-
-/* hero card */
-.ros-hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;width:100%;text-align:left;cursor:pointer;margin-bottom:14px;padding:16px;border-radius:18px;border:1px solid rgba(34,211,238,.5);background:linear-gradient(120deg,rgba(34,211,238,.16),rgba(167,139,250,.1) 70%,rgba(8,24,38,.6));box-shadow:0 12px 34px rgba(0,0,0,.45);transition:transform .18s,box-shadow .18s}
-.ros-hero:hover{transform:translateY(-2px);box-shadow:0 18px 44px rgba(0,0,0,.5),0 0 26px rgba(34,211,238,.25)}
-.ros-hero .hglow{position:absolute;right:-30px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(rgba(34,211,238,.45),transparent 70%);pointer-events:none}
-.ros-hero .hart{width:74px;height:74px;flex:none;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid rgba(34,211,238,.6);background:#0c1116;z-index:1}
-.ros-hero .hmeta{flex:1;min-width:0;z-index:1}
-.ros-hero .hbadge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.08em;color:#04141d;background:#22d3ee;border-radius:999px;padding:3px 9px;margin-bottom:5px}
-.ros-hero .hnm{display:block;font-size:19px;font-weight:800;color:#fff}
-.ros-hero .hsub{display:block;font-size:11.5px;color:#cfe3ec;margin-top:2px;line-height:1.4}
-.ros-hero .hgo{flex:none;z-index:1;font-size:12px;font-weight:700;color:#04141d;background:#22d3ee;border-radius:11px;padding:9px 14px;white-space:nowrap}
-
-/* roster grid */
-.ros-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-@media (max-width:680px){.ros-grid{grid-template-columns:repeat(2,1fr)}}
-.ros-card{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;cursor:pointer;border:2px solid rgba(255,255,255,.14);background:#0c1116;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s,border-color .2s}
-.ros-card .cbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
-.ros-card .cveil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,10,18,.05) 38%,rgba(6,10,18,.92))}
-.ros-card .cpor{position:absolute;top:8%;left:50%;transform:translateX(-50%);width:60%;aspect-ratio:1;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid rgba(255,255,255,.5);background:#0c1116;z-index:2;box-shadow:0 6px 18px rgba(0,0,0,.5)}
-.ros-card .crib{position:absolute;top:9px;left:9px;z-index:3;font-size:8.5px;font-weight:800;letter-spacing:.06em;padding:3px 8px;border-radius:999px;color:#05080f}
-.ros-card .cide{position:absolute;top:9px;right:9px;z-index:3;font-size:8.5px;font-weight:800;letter-spacing:.04em;color:#fff;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 7px}
-.ros-card .cinfo{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:11px 10px 13px;text-align:center}
-.ros-card .cnm{display:block;font-size:14px;font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.9)}
-.ros-card .ctg{display:block;font-size:10px;color:#cfe3ec;margin-top:3px;line-height:1.35}
-.ros-card .cgo{display:inline-block;margin-top:8px;font-size:10px;font-weight:700;color:#04141d;background:var(--rc,#22d3ee);border-radius:8px;padding:5px 11px}
-.ros-card:hover{transform:translateY(-6px) scale(1.02);border-color:var(--rc,#22d3ee);box-shadow:0 20px 44px rgba(0,0,0,.55),0 0 22px var(--rc,rgba(34,211,238,.4))}
-
 /* chat */
-.ai-chatcol{flex:1;display:flex;flex-direction:column;min-height:0}
-.ai-persona{display:flex;align-items:center;gap:11px;padding:11px 13px;margin-bottom:11px;flex:none}
-.ai-persona img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid rgba(34,211,238,.5);background:#0c1116;flex:none}
-.ai-persona .pn{font-weight:800;font-size:15px;color:#fff}
-.ai-persona .pr{font-size:11px;color:#8fd8e6;margin-top:2px}
-.ai-connbanner{display:block;width:100%;text-align:left;font-size:12px;color:#dbeafe;background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.4);border-radius:12px;padding:10px 12px;margin-bottom:11px;cursor:pointer;flex:none}
-.ai-connbanner:hover{background:rgba(167,139,250,.22)}
 .ai-starters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;flex:none}
 .ai-starters button{font-size:11px;color:#cfe0f2;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);border-radius:999px;padding:6px 11px;cursor:pointer}
 .ai-starters button:hover{background:rgba(34,211,238,.2)}
@@ -764,5 +792,5 @@ const aiCss = `
 .ai-doclink{display:inline-block;margin-top:11px;font-size:12.5px;font-weight:700;color:#22d3ee;text-decoration:none}
 .ai-skill{margin-top:9px;background:rgba(0,0,0,.36);border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:11px 12px;font-family:ui-monospace,monospace;font-size:10px;line-height:1.55;color:#cfe6f2;white-space:pre-wrap;max-height:220px;overflow:auto}
 .ai-skillbtn{margin-top:10px;width:100%;text-align:center;font-weight:800;font-size:14px;color:#04141d;background:linear-gradient(135deg,#a78bfa,#22d3ee);border:0;border-radius:13px;padding:12px;cursor:pointer}
-@media (prefers-reduced-motion:reduce){.ai-hero,.ai-status.on i,.ai-bar i,.ros-card,.ros-hero{animation:none;transition:none}}
+@media (prefers-reduced-motion:reduce){.ai-status.on i,.ap-holo{animation:none}}
 `;

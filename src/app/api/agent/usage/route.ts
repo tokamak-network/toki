@@ -10,15 +10,16 @@ const LLM_URL = process.env.AI_ACCESS_LLM_URL ?? "https://api2.ai.tokamak.networ
 export async function POST(req: NextRequest) {
   try {
     if (!isPrivyServerConfigured) {
-      return NextResponse.json({ error: "Auth not configured" }, { status: 503 });
+      return NextResponse.json({ error: "Auth not configured", reason: "unconfigured" }, { status: 503 });
     }
     const userId = await verifyPrivyUser(req);
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      // Session token couldn't be verified — NOT a key problem; client should re-auth.
+      return NextResponse.json({ error: "Unauthorized", reason: "auth" }, { status: 401 });
     }
     const key = await getDecryptedKey(userId);
     if (!key) {
-      return NextResponse.json({ error: "No key" }, { status: 401 });
+      return NextResponse.json({ error: "No key", reason: "nokey" }, { status: 401 });
     }
 
     const controller = new AbortController();
@@ -30,7 +31,8 @@ export async function POST(req: NextRequest) {
     clearTimeout(timeout);
 
     if (res.status === 401 || res.status === 403) {
-      return NextResponse.json({ error: "Key rejected" }, { status: 401 });
+      // /key/info itself rejected the key → it's gone/expired on the LLM server.
+      return NextResponse.json({ error: "Key rejected", reason: "revoked" }, { status: 401 });
     }
     if (!res.ok) {
       return NextResponse.json({ error: `AI server error ${res.status}` }, { status: 502 });

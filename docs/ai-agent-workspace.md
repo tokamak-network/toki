@@ -94,3 +94,33 @@ Until then: issuance falls back to the AI Access site, and `/agent` works only w
 - **History persistence**: in-memory (MVP) vs Supabase per-user (needs the Stage 2 session).
 - **Model choice**: single model vs user-selectable (the AI server exposes several via LiteLLM).
 - **Streaming**: SSE from `/api/agent` for token streaming (nice-to-have; MVP can be non-streaming).
+
+## 9. Troubleshooting — "Key rejected" / usage stuck on "loading…"
+
+**Symptom**: `/agent` shows "Your key was rejected (expired or revoked)" and resets to
+the issue gate; the AI ACCESS PASS card's usage sticks on "loading…".
+
+**Root cause (verified 2026-06-23)**: the issued LiteLLM key lives on the **shared
+`api2.ai.tokamak.network` proxy** — both mainnet and Sepolia AI Access deploys set
+`LITELLM_BASE_URL=https://api2.ai.tokamak.network` (per the `tokamak-network/tokamak-ai-access`
+repo, `main` and `sepolia`). So this is **not** a network/URL mismatch — toki's
+`/api/agent` + `/api/agent/usage` already point at the same `api2`. The key is rejected
+because it was **deleted or expired on `api2`** (e.g., the LiteLLM key DB was reset).
+Re-issuing in-app then hits the AI Access **KV dedup → `409` "Key already issued"**
+(stake-type keys carry no expiry, so the ledger record never auto-clears).
+
+**What toki does now**:
+- The usage proxy returns a `reason` (`auth | nokey | revoked | unconfigured`); the card
+  shows real state (loading / used+%-left / `usage unavailable`) instead of a permanent
+  spinner.
+- On a genuine `401 revoked/expired` (chat or usage), toki **deletes the dead key from the
+  Supabase vault** (`clearAiKeyServer`) so a reload shows a clean gate, not a dead card.
+- The gate always offers **"Manage key on AI Access site"** (`AI_ACCESS_URL`) — the real
+  recovery path, since toki has no delegated revoke/rotate endpoint.
+
+**User recovery**: open the AI Access site (network-aware `AI_ACCESS_URL`), sign in with the
+same wallet, and **rotate / renew / delete** the key there; then return to toki and re-issue.
+
+**If networks ever diverge** (separate LiteLLM per network): set `AI_ACCESS_LLM_URL` on the
+toki deploy to that network's proxy — `/api/agent` and `/api/agent/usage` already read it
+(`AI_ACCESS_LLM_URL ?? api2.ai.tokamak.network`).
