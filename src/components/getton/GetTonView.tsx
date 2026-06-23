@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createWalletClient, custom, formatUnits, parseUnits } from "viem";
 import ReceiveModal from "@/components/dashboard/ReceiveModal";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useGoDashboard } from "@/components/transitions/TransitionProvider";
 import { chain, publicClient as client } from "@/lib/chain";
 import { CONTRACTS, WTON_DECIMALS } from "@/constants/contracts";
 import { wtonTokenAbi } from "@/lib/abi";
@@ -198,6 +199,7 @@ export default function GetTonView() {
   const { user } = usePrivy();
   const { wallets } = useWallets();
   const { t } = useTranslation();
+  const goDashboard = useGoDashboard();
 
   const [ton, setTon] = useState<number | null>(null);
   const [wton, setWton] = useState<bigint>(BigInt(0));
@@ -320,6 +322,7 @@ export default function GetTonView() {
       {/* Back to hub */}
       <Link
         href="/dashboard"
+        onClick={goDashboard}
         className="absolute left-4 top-20 z-30 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-gray-300 backdrop-blur-md transition-colors hover:text-accent-cyan"
       >
         ← {t.getTon.back}

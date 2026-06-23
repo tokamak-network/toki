@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useStakedTon } from "@/hooks/useStakedTon";
 import TokiLoader from "@/components/common/TokiLoader";
+import { useGoDashboard } from "@/components/transitions/TransitionProvider";
 import { AGENTS, type AgentDef } from "@/lib/agents";
 import {
   agentChat,
@@ -101,6 +102,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
   const router = useRouter();
   const { t, locale } = useTranslation();
   const a = t.agent;
+  const goDashboard = useGoDashboard();
   const { stakedTon, loading: stakeLoading, wallet, address } = useStakedTon();
 
   const [hasKey, setHasKey] = useState(false);
@@ -462,6 +464,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
 
         <Link
           href="/dashboard"
+          onClick={goDashboard}
           className="absolute left-4 top-20 z-30 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-gray-300 backdrop-blur-md transition-colors hover:text-accent-cyan"
         >
           ‹ {a.back}
@@ -570,7 +573,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
       <div className="ai-wrap">
         {/* HUD top bar */}
         <div className="ai-hud">
-          <Link href="/dashboard" className="ai-back">‹ {a.back}</Link>
+          <Link href="/dashboard" onClick={goDashboard} className="ai-back">‹ {a.back}</Link>
           <span className="ai-htitle">{hudTitle}</span>
           <span className="ai-status on"><i />{a.statusActive}</span>
         </div>

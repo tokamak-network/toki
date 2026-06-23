@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { toPng } from "html-to-image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useGoDashboard } from "@/components/transitions/TransitionProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 import { useStakedTon } from "@/hooks/useStakedTon";
 import { buildProfileSummary, shortenAddress } from "@/lib/profileCard";
@@ -24,6 +25,7 @@ const PREVIEW_STORAGE: AchievementStorage = {
 export default function ProfileView({ preview = false }: { preview?: boolean }) {
   const { ready, authenticated, user, getAccessToken } = usePrivy();
   const { locale, t } = useTranslation();
+  const goDashboard = useGoDashboard();
   const { storage } = useAchievement();
   const { stakedTon, idleTon, address: chainAddr } = useStakedTon();
 
@@ -135,7 +137,7 @@ export default function ProfileView({ preview = false }: { preview?: boolean }) 
     <div className="pv-root">
       <div className="pv-wrap">
         <header className="pv-hd">
-          <Link href="/dashboard" className="pv-back">
+          <Link href="/dashboard" onClick={goDashboard} className="pv-back">
             ‹ {t.profile.back}
           </Link>
           <span className="pv-title">{t.profile.title}</span>

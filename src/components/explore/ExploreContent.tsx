@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useGoDashboard } from "@/components/transitions/TransitionProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 import type { Dictionary } from "@/locales";
 
@@ -563,6 +564,7 @@ function RecommendedCards({
 // ─── Full Service Grid ───────────────────────────────────────────────
 
 function FullServiceGrid({ t, services, locale, onServiceClick }: { t: Dictionary["explore"]; services: EcosystemService[]; locale: string; onServiceClick?: (serviceId: string) => void }) {
+  const goDashboard = useGoDashboard();
   // Group services by category
   const grouped = CATEGORIES.map((cat) => ({
     ...cat,
@@ -652,6 +654,7 @@ function FullServiceGrid({ t, services, locale, onServiceClick }: { t: Dictionar
         <div className="text-center mt-4 mb-12">
           <Link
             href="/dashboard"
+            onClick={goDashboard}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 text-gray-300 hover:bg-white/15 transition-colors"
           >
             <span>←</span> {t.backToDashboard}

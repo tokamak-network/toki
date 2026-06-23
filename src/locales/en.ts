@@ -1,7 +1,10 @@
 const en = {
   header: {
     quests: "Quests",
+    dashboard: "Dashboard",
     staking: "Staking",
+    aiMembership: "AI Membership",
+    lottery: "Lottery",
     explore: "Ecosystem",
     github: "GitHub",
     connect: "Connect",

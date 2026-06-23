@@ -21,6 +21,7 @@ import {
 } from "@/lib/abi";
 import { buildStakingCalls } from "@/lib/staking-calls";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useScreenTransition } from "@/components/transitions/TransitionProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEip7702 } from "@/hooks/useEip7702";
@@ -139,6 +140,7 @@ function useTypewriter(text: string, speed = 35) {
 export default function StakingScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { navigate } = useScreenTransition();
   const { authenticated, ready, user } = usePrivy();
   const { wallets } = useWallets();
   const { smartAccountClient, paymasterMode } = useEip7702();
@@ -1073,7 +1075,7 @@ export default function StakingScreen() {
                       {cardRevealed && (
                         <div className="space-y-2 animate-fade-in">
                           <button
-                            onClick={() => router.push("/dashboard")}
+                            onClick={() => navigate("/dashboard")}
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm glow-blue hover:scale-[1.02] transition-transform"
                           >
                             {t.stakingScreen.goToDashboard}
@@ -1382,7 +1384,7 @@ export default function StakingScreen() {
                       )}
 
                       <button
-                        onClick={() => router.push("/dashboard?panel=wallet")}
+                        onClick={() => navigate("/dashboard?panel=wallet")}
                         className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-amber to-orange-500 text-white font-semibold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-accent-amber/20"
                       >
                         🔐 {t.stakingScreen.goToVault}

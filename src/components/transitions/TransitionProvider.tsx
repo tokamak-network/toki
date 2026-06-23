@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { MENU_TRANS, TRANSITIONS, type TransKey } from "./registry";
+import { MENU_TRANS, TRANSITIONS, getStartTransition, type TransKey } from "./registry";
 import { coverChildren } from "./CoverArt";
 
 type Phase = "out" | "in";
@@ -19,6 +19,32 @@ type Ctx = {
 
 const TransitionCtx = createContext<Ctx>({ navigate: () => {} });
 export const useScreenTransition = () => useContext(TransitionCtx);
+
+/**
+ * Click handler for any "back to hub / go to dashboard" link, so /dashboard is
+ * always entered with the signature "main" transition (the one the landing
+ * 시작하기 plays) — no matter which page you leave from. Drop it on a real
+ * <Link href="/dashboard">/<a> and modifier/middle clicks still open a tab.
+ */
+type ClickLike = {
+  preventDefault: () => void;
+  metaKey?: boolean;
+  ctrlKey?: boolean;
+  shiftKey?: boolean;
+  altKey?: boolean;
+  button?: number;
+};
+export function useGoDashboard() {
+  const { navigate } = useContext(TransitionCtx);
+  return useCallback(
+    (e?: ClickLike) => {
+      if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button ?? 0) !== 0)) return;
+      e?.preventDefault();
+      navigate("/dashboard");
+    },
+    [navigate],
+  );
+}
 
 /**
  * Mobile-game style screen transitions. Clicking a hub menu plays that menu's
@@ -64,8 +90,17 @@ export default function TransitionProvider({
         router.push(href);
         return;
       }
-      // Explicit transKey wins (e.g. the landing CTA); otherwise map the menu key.
-      const k: TransKey = transKey ?? ((menuKey && MENU_TRANS[menuKey]) || "fade");
+      // Resolve the cover: explicit transKey wins (e.g. the landing CTA); else the
+      // menu key's signature; else — for /dashboard, ALWAYS the "main" entry
+      // transition (same one the landing 시작하기 plays), so the hub feels the same
+      // no matter where you reach it from; everything else falls back to fade.
+      const mapped = menuKey ? MENU_TRANS[menuKey] : undefined;
+      const k: TransKey =
+        transKey ??
+        mapped ??
+        (href === "/dashboard" || href.startsWith("/dashboard?") || href.startsWith("/dashboard#")
+          ? getStartTransition()
+          : "fade");
       busyRef.current = true;
       pendingRef.current = href;
       setKey(k);

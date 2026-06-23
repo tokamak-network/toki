@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useScreenTransition } from "@/components/transitions/TransitionProvider";
 import { isTestnet } from "@/lib/chain";
 import GasBadge from "./GasBadge";
 
@@ -52,9 +53,20 @@ function LanguageToggle() {
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { t } = useTranslation();
+  const { navigate } = useScreenTransition();
+
+  // Enter the hub with the same signature transition the landing "시작하기" plays
+  // (navigate() maps /dashboard → getStartTransition()). Keep the real href so
+  // modifier-/middle-clicks still open a normal tab.
+  const goDashboard = (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    setMobileOpen(false);
+    navigate("/dashboard");
+  };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-white/5">
+    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/90 border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-2">
@@ -81,15 +93,18 @@ export default function Header() {
         </a>
 
         {/* Desktop Nav */}
-        <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-400">
-          <a href="/onboarding" className="hover:text-foreground transition-colors">
-            {t.header.quests}
+        <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-200">
+          <a href="/dashboard" onClick={goDashboard} className="hover:text-foreground transition-colors">
+            {t.header.dashboard}
           </a>
           <a href="/staking" className="hover:text-foreground transition-colors">
             {t.header.staking}
           </a>
-          <a href="/explore" className="hover:text-foreground transition-colors">
-            {t.header.explore}
+          <a href="/agent" className="hover:text-foreground transition-colors">
+            {t.header.aiMembership}
+          </a>
+          <a href="/lottery" className="hover:text-foreground transition-colors">
+            {t.header.lottery}
           </a>
           <a
             href="https://github.com/tokamak-network/toki"
@@ -112,7 +127,7 @@ export default function Header() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="sm:hidden p-2 text-gray-400 hover:text-foreground"
+            className="sm:hidden p-2 text-gray-200 hover:text-foreground"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
               {mobileOpen ? (
@@ -129,20 +144,23 @@ export default function Header() {
       {mobileOpen && (
         <nav className="sm:hidden border-t border-white/5 bg-background/95 backdrop-blur-md animate-slide-up">
           <div className="px-4 py-4 space-y-3">
-            <a href="/onboarding" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              {t.header.quests}
+            <a href="/dashboard" onClick={goDashboard} className="block py-2 text-gray-200 hover:text-foreground">
+              {t.header.dashboard}
             </a>
-            <a href="/staking" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
+            <a href="/staking" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-200 hover:text-foreground">
               {t.header.staking}
             </a>
-            <a href="/explore" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-400 hover:text-foreground">
-              {t.header.explore}
+            <a href="/agent" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-200 hover:text-foreground">
+              {t.header.aiMembership}
+            </a>
+            <a href="/lottery" onClick={() => setMobileOpen(false)} className="block py-2 text-gray-200 hover:text-foreground">
+              {t.header.lottery}
             </a>
             <a
               href="https://github.com/tokamak-network/toki"
               target="_blank"
               rel="noopener noreferrer"
-              className="block py-2 text-gray-400 hover:text-foreground"
+              className="block py-2 text-gray-200 hover:text-foreground"
             >
               {t.header.github}
             </a>

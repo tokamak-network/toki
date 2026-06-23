@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useScreenTransition } from "@/components/transitions/TransitionProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 import { useStakingData, replaceApr } from "@/components/providers/StakingDataProvider";
 import {
@@ -494,6 +495,16 @@ function ChatWindow({
   lightBg?: boolean;
 }) {
   const router = useRouter();
+  const { navigate } = useScreenTransition();
+  // Send /dashboard hops through the signature "main" screen transition (same as
+  // the header / back-to-hub links); everything else is a plain client push.
+  const go = useCallback(
+    (path: string) => {
+      if (path === "/dashboard" || path.startsWith("/dashboard?")) navigate(path);
+      else router.push(path);
+    },
+    [navigate, router],
+  );
   const { trackActivity } = useAchievement();
   const { t } = useTranslation();
   const { apr } = useStakingData();
@@ -630,7 +641,7 @@ function ChatWindow({
     login,
     logout,
     isAuthenticated: authenticated,
-    navigateTo: (path: string) => router.push(path),
+    navigateTo: (path: string) => go(path),
     locale,
     exportWallet: exportWallet || undefined,
     userAddress: user?.wallet?.address,
@@ -701,7 +712,7 @@ function ChatWindow({
           locale === "ko" ? "대시보드에서 최신 잔액을 확인할 수 있어!" : "Check your latest balance on the dashboard!",
           "pointing",
         );
-        router.push("/dashboard");
+        go("/dashboard");
         break;
       }
       case "go-staking-amount": {
@@ -769,7 +780,7 @@ function ChatWindow({
       const text = locale === "ko" ? result.textKo : result.textEn;
       addTokiMessage(text, result.mood, undefined, result.actions);
       if (result.sideEffect) setTimeout(() => result.sideEffect?.(), 500);
-      if (result.navigateAfter) setTimeout(() => { onClose(); router.push(result.navigateAfter!); }, 2000);
+      if (result.navigateAfter) setTimeout(() => { onClose(); go(result.navigateAfter!); }, 2000);
       return;
     }
 
@@ -781,7 +792,7 @@ function ChatWindow({
         const text = replaceApr(locale === "ko" ? node.textKo : node.textEn, apr);
         addTokiMessage(text, node.mood, node.choices);
         if (matched in NAV_ROUTES) {
-          setTimeout(() => router.push(NAV_ROUTES[matched]), 1500);
+          setTimeout(() => go(NAV_ROUTES[matched]), 1500);
         }
         return;
       }
@@ -860,13 +871,13 @@ function ChatWindow({
         setTimeout(() => {
           addTokiMessage(text, nextNode.mood, nextNode.choices);
           if (choice.next in NAV_ROUTES) {
-            setTimeout(() => router.push(NAV_ROUTES[choice.next]), 1500);
+            setTimeout(() => go(NAV_ROUTES[choice.next]), 1500);
           }
         }, 300);
       }
       trackActivity("chat-dialogue", { nodeId: choice.next });
     },
-    [mode, transitionToChat, addUserMessage, addTokiMessage, locale, apr, router, trackActivity],
+    [mode, transitionToChat, addUserMessage, addTokiMessage, locale, apr, go, trackActivity],
   );
 
   // ── VN typing complete handler

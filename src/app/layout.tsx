@@ -148,11 +148,15 @@ export default function RootLayout({
             <PrivyClientProvider>
               <AuthModalProvider>
                 <AchievementProvider>
-                  <TransitionProvider>{children}</TransitionProvider>
-                  <NetworkGuard />
-                  <TokiChat />
-                  <AchievementToast />
-                  <AnalyticsTracker />
+                  {/* Global overlays live INSIDE TransitionProvider so anything
+                      that navigates (incl. TokiChat) can play screen transitions. */}
+                  <TransitionProvider>
+                    {children}
+                    <NetworkGuard />
+                    <TokiChat />
+                    <AchievementToast />
+                    <AnalyticsTracker />
+                  </TransitionProvider>
                 </AchievementProvider>
               </AuthModalProvider>
             </PrivyClientProvider>

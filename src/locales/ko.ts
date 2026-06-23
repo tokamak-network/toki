@@ -1,7 +1,10 @@
 const ko = {
   header: {
     quests: "퀘스트",
+    dashboard: "대시보드",
     staking: "스테이킹",
+    aiMembership: "AI 멤버십",
+    lottery: "복권",
     explore: "생태계",
     github: "GitHub",
     connect: "연결",
