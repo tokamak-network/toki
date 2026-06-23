@@ -34,6 +34,7 @@ const CEX_KOREAN: Venue[] = [
   { name: "Upbit", url: "https://upbit.com/exchange?code=CRIX.UPBIT.KRW-TOKAMAK", hint: "KRW" },
   { name: "Bithumb", url: "https://www.bithumb.com/react/trade/order/TOKAMAK-KRW", hint: "KRW" },
   { name: "Coinone", url: "https://coinone.co.kr/exchange/trade/tokamak/krw", hint: "KRW" },
+  { name: "GOPAX", url: "https://www.gopax.co.kr/exchange?market=TOKAMAK-KRW", hint: "KRW" },
 ];
 const CEX_GLOBAL: Venue[] = [
   { name: "Poloniex", url: "https://poloniex.com/trade/TOKAMAK_USDT?type=spot", hint: "USDT" },
