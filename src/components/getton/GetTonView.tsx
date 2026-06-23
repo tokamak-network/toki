@@ -28,8 +28,10 @@ type Venue = { name: string; url: string; hint?: string };
 
 // Tokamak Network trades under the ticker "TOKAMAK" on exchanges (NOT "TON" —
 // that's Toncoin, an unrelated token). Each URL deep-links straight to the
-// TOKAMAK market so the right pair is pre-selected. Upbit market codes verified
-// against api.upbit.com/v1/market/all (KRW-TOKAMAK, IDR-TOKAMAK).
+// TOKAMAK market so the right pair is pre-selected (trade_url's confirmed via
+// CoinGecko coins/tokamak-network/tickers, which maps each to tokamak-network).
+// Both lists are ordered by 24h market size (CoinGecko converted USD volume),
+// largest first.
 const CEX_KOREAN: Venue[] = [
   { name: "Upbit", url: "https://upbit.com/exchange?code=CRIX.UPBIT.KRW-TOKAMAK", hint: "KRW" },
   { name: "Bithumb", url: "https://www.bithumb.com/react/trade/order/TOKAMAK-KRW", hint: "KRW" },
@@ -37,9 +39,11 @@ const CEX_KOREAN: Venue[] = [
   { name: "GOPAX", url: "https://www.gopax.co.kr/exchange?market=TOKAMAK-KRW", hint: "KRW" },
 ];
 const CEX_GLOBAL: Venue[] = [
-  { name: "Poloniex", url: "https://poloniex.com/trade/TOKAMAK_USDT?type=spot", hint: "USDT" },
-  { name: "DigiFinex", url: "https://www.digifinex.com/en-ww/trade/USDT/TOKAMAK", hint: "USDT" },
+  { name: "WEEX", url: "https://www.weex.com/spot/TOKAMAK-USDT", hint: "USDT" },
+  { name: "XT.COM", url: "https://www.xt.com/en/trade/tokamak_usdt", hint: "USDT" },
   { name: "Upbit Indonesia", url: "https://id.upbit.com/exchange?code=CRIX.UPBIT.IDR-TOKAMAK", hint: "IDR" },
+  { name: "DigiFinex", url: "https://www.digifinex.com/en-ww/trade/USDT/TOKAMAK", hint: "USDT" },
+  { name: "Poloniex", url: "https://poloniex.com/trade/TOKAMAK_USDT?type=spot", hint: "USDT" },
 ];
 const WTON_GUIDE = "https://docs.tokamak.network/home/information/ton-wton";
 
