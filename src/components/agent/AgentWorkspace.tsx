@@ -118,6 +118,10 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
   const [usage, setUsage] = useState<KeyUsage | null>(null);
   // Usage fetch lifecycle so the pass card never shows a permanent "loading…".
   const [usageState, setUsageState] = useState<"loading" | "ok" | "error">("loading");
+  // Key rejected by the LLM server (revoked/expired). Non-destructive: the vault
+  // row is KEPT (survives a transient api2 blip + audit trail); we only show the
+  // recovery state. Cleared on a successful call or explicit reset/re-issue.
+  const [keyRejected, setKeyRejected] = useState(false);
   const [showConnect, setShowConnect] = useState(false);
   const [checkingKey, setCheckingKey] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -167,17 +171,16 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
 
-  // Clear a dead key from the server vault so a reload shows a clean issue gate
-  // (not the dead pass card). Only call on a GENUINE rejection (revoked/expired),
-  // never on soft failures (budget / session).
-  const invalidateKey = useCallback(async () => {
-    const token = await getAccessToken().catch(() => null);
-    if (token) await clearAiKeyServer(token);
-    setHasKey(false);
-    setKeyLastFour(null);
+  // Flag the key as rejected by the LLM server WITHOUT deleting it from the vault.
+  // Non-destructive: the record stays (so a transient api2 blip doesn't wipe a good
+  // key, and the audit trail survives); the UI shows a "rejected → rotate on site"
+  // recovery state. The user clears it explicitly via "Reset key" / re-issue. Only
+  // call on a GENUINE rejection (revoked/expired), never on soft failures.
+  const markKeyRejected = useCallback(() => {
+    setKeyRejected(true);
     setUsage(null);
     setUsageState("error");
-  }, [getAccessToken]);
+  }, []);
 
   // Refresh daily usage when the key is present and after each reply. Surfaces a
   // real state (loading | ok | error) so the card never sticks on "loading…",
@@ -201,31 +204,32 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
         if (!cancelled) {
           setUsage(u);
           setUsageState("ok");
+          setKeyRejected(false); // key works again (e.g., api2 restored)
         }
       } catch (e) {
         if (cancelled) return;
         setUsage(null);
         setUsageState("error");
-        // A genuinely dead key → drop it so the user gets a clean recovery path.
+        // A genuinely dead key → flag it (non-destructive) + show recovery path.
         if (
           e instanceof AiAccessError &&
           e.status === 401 &&
           (e.reason === "revoked" || e.reason === "expired")
         ) {
           setError(a.keyExpired);
-          if (!cancelled) await invalidateKey();
+          markKeyRejected();
         }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [hasKey, messages.length, getAccessToken, invalidateKey, a]);
+  }, [hasKey, messages.length, getAccessToken, markKeyRejected, a]);
 
   const sendText = useCallback(
     async (text: string) => {
       const txt = text.trim();
-      if (!txt || !hasKey || busy) return;
+      if (!txt || !hasKey || keyRejected || busy) return;
       setError(null);
       const next: AgentMessage[] = [...messages, { role: "user", content: txt }];
       setMessages(next);
@@ -241,6 +245,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
           agent ? { system: agent.system, model: agent.model } : undefined,
         );
         setMessages((m) => [...m, { role: "assistant", content: reply }]);
+        setKeyRejected(false); // a working reply clears any prior rejected state
       } catch (e) {
         if (e instanceof AiAccessError) {
           // Budget / auth are SOFT — the key is fine, so never kick to the gate.
@@ -249,10 +254,10 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
           } else if (e.reason === "auth") {
             setError(a.errorAuth);
           } else if (e.status === 401) {
-            // Genuinely dead (expired / revoked / no key) → drop the stale key and
-            // reset to the gate with a recovery path.
+            // Genuinely dead (expired / revoked / no key) → flag rejected (keep the
+            // vault record) and show the recovery path.
             setError(a.keyExpired);
-            await invalidateKey();
+            markKeyRejected();
           } else {
             setError(a.errorGeneric);
           }
@@ -262,7 +267,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
       }
       setBusy(false);
     },
-    [hasKey, busy, messages, agent, a, getAccessToken, invalidateKey],
+    [hasKey, busy, messages, agent, a, getAccessToken, markKeyRejected, keyRejected],
   );
 
   // Switch lens — keep the conversation; an empty chat shows the new mode's starters.
@@ -280,6 +285,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
       await storeAiKey(token, v, "", address);
       setHasKey(true);
       setKeyLastFour(v.slice(-4));
+      setKeyRejected(false);
       setPasteValue("");
     } catch {
       setError(a.issueFailed);
@@ -312,6 +318,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
     clearIssuedKey();
     setHasKey(false);
     setKeyLastFour(null);
+    setKeyRejected(false);
     setMessages([]);
     setAgent(MODES[0]);
   };
@@ -328,6 +335,7 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
       if (token) await storeAiKey(token, result.key, result.expiresAt, address);
       setHasKey(true);
       setKeyLastFour(result.key.slice(-4));
+      setKeyRejected(false);
     } catch (e) {
       if (e instanceof AiAccessError) {
         setError(
@@ -614,7 +622,21 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
                   </span>
                 </div>
 
-                {passWarn && <div className="ai-passwarn">⚠️ {passWarn}</div>}
+                {keyRejected ? (
+                  <div className="ai-passwarn">
+                    ⚠️ {a.keyExpired}{" "}
+                    <a
+                      href={AI_ACCESS_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#7fe9ff", fontWeight: 700, textDecoration: "underline" }}
+                    >
+                      {a.manageOnSite} ↗
+                    </a>
+                  </div>
+                ) : (
+                  passWarn && <div className="ai-passwarn">⚠️ {passWarn}</div>
+                )}
 
                 <div className="ap-foot">
                   <span className="ap-models">{AI_MODELS.join(" · ")}</span>

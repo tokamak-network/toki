@@ -113,10 +113,15 @@ Re-issuing in-app then hits the AI Access **KV dedup → `409` "Key already issu
 - The usage proxy returns a `reason` (`auth | nokey | revoked | unconfigured`); the card
   shows real state (loading / used+%-left / `usage unavailable`) instead of a permanent
   spinner.
-- On a genuine `401 revoked/expired` (chat or usage), toki **deletes the dead key from the
-  Supabase vault** (`clearAiKeyServer`) so a reload shows a clean gate, not a dead card.
-- The gate always offers **"Manage key on AI Access site"** (`AI_ACCESS_URL`) — the real
-  recovery path, since toki has no delegated revoke/rotate endpoint.
+- On a genuine `401 revoked/expired` (chat or usage), toki flags the key **rejected
+  (non-destructive — the vault record is KEPT)** and the pass card shows a "rejected →
+  rotate on the AI Access site" banner. This keeps the record (survives a transient api2
+  blip + preserves the audit trail) and avoids silently deleting user data; the flag clears
+  automatically on the next successful call. The user clears the key explicitly via
+  **"Reset key"** (which calls `clearAiKeyServer`) or by re-issuing.
+- The gate AND the rejected pass card offer **"Manage key on AI Access site"**
+  (`AI_ACCESS_URL`) — the real recovery path, since toki has no delegated revoke/rotate
+  endpoint.
 
 **User recovery**: open the AI Access site (network-aware `AI_ACCESS_URL`), sign in with the
 same wallet, and **rotate / renew / delete** the key there; then return to toki and re-issue.

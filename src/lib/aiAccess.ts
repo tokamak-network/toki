@@ -16,7 +16,14 @@ export const MIN_TON_AI_ACCESS = 100;
 // Used as the external handoff link AND the native-issuance origin.
 export const AI_ACCESS_URL = isTestnet
   ? "https://tokamak-ai-access-git-sepolia-theo-3096s-projects.vercel.app"
-  : "https://tokamak-ai-access.vercel.app";
+  : "https://ai-access.tokamak.network";
+
+// LiteLLM inference proxy (OpenAI-compatible) where issued keys actually live —
+// SHARED by both networks (mainnet & sepolia AI Access mint into api2). This is
+// NOT the AI Access app domain (that only issues keys; its /v1 is 404). Used for
+// the copy-paste setup skill's base URL. The server proxy reads its own
+// process.env.AI_ACCESS_LLM_URL with the same default.
+export const AI_ACCESS_LLM_BASE = "https://api2.ai.tokamak.network";
 
 // Models the AI server exposes (OpenAI-compatible). First entry is the default.
 export const AI_MODELS = ["qwen-3.6", "deepseek-v4-flash", "gemma-4"] as const;
@@ -286,7 +293,7 @@ I have an OpenAI-compatible API key from Tokamak AI Access. Detect which tool I'
 using (Claude Code / Codex / Cline / Continue / aider / Cursor / OpenAI SDK) and
 configure it to use this endpoint:
 
-- Base URL: ${AI_ACCESS_URL}/v1
+- Base URL: ${AI_ACCESS_LLM_BASE}/v1
 - API key:  ${key}
 - Model:    ${AI_MODELS[0]}   (also available: ${AI_MODELS.slice(1).join(", ")})
 
