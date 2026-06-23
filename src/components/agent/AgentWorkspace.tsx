@@ -24,6 +24,7 @@ import {
   AI_DAILY_TOKEN_LIMIT,
   AI_DAILY_BUDGET_USD,
   AI_ACCESS_URL,
+  AI_ACCESS_LLM_BASE,
   AI_ACCESS_DOCS_URL,
   AI_MODELS,
   AiAccessError,
@@ -408,8 +409,8 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
           <div className="ch">{a.devTitle}</div>
           <p>{a.devDesc}</p>
           <div className="ai-kv">
-            <span>{AI_ACCESS_URL}/v1</span>
-            <button onClick={() => copy(`${AI_ACCESS_URL}/v1`)}>{a.copy}</button>
+            <span>{AI_ACCESS_LLM_BASE}/v1</span>
+            <button onClick={() => copy(`${AI_ACCESS_LLM_BASE}/v1`)}>{a.copy}</button>
           </div>
           <div className="ai-kv">
             <span>{maskedKey}</span>
@@ -465,15 +466,21 @@ export default function AgentWorkspace({ preview = false }: { preview?: boolean 
 
         {/* mid: Toki (left 40%) + UNLOCK QUEST panel (right 60%) */}
         <div className="absolute inset-x-0 top-16 bottom-[176px] z-10 flex items-center justify-center">
-          <div className="max-w-3xl w-full mx-auto flex items-end h-full px-4">
+          <div className="max-w-3xl w-full mx-auto flex items-end h-full">
+            {/* Left: Toki — identical sizing to the staking / get-ton VN frame.
+                The `flex justify-center` wrapper + `overflow-visible` keep the
+                character at its intrinsic w-[28rem] (it overflows the 40% column);
+                without them it shrinks to the column width and renders ~66% size. */}
             <div className="hidden md:flex w-[40%] items-end justify-center">
-              <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] aspect-[3/4]">
-                <div className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 animate-pulse opacity-40" style={{ backgroundColor: "rgba(34,211,238,0.4)" }} />
-                <img src="/characters/toki-welcome.png" alt="Toki" className="relative z-10 w-full h-full object-contain object-bottom drop-shadow-2xl" />
+              <div className="flex justify-center z-10">
+                <div className="relative w-64 sm:w-80 md:w-96 lg:w-[28rem] aspect-[3/4] overflow-visible">
+                  <div className="absolute inset-[15%] bottom-0 rounded-full blur-3xl -z-10 animate-pulse opacity-40" style={{ backgroundColor: "rgba(34,211,238,0.4)" }} />
+                  <img src="/characters/toki-welcome.png" alt="Toki" className="relative z-10 w-full h-full object-contain object-bottom drop-shadow-2xl" />
+                </div>
               </div>
             </div>
 
-            <div className="w-full md:w-[60%] flex items-end justify-center pb-4">
+            <div className="w-full md:w-[60%] flex items-end justify-center pb-4 px-4 md:px-0">
               <div className="w-full max-w-sm animate-slide-up">
                 <div className="bg-black/55 backdrop-blur-xl rounded-2xl border border-white/10 p-5 shadow-[0_0_40px_rgba(0,0,0,0.35)]">
                   <div className="text-[11px] font-bold tracking-[0.22em] text-accent-cyan">{a.gateKicker}</div>
