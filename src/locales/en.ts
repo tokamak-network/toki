@@ -56,6 +56,18 @@ const en = {
       desc: "A lucky event running until the cards run out",
     },
   },
+  seasonalPromo: {
+    newSeason: "NEW SEASON",
+    tag: "SUMMER UPDATE · 2026",
+    title: "AI Membership is here",
+    posterAlt: "Toki summer poster",
+    feat1: { lead: "Stake just ", strong: "100 TON", tail: " → a free AI key" },
+    feat2: { lead: "Unlimited use — up to ", strong: "1M output tokens", tail: " a day" },
+    feat3: { lead: "Qwen 3.6 · Gemma 4 — ", strong: "no card, no fee", tail: "" },
+    cta: "Start staking",
+    later: "Maybe later",
+    dontShow: "Don't show again this season",
+  },
   hero: {
     badge: "Tokamak Network Staking",
     title1: "Hi, I'm Toki!",
@@ -1081,6 +1093,9 @@ const en = {
     step4CardUnlocked: "Card Unlocked!",
     goToDashboard: "Go to Dashboard",
     goToExplore: "Explore Ecosystem",
+    // WTON-aware staking (stakeable = TON + WTON; WTON spent first)
+    wtonTooltip: "WTON is just “wrapped TON” — same value, 1:1. Toki uses it for staking automatically; you usually receive WTON from a DEX swap.",
+    wtonFirstNote: "Uses your {wton} WTON first (no conversion), then wraps TON for the rest.",
     // Common
     stepLabel: "STEP {current}/{total}",
     // Onboarding prompt for new users

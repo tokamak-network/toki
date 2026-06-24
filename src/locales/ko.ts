@@ -50,6 +50,18 @@ const ko = {
     ai: { title: "AI 액세스", desc: "스테이킹하면 토카막 AI 서버 키 발급" },
     lottery: { title: "복권 이벤트", desc: "카드 소진까지 진행되는 행운의 이벤트" },
   },
+  seasonalPromo: {
+    newSeason: "NEW SEASON",
+    tag: "여름 업데이트 · 2026",
+    title: "AI 멤버십이 왔어!",
+    posterAlt: "토키 여름 포스터",
+    feat1: { lead: "", strong: "100 TON", tail: "만 스테이킹하면 무료 AI 키" },
+    feat2: { lead: "하루 ", strong: "100만 출력 토큰", tail: "까지 무제한" },
+    feat3: { lead: "Qwen 3.6 · Gemma 4 · ", strong: "카드도 수수료도 없이", tail: "" },
+    cta: "스테이킹 시작하기",
+    later: "나중에",
+    dontShow: "이번 시즌 다시 안 보기",
+  },
   hero: {
     badge: "토카막 네트워크 스테이킹",
     title1: "안녕, 나는 토키!",
@@ -1112,6 +1124,9 @@ const ko = {
     step4CardUnlocked: "멤버카드 해금!",
     goToDashboard: "대시보드로 가기",
     goToExplore: "생태계 둘러보기",
+    // WTON 통합 스테이킹 (스테이킹 가능 = TON + WTON, WTON 먼저 사용)
+    wtonTooltip: "WTON은 TON과 1:1로 가치가 같은 ‘포장된 TON’이에요. 보통 DEX에서 받게 되고, 토키가 스테이킹에 알아서 써줘요.",
+    wtonFirstNote: "WTON {wton}개를 먼저 써서 변환 없이 스테이킹하고, 나머지는 TON에서 자동 변환해요.",
     // Common
     stepLabel: "STEP {current}/{total}",
     // Onboarding prompt for new users

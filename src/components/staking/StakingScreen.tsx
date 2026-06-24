@@ -16,6 +16,7 @@ import {
   layer2RegistryAbi,
   candidateAbi,
   tonTokenAbi,
+  wtonTokenAbi,
   tonPaymasterAbi,
   depositManagerAbi,
 } from "@/lib/abi";
@@ -169,6 +170,10 @@ export default function StakingScreen() {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tonBalance, setTonBalance] = useState<string>("0");
+  // WTON the user already holds (RAY, 27dp). Staking spends this first (no wrap),
+  // so the "stakeable" balance is TON + WTON. Mostly 0 — only non-zero for users
+  // who got WTON from a DEX swap.
+  const [wtonRaw, setWtonRaw] = useState<bigint>(BigInt(0));
   const [autoSelectedIndex, setAutoSelectedIndex] = useState<number | undefined>(undefined);
   const [guidanceType, setGuidanceType] = useState<"none" | "new-user" | "no-ton" | "has-staked">("none");
   const [showManualSelect, setShowManualSelect] = useState(false);
@@ -201,6 +206,14 @@ export default function StakingScreen() {
   // Gas estimate for info display (not deducted from MAX)
   const [gasEstimateTon, setGasEstimateTon] = useState(0);
 
+  // Stakeable = idle TON + idle WTON. A stake spends WTON first (deposited as-is,
+  // no wrap), then wraps TON for the rest, so both fund the same deposit 1:1.
+  const tonNum = Number(tonBalance);
+  const wtonNum = Number(formatUnits(wtonRaw, 27));
+  const hasWton = wtonRaw > BigInt(0);
+  const stakeableNum = tonNum + wtonNum;
+  const fmt2 = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
+
   // ─── Auth redirect ─────────────────────────────────────────────────
 
   useEffect(() => {
@@ -218,14 +231,20 @@ export default function StakingScreen() {
   const fetchBalance = useCallback(async () => {
     if (!walletAddress) return;
     try {
-      const tonBal = await publicClient.readContract({
-        address: tonAddr, abi: tonTokenAbi, functionName: "balanceOf", args: [addr],
-      });
+      const [tonBal, wtonBal] = await Promise.all([
+        publicClient.readContract({
+          address: tonAddr, abi: tonTokenAbi, functionName: "balanceOf", args: [addr],
+        }),
+        publicClient.readContract({
+          address: wtonAddr, abi: wtonTokenAbi, functionName: "balanceOf", args: [addr],
+        }).catch(() => BigInt(0)),
+      ]);
       setTonBalance(formatUnits(tonBal, 18));
+      setWtonRaw(wtonBal as bigint);
     } catch (e) {
       console.error("Failed to fetch TON balance:", e);
     }
-  }, [walletAddress, tonAddr, addr]);
+  }, [walletAddress, tonAddr, wtonAddr, addr]);
 
   useEffect(() => {
     if (walletAddress) fetchBalance();
@@ -393,7 +412,7 @@ export default function StakingScreen() {
 
   useEffect(() => {
     if (loading) return;
-    const hasTon = Number(tonBalance) > 0;
+    const hasTon = stakeableNum > 0; // WTON-only users can still stake
     // "New user" = hasn't finished onboarding, read from the single source of
     // truth (not `unlocked.length`, which can lag behind a completed tutorial).
     const isNewUser = !isOnboardingComplete(user?.id);
@@ -409,16 +428,18 @@ export default function StakingScreen() {
       setGuidanceType("no-ton");
       setStep(0);
     }
-  }, [loading, tonBalance, operators, user?.id]);
+  }, [loading, stakeableNum, operators, user?.id]);
 
   // ─── Handlers ──────────────────────────────────────────────────────
 
   const handleStake = async () => {
     if (!amount || !selectedOp) return;
 
-    // Block if staking amount + gas fee exceeds balance
+    // Block if the TON actually spent + gas fee exceeds the TON balance. WTON is
+    // spent first, so only amount-above-WTON draws from TON (and gas is paid in TON).
     if (gasEstimateTon > 0) {
-      const remaining = Number(tonBalance) - Number(amount);
+      const tonSpent = Math.max(0, Number(amount) - wtonNum);
+      const remaining = tonNum - tonSpent;
       if (remaining < gasEstimateTon * 1.5) {
         setError(t.dashboard.insufficientTonForGas);
         return;
@@ -433,13 +454,13 @@ export default function StakingScreen() {
       const tonAmount = parseUnits(amount, 18);
       const stakingCalls = buildStakingCalls(
         tonAddr, wtonAddr, depositManagerAddr,
-        selectedOp as `0x${string}`, tonAmount,
+        selectedOp as `0x${string}`, tonAmount, wtonRaw,
       );
 
       let hash: `0x${string}`;
 
       if (sessionKey?.delegationReady) {
-        hash = await sessionKey.stakeWithDelegation(selectedOp as `0x${string}`, amount);
+        hash = await sessionKey.stakeWithDelegation(selectedOp as `0x${string}`, amount, wtonRaw);
       } else if (smartAccountClient) {
         hash = await smartAccountClient.sendTransaction({
           calls: stakingCalls,
@@ -623,7 +644,7 @@ export default function StakingScreen() {
       if (amount && Number(amount) > 0) {
         return s.step2Ready.replace("{amount}", amount);
       }
-      return s.step2Dialogue.replace("{balance}", Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 }));
+      return s.step2Dialogue.replace("{balance}", fmt2(stakeableNum));
     }
     if (step === 3) {
       if (staking) return s.step3Staking;
@@ -945,9 +966,9 @@ export default function StakingScreen() {
                           />
                           <button
                             onClick={() => {
-                              const bal = Number(tonBalance);
+                              // Stake from the whole TON+WTON pool, keeping a TON gas reserve.
                               const reserve = gasEstimateTon > 0 ? gasEstimateTon * 1.5 : 0;
-                              const max = Math.max(0, bal - reserve);
+                              const max = Math.max(0, stakeableNum - reserve);
                               setAmount(max > 0 ? String(Math.floor(max * 100) / 100) : "0");
                             }}
                             className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-accent-cyan/10 text-accent-cyan text-xs font-semibold hover:bg-accent-cyan/20 transition-colors"
@@ -955,14 +976,40 @@ export default function StakingScreen() {
                             MAX
                           </button>
                         </div>
-                        <div className="text-xs text-gray-500 mt-2">
-                          {t.dashboard.balance} {Number(tonBalance).toLocaleString("en-US", { maximumFractionDigits: 2 })} TON
+                        <div className="text-xs text-gray-500 mt-2 flex items-center gap-1.5 flex-wrap">
+                          <span>
+                            {t.dashboard.balance}{" "}
+                            <span className="text-gray-300 font-semibold">{fmt2(stakeableNum)}</span>{" "}
+                            {hasWton ? (
+                              <span className="text-gray-600">
+                                ({fmt2(tonNum)} TON + <span className="text-accent-gold">{fmt2(wtonNum)} WTON</span>)
+                              </span>
+                            ) : (
+                              "TON"
+                            )}
+                          </span>
+                          {hasWton && (
+                            <span className="group relative inline-flex">
+                              <span className="flex h-4 w-4 cursor-help items-center justify-center rounded-full bg-white/10 text-[9px] font-bold text-gray-300">
+                                i
+                              </span>
+                              <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 w-56 -translate-x-1/2 rounded-lg border border-accent-cyan/30 bg-[#06101a]/97 px-3 py-2 text-[11px] font-normal leading-relaxed text-gray-200 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 z-20">
+                                {t.stakingScreen.wtonTooltip}
+                              </span>
+                            </span>
+                          )}
                         </div>
+                        {hasWton && (
+                          <div className="mt-2 flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.07] px-2.5 py-1.5 text-[11px] text-emerald-300">
+                            <span>⚡</span>
+                            <span>{t.stakingScreen.wtonFirstNote.replace("{wton}", fmt2(wtonNum))}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Gas fee warning in step 2 */}
                       {amount && Number(amount) > 0 && gasEstimateTon > 0 &&
-                        (Number(tonBalance) - Number(amount)) < gasEstimateTon * 1.5 && (
+                        (tonNum - Math.max(0, Number(amount) - wtonNum)) < gasEstimateTon * 1.5 && (
                         <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400">
                           {t.dashboard.insufficientTonForGas}
                         </div>
@@ -971,7 +1018,7 @@ export default function StakingScreen() {
                       {amount && Number(amount) > 0 && (
                         <button
                           onClick={() => { setError(null); setTxHash(null); setStep(3); }}
-                          disabled={gasEstimateTon > 0 && (Number(tonBalance) - Number(amount)) < gasEstimateTon * 1.5}
+                          disabled={gasEstimateTon > 0 && (tonNum - Math.max(0, Number(amount) - wtonNum)) < gasEstimateTon * 1.5}
                           className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-navy text-white font-semibold text-sm hover:scale-[1.02] transition-transform disabled:opacity-40 disabled:hover:scale-100 disabled:cursor-not-allowed"
                         >
                           {t.stakingScreen.nextStep} →

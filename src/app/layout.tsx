@@ -59,21 +59,28 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Toki — Stake TON in One Click | Tokamak Network Staking",
+    title: "Toki — Stake 100 TON, get a free AI key",
     description:
-      "Stake your TON tokens with one click and earn 20%+ APR seigniorage rewards. Zero gas fees, no complex setup. Powered by Tokamak Network.",
+      "Toki's summer update: stake 100 TON and unlock AI Membership — unlimited use up to 1M output tokens a day on Qwen 3.6 and Gemma 4. No card, no fee.",
     type: "website",
     locale: "ko_KR",
     siteName: SITE_NAME,
     url: SITE_URL,
-    images: ["/toki-promo-poster.jpg"],
+    images: [
+      {
+        url: "/toki-og.png",
+        width: 1200,
+        height: 630,
+        alt: "Toki — Stake 100 TON, get a free AI key. Unlimited AI Membership.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Toki — Stake TON in One Click | Tokamak Network Staking",
+    title: "Toki — Stake 100 TON, get a free AI key",
     description:
-      "Stake your TON tokens with one click and earn 20%+ APR seigniorage rewards. Zero gas fees, no complex setup. Powered by Tokamak Network.",
-    images: ["/opengraph-image"],
+      "Toki's summer update: stake 100 TON and unlock AI Membership — unlimited use up to 1M output tokens a day on Qwen 3.6 and Gemma 4. No card, no fee.",
+    images: ["/toki-og.png"],
   },
   robots: {
     index: true,

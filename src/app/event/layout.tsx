@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     title: "Toki 오프라인 이벤트 | Tokamak Network",
     description:
       "Toki 오프라인 이벤트에 참여하고 TON 스테이킹 보상을 받으세요.",
-    images: ["/opengraph-image"],
+    images: ["/toki-promo-poster.jpg"],
   },
 };
 
