@@ -379,6 +379,10 @@ const en = {
     badgeLive: "Available",
     badgeSoon: "Coming soon",
     startHere: "START HERE",
+    // Arrow-callout text for the "next best step" tile (one shows at a time).
+    cueGetTon: "START HERE",
+    cueStaking: "STAKE NOW",
+    cueAi: "UNLOCK AI",
     stakingNudge: "Don't let it sit — stake it!",
     // Lobby collage cards
     cardWalletSub: "Balance · Withdraw",

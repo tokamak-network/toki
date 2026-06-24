@@ -60,6 +60,8 @@ type Card = {
   badge?: CardBadge;
   feat?: boolean;
   spotlight?: boolean;
+  /** When this card is the "next best step", the arrow callout text (e.g. "START HERE"). */
+  cue?: string;
   locked?: boolean;
   style: CSSProperties;
   href?: string;
@@ -253,12 +255,33 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   // ── Right-side MENU collage cards ──────────────────────────────────────────
   const eligible = stakedNum >= MIN_TON_AI_ACCESS;
   const needed = Math.max(0, MIN_TON_AI_ACCESS - stakedNum);
-  // Wallet connected but no idle TON → the real first step is *acquiring* TON,
-  // so spotlight the Get-TON tile. Once the user holds TON, the spotlight moves
-  // on to Staking. `!loading` avoids a spotlight flash before balances resolve.
-  const noTon = !loading && tonNum <= 0;
-  const noStake = stakedNum <= 0;
-  const stakeFirst = noStake && tonNum > 0;
+  const noTon = !loading && tonNum <= 0; // drives the Get-TON subtitle copy
+  // The single "next best step" — strictly ordered so exactly one menu is ever
+  // spotlit, and the spotlight moves on as the user progresses:
+  //   no TON → Get TON · holds TON but unstaked → Staking · staked but no AI
+  //   key → AI Membership · has a key → nothing. `!loading` avoids a flash
+  //   before balances/key status resolve. An arrow callout names each step.
+  // The no-auth /hub-preview route can force a step via ?step=getton|staking|ai
+  // for visual QA; real users always get the computed step.
+  const forcedStep =
+    preview && typeof window !== "undefined"
+      ? (new URLSearchParams(window.location.search).get("step") as
+          | "getton"
+          | "staking"
+          | "ai"
+          | null)
+      : null;
+  const nextStep: "getton" | "staking" | "ai" | null =
+    forcedStep ??
+    (hasKey
+      ? null
+      : stakedNum > 0
+        ? "ai"
+        : tonNum > 0
+          ? "staking"
+          : !loading
+            ? "getton"
+            : null);
 
   // AI Access always opens the dedicated /agent page, which owns every state
   // (stake-gated quest → key issuance → "chat with Toki"). The tile just mirrors
@@ -270,6 +293,8 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
     href: "/agent",
     hint: t.hub.hintAi,
     locked: !hasKey && !eligible,
+    spotlight: nextStep === "ai",
+    cue: nextStep === "ai" ? t.hub.cueAi : undefined,
     sub: hasKey
       ? aiUsageUsedTokens != null
         ? (t.hub.aiUsage ?? "{used}").replace("{used}", fmtTokens(aiUsageUsedTokens))
@@ -303,8 +328,9 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       img: "/characters/toki-menu-getton.png",
       href: "/get-ton",
       hint: t.hub.hintGetTon,
-      spotlight: noTon,
-      badge: noTon ? { kind: "hot", text: t.hub.startHere } : { kind: "live", text: "TON" },
+      spotlight: nextStep === "getton",
+      cue: nextStep === "getton" ? t.hub.cueGetTon : undefined,
+      badge: { kind: "live", text: "TON" },
       style: { left: "0", top: "0", width: "34%", height: "48%", clipPath: "polygon(0 0,100% 0,92.7% 100%,0 100%)" },
     },
     {
@@ -327,8 +353,9 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       href: "/staking",
       hint: t.hub.hintStaking,
       feat: true,
-      spotlight: stakeFirst,
-      badge: stakeFirst ? { kind: "hot", text: t.hub.startHere } : { kind: "live", text: "LIVE" },
+      spotlight: nextStep === "staking",
+      cue: nextStep === "staking" ? t.hub.cueStaking : undefined,
+      badge: { kind: "live", text: "LIVE" },
       style: { left: "60%", top: "0", width: "40%", height: "75.2%", clipPath: "polygon(10% 0,100% 0,100% 95.7%,0 100%)" },
     },
     {
@@ -370,6 +397,12 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
       style: { left: "50%", top: "72%", width: "50%", height: "28%", clipPath: "polygon(5% 14.3%,100% 0,100% 100%,0 100%)" },
     },
   ];
+
+  // The arrow callout floats over the "next step" tile, anchored at its
+  // top-centre (parsed straight from the tile's % style so it tilts with the menu).
+  const cueCard = cards.find((c) => c.cue);
+  const pctNum = (v: CSSProperties["left"]) =>
+    typeof v === "string" ? parseFloat(v) : typeof v === "number" ? v : 0;
 
   const renderPiece = (c: Card) => {
     const cls = `piece${c.feat ? " feat" : ""}${c.spotlight ? " spotlight" : ""}${c.locked ? " locked" : ""}`;
@@ -572,7 +605,22 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
           {/* Right-side MENU collage */}
           <div className="menu">
             <div className="menuTag">MENU</div>
-            <div className="collage">{cards.map(renderPiece)}</div>
+            <div className="collage">
+              {cards.map(renderPiece)}
+              {cueCard && (
+                <div
+                  className="stepcue"
+                  aria-hidden="true"
+                  style={{
+                    left: `${pctNum(cueCard.style.left) + pctNum(cueCard.style.width) / 2}%`,
+                    top: `${Math.max(pctNum(cueCard.style.top), 9)}%`,
+                  }}
+                >
+                  <span className="cue-pill">{cueCard.cue}</span>
+                  <span className="cue-tip" />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
@@ -638,9 +686,15 @@ const lobbyCss = `
 .tk-lobby .piece.locked{filter:grayscale(.45) brightness(.78)}
 .tk-lobby .piece.feat .lbl b{font-size:clamp(20px,2.2vw,40px)}
 .tk-lobby .piece.feat .lbl em{font-size:clamp(12px,1.1vw,18px)}
-.tk-lobby .piece.spotlight{z-index:5;animation:tkSpot 1.7s ease-in-out infinite}
-@keyframes tkSpot{0%,100%{filter:drop-shadow(0 0 6px rgba(34,211,238,.5))}50%{filter:drop-shadow(0 0 20px rgba(34,211,238,.95))}}
-@media (prefers-reduced-motion:reduce){.tk-lobby .piece.spotlight{animation:none;filter:drop-shadow(0 0 12px rgba(34,211,238,.7))}}
+.tk-lobby .piece.spotlight{z-index:6;animation:tkSpot 1.7s ease-in-out infinite}
+@keyframes tkSpot{0%,100%{filter:drop-shadow(0 0 7px rgba(245,158,11,.55))}50%{filter:drop-shadow(0 0 18px rgba(245,158,11,.95))}}
+@media (prefers-reduced-motion:reduce){.tk-lobby .piece.spotlight{animation:none;filter:drop-shadow(0 0 13px rgba(245,158,11,.75))}}
+/* arrow callout naming the "next step" — floats over the spotlit tile */
+.tk-lobby .collage .stepcue{position:absolute;z-index:20;pointer-events:none;transform:translate(-50%,-100%);text-align:center;animation:tkCue 1s ease-in-out infinite}
+.tk-lobby .stepcue .cue-pill{display:inline-block;background:linear-gradient(135deg,#f9b54b,#f59e0b);color:#3a2604;font-weight:800;font-size:clamp(9px,0.82vw,13px);letter-spacing:.01em;padding:5px 12px;border-radius:999px;box-shadow:0 8px 22px rgba(245,158,11,.5);white-space:nowrap}
+.tk-lobby .stepcue .cue-tip{display:block;width:0;height:0;margin:2px auto 0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid #f59e0b}
+@keyframes tkCue{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,calc(-100% - 8px))}}
+@media (prefers-reduced-motion:reduce){.tk-lobby .collage .stepcue{animation:none}}
 @media (max-width:1023px){
   .tk-lobby{position:static;top:auto;left:auto;right:auto;bottom:auto;display:flex;flex-direction:column;align-items:center;gap:14px;height:auto;padding:76px 12px 28px}
   .tk-lobby .hud-left{position:static;width:100%;max-width:520px;margin:0 auto}

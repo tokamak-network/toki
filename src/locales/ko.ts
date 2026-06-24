@@ -376,6 +376,10 @@ const ko = {
     badgeLive: "이용 가능",
     badgeSoon: "곧 출시",
     startHere: "여기부터!",
+    // "다음 할 일" 타일 위 화살표 콜아웃 (한 번에 하나만 표시)
+    cueGetTon: "여기서 시작!",
+    cueStaking: "이제 스테이킹!",
+    cueAi: "AI 키 받기!",
     stakingNudge: "놀리지 말고 스테이킹!",
     // 로비 콜라주 카드
     cardWalletSub: "잔액 · 출금",
