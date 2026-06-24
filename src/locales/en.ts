@@ -56,6 +56,18 @@ const en = {
       desc: "A lucky event running until the cards run out",
     },
   },
+  seasonalPromo: {
+    newSeason: "NEW SEASON",
+    tag: "SUMMER UPDATE · 2026",
+    title: "Summer glow-up",
+    posterAlt: "Toki summer poster",
+    feat1: { lead: "Stake just ", strong: "100 TON", tail: " → a free AI key" },
+    feat2: { lead: "Unlimited use — up to ", strong: "1M output tokens", tail: " a day" },
+    feat3: { lead: "Qwen 3.6 · Gemma 4 — ", strong: "no card, no fee", tail: "" },
+    cta: "Start staking",
+    later: "Maybe later",
+    dontShow: "Don't show again this season",
+  },
   hero: {
     badge: "Tokamak Network Staking",
     title1: "Hi, I'm Toki!",
