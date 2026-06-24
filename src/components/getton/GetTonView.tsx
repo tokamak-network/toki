@@ -368,7 +368,7 @@ export default function GetTonView() {
                   onMouseEnter={() => setHoverRoute("cex")}
                   onMouseLeave={() => setHoverRoute(null)}
                   onClick={() => setActiveRoute("cex")}
-                  className="group mb-2.5 flex w-full items-center gap-3 rounded-xl border border-white/12 bg-white/[0.04] p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-accent-amber/50 hover:bg-white/[0.07]"
+                  className="group mb-2.5 flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-accent-amber/50 hover:bg-white/[0.07]"
                 >
                   <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-amber-400/15 text-2xl">🏦</span>
                   <span className="flex-1 min-w-0">
@@ -386,7 +386,7 @@ export default function GetTonView() {
                   onMouseEnter={() => setHoverRoute("dex")}
                   onMouseLeave={() => setHoverRoute(null)}
                   onClick={() => setActiveRoute("dex")}
-                  className="group flex w-full items-center gap-3 rounded-xl border border-white/12 bg-white/[0.04] p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-accent-cyan/50 hover:bg-white/[0.07]"
+                  className="group flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-accent-cyan/50 hover:bg-white/[0.07]"
                 >
                   <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-accent-cyan/15 text-2xl">🔄</span>
                   <span className="flex-1 min-w-0">
@@ -485,10 +485,10 @@ export default function GetTonView() {
                       <select
                         value={payToken}
                         onChange={(e) => setPayToken(e.target.value)}
-                        className="w-full rounded-lg border border-white/12 bg-white/6 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan/40"
+                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-accent-cyan/40"
                       >
                         {PAY_TOKENS.map((tk) => (
-                          <option key={tk.sym} value={tk.id} className="bg-[#111a2e]">{tk.sym}</option>
+                          <option key={tk.sym} value={tk.id} className="bg-[#111a2e] text-white">{tk.sym}</option>
                         ))}
                       </select>
                     </label>
@@ -499,7 +499,7 @@ export default function GetTonView() {
                         value={payAmount}
                         onChange={(e) => setPayAmount(e.target.value.replace(/[^0-9.]/g, ""))}
                         placeholder="0.0"
-                        className="w-full rounded-lg border border-white/12 bg-white/6 px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-accent-cyan/40"
+                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-accent-cyan/40"
                       />
                     </label>
                     <a
@@ -531,7 +531,7 @@ export default function GetTonView() {
                         if (unwrapState !== "idle") setUnwrapState("idle");
                       }}
                       placeholder="0.0"
-                      className="w-full rounded-lg border border-white/12 bg-white/6 px-3 py-2 pr-14 text-sm text-white placeholder-gray-600 outline-none focus:border-accent-cyan/40"
+                      className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 pr-14 text-sm text-white placeholder-gray-600 outline-none focus:border-accent-cyan/40"
                     />
                     <button
                       type="button"
