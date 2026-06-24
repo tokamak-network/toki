@@ -1,11 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import TokiLoader from "@/components/common/TokiLoader";
 
 const HubLobby = dynamic(() => import("@/components/hub/HubLobby"), {
   ssr: false,
-  loading: () => <TokiLoader />,
+  loading: () => <div className="min-h-screen bg-[#070b14]" />,
 });
 
 // No-auth visual preview of the hub lobby (empty data). Not linked in nav.

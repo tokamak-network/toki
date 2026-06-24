@@ -1,12 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import TokiLoader from "@/components/common/TokiLoader";
 
 // Dashboard is now the Toki hub (concept A lobby). Detailed wallet lives at /wallet.
 const HubLobby = dynamic(() => import("@/components/hub/HubLobby"), {
   ssr: false,
-  loading: () => <TokiLoader />,
+  loading: () => <div className="min-h-screen bg-[#070b14]" />,
 });
 
 export default function DashboardPage() {

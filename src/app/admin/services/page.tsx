@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import TokiLoader from "@/components/common/TokiLoader";
 
 interface EcosystemService {
   id: string;
@@ -116,7 +115,11 @@ export default function AdminServicesPage() {
   };
 
   if (loading) {
-    return <TokiLoader />;
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <p className="text-gray-400">Loading...</p>
+      </div>
+    );
   }
 
   return (
