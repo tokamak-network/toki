@@ -1081,6 +1081,9 @@ const en = {
     step4CardUnlocked: "Card Unlocked!",
     goToDashboard: "Go to Dashboard",
     goToExplore: "Explore Ecosystem",
+    // WTON-aware staking (stakeable = TON + WTON; WTON spent first)
+    wtonTooltip: "WTON is just “wrapped TON” — same value, 1:1. Toki uses it for staking automatically; you usually receive WTON from a DEX swap.",
+    wtonFirstNote: "Uses your {wton} WTON first (no conversion), then wraps TON for the rest.",
     // Common
     stepLabel: "STEP {current}/{total}",
     // Onboarding prompt for new users

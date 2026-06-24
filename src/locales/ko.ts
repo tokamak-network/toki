@@ -1112,6 +1112,9 @@ const ko = {
     step4CardUnlocked: "멤버카드 해금!",
     goToDashboard: "대시보드로 가기",
     goToExplore: "생태계 둘러보기",
+    // WTON 통합 스테이킹 (스테이킹 가능 = TON + WTON, WTON 먼저 사용)
+    wtonTooltip: "WTON은 TON과 1:1로 가치가 같은 ‘포장된 TON’이에요. 보통 DEX에서 받게 되고, 토키가 스테이킹에 알아서 써줘요.",
+    wtonFirstNote: "WTON {wton}개를 먼저 써서 변환 없이 스테이킹하고, 나머지는 TON에서 자동 변환해요.",
     // Common
     stepLabel: "STEP {current}/{total}",
     // Onboarding prompt for new users

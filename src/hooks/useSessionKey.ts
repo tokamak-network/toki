@@ -395,6 +395,7 @@ export function useSessionKey(
     async (
       operatorAddress: Address,
       tonAmount: string,
+      wtonAvailable: bigint = BigInt(0),
     ): Promise<`0x${string}`> => {
       if (!userAddress || !pimlicoUrl) {
         throw new Error("Not ready: missing userAddress or pimlico config");
@@ -446,7 +447,7 @@ export function useSessionKey(
 
       const stakingRawCalls = buildStakingCalls(
         tonAddr, wtonAddr, depositManagerAddr,
-        operatorAddress, amount,
+        operatorAddress, amount, wtonAvailable,
       );
 
       // Calls: approve paymaster (if applicable) + staking calls
