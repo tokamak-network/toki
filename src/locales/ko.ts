@@ -53,7 +53,7 @@ const ko = {
   seasonalPromo: {
     newSeason: "NEW SEASON",
     tag: "여름 업데이트 · 2026",
-    title: "여름맞이 새 단장",
+    title: "AI 멤버십이 왔어!",
     posterAlt: "토키 여름 포스터",
     feat1: { lead: "", strong: "100 TON", tail: "만 스테이킹하면 무료 AI 키" },
     feat2: { lead: "하루 ", strong: "100만 출력 토큰", tail: "까지 무제한" },

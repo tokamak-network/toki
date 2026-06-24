@@ -59,7 +59,7 @@ const en = {
   seasonalPromo: {
     newSeason: "NEW SEASON",
     tag: "SUMMER UPDATE · 2026",
-    title: "Summer glow-up",
+    title: "AI Membership is here",
     posterAlt: "Toki summer poster",
     feat1: { lead: "Stake just ", strong: "100 TON", tail: " → a free AI key" },
     feat2: { lead: "Unlimited use — up to ", strong: "1M output tokens", tail: " a day" },
