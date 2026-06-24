@@ -58,8 +58,8 @@ export async function GET(req: NextRequest) {
       { status: 500 },
     );
   }
-  const provided =
-    req.headers.get("x-admin-token") || req.nextUrl.searchParams.get("token") || "";
+  // Header-only — a token in the query string leaks into logs / CDN cache keys.
+  const provided = req.headers.get("x-admin-token") || "";
   if (provided !== token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

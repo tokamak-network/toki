@@ -90,4 +90,32 @@ const handler = createMcpHandler(
   { basePath: "/api" },
 );
 
-export { handler as GET, handler as POST, handler as DELETE };
+// Best-effort per-IP rate limit (in-memory; resets per serverless cold start) so an
+// unauthenticated caller can't fan the read-only tools into an on-chain RPC cost spike.
+const RL_WINDOW_MS = 60_000;
+const RL_MAX = 30;
+const rlHits = new Map<string, { count: number; reset: number }>();
+function allow(request: Request): boolean {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
+  const now = Date.now();
+  const e = rlHits.get(ip);
+  if (!e || now > e.reset) {
+    rlHits.set(ip, { count: 1, reset: now + RL_WINDOW_MS });
+    return true;
+  }
+  if (e.count >= RL_MAX) return false;
+  e.count++;
+  return true;
+}
+
+async function guarded(request: Request): Promise<Response> {
+  if (!allow(request)) {
+    return new Response(JSON.stringify({ error: "Too many requests" }), {
+      status: 429,
+      headers: { "content-type": "application/json", "retry-after": "60" },
+    });
+  }
+  return handler(request);
+}
+
+export { guarded as GET, guarded as POST, guarded as DELETE };

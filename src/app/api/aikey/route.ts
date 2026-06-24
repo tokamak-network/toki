@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { key, expiresAt, address } = await req.json();
-    if (typeof key !== "string" || !key.startsWith("sk-")) {
+    if (typeof key !== "string" || !key.startsWith("sk-") || key.length > 512) {
       return NextResponse.json({ error: "Invalid key" }, { status: 400 });
     }
     const status = await storeKey(userId, key, typeof expiresAt === "string" ? expiresAt : "", typeof address === "string" ? address : undefined);
