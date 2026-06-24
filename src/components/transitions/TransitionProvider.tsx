@@ -129,7 +129,9 @@ export default function TransitionProvider({
 
   return (
     <TransitionCtx.Provider value={{ navigate }}>
-      <style>{COVER_CSS}</style>
+      {/* inject as raw HTML — rendering CSS as a text child escapes its quotes
+          (" → &quot;) on the server but not the client, causing a hydration mismatch. */}
+      <style dangerouslySetInnerHTML={{ __html: COVER_CSS }} />
       {children}
       {key && phase && (
         <div className={`screen-cover sc-${key} sc-${phase}`} aria-hidden="true">
