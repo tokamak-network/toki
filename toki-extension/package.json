@@ -1,0 +1,57 @@
+{
+  "name": "toki-extension",
+  "displayName": "Toki 온보딩 가이드 — 메타마스크·거래소 출금",
+  "version": "0.1.0",
+  "description": "메타마스크 지갑 생성과 거래소 TON 출금을 페이지에서 단계별로 안내하는 토키 온보딩 가이드.",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "@plasmohq/messaging": "^0.7.0",
+    "@plasmohq/storage": "^1.12.0",
+    "plasmo": "^0.89.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.34.5",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "postcss-rem-to-responsive-pixel": "^6.0.1",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.5.4"
+  },
+  "manifest": {
+    "host_permissions": [
+      "https://metamask.io/*",
+      "https://*.upbit.com/*",
+      "https://*.bithumb.com/*",
+      "https://*.coinone.co.kr/*",
+      "https://*.korbit.co.kr/*",
+      "https://eth.llamarpc.com/*",
+      "https://*.publicnode.com/*"
+    ],
+    "permissions": [
+      "storage",
+      "scripting",
+      "alarms",
+      "notifications"
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": [
+          "assets/characters/*"
+        ],
+        "matches": [
+          "<all_urls>"
+        ]
+      }
+    ]
+  }
+}

@@ -5,7 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useTranslation } from "@/components/providers/LanguageProvider";
+import { useGoDashboard } from "@/components/transitions/TransitionProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import {
   ACHIEVEMENTS,
   calculateLevel,
@@ -14,10 +16,12 @@ import {
 } from "@/lib/achievements";
 
 export default function ConnectButton() {
-  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { ready, authenticated, logout, user } = usePrivy();
   const { wallets } = useWallets();
   const { t } = useTranslation();
+  const goDashboard = useGoDashboard();
   const { storage } = useAchievement();
+  const { open: openAuthChoice } = useAuthModal();
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -262,7 +266,10 @@ export default function ConnectButton() {
               <div className="px-4 py-3 flex gap-2">
                 <Link
                   href="/dashboard"
-                  onClick={() => setOpen(false)}
+                  onClick={(e) => {
+                    setOpen(false);
+                    goDashboard(e);
+                  }}
                   className="flex-1 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-xs font-medium text-center hover:bg-white/10 transition-colors"
                 >
                   Dashboard
@@ -301,7 +308,7 @@ export default function ConnectButton() {
 
   return (
     <button
-      onClick={login}
+      onClick={openAuthChoice}
       className="px-5 py-2 rounded-lg bg-gradient-to-r from-accent-blue/80 to-accent-navy/80 text-white text-sm font-medium hover:from-accent-blue hover:to-accent-navy transition-all"
     >
       {t.header.connect}

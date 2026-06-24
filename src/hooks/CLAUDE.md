@@ -1,11 +1,5 @@
 <claude-mem-context>
-# Recent Activity
 
-### Feb 23, 2026
-
-| ID | Time | T | Title | Read |
-|----|------|---|-------|------|
-| #855 | 5:01 PM | 🔵 | TON Token Lacks EIP-2612 Permit and EIP-3009 Support | ~498 |
 </claude-mem-context>
 
 # Hooks Development Notes

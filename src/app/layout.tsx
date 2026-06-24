@@ -14,13 +14,17 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import PrivyClientProvider from "@/components/providers/PrivyClientProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { AchievementProvider } from "@/components/providers/AchievementProvider";
+import AuthModalProvider from "@/components/auth/AuthModalProvider";
 import { AudioProvider } from "@/components/audio/AudioProvider";
+import TransitionProvider from "@/components/transitions/TransitionProvider";
 import { OrganizationJsonLd, WebApplicationJsonLd } from "@/components/seo/JsonLd";
 import { SITE_URL, SITE_NAME } from "@/constants/seo";
 import "./globals.css";
 
 const TokiChat = dynamic(() => import("@/components/chat/TokiChat"), { ssr: false });
+const NetworkGuard = dynamic(() => import("@/components/layout/NetworkGuard"), { ssr: false });
 const AchievementToast = dynamic(() => import("@/components/achievements/AchievementToast"), { ssr: false });
+const AnalyticsTracker = dynamic(() => import("@/components/analytics/AnalyticsTracker"), { ssr: false });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -90,6 +94,20 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        {/* Bubble display fonts for the cozy hero */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        {/* Korean display font (Jua) needs full glyph coverage — a plain
+            stylesheet link is simpler/safer than next/font's subset handling. */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&family=Jua&family=Anton&family=Black+Han+Sans&family=Archivo:wght@700;800;900&family=Permanent+Marker&family=Noto+Sans+KR:wght@500;700&display=swap"
+          rel="stylesheet"
+        />
         {/* Google Analytics 4 */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
@@ -128,11 +146,19 @@ export default function RootLayout({
         <LanguageProvider>
           <AudioProvider>
             <PrivyClientProvider>
-              <AchievementProvider>
-                {children}
-                <TokiChat />
-                <AchievementToast />
-              </AchievementProvider>
+              <AuthModalProvider>
+                <AchievementProvider>
+                  {/* Global overlays live INSIDE TransitionProvider so anything
+                      that navigates (incl. TokiChat) can play screen transitions. */}
+                  <TransitionProvider>
+                    {children}
+                    <NetworkGuard />
+                    <TokiChat />
+                    <AchievementToast />
+                    <AnalyticsTracker />
+                  </TransitionProvider>
+                </AchievementProvider>
+              </AuthModalProvider>
             </PrivyClientProvider>
           </AudioProvider>
         </LanguageProvider>

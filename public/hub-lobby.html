@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Toki 로비 (클린)</title>
+<style>
+  :root{ --cyan:#22d3ee; --gold:#f59e0b; --ink:rgba(8,24,38,.55); }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#04060a;color:#eaf6fb;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo",sans-serif}
+  .stage{position:relative;height:100vh;width:100vw;overflow:hidden;background:url('/backgrounds/hub-bg.jpg') center/cover no-repeat}
+
+  /* static character — ORIGINAL asset, dropped in as-is. no effects, no shadow, no overlay */
+  .char{position:absolute;left:36%;bottom:0;transform:translateX(-50%);height:97%;width:auto;z-index:6}
+
+  .glass{background:var(--ink);backdrop-filter:blur(10px);border:1px solid rgba(34,211,238,.22);box-shadow:0 10px 34px rgba(0,0,0,.4)}
+  .dlg{position:absolute;left:36%;bottom:26px;transform:translateX(-50%);z-index:22;width:min(520px,40vw);background:rgba(6,18,30,.74);backdrop-filter:blur(16px);border:1px solid rgba(34,211,238,.32);border-radius:18px;padding:14px 22px;box-shadow:0 14px 44px rgba(0,0,0,.55)}
+  .dlg .nm{display:inline-block;font-size:12px;font-weight:800;color:var(--cyan);background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);border-radius:999px;padding:2px 11px;margin-bottom:8px}
+  .dlg p{margin:0;font-size:15px;line-height:1.5;color:#f1f5f9}
+  .topL{position:absolute;left:22px;top:18px;z-index:20;display:flex;align-items:center;gap:12px}
+  .rank{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--ink);backdrop-filter:blur(8px);border:2px solid rgba(34,211,238,.55)}
+  .rank b{font-size:22px;line-height:1}.rank span{font-size:9px;color:#9fd9e8}
+  .who b{font-size:15px}.who span{display:block;font-size:11px;color:#9fd9e8}
+  .topR{position:absolute;right:18px;top:18px;z-index:20;display:flex;gap:10px}
+  .cur{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;background:var(--ink);backdrop-filter:blur(8px);border:1px solid rgba(34,211,238,.22);font-size:13px;font-weight:700}
+  .evt{position:absolute;left:8px;top:120px;z-index:18;display:flex;flex-direction:column;gap:14px}
+  .tab{min-width:240px;padding:13px 24px 13px 18px;color:#eaf6fb;cursor:pointer;border-radius:6px;background:linear-gradient(100deg,rgba(8,30,48,.9),rgba(8,30,48,.45));border:1px solid rgba(34,211,238,.25);border-left:4px solid var(--cyan);transform:perspective(820px) rotateY(20deg);transform-origin:left center;box-shadow:18px 16px 36px rgba(0,0,0,.5)}
+  .tab b{font-size:14px;display:block}.tab span{font-size:10px;color:#9fd9e8}
+  /* right-side MENU: collage of varied (slanted) clip-path tiles; overall area stays a rectangle */
+  .rmenu{position:absolute;right:1.8vw;top:50%;z-index:18;width:46vw;height:74vh;
+         transform:translateY(-50%) perspective(1700px) rotateY(-13deg);transform-origin:right center;
+         background:rgba(255,255,255,.26);backdrop-filter:blur(9px);border:2px solid rgba(255,255,255,.6);border-radius:20px;padding:10px;
+         box-shadow:0 22px 60px rgba(0,0,0,.42)}
+  .menuTag{position:absolute;top:12px;left:20px;z-index:5;font-size:clamp(13px,1.2vw,20px);font-weight:900;letter-spacing:5px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+  .collage{position:relative;width:100%;height:100%}
+  .piece{position:absolute;overflow:hidden;cursor:pointer;transform:scale(.984);transition:transform .2s,filter .2s}
+  .piece .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top}
+  .piece .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,12,20,.02) 32%,rgba(4,12,20,.9))}
+  .piece .lbl{position:absolute;left:clamp(10px,0.9vw,16px);bottom:clamp(10px,1.3vh,18px);z-index:2}
+  .piece .lbl b{display:block;font-size:clamp(14px,1.4vw,26px);font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.95)}
+  .piece .lbl em{font-style:normal;font-size:clamp(10px,0.9vw,15px);color:#cfeef7;text-shadow:0 1px 5px rgba(0,0,0,.95)}
+  .piece .badge{position:absolute;top:10px;right:14px;z-index:2;font-size:clamp(9px,0.78vw,12px);font-weight:800;padding:3px 9px;border-radius:999px;color:#04141d}
+  .badge.live{background:var(--cyan)}.badge.new{background:#a78bfa;color:#fff}.badge.hot{background:var(--gold)}
+  .piece:hover{transform:scale(1.012);filter:brightness(1.08);z-index:4}
+  .piece.feat .lbl b{font-size:clamp(20px,2.2vw,40px)}.piece.feat .lbl em{font-size:clamp(12px,1.1vw,18px)}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <img class="char" src="/characters/toki-fullbody.png" alt="Toki" />
+
+    <div class="dlg"><span class="nm">Toki</span><p>안녕! 뭘 해볼까? 메뉴를 골라봐.</p></div>
+    <div class="topL"><div class="rank"><b>Lv 12</b><span>RANK</span></div><div class="who"><b>민지</b><span>Ethereum Mainnet</span></div></div>
+    <div class="topR"><div class="cur">💠 1,240 TON</div><div class="cur">⚡ 800 staked</div></div>
+    <div class="evt">
+      <div class="glass tab"><b>프라이빗 전송</b><span>NEW · 곧 출시</span></div>
+      <div class="glass tab"><b>복권 이벤트</b><span>진행 중</span></div>
+    </div>
+    <div class="rmenu">
+      <div class="menuTag">MENU</div>
+      <div class="collage">
+        <!-- wallet (top-left, right edge slanted) -->
+        <div class="piece" style="left:0;top:0;width:34%;height:48%;clip-path:polygon(0 0,100% 0,92.7% 100%,0 100%)">
+          <img class="art" src="/toki-bag-full.png" alt="" /><div class="scrim"></div>
+          <div class="lbl"><b>내 지갑</b><em>잔액 · 출금</em></div>
+        </div>
+        <!-- private (top-mid parallelogram) -->
+        <div class="piece" style="left:31.53%;top:0;width:32.47%;height:48%;clip-path:polygon(7.6% 0,100% 0,92.1% 100%,0 100%)">
+          <img class="art" src="/characters/toki-peeking.png" alt="" /><div class="scrim"></div><span class="badge new">NEW</span>
+          <div class="lbl"><b>프라이빗 전송</b><em>비공개 송금</em></div>
+        </div>
+        <!-- staking (right, full-height feature; left + bottom slanted) -->
+        <div class="piece feat" style="left:60%;top:0;width:40%;height:75.2%;clip-path:polygon(10% 0,100% 0,100% 95.7%,0 100%)">
+          <img class="art" src="/toki-rocket.png" alt="" /><div class="scrim"></div><span class="badge live">LIVE</span>
+          <div class="lbl"><b>스테이킹</b><em>~12% APR · 지금 시작</em></div>
+        </div>
+        <!-- lottery (bottom-left) -->
+        <div class="piece" style="left:0;top:48%;width:31.53%;height:32%;clip-path:polygon(0 0,100% 0,95.1% 92.5%,0 100%)">
+          <img class="art" src="/toki-lottery.png" alt="" /><div class="scrim"></div><span class="badge hot">진행중</span>
+          <div class="lbl"><b>복권</b><em>참여하기</em></div>
+        </div>
+        <!-- ai (mid parallelogram) -->
+        <div class="piece" style="left:30%;top:48%;width:31.45%;height:29.6%;clip-path:polygon(4.9% 0,100% 0,95.4% 91.9%,0 100%)">
+          <img class="art" src="/characters/toki-thinking.png" alt="" /><div class="scrim"></div>
+          <div class="lbl"><b>AI 액세스</b><em>에이전트</em></div>
+        </div>
+        <!-- collection (bottom-wide, top edge slanted) -->
+        <div class="piece" style="left:0;top:72%;width:100%;height:28%;clip-path:polygon(0 28.6%,100% 0,100% 100%,0 100%)">
+          <img class="art" src="/toki-card-gold-v2.png" alt="" style="object-position:center 30%" /><div class="scrim"></div>
+          <div class="lbl"><b>컬렉션</b><em>내 카드 모으기</em></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

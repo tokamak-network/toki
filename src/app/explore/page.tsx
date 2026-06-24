@@ -7,11 +7,7 @@ const ExploreContent = dynamic(
   () => import("@/components/explore/ExploreContent"),
   {
     ssr: false,
-    loading: () => (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-400">Loading...</div>
-      </div>
-    ),
+    loading: () => <div className="min-h-screen bg-[#070b14]" />,
   }
 );
 

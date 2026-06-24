@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Toki — Title (video bg)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Fredoka:wght@500;600;700&family=Jua&display=swap" rel="stylesheet" />
+<style>
+  :root{--cream:#fff8ef;--cyan:#22d3ee}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#05070d;color:#eaf2f8;font-family:"Fredoka","Apple SD Gothic Neo",-apple-system,sans-serif;overflow:hidden}
+
+  /* ===== existing app header (kept) ===== */
+  .appheader{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;backdrop-filter:blur(8px);background:rgba(7,10,16,.55);border-bottom:1px solid rgba(255,255,255,.08)}
+  .appheader .hw{max-width:1152px;margin:0 auto;height:100%;padding:0 18px;display:flex;align-items:center;justify-content:space-between}
+  .appheader .brand{display:flex;align-items:center;gap:8px}
+  .appheader .brand .ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);padding:3px}
+  .appheader .brand .lg{height:22px}
+  .appheader nav{display:flex;gap:30px;font-size:14px}
+  .appheader nav a{color:#e7eef4;text-decoration:none;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+  .appheader nav a:hover{color:#fff}
+  .appheader .hr{display:flex;align-items:center;gap:12px}
+  .appheader .lang{display:flex;border:1px solid rgba(255,255,255,.22);border-radius:8px;overflow:hidden;font-size:12px;font-weight:600}
+  .appheader .lang span{padding:6px 10px;color:#cdd6de}
+  .appheader .lang span.on{background:rgba(59,130,246,.3);color:#fff}
+  .appheader .connect{background:linear-gradient(180deg,#34d3ee,#1aa9c6);color:#04141d;border:0;border-radius:8px;padding:8px 18px;font-size:14px;font-weight:700;cursor:pointer}
+  @media(max-width:720px){.appheader nav{display:none}}
+
+  /* ===== stage + background video ===== */
+  .stage{position:relative;height:100vh;width:100vw;overflow:hidden}
+  /* full-bleed background video, biased right to protect the character + horizon */
+  .bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:70% center;z-index:0}
+  /* left scrim — boosts left-side text legibility, fades out over the character on the right */
+  .scrim{position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:linear-gradient(90deg, rgba(18,9,4,.5) 0%, rgba(18,9,4,.18) 34%, rgba(18,9,4,0) 58%)}
+
+  /* text overlay layer (below the fixed header) */
+  .scene{position:absolute;top:64px;left:0;right:0;bottom:0;z-index:3}
+
+  /* GIANT bubbly type — left side, over the open sky/sea */
+  .bigtype{position:absolute;left:4vw;top:50%;transform:translateY(-52%);white-space:nowrap;user-select:none;
+    font-family:"Baloo 2","Jua",system-ui;font-weight:800;line-height:.84;letter-spacing:.012em;
+    font-size:min(20vw,300px);
+    color:var(--cream);-webkit-text-stroke:5px var(--cream);paint-order:stroke fill;
+    filter:
+      drop-shadow(0 4px 0 rgba(150,80,40,.5))
+      drop-shadow(0 14px 22px rgba(20,8,2,.42))
+      drop-shadow(0 0 30px rgba(255,180,120,.45))}
+  .bigtype span{display:inline-block}
+  .bigtype span:nth-child(1){transform:rotate(-5deg) translateY(-1.5%)}
+  .bigtype span:nth-child(2){transform:rotate(3deg)  translateY(3%)}
+  .bigtype span:nth-child(3){transform:rotate(-3deg) translateY(-2.5%)}
+  .bigtype span:nth-child(4){transform:rotate(5deg)  translateY(2.5%)}
+
+  /* tagline */
+  .tagline{position:absolute;left:5vw;top:17%;z-index:3}
+  .tagline .k{font-family:"Jua","Apple SD Gothic Neo",sans-serif;font-size:clamp(22px,3.2vw,44px);color:#fff;
+    text-shadow:0 2px 0 rgba(150,80,40,.5), 0 6px 22px rgba(0,0,0,.55)}
+  .tagline .sub{margin-top:6px;font-family:"Fredoka";font-weight:600;font-size:clamp(12px,1.3vw,18px);letter-spacing:.06em;color:#ffe9cf;text-shadow:0 1px 6px rgba(0,0,0,.55)}
+
+  /* CTA */
+  .cta{position:absolute;left:5.5vw;bottom:16vh;z-index:3;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+  .btn{font-family:"Baloo 2";font-weight:800;font-size:clamp(18px,2vw,26px);letter-spacing:.02em;color:#5a2b12;border:0;cursor:pointer;
+    background:linear-gradient(180deg,#fff1d6,#ffd089);border-radius:999px;padding:14px 44px;
+    box-shadow:0 12px 30px rgba(255,150,80,.45), inset 0 2px 0 rgba(255,255,255,.8), 0 0 0 4px rgba(255,255,255,.22);
+    animation:pulse 2.3s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+  .btn .ar{margin-right:8px}
+  .cta .hint{font-family:"Fredoka";font-size:13px;letter-spacing:.04em;color:#ffe2c2;text-shadow:0 1px 5px rgba(0,0,0,.6)}
+
+  /* trust line */
+  .credits{position:absolute;left:5.5vw;bottom:5vh;z-index:3;font-family:"Fredoka";font-weight:600;font-size:clamp(10px,1vw,13px);letter-spacing:.06em;color:#e7d8c6;text-shadow:0 1px 5px rgba(0,0,0,.6)}
+  .credits b{color:#fff3e2}
+
+  /* ===== mobile: scale text down, bias video crop to keep the character ===== */
+  @media (max-width:720px){
+    .bgvid{object-position:68% center}
+    .bigtype{left:5vw;top:38%;font-size:34vw}
+    .tagline{top:12%;left:5vw}
+    .cta{bottom:13vh;left:5vw}
+    .credits{left:5vw}
+  }
+</style>
+</head>
+<body>
+  <header class="appheader">
+    <div class="hw">
+      <div class="brand">
+        <img class="ic" src="/toki-icon.png" alt="" />
+        <img class="lg" src="/toki-title-logo.png" alt="Toki" />
+      </div>
+      <nav><a>퀘스트</a><a>스테이킹</a><a>생태계</a><a>GitHub</a></nav>
+      <div class="hr">
+        <div class="lang"><span>EN</span><span class="on">KO</span></div>
+        <button class="connect">Connect</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="stage">
+    <video class="bgvid" autoplay loop muted playsinline preload="auto" poster="/backgrounds/toki-beach-sunset.jpg">
+      <source src="/backgrounds/toki-beach-sunset.webm" type="video/webm" />
+      <source src="/backgrounds/toki-beach-sunset.mp4" type="video/mp4" />
+    </video>
+    <div class="scrim"></div>
+
+    <div class="scene">
+      <div class="tagline">
+        <div class="k">스테이킹부터 생태계까지, 토키와 함께</div>
+        <div class="sub">스테이킹으로 시작하는 토카막 미니 월렛 &amp; 허브</div>
+      </div>
+
+      <div class="bigtype"><span>T</span><span>O</span><span>K</span><span>I</span></div>
+
+      <div class="cta">
+        <button class="btn"><span class="ar">▶</span>시작하기</button>
+        <div class="hint">구글로 3초 만에 입장</div>
+      </div>
+
+      <div class="credits"><b>now live · ethereum mainnet</b> · non-custodial · 실시간 온체인 APR</div>
+    </div>
+  </div>
+</body>
+</html>
