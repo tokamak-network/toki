@@ -42,6 +42,8 @@ export interface StakedTon {
   stakedTon: number | null;
   /** Idle (liquid) TON balance, null while unknown. */
   idleTon: number | null;
+  /** Idle WTON balance (wrapped TON, 1:1 value), null while unknown. Usually 0. */
+  idleWton: number | null;
   loading: boolean;
   address?: string;
   /** Primary connected wallet — for SIWE signing / provider access. */
@@ -53,6 +55,7 @@ export function useStakedTon(): StakedTon {
   const { wallets } = useWallets();
   const [stakedTon, setStakedTon] = useState<number | null>(null);
   const [idleTon, setIdleTon] = useState<number | null>(null);
+  const [idleWton, setIdleWton] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
@@ -89,6 +92,12 @@ export function useStakedTon(): StakedTon {
             functionName: "pendingUnstakedAccount",
             args: [addr],
           },
+          {
+            address: CONTRACTS.WTON as `0x${string}`,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [addr],
+          },
         ],
       });
       const tonBal =
@@ -97,9 +106,12 @@ export function useStakedTon(): StakedTon {
         results[1].status === "success" ? (results[1].result as bigint) : BigInt(0);
       const pendingBal =
         results[2].status === "success" ? (results[2].result as bigint) : BigInt(0);
+      const wtonBal =
+        results[3].status === "success" ? (results[3].result as bigint) : BigInt(0);
       const netStaked = stakedBal > pendingBal ? stakedBal - pendingBal : BigInt(0);
       setIdleTon(Number(formatUnits(tonBal, 18)));
       setStakedTon(Number(formatUnits(netStaked, 27)));
+      setIdleWton(Number(formatUnits(wtonBal, 27)));
     } catch (e) {
       console.error("useStakedTon: failed to read on-chain balances:", e);
     }
@@ -111,5 +123,5 @@ export function useStakedTon(): StakedTon {
     else setLoading(false);
   }, [address, fetchStaked]);
 
-  return { stakedTon, idleTon, loading, address, wallet: primaryWallet };
+  return { stakedTon, idleTon, idleWton, loading, address, wallet: primaryWallet };
 }

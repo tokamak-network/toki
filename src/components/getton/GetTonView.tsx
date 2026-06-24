@@ -9,6 +9,7 @@ import { createWalletClient, custom, formatUnits, parseUnits } from "viem";
 import ReceiveModal from "@/components/dashboard/ReceiveModal";
 import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useGoDashboard } from "@/components/transitions/TransitionProvider";
+import WtonSubline from "@/components/common/WtonSubline";
 import { chain, publicClient as client } from "@/lib/chain";
 import { CONTRACTS, WTON_DECIMALS } from "@/constants/contracts";
 import { wtonTokenAbi } from "@/lib/abi";
@@ -349,6 +350,7 @@ export default function GetTonView() {
                     <div className="text-xl font-bold text-white leading-tight">
                       {loading ? "…" : fmt(tonNum)} <span className="text-sm font-normal text-accent-cyan">TON</span>
                     </div>
+                    {!loading && <WtonSubline wton={wtonNum} className="mt-0.5" />}
                   </div>
                   {addr && (
                     <button

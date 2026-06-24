@@ -8,6 +8,7 @@ import { useTranslation } from "@/components/providers/LanguageProvider";
 import { useGoDashboard } from "@/components/transitions/TransitionProvider";
 import { useAchievement } from "@/components/providers/AchievementProvider";
 import { useStakedTon } from "@/hooks/useStakedTon";
+import WtonSubline from "@/components/common/WtonSubline";
 import { buildProfileSummary, shortenAddress } from "@/lib/profileCard";
 import type { RankResult } from "@/lib/leaderboard";
 import type { AchievementStorage } from "@/lib/achievements";
@@ -27,7 +28,7 @@ export default function ProfileView({ preview = false }: { preview?: boolean }) 
   const { locale, t } = useTranslation();
   const goDashboard = useGoDashboard();
   const { storage } = useAchievement();
-  const { stakedTon, idleTon, address: chainAddr } = useStakedTon();
+  const { stakedTon, idleTon, idleWton, address: chainAddr } = useStakedTon();
 
   const cardRef = useRef<HTMLDivElement>(null);
   const [rank, setRank] = useState<RankResult | null>(null);
@@ -131,7 +132,7 @@ export default function ProfileView({ preview = false }: { preview?: boolean }) 
 
   const fmtTon = (n: number | null) =>
     n == null ? "—" : n.toLocaleString("en-US", { maximumFractionDigits: 2 });
-  const total = (stakedTon ?? 0) + (idleTon ?? 0);
+  const total = (stakedTon ?? 0) + (idleTon ?? 0) + (idleWton ?? 0);
 
   return (
     <div className="pv-root">
@@ -189,6 +190,11 @@ export default function ProfileView({ preview = false }: { preview?: boolean }) 
               </span>
             </div>
           </div>
+          {(idleWton ?? 0) > 0 && (
+            <div className="px-1 pb-1 -mt-1">
+              <WtonSubline wton={idleWton} />
+            </div>
+          )}
           <Link href="/wallet" className="pv-walletlink">
             {t.profile.openWallet} ›
           </Link>

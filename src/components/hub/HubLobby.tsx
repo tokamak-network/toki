@@ -12,6 +12,7 @@ import { useTranslation } from "@/components/providers/LanguageProvider";
 import { publicClient as client } from "@/lib/chain";
 import { CONTRACTS } from "@/constants/contracts";
 import ReceiveModal from "@/components/dashboard/ReceiveModal";
+import WtonSubline from "@/components/common/WtonSubline";
 import { useScreenTransition } from "@/components/transitions/TransitionProvider";
 import HubBackground from "./HubBackground";
 import {
@@ -90,6 +91,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
   const [aiUsage, setAiUsage] = useState<KeyUsage | null>(null);
   const [ton, setTon] = useState<number | null>(null);
   const [staked, setStaked] = useState<number | null>(null);
+  const [wton, setWton] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [noticeIdx, setNoticeIdx] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
@@ -166,6 +168,12 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
             functionName: "pendingUnstakedAccount",
             args: [addr],
           },
+          {
+            address: CONTRACTS.WTON as `0x${string}`,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [addr],
+          },
         ],
       });
       const tonBal =
@@ -174,9 +182,12 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
         results[1].status === "success" ? (results[1].result as bigint) : BigInt(0);
       const pendingBal =
         results[2].status === "success" ? (results[2].result as bigint) : BigInt(0);
+      const wtonBal =
+        results[3].status === "success" ? (results[3].result as bigint) : BigInt(0);
       const netStaked = stakedBal > pendingBal ? stakedBal - pendingBal : BigInt(0);
       setTon(Number(formatUnits(tonBal, 18)));
       setStaked(Number(formatUnits(netStaked, 27)));
+      setWton(Number(formatUnits(wtonBal, 27)));
     } catch (e) {
       console.error("Failed to fetch hub balances:", e);
     }
@@ -209,7 +220,8 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
 
   const tonNum = ton ?? 0;
   const stakedNum = staked ?? 0;
-  const total = tonNum + stakedNum;
+  const wtonNum = wton ?? 0;
+  const total = tonNum + stakedNum + wtonNum;
   const fmt = (n: number) =>
     n.toLocaleString("en-US", { maximumFractionDigits: 2 });
 
@@ -518,6 +530,7 @@ export default function HubLobby({ preview = false }: { preview?: boolean } = {}
                 {t.hub.idle}{" "}
                 <span className="text-accent-cyan">{fmt(tonNum)}</span>
               </div>
+              {wtonNum > 0 && <WtonSubline wton={wtonNum} className="mt-1" />}
               <div className="flex gap-2 mt-1.5">
                 <button
                   onClick={() => setShowReceive(true)}
