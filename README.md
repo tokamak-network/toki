@@ -1,15 +1,18 @@
 <div align="center">
 
-<img src="public/toki-welcome.png" width="180" alt="Toki welcomes you"/>
+<img src="public/toki-promo-mag.png" width="460" alt="Toki — stake TON, get unlimited AI"/>
 
 # TOKI
 
-**TON Staking, Simplified.**
+**Stake TON → get unlimited AI.**
+
+<sub>A mascot mini-wallet & hub for the Tokamak Network ecosystem — Ethereum L1, non-custodial, gasless.</sub>
 
 <p>
+<a href="#-unlimited-ai-by-staking"><img src="https://img.shields.io/badge/Unlimited%20AI%20by%20staking-a855f7?style=for-the-badge" alt="Unlimited AI"/></a>
+<a href="#connect-your-agent-mcp"><img src="https://img.shields.io/badge/MCP%20server-22d3ee?style=for-the-badge" alt="MCP"/></a>
 <a href="#-features"><img src="https://img.shields.io/badge/Features-22d3ee?style=for-the-badge" alt="Features"/></a>
 <a href="#-getting-started"><img src="https://img.shields.io/badge/Quick%20Start-22d3ee?style=for-the-badge" alt="Quick Start"/></a>
-<a href="#-achievement-cards"><img src="https://img.shields.io/badge/Cards-22d3ee?style=for-the-badge" alt="Achievement Cards"/></a>
 </p>
 
 <p>
@@ -24,25 +27,63 @@
 
 ---
 
-## <img src="public/toki-explain.png" width="36" align="center"/> What is Toki?
+<div align="center">
 
-Toki is a **TON staking platform** built on Tokamak Network. It reduces the 8-15 step staking process down to **3 simple steps** — no MetaMask, no ETH gas fees, no WTON complexity.
+**Launch trailer**
 
-<table><tr>
-<td width="80"><img src="public/toki-thinking.png" width="80"/></td>
-<td><b>The Problem</b><br/>
-Staking TON currently requires installing MetaMask, managing seed phrases, registering wallets on exchanges (Travel Rule), acquiring ETH for gas, understanding WTON wrapping (27 decimals), choosing among 10+ operators, and navigating deprecated UIs.</td>
-</tr></table>
+<video src="https://github.com/user-attachments/assets/01961447-7667-4947-8772-059747daa2cc" width="640" controls playsinline></video>
 
-<table><tr>
-<td width="80"><img src="public/toki-excited.png" width="80"/></td>
-<td><b>Toki's Solution</b><br/>
-Sign in with Google. Send TON. Click stake. That's it. Gas is paid in TON via EIP-7702 + Paymaster.</td>
-</tr></table>
+<sub><a href="https://www.youtube.com/watch?v=Kw-KYhbWMmA">▶ Watch on YouTube</a> if the inline player doesn't load.</sub>
+
+</div>
 
 ---
 
-## <img src="public/toki-excited.png" width="36" align="center"/> Features
+## <img src="public/characters/toki-explain.png" width="36" align="center"/> What is Toki?
+
+Toki turns **staking into access**. Stake TON on Tokamak Network (non-custodial, Ethereum L1, gasless) and unlock the ecosystem — led by the headline perk: **an unlimited AI key.**
+
+- 🤖 **Stake 100 TON → unlimited AI.** Get an OpenAI-compatible LLM key (Qwen / DeepSeek / Gemma) with a generous daily budget (~1M tokens/day) you can drop into **Claude Code, Cursor, or any agent** — plus the Toki **MCP server**. You keep your TON (it earns yield); inference runs on a self-hosted Tokamak AI server, not your wallet.
+- 💸 **Easiest staking UX.** Sign in with Google *or* connect MetaMask, send TON, click once. Gas is paid in TON via **EIP-7702 + Paymaster** — no ETH, no WTON wrapping, no operator research.
+- 🪙 **Real, non-custodial yield.** Tokamak distributes **3.92 WTON/block** of seigniorage to stakers; APR is computed live from on-chain SeigManager data. Your TON stays yours, withdrawable after the protocol's unstaking period.
+- 🎮 **Mascot hub.** Wallet, private transfer (zk), AI access, achievement cards, ecosystem explore — one cozy anime-mascot surface (the `/dashboard` lobby).
+
+---
+
+## <img src="public/characters/toki-proud.png" width="36" align="center"/> Unlimited AI by staking
+
+<img src="public/characters/menu-ai.png" width="150" align="right" alt="Toki AI familiar"/>
+
+The wedge: **stake 100 TON, get an unlimited\* AI key.** No subscription, no per-token bill — your staked TON (which you keep, and which earns seigniorage) *is* the credential.
+
+- **OpenAI-compatible** — point any client at `base_url` + your `sk-…` key. Models: Qwen, DeepSeek, Gemma.
+- **Works in your tools** — Claude Code, Cursor, Codex, or the **Toki MCP server** (live Tokamak staking tools inside your agent).
+- **Why it's free** — inference runs on a **self-hosted** Tokamak AI server (zero marginal cost), funded as a growth wedge + seigniorage. Unstake any time → access ends.
+
+<sub>\*Unlimited within a generous daily budget (~1M tokens/day).</sub>
+
+### Connect your agent (MCP)
+
+```bash
+# Hosted — no install. Live Tokamak staking tools in Claude Code:
+claude mcp add --transport http toki https://toki.tokamak.network/api/mcp
+```
+
+Tools: `toki_get_apr`, `toki_list_operators`, `toki_staking_status`. Prefer a local stdio server? See [`mcp-server/`](mcp-server/README.md) (`@toki/mcp`).
+
+---
+
+## <img src="public/characters/toki-cheer.png" width="36" align="center"/> One mascot, the whole ecosystem
+
+The `/dashboard` lobby is a gacha-style hub — every Tokamak service is a tile, fronted by Toki and your live on-chain balances:
+
+<div align="center">
+<img src="public/screenshot-dashboard.png" width="780" alt="Toki dashboard — gacha-lobby hub with staking, AI access, wallet, private transfer and more"/>
+</div>
+
+---
+
+## <img src="public/characters/toki-excited.png" width="36" align="center"/> Features
 
 ### Gasless Staking (EIP-7702)
 
@@ -58,27 +99,27 @@ A guided tutorial with Toki as your companion through 5 quests:
 <table>
 <tr>
 <td align="center" width="20%">
-<img src="public/toki-mini-step1.png" width="60"/><br/>
+<img src="public/cards/onboarding-wallet.png" width="92"/><br/>
 <b>Quest 1</b><br/>
 <sub>Create Account</sub>
 </td>
 <td align="center" width="20%">
-<img src="public/toki-mini-step2.png" width="60"/><br/>
+<img src="public/cards/onboarding-bridge.png" width="92"/><br/>
 <b>Quest 2</b><br/>
 <sub>Bridge to MetaMask</sub>
 </td>
 <td align="center" width="20%">
-<img src="public/toki-mini-step3.png" width="60"/><br/>
+<img src="public/cards/onboarding-exchange.png" width="92"/><br/>
 <b>Quest 3</b><br/>
 <sub>Exchange Verification</sub>
 </td>
 <td align="center" width="20%">
-<img src="public/toki-presenting.png" width="60"/><br/>
+<img src="public/cards/onboarding-ton.png" width="92"/><br/>
 <b>Quest 4</b><br/>
 <sub>Receive TON</sub>
 </td>
 <td align="center" width="20%">
-<img src="public/toki-celebrate.png" width="60"/><br/>
+<img src="public/cards/stake-gasless.png" width="92"/><br/>
 <b>Quest 5</b><br/>
 <sub>First Gasless Stake</sub>
 </td>
@@ -87,42 +128,13 @@ A guided tutorial with Toki as your companion through 5 quests:
 
 Each quest features dialogue sequences, mood-based character expressions, and XP rewards.
 
-### Toki Character System
-
-Toki has **17 mood expressions** that respond to context throughout the UI:
-
-<table>
-<tr>
-<td align="center"><img src="public/toki-welcome.png" width="48"/><br/><sub>welcome</sub></td>
-<td align="center"><img src="public/toki-explain.png" width="48"/><br/><sub>explain</sub></td>
-<td align="center"><img src="public/toki-thinking.png" width="48"/><br/><sub>thinking</sub></td>
-<td align="center"><img src="public/toki-excited.png" width="48"/><br/><sub>excited</sub></td>
-<td align="center"><img src="public/toki-proud.png" width="48"/><br/><sub>proud</sub></td>
-<td align="center"><img src="public/toki-cheer.png" width="48"/><br/><sub>cheer</sub></td>
-<td align="center"><img src="public/toki-wink.png" width="48"/><br/><sub>wink</sub></td>
-<td align="center"><img src="public/toki-surprised.png" width="48"/><br/><sub>surprised</sub></td>
-<td align="center"><img src="public/toki-shy.png" width="48"/><br/><sub>shy</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="public/toki-determined.png" width="48"/><br/><sub>determined</sub></td>
-<td align="center"><img src="public/toki-pointing.png" width="48"/><br/><sub>pointing</sub></td>
-<td align="center"><img src="public/toki-reading.png" width="48"/><br/><sub>reading</sub></td>
-<td align="center"><img src="public/toki-confused.png" width="48"/><br/><sub>confused</sub></td>
-<td align="center"><img src="public/toki-laughing.png" width="48"/><br/><sub>laughing</sub></td>
-<td align="center"><img src="public/toki-peace.png" width="48"/><br/><sub>peace</sub></td>
-<td align="center"><img src="public/toki-worried.png" width="48"/><br/><sub>worried</sub></td>
-<td align="center"><img src="public/toki-crying-happy.png" width="48"/><br/><sub>moved</sub></td>
-<td align="center"></td>
-</tr>
-</table>
-
 ### Bilingual (i18n)
 
 Full Korean/English support via custom `LanguageProvider` with locale files in `src/locales/`.
 
 ---
 
-## <img src="public/toki-proud.png" width="36" align="center"/> Achievement Cards
+## <img src="public/characters/toki-proud.png" width="36" align="center"/> Achievement Cards
 
 Collect **19 unique cards** across **5 categories** as you progress through your staking journey.
 
@@ -141,7 +153,7 @@ Collect **19 unique cards** across **5 categories** as you progress through your
 
 <br/>
 
-<img src="public/toki-card-reveal.png" width="120" align="right"/>
+<img src="public/characters/toki-card-reveal.png" width="120" align="right"/>
 
 **Onboarding** (5 cards)
 | Card | Trigger |
@@ -185,7 +197,7 @@ Collect **19 unique cards** across **5 categories** as you progress through your
 
 ---
 
-## <img src="public/toki-reading.png" width="36" align="center"/> Architecture
+## <img src="public/characters/toki-reading.png" width="36" align="center"/> Architecture
 
 ```
 User (Social Login)
@@ -242,7 +254,7 @@ User (Social Login)
 
 ---
 
-## <img src="public/toki-wink.png" width="36" align="center"/> Getting Started
+## <img src="public/characters/toki-wink.png" width="36" align="center"/> Getting Started
 
 ### <img src="public/toki-mini-step1.png" width="28" align="center"/> Step 1: Clone & Install
 
@@ -254,17 +266,18 @@ npm install
 
 ### <img src="public/toki-mini-step2.png" width="28" align="center"/> Step 2: Configure
 
-Create a `.env.local` file:
+Copy the example env and fill in your keys:
 
-```env
-NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id
-NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_project_id
-NEXT_PUBLIC_ENABLE_TESTNETS=true
+```bash
+cp .env.local.example .env.local
 ```
 
+Core: `NEXT_PUBLIC_PRIVY_APP_ID` (Privy), `NEXT_PUBLIC_RPC_URL` (Alchemy/Infura), `NEXT_PUBLIC_PIMLICO_API_KEY` (bundler), `NEXT_PUBLIC_NETWORK` (`mainnet` | `sepolia`).
+For AI Access + analytics (server-side): `PRIVY_APP_SECRET`, `AI_KEY_ENC_SECRET`, and the Supabase keys.
+
 <table><tr>
-<td width="60"><img src="public/toki-pointing.png" width="60"/></td>
-<td><sub>Get your Privy App ID from <a href="https://dashboard.privy.io">dashboard.privy.io</a> and WalletConnect Project ID from <a href="https://cloud.walletconnect.com">cloud.walletconnect.com</a></sub></td>
+<td width="60"><img src="public/characters/toki-pointing.png" width="60"/></td>
+<td><sub>Every var is documented inline in <code>.env.local.example</code>. Privy keys: <a href="https://dashboard.privy.io">dashboard.privy.io</a>.</sub></td>
 </tr></table>
 
 ### <img src="public/toki-mini-step3.png" width="28" align="center"/> Step 3: Launch
@@ -277,36 +290,37 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## <img src="public/toki-determined.png" width="36" align="center"/> Project Structure
+## <img src="public/characters/toki-determined.png" width="36" align="center"/> Project Structure
 
 ```
 src/
-  app/              # Next.js App Router pages
+  app/
+    api/            # Routes: /api/agent (AI proxy) · /api/aikey (key vault) · /api/mcp (MCP) · ...
+    ...             # App Router pages: dashboard · staking · agent · profile · lottery
   components/
-    landing/        # Landing page (hero, profit simulator, FAQ)
-    layout/         # Header, Footer
-    onboarding/     # Visual novel quest system + intro cinematic
-    dashboard/      # Staking panel + wallet management
-    staking/        # Staking screen (gasless flow)
-    achievements/   # Achievement toast + card reveal effects
-    explore/        # Ecosystem explorer
-    chat/           # Toki dialogue chat (visual novel)
-    providers/      # Privy, Language, Achievement, Web3 providers
-    ui/             # Reusable UI components
+    agent/          # AI Access workspace — issued key → chat + "Connect" modal (MCP/LiteLLM)
+    hub/            # /dashboard gacha-lobby hub (HubLobby + MENU collage)
+    landing/        # Landing (hero, profit simulator, FAQ)
+    staking/        # Gasless staking screen
+    onboarding/     # Visual-novel quest system
+    achievements/   # Achievement toasts + card reveals
+    providers/      # Privy · Language · Achievement · Web3
   constants/        # Contract addresses, ABIs
-  hooks/            # useEip7702, useStakingData
-  locales/          # en.ts, ko.ts (i18n strings)
-  lib/              # achievements, staking utils, dialogue tree
+  hooks/            # useEip7702, useStakedTon
+  lib/              # aiAccess · staking · leaderboard · achievements · crypto (key vault)
+  locales/          # en.ts, ko.ts (i18n)
+mcp-server/         # @toki/mcp — standalone MCP server exposing Tokamak staking as agent tools
+supabase/migrations # ai_access_keys (key vault) · profile_scores (leaderboard) · analytics_events
 ```
 
 ---
 
-## <img src="public/toki-cheer.png" width="36" align="center"/> Contributing
+## <img src="public/characters/toki-cheer.png" width="36" align="center"/> Contributing
 
 Contributions are welcome! Please open an issue first to discuss changes.
 
 <table><tr>
-<td width="60"><img src="public/toki-worried.png" width="60"/></td>
+<td width="60"><img src="public/characters/toki-worried.png" width="60"/></td>
 <td><sub>Never commit <code>.env</code> files or private keys to version control.</sub></td>
 </tr></table>
 
@@ -318,7 +332,7 @@ MIT
 
 <div align="center">
 <br/>
-<img src="public/toki-peace.png" width="120"/>
+<img src="public/characters/toki-peace.png" width="120"/>
 <br/>
 <sub>Built with Tokamak Network</sub>
 </div>
