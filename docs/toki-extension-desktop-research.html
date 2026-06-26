@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toki 확장 전략 리서치 — 익스텐션 vs 데스크탑</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-soft: #111119;
+    --bg-card: #14141e;
+    --bg-card-2: #181824;
+    --border: #262635;
+    --border-soft: #1e1e2c;
+    --cyan: #22d3ee;
+    --cyan-dim: #0e7490;
+    --text: #e8e8f0;
+    --text-soft: #a8a8bd;
+    --text-mute: #6b6b82;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: radial-gradient(1200px 600px at 80% -10%, rgba(34,211,238,0.08), transparent 60%),
+                radial-gradient(900px 500px at -10% 20%, rgba(167,139,250,0.06), transparent 55%),
+                var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 6rem;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* Hero */
+  .hero {
+    padding: 4.5rem 0 2.5rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--cyan); font-weight: 700;
+    background: rgba(34,211,238,0.08);
+    border: 1px solid rgba(34,211,238,0.25);
+    padding: .35rem .75rem; border-radius: 999px;
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 {
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+    line-height: 1.12; font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    background: linear-gradient(180deg, #fff 30%, #b6e9f3 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero .sub { font-size: 1.05rem; color: var(--text-soft); max-width: 64ch; }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.75rem;
+    font-size: .82rem; color: var(--text-mute);
+  }
+  .hero-meta b { color: var(--text-soft); font-weight: 600; }
+
+  /* TL;DR */
+  .tldr {
+    margin: 2.5rem 0 1rem;
+    background: linear-gradient(135deg, rgba(34,211,238,0.10), rgba(167,139,250,0.06));
+    border: 1px solid rgba(34,211,238,0.28);
+    border-radius: 18px;
+    padding: 1.75rem 2rem;
+  }
+  .tldr h2 { font-size: 1rem; color: var(--cyan); letter-spacing: .06em; text-transform: uppercase; margin-bottom: .85rem; }
+  .tldr p { font-size: 1.12rem; color: var(--text); line-height: 1.65; }
+  .tldr .punch { color: var(--cyan); font-weight: 700; }
+
+  /* Sections */
+  section { margin-top: 3.5rem; }
+  .sec-head { display: flex; align-items: baseline; gap: .85rem; margin-bottom: 1.4rem; }
+  .sec-num {
+    font-size: .8rem; font-weight: 800; color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+    border: 1px solid rgba(34,211,238,0.3); border-radius: 8px;
+    padding: .15rem .5rem; flex-shrink: 0;
+  }
+  h2.title { font-size: 1.5rem; font-weight: 750; letter-spacing: -0.01em; }
+  .lead { color: var(--text-soft); font-size: 1rem; margin-bottom: 1.25rem; max-width: 72ch; }
+
+  /* Roadmap */
+  .roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .phase {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.4rem; position: relative; overflow: hidden;
+  }
+  .phase::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .phase.p1::before { background: linear-gradient(90deg, var(--cyan), var(--cyan-dim)); }
+  .phase.p2::before { background: linear-gradient(90deg, var(--purple), #6d28d9); }
+  .phase.p3::before { background: linear-gradient(90deg, var(--text-mute), #3a3a4a); }
+  .phase .ph-tag { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--text-mute); }
+  .phase.p1 .ph-tag { color: var(--cyan); }
+  .phase.p2 .ph-tag { color: var(--purple); }
+  .phase h3 { font-size: 1.15rem; margin: .35rem 0 .6rem; }
+  .phase p { font-size: .9rem; color: var(--text-soft); }
+  .phase ul { list-style: none; margin-top: .75rem; }
+  .phase li { font-size: .85rem; color: var(--text-soft); padding-left: 1.1rem; position: relative; margin-bottom: .3rem; }
+  .phase li::before { content: '→'; position: absolute; left: 0; color: var(--cyan); }
+
+  /* Comparison table */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 640px; }
+  thead th {
+    text-align: left; padding: .95rem 1.1rem; background: var(--bg-card-2);
+    font-weight: 700; font-size: .82rem; letter-spacing: .03em; color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  thead th.ext { color: var(--cyan); }
+  thead th.desk { color: var(--purple); }
+  tbody td { padding: .85rem 1.1rem; border-bottom: 1px solid var(--border-soft); color: var(--text-soft); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td:first-child { color: var(--text); font-weight: 600; }
+  tbody tr:nth-child(even) { background: rgba(255,255,255,0.012); }
+  .pill { display: inline-block; font-size: .7rem; font-weight: 700; padding: .12rem .5rem; border-radius: 6px; }
+  .pill.win { background: rgba(52,211,153,0.14); color: var(--green); }
+  .pill.mid { background: rgba(251,191,36,0.14); color: var(--amber); }
+  .pill.lose { background: rgba(248,113,113,0.14); color: var(--red); }
+
+  /* Value buckets */
+  .buckets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .bucket { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.4rem; }
+  .bucket .icon { font-size: 1.5rem; margin-bottom: .5rem; }
+  .bucket h3 { font-size: 1.05rem; margin-bottom: .25rem; }
+  .bucket .k { font-size: .75rem; color: var(--cyan); letter-spacing: .05em; text-transform: uppercase; font-weight: 700; margin-bottom: .85rem; }
+  .bucket ul { list-style: none; }
+  .bucket li { font-size: .87rem; color: var(--text-soft); padding: .4rem 0; border-top: 1px solid var(--border-soft); }
+  .bucket li:first-child { border-top: none; }
+  .bucket li b { color: var(--text); font-weight: 600; }
+  .tag-native { display: inline-block; font-size: .62rem; font-weight: 700; color: var(--green); background: rgba(52,211,153,0.12); padding: .05rem .35rem; border-radius: 4px; margin-left: .35rem; vertical-align: middle; }
+
+  /* Findings */
+  .finding {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.4rem 1.6rem; margin-bottom: 1rem;
+  }
+  .finding-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .7rem; flex-wrap: wrap; }
+  .conf { font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: .2rem .55rem; border-radius: 6px; }
+  .conf.high { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .conf.medium { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .vote { font-size: .72rem; color: var(--text-mute); font-variant-numeric: tabular-nums; margin-left: auto; }
+  .finding .claim { font-size: 1.0rem; color: var(--text); font-weight: 600; line-height: 1.55; margin-bottom: .7rem; }
+  .finding .ev { font-size: .85rem; color: var(--text-soft); line-height: 1.6; }
+  .finding .ev .lbl { color: var(--cyan); font-weight: 700; font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; display: block; margin-bottom: .25rem; }
+  .srcs { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .85rem; }
+  .srcs a {
+    font-size: .72rem; color: var(--text-soft); text-decoration: none;
+    background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: .2rem .55rem; transition: all .15s;
+  }
+  .srcs a:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  /* Security callout */
+  .callout {
+    border-radius: 14px; padding: 1.5rem 1.75rem; margin: 1rem 0;
+    border-left: 3px solid;
+  }
+  .callout.danger { background: rgba(248,113,113,0.06); border-color: var(--red); }
+  .callout.safe { background: rgba(52,211,153,0.06); border-color: var(--green); }
+  .callout h3 { font-size: 1.05rem; margin-bottom: .5rem; display: flex; align-items: center; gap: .5rem; }
+  .callout.danger h3 { color: var(--red); }
+  .callout.safe h3 { color: var(--green); }
+  .callout p { font-size: .92rem; color: var(--text-soft); }
+  .callout p + p { margin-top: .6rem; }
+
+  /* Open questions / refuted */
+  .qa { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.2rem 1.5rem; margin-bottom: .75rem; }
+  .qa.refuted { border-color: rgba(248,113,113,0.3); }
+  .qa .q { font-size: .94rem; color: var(--text); line-height: 1.55; }
+  .qa .strike { color: var(--text-mute); }
+  .qa .why { font-size: .8rem; color: var(--red); margin-top: .4rem; }
+  .num-list { counter-reset: q; }
+  .num-list .qa { position: relative; padding-left: 3rem; }
+  .num-list .qa::before {
+    counter-increment: q; content: counter(q);
+    position: absolute; left: 1.2rem; top: 1.2rem;
+    font-weight: 800; color: var(--cyan); font-size: .9rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Sources grid */
+  .src-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem; }
+  .src-card { display: flex; align-items: center; gap: .65rem; background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 10px; padding: .6rem .85rem; text-decoration: none; transition: border-color .15s; }
+  .src-card:hover { border-color: var(--cyan); }
+  .q-badge { font-size: .6rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; padding: .15rem .4rem; border-radius: 5px; flex-shrink: 0; }
+  .q-badge.primary { background: rgba(52,211,153,0.15); color: var(--green); }
+  .q-badge.secondary { background: rgba(251,191,36,0.15); color: var(--amber); }
+  .q-badge.blog { background: rgba(107,107,130,0.2); color: var(--text-mute); }
+  .src-card .u { font-size: .76rem; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Stats footer */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.5rem; }
+  .stat { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; text-align: center; }
+  .stat .n { font-size: 1.8rem; font-weight: 800; color: var(--cyan); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: .72rem; color: var(--text-mute); letter-spacing: .03em; text-transform: uppercase; margin-top: .2rem; }
+
+  footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--text-mute); font-size: .8rem; text-align: center; }
+
+  @media (max-width: 760px) {
+    .roadmap, .buckets, .stats { grid-template-columns: 1fr; }
+    .src-grid { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow">◆ Deep Research · 전략/제품 리포트</span>
+    <h1>데스크탑 앱 &amp; 브라우저 익스텐션으로<br>Toki를 확장하기</h1>
+    <p class="sub">마스코트 미니월렛 &amp; 허브(이더리움 L1, Privy 임베디드 지갑, 거래소 TON 입문자 타깃)를 웹 탭 밖으로 꺼내 — <b style="color:var(--text)">무엇을 왜 만들지</b>를 먼저, 기술은 보조로 다룬 검증된 리서치.</p>
+    <div class="hero-meta">
+      <span><b>작성일</b> 2026-06-24</span>
+      <span><b>검색 앵글</b> 6</span>
+      <span><b>페치 소스</b> 26</span>
+      <span><b>검증 주장</b> 25 → 확정 23 / 기각 2</span>
+      <span><b>에이전트</b> 109</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <h2>한 줄 결론</h2>
+    <p><span class="punch">"얇은 익스텐션 먼저, 데스크탑은 나중."</span> Toki에 맞는 정답은 <b style="color:var(--text)">데스크탑 + 얇은 익스텐션 하이브리드</b>이되, 순서는 <b style="color:var(--text)">익스텐션 우선</b>이다. 익스텐션은 Chrome/Firefox/Edge 도달 + 기존 Plasmo 익스텐션·EIP-1193 배선 재사용 + 클립보드 가드/OS 알림/상시 진입점을 <b style="color:var(--text)">훨씬 낮은 유지보수·보안 비용</b>으로 제공한다. 데스크탑(Electron/Tauri)은 트레이 상주·글로벌 단축키·백그라운드 모니터링이 리텐션 동력으로 입증될 때, XSS→RCE 공격면 확대와 OS별 유지보수를 감수하고 도입한다.</p>
+  </div>
+
+  <!-- 1. Recommendation roadmap -->
+  <section id="reco">
+    <div class="sec-head"><span class="sec-num">01</span><h2 class="title">권장 로드맵 — 3단계</h2></div>
+    <p class="lead">기각 2건을 제외한 검증 사실 위에서 도출한 우선순위. Frame이 보여준 "무거운 네이티브 로직은 데스크탑, 얇은 인페이지 연결은 익스텐션" 하이브리드가 엔드게임이다.</p>
+    <div class="roadmap">
+      <div class="phase p1">
+        <span class="ph-tag">Phase 1 · 지금</span>
+        <h3>얇은 익스텐션</h3>
+        <p>기존 Plasmo MV3 익스텐션 + <code>getEthereumProvider()</code> 배선을 그대로 확장.</p>
+        <ul>
+          <li>EIP-6963 + EIP-1193 인페이지 연결</li>
+          <li>클립보드 가드 (주소 스왑 방어)</li>
+          <li>스테이킹 보상·가스 OS 알림</li>
+          <li>상시 떠있는 진입점 (브라우저 액션)</li>
+        </ul>
+      </div>
+      <div class="phase p2">
+        <span class="ph-tag">Phase 2 · 검증되면</span>
+        <h3>데스크탑 (Electron/Tauri)</h3>
+        <p>트레이 상주·글로벌 단축키·백그라운드 모니터링이 리텐션을 끌면 도입.</p>
+        <ul>
+          <li>트레이/메뉴바 위젯 (Frame 패턴)</li>
+          <li>백그라운드 잔고·APR·세뇨리지</li>
+          <li>네이티브 알림 (OS별 경로 상이)</li>
+          <li>하드닝 필수: contextIsolation 등</li>
+        </ul>
+      </div>
+      <div class="phase p3">
+        <span class="ph-tag">Phase 3 · 선택</span>
+        <h3>스토어 배포</h3>
+        <p>도달 채널 확대. 단, 스토어별 정책 함정 주의.</p>
+        <ul>
+          <li>Chrome / AMO / Edge (익스텐션)</li>
+          <li>Mac App Store → 조직 계정 필수</li>
+          <li>직접 .dmg/Homebrew (마찰 회피)</li>
+          <li>buy/swap 추가 시 라이선스 트립 주의</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Comparison table -->
+  <section id="compare">
+    <div class="sec-head"><span class="sec-num">02</span><h2 class="title">익스텐션 vs 데스크탑 — 트레이드오프</h2></div>
+    <p class="lead">같은 Next.js + Privy 웹앱을 어느 껍데기에 담느냐의 문제. 핵심 축별 우열.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>축</th><th class="ext">브라우저 익스텐션</th><th class="desk">데스크탑 (Electron/Tauri)</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>도달/배포</td>
+            <td><span class="pill win">강</span> Chrome·Firefox·Edge 스토어, 즉시 설치, 기존 Plasmo 자산</td>
+            <td><span class="pill mid">중</span> .dmg/Homebrew 직접 배포 또는 스토어(정책 마찰)</td>
+          </tr>
+          <tr>
+            <td>네이티브 역량</td>
+            <td><span class="pill mid">중</span> 클립보드 가드·알림·상시 진입점은 가능 / 트레이·글로벌 단축키는 한계</td>
+            <td><span class="pill win">강</span> 트레이 상주·메뉴바 위젯·백그라운드·글로벌 단축키 풀셋</td>
+          </tr>
+          <tr>
+            <td>유지보수</td>
+            <td><span class="pill win">낮음</span> 단일 코드, 브라우저 API 표준</td>
+            <td><span class="pill lose">높음</span> OS별 분기 (알림 경로·트레이 신뢰성 상이)</td>
+          </tr>
+          <tr>
+            <td>공격면 / 보안</td>
+            <td><span class="pill mid">증가</span> 익스텐션 레이어 자체가 지갑 주요 공격면 (공급망 침해 사례 다수)</td>
+            <td><span class="pill lose">증가↑↑</span> XSS가 파일시스템 접근·RCE로 격상 (Node 활성 셸)</td>
+          </tr>
+          <tr>
+            <td>자가수탁 영향</td>
+            <td colspan="2"><span class="pill win">동일</span> Privy 키는 격리 iframe/TEE에서만 순간 재조립 후 즉시 폐기 → <b>키 자체</b>는 양쪽 모두 호스트가 못 읽음. 단 "키 안전 ≠ 트랜잭션 안전" (아래 §05)</td>
+          </tr>
+          <tr>
+            <td>스토어 정책</td>
+            <td><span class="pill mid">중</span> 각 스토어 확장 정책 준수</td>
+            <td><span class="pill lose">엄격</span> Mac App Store 지갑은 <b>조직 계정 필수</b> (Apple 3.1.5(i))</td>
+          </tr>
+          <tr>
+            <td>Toki 적합도</td>
+            <td><span class="pill win">1순위</span> 기존 자산 재사용 + 낮은 리스크로 핵심 가치 전달</td>
+            <td><span class="pill mid">2순위</span> 차별화된 리텐션 동력 입증 시</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3. Value buckets -->
+  <section id="value">
+    <div class="sec-head"><span class="sec-num">03</span><h2 class="title">더하는 가치 — 3개 버킷</h2></div>
+    <p class="lead"><span class="tag-native">NATIVE</span> 표시는 <b>샌드박스 웹 탭이 원천적으로 못 하는</b>, 네이티브 껍데기에서만 가능한 기능.</p>
+    <div class="buckets">
+      <div class="bucket">
+        <div class="icon">⚡</div>
+        <div class="k">A · 네이티브 역량</div>
+        <h3>웹앱이 못하는 것</h3>
+        <ul>
+          <li><b>클립보드 가드</b><span class="tag-native">NATIVE</span> 복사한 주소가 붙여넣을 때 바뀌면 경고 — 클리퍼 멀웨어 방어</li>
+          <li><b>OS 네이티브 알림</b><span class="tag-native">NATIVE</span> 스테이킹 보상·언스테이킹 완료·가스 저렴</li>
+          <li><b>트레이/메뉴바 위젯</b><span class="tag-native">NATIVE</span> 상시 떠있는 잔고·APR (데스크탑)</li>
+          <li><b>글로벌 단축키 · 자동 시작</b><span class="tag-native">NATIVE</span> (데스크탑)</li>
+          <li><b>백그라운드 모니터링</b><span class="tag-native">NATIVE</span> 탭 닫혀도 잔고/세뇨리지 추적</li>
+        </ul>
+      </div>
+      <div class="bucket">
+        <div class="icon">📡</div>
+        <div class="k">B · 유통/도달</div>
+        <h3>배포 채널 · 리텐션</h3>
+        <ul>
+          <li><b>Chrome Web Store</b> 최대 도달, 기존 Plasmo 익스텐션 베이스</li>
+          <li><b>Firefox AMO · Edge Add-ons</b> 멀티 브라우저 커버</li>
+          <li><b>Mac App Store</b> 단, 조직 계정 필수 (3.1.5(i))</li>
+          <li><b>직접 .dmg / Homebrew</b> 스토어 마찰 회피 (Frame·BlueWallet 방식)</li>
+          <li><b>상시 진입점 = 습관</b> daily-active 형성, 리텐션 동력</li>
+        </ul>
+      </div>
+      <div class="bucket">
+        <div class="icon">🦊</div>
+        <div class="k">C · 지갑/스테이킹 유틸</div>
+        <h3>Privy 위에 올릴 기능</h3>
+        <ul>
+          <li><b>자동 재스테이킹</b> auto-compound 시뇨리지</li>
+          <li><b>가스/세뇨리지 알림</b> 임계값 도달 시 푸시</li>
+          <li><b>포트폴리오 트래킹</b> 잔고·APR 한눈에</li>
+          <li><b>멀티계정</b> 전환·라벨링</li>
+          <li><b>트랜잭션 가드/시뮬레이션</b> 서명 전 영향 미리보기</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Competitive -->
+  <section id="competitive">
+    <div class="sec-head"><span class="sec-num">04</span><h2 class="title">경쟁/레퍼런스 — 하이브리드 엔드게임</h2></div>
+    <p class="lead">가장 강력한 레퍼런스는 Frame. "무거운 네이티브 로직 = 데스크탑 프로세스, 얇은 인페이지 연결 = 익스텐션" 모델을 실증한다.</p>
+    <div class="finding">
+      <div class="finding-head"><span class="conf high">High</span><span style="color:var(--purple);font-weight:700">Frame 하이브리드 패턴</span><span class="vote">3-0 ✓</span></div>
+      <p class="claim">Electron 메뉴바/트레이 상주 지갑이 시스템 전역에서 동작 + 로컬 JSON-RPC 엔드포인트(<code>127.0.0.1:1248</code>) 노출 + 별도 컴패니언 익스텐션이 레거시 dApp에 <code>window.ethereum</code> 주입.</p>
+      <p class="ev"><span class="lbl">시사점</span>Toki도 데스크탑에 핵심 로직, 익스텐션은 인페이지 연결만 — 동일 패턴 적용 가능. <b style="color:var(--amber)">주의:</b> Frame은 최근 개발 활동 둔화 → 카피할 의존성이 아니라 "참조 아키텍처"로만.</p>
+      <div class="srcs"><a href="https://frame.sh/" target="_blank">frame.sh</a><a href="https://docs.frame.sh" target="_blank">docs.frame.sh</a><a href="https://github.com/floating/frame" target="_blank">github/frame</a></div>
+    </div>
+    <div class="finding">
+      <div class="finding-head"><span class="conf high">High</span><span style="color:var(--cyan);font-weight:700">EIP-6963 다중 지갑 발견</span><span class="vote">3-0 ✓</span></div>
+      <p class="claim">익스텐션을 낸다면 <code>window.ethereum</code> 단일 글로벌 대신 EIP-6963(2023.10 확정)을 구현하라. 단일 글로벌은 "마지막 로드 지갑이 이김" 경합 → 사용자가 지갑 하나만 설치하도록 강제.</p>
+      <p class="ev"><span class="lbl">실행 노트</span>EIP-6963은 하위호환 — <code>window.ethereum</code>을 지우지 않고 보완(fail-over). Privy 임베디드 지갑은 자동 announce 안 됨 → <code>mipd</code> 같은 announcer로 EIP-1193 provider를 래핑해야 함.</p>
+      <div class="srcs"><a href="https://eips.ethereum.org/EIPS/eip-6963" target="_blank">EIP-6963</a><a href="https://metamask.io/news/how-to-implement-eip-6963-support-in-your-web3-dapp" target="_blank">MetaMask 가이드</a></div>
+    </div>
+    <div class="finding">
+      <div class="finding-head"><span class="conf high">High</span><span style="color:var(--green);font-weight:700">Toki는 이미 EIP-1193 배선됨</span><span class="vote">2-1 ✓</span></div>
+      <p class="claim">Toki 코드는 이미 6개+ 컴포넌트에서 <code>wallet.getEthereumProvider()</code>를 호출해 표준 EIP-1193 provider를 반환 중 — 익스텐션/데스크탑 양쪽으로 가는 <b>저마찰 온램프</b>.</p>
+      <p class="ev"><span class="lbl">근거</span>AgentWorkspace·TokiChat·GetTonView·DashboardContent·StakingPanel·VNStakingPanel·LobbyView에서 확인. 기존 <code>toki-extension/</code> Plasmo MV3 익스텐션이 이미 발판으로 존재.</p>
+      <div class="srcs"><a href="https://docs.privy.io/wallets/using-wallets/ethereum/ethereum-provider" target="_blank">Privy EIP-1193</a></div>
+    </div>
+  </section>
+
+  <!-- 5. Security -->
+  <section id="security">
+    <div class="sec-head"><span class="sec-num">05</span><h2 class="title">보안 — 자가수탁의 핵심 뉘앙스</h2></div>
+    <p class="lead">필수로 다뤄야 할 함의: 임베디드 지갑 키가 익스텐션/데스크탑 환경에 노출될 때 무엇이 안전하고 무엇이 안 안전한가.</p>
+    <div class="callout safe">
+      <h3>✓ 안전한 것 — 키 자체</h3>
+      <p>Privy 임베디드 지갑 키는 TEE에서 생성 → <b>2-of-2 share(enclave + Privy auth)</b>로 분할 → 서명 시 격리 iframe/엔클레이브에서 <b>순간만 재조립 후 즉시 폐기</b>. 격리는 origin/process 기반이라 Electron/Tauri 웹뷰나 익스텐션 래퍼 안에서도 유지된다. <b>→ 키의 자가수탁은 익스텐션/데스크탑 껍데기에서도 보존된다.</b></p>
+    </div>
+    <div class="callout danger">
+      <h3>✕ 안전하지 않은 것 — 트랜잭션 &amp; 셸</h3>
+      <p><b>"키 안전 ≠ 트랜잭션 안전."</b> 침해된/악성 껍데기는 여전히 사용자를 속여 악성 트랜잭션 서명을 유도(headless signature·clickjacking)할 수 있다. 키를 못 빼가도 사용자가 잘못 서명하게 만들면 끝.</p>
+      <p><b>데스크탑은 공격면을 격상한다.</b> 샌드박스 탭이 금지하는 파일시스템 접근·RCE로 XSS가 확대된다 (실제 CVE 다수, 2025.12 Trust Wallet 익스텐션 공급망 침해 $7M). 하드닝(<code>contextIsolation:true</code>, <code>nodeIntegration:false</code>, <code>sandbox:true</code>)은 완화일 뿐 제거가 아니다. Tauri로 옮겨도 위협 모델이 바뀔 뿐 사라지지 않는다.</p>
+      <p><b>지갑 보안은 공유 책임.</b> 껍데기를 추가하는 순간 Toki의 로컬 공격면이 커지므로, 네이티브 이득과 저울질해야 한다. → 완화책: Privy 도메인 allowlist, 트랜잭션 MFA, Blockaid류 트랜잭션 스캐닝 (열린 질문 §07).</p>
+    </div>
+    <div class="finding" style="margin-top:1rem">
+      <div class="finding-head"><span class="conf high">High</span><span style="color:var(--red);font-weight:700">클립보드 클리퍼 — 2026 실시간 위협</span><span class="vote">2-1 / 3-0 ✓</span></div>
+      <p class="claim">복사한 암호화폐 주소를 공격자 주소로 OS 클립보드 레벨에서 몰래 바꾸는 멀웨어(형식/길이 패턴 매칭, ~500ms 폴링)가 현재 확산 중. <b>웹페이지는 이 방어를 원천적으로 못 한다</b> — W3C Clipboard API가 백그라운드 클립보드 읽기를 금지(포커스+제스처+HTTPS 필요)하기 때문. 따라서 "붙여넣기 시 주소 변경 경고" 가드는 웹 샌드박스 밖에서 돌아야 한다.</p>
+      <p class="ev"><span class="lbl">근거</span>Microsoft Threat Intelligence (2026-06-17, 리포트 7일 전). Check Point 샘플 1건이 공격자 주소 15,500개+ 보유, Trust Wallet 연구 변종 1건 $560K+ 탈취. 선례: Opera "Paste Protection", MetaMask 주소 대조 권고. <b>→ Toki 클립보드 가드의 존재 이유 = 네이티브 껍데기.</b></p>
+      <div class="srcs"><a href="https://www.microsoft.com/en-us/security/blog/2026/06/17/crypto-clipper-uses-tor-worm-like-propagation-for-persistence-control/" target="_blank">Microsoft Security (2026-06-17)</a></div>
+    </div>
+  </section>
+
+  <!-- 6. Native capability detail -->
+  <section id="native">
+    <div class="sec-head"><span class="sec-num">06</span><h2 class="title">네이티브 알림 &amp; 트레이 — 검증된 패턴</h2></div>
+    <div class="finding">
+      <div class="finding-head"><span class="conf high">High</span><span style="color:var(--text-soft);font-weight:700">트레이 상주 + OS 알림</span><span class="vote">3-0 ✓</span></div>
+      <p class="claim">데스크탑 빌드는 Toki에 상시 트레이/메뉴바 진입점 + OS 네이티브 백그라운드 알림을 준다 — 웹앱 불가능. Electron <code>Tray</code> API가 지속 아이콘+컨텍스트 메뉴 배치, Windows에선 <code>tray.displayBalloon()</code>으로 타입별 알림 발사. 실제 shipped: Frame은 메뉴바 상주, BlueWallet 데스크탑은 "대기/확정 트랜잭션 푸시 알림" 제공.</p>
+      <p class="ev"><span class="lbl">플랫폼 주의 (caveat)</span><code>displayBalloon</code>은 <b>Windows 전용</b>. macOS 트레이 앱은 다른 네이티브 알림 경로, Linux 트레이 신뢰성은 데스크탑 환경/AppIndicator에 따라 상이. <b>단일 크로스플랫폼 알림 경로가 있는 것처럼 가정하면 안 됨.</b></p>
+      <div class="srcs"><a href="https://www.electronjs.org/docs/latest/api/tray" target="_blank">Electron Tray</a><a href="https://frame.sh/" target="_blank">frame.sh</a><a href="https://bluewallet.io/desktop-bitcoin-wallet/" target="_blank">BlueWallet Desktop</a></div>
+    </div>
+    <div class="finding">
+      <div class="finding-head"><span class="conf high">High</span><span style="color:var(--text-soft);font-weight:700">Mac App Store = 조직 계정 필수</span><span class="vote">3-0 ✓</span></div>
+      <p class="claim">Toki 데스크탑 지갑을 Mac App Store에 내려면 <b>개인 계정이 아닌 조직(Organization) 계정</b>으로 등록해야 한다. App Review Guideline 3.1.5(i)이 가상화폐 저장(지갑)을 조직 등록 개발자에게만 허용.</p>
+      <p class="ev"><span class="lbl">추가 함정</span>D-U-N-S 번호 + 조직 등록 필요. buy/swap 기능 추가 시 3.1.5(iii) 거래소 라이선스 규정도 트립 가능. → 직접 .dmg/Homebrew 배포(Frame·BlueWallet)가 마찰 회피책. Google Play 비수탁 면제는 다른 스토어라 적용 안 됨.</p>
+      <div class="srcs"><a href="https://developer.apple.com/app-store/review/guidelines/" target="_blank">Apple App Review 3.1.5</a></div>
+    </div>
+  </section>
+
+  <!-- 7. Open questions -->
+  <section id="open">
+    <div class="sec-head"><span class="sec-num">07</span><h2 class="title">열린 질문 — 결정 전 확인할 것</h2></div>
+    <div class="num-list">
+      <div class="qa"><p class="q"><b>타깃 사용자의 데스크탑 vs 모바일 분포는?</b> 네이티브 form factor 논거는 데스크탑에서 가장 강하다. 입문자 다수가 모바일이면 익스텐션/데스크탑 도달이 적어지고 PWA/모바일 알림 경로가 더 중요해진다.</p></div>
+      <div class="qa"><p class="q"><b>Privy 임베디드 지갑이 MV3 service-worker/content-script와 Electron/Tauri 웹뷰 안에서 정상 동작하나?</b> EIP-1193 인터페이스는 확인됐지만, iframe 기반 키 재조립과 Google-OAuth 로그인 플로우가 비표준 브라우징 컨텍스트에서 도는지는 미검증.</p></div>
+      <div class="qa"><p class="q"><b>키 격리로도 남는 트랜잭션 조작(headless-signature/clickjacking) 리스크를 어떻게 완화하나?</b> Privy 도메인 allowlist, 트랜잭션 MFA, Blockaid류 트랜잭션 스캐닝 — 통합 비용은?</p></div>
+      <div class="qa"><p class="q"><b>Mac App Store 경로: 조직이 D-U-N-S/조직 등록을 보유(또는 취득 가능)한가?</b> 직접 .dmg/Homebrew 배포가 Apple 3.1.5 심사 마찰과 잠재적 3.1.5(iii) 거래소 라이선스 트리거를 피하는 더 나은 길인가?</p></div>
+    </div>
+  </section>
+
+  <!-- 8. Refuted -->
+  <section id="refuted">
+    <div class="sec-head"><span class="sec-num">08</span><h2 class="title">기각된 주장 — 안티슬롭</h2></div>
+    <p class="lead">3명 검증자가 만장일치(0-3)로 기각. 리포트에서 제외했지만 투명성을 위해 기록.</p>
+    <div class="qa refuted"><p class="q"><span class="strike">BlueWallet 데스크탑이 ElectrumX/Electrs 풀노드 연결을 데스크탑 전용 역량으로 제공한다.</span></p><p class="why">✕ 0-3 기각 — 풀노드 연결이 데스크탑 폼팩터에 묶인 고유 역량이라는 주장은 입증 안 됨.</p></div>
+    <div class="qa refuted"><p class="q"><span class="strike">Privy가 Shamir Secret Sharing으로 device/auth/recovery 2-of-3 share 모델을 쓴다.</span></p><p class="why">✕ 0-3 기각 — 활성 서명 share set은 <b>2-of-2</b>. 3-share 모델은 별개 레이어인 "복구(recovery)"를 설명한 것 (혼동).</p></div>
+  </section>
+
+  <!-- 9. Sources -->
+  <section id="sources">
+    <div class="sec-head"><span class="sec-num">09</span><h2 class="title">소스 — 26건</h2></div>
+    <p class="lead"><span class="q-badge primary">Primary</span> 1차 권위 출처 · <span class="q-badge secondary">Secondary</span> 2차 · <span class="q-badge blog">Blog</span> 블로그</p>
+    <div class="src-grid">
+      <a class="src-card" href="https://privy.io/blog/wallet-threat-models" target="_blank"><span class="q-badge primary">P</span><span class="u">privy.io · wallet-threat-models</span></a>
+      <a class="src-card" href="https://privy.io/blog/how-privy-embedded-wallets-work" target="_blank"><span class="q-badge primary">P</span><span class="u">privy.io · how-embedded-wallets-work</span></a>
+      <a class="src-card" href="https://bishopfox.com/blog/beyond-electron-attacking-alternative-desktop-application-frameworks" target="_blank"><span class="q-badge primary">P</span><span class="u">bishopfox · beyond-electron</span></a>
+      <a class="src-card" href="https://www.microsoft.com/en-us/security/blog/2026/06/17/crypto-clipper-uses-tor-worm-like-propagation-for-persistence-control/" target="_blank"><span class="q-badge primary">P</span><span class="u">microsoft · crypto-clipper (2026-06)</span></a>
+      <a class="src-card" href="https://www.electronjs.org/docs/latest/api/tray" target="_blank"><span class="q-badge primary">P</span><span class="u">electronjs · Tray API</span></a>
+      <a class="src-card" href="https://github.com/electron/electron/blob/main/docs/api/tray.md" target="_blank"><span class="q-badge primary">P</span><span class="u">github · electron tray docs</span></a>
+      <a class="src-card" href="https://frame.sh/" target="_blank"><span class="q-badge primary">P</span><span class="u">frame.sh</span></a>
+      <a class="src-card" href="https://bluewallet.io/desktop-bitcoin-wallet/" target="_blank"><span class="q-badge primary">P</span><span class="u">bluewallet · desktop</span></a>
+      <a class="src-card" href="https://eips.ethereum.org/EIPS/eip-6963" target="_blank"><span class="q-badge primary">P</span><span class="u">eips.ethereum.org · EIP-6963</span></a>
+      <a class="src-card" href="https://metamask.io/news/how-to-implement-eip-6963-support-in-your-web3-dapp" target="_blank"><span class="q-badge primary">P</span><span class="u">metamask · EIP-6963 가이드</span></a>
+      <a class="src-card" href="https://docs.privy.io/wallets/using-wallets/ethereum/ethereum-provider" target="_blank"><span class="q-badge primary">P</span><span class="u">docs.privy.io · ethereum-provider</span></a>
+      <a class="src-card" href="https://docs.privy.io/guide/expo/embedded/ethereum-provider" target="_blank"><span class="q-badge primary">P</span><span class="u">docs.privy.io · expo provider</span></a>
+      <a class="src-card" href="https://developer.apple.com/app-store/review/guidelines/" target="_blank"><span class="q-badge primary">P</span><span class="u">apple · App Review Guidelines</span></a>
+      <a class="src-card" href="https://developer.chrome.com/docs/webstore/program-policies/policies" target="_blank"><span class="q-badge primary">P</span><span class="u">chrome · webstore policies</span></a>
+      <a class="src-card" href="https://learn.microsoft.com/en-us/legal/microsoft-edge/extensions/developer-policies" target="_blank"><span class="q-badge primary">P</span><span class="u">microsoft · edge ext policies</span></a>
+      <a class="src-card" href="https://blog.mozilla.org/addons/2025/06/23/updated-add-on-policies-simplified-clarified/" target="_blank"><span class="q-badge primary">P</span><span class="u">mozilla · add-on policies</span></a>
+      <a class="src-card" href="https://www.electronjs.org/docs/latest/tutorial/distribution-overview" target="_blank"><span class="q-badge primary">P</span><span class="u">electronjs · distribution</span></a>
+      <a class="src-card" href="https://socket.dev/blog/malicious-imtoken-chrome-extension" target="_blank"><span class="q-badge primary">P</span><span class="u">socket.dev · malicious imToken ext</span></a>
+      <a class="src-card" href="https://cryptoslate.com/how-browser-extensions-expose-your-crypto-to-a-fatal-design-flaw-that-the-industry-ignored-bleeding-713m-in-2025/" target="_blank"><span class="q-badge secondary">S</span><span class="u">cryptoslate · ext design flaw</span></a>
+      <a class="src-card" href="https://www.spotedcrypto.com/crypto-clipper-malware-windows-2026-wallet-protection/" target="_blank"><span class="q-badge secondary">S</span><span class="u">spotedcrypto · clipper 2026</span></a>
+      <a class="src-card" href="https://cryptopro.app/" target="_blank"><span class="q-badge secondary">S</span><span class="u">cryptopro.app</span></a>
+      <a class="src-card" href="https://cryptoslate.com/crypto-wallets/rabby-wallet-review/" target="_blank"><span class="q-badge secondary">S</span><span class="u">cryptoslate · rabby review</span></a>
+      <a class="src-card" href="https://phoenix.security/ironworm-npm-supply-chain-worm-rust-ebpf-rootkit-tor/" target="_blank"><span class="q-badge secondary">S</span><span class="u">phoenix.security · ironworm</span></a>
+      <a class="src-card" href="https://slowmist.medium.com/christmas-heist-analysis-of-trust-wallet-browser-extension-hack-bdb35c3cc6dd" target="_blank"><span class="q-badge secondary">S</span><span class="u">slowmist · trust wallet hack</span></a>
+      <a class="src-card" href="https://www.gethopp.app/blog/tauri-vs-electron" target="_blank"><span class="q-badge blog">B</span><span class="u">gethopp · tauri vs electron</span></a>
+      <a class="src-card" href="https://www.dolthub.com/blog/2025-11-13-electron-vs-tauri/" target="_blank"><span class="q-badge blog">B</span><span class="u">dolthub · electron vs tauri</span></a>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section id="stats">
+    <div class="sec-head"><span class="sec-num">10</span><h2 class="title">리서치 통계</h2></div>
+    <div class="stats">
+      <div class="stat"><div class="n">125</div><div class="l">추출 주장</div></div>
+      <div class="stat"><div class="n">23</div><div class="l">검증 확정</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">기각</div></div>
+      <div class="stat"><div class="n">109</div><div class="l">에이전트 호출</div></div>
+    </div>
+    <p class="lead" style="margin-top:1.5rem;font-size:.85rem;color:var(--text-mute)">
+      방법론: 6개 검색 앵글 → 26개 소스 페치 → 125개 falsifiable 주장 추출 → 상위 25개를 주장당 3표 적대적 검증(2/3 refute 시 기각) → 의미 중복 병합 후 신뢰도 랭킹. 시간 민감 주의: 클립퍼 위협(§05)은 2026-06-17 단일 Microsoft 권고 + 벤더 교차검증, 위협 세부는 진화 가능. 권장 우선순위(§01)는 검증 사실 위의 애널리스트 종합 — 신뢰도 medium(설계상).
+    </p>
+  </section>
+
+  <footer>
+    Toki Deep Research · 2026-06-24 · 익스텐션 우선 → 데스크탑 하이브리드 · 자가수탁 보존, 트랜잭션 안전은 별도 과제
+  </footer>
+
+</div>
+</body>
+</html>
