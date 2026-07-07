@@ -27,6 +27,14 @@
 
 ---
 
+> [!WARNING]
+> **This project is PAUSED / ARCHIVED (2026-07-07).** Active development has stopped.
+> A full working-tree snapshot lives on the **`archive/2026-07-07`** branch. For archive
+> details, the third-party **cost-shutdown** checklist, and on-chain **fund-recovery**
+> (TONPaymaster) procedures, see **[`docs/ARCHIVE.md`](docs/ARCHIVE.md)**.
+
+---
+
 <div align="center">
 
 **Launch trailer**
