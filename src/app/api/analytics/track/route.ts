@@ -24,6 +24,25 @@ function deviceFromUA(ua: string): string {
   return "desktop";
 }
 
+// Defense-in-depth alongside the client guard: drop events fired from a
+// localhost origin so local-dev browsing never lands in the prod table.
+function isLocalOrigin(req: NextRequest): boolean {
+  const src = req.headers.get("origin") || req.headers.get("referer") || "";
+  if (!src) return false;
+  try {
+    const h = new URL(src).hostname;
+    return (
+      h === "localhost" ||
+      h === "127.0.0.1" ||
+      h === "0.0.0.0" ||
+      h === "[::1]" ||
+      h.endsWith(".local")
+    );
+  } catch {
+    return false;
+  }
+}
+
 const noContent = () => new NextResponse(null, { status: 204 });
 
 export async function POST(req: NextRequest) {
@@ -31,6 +50,8 @@ export async function POST(req: NextRequest) {
     const ua = req.headers.get("user-agent") || "";
     // Silently drop bots/crawlers so they don't inflate visitor counts.
     if (!ua || BOT_RE.test(ua)) return noContent();
+    // Drop local-dev traffic (see isLocalOrigin).
+    if (isLocalOrigin(req)) return noContent();
 
     const raw = await req.text();
     if (!raw) return noContent();

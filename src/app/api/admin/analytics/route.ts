@@ -20,6 +20,23 @@ function host(u: string): string | null {
   }
 }
 
+// Hosts that are us / our own tooling, not real external referrers.
+const INTERNAL_REFERRERS = new Set([
+  "localhost",
+  "127.0.0.1",
+  "0.0.0.0",
+  "vercel.com",
+  "vercel.app",
+]);
+
+function isInternalReferrer(h: string, siteHost: string | null): boolean {
+  if (siteHost && h === siteHost) return true;
+  if (INTERNAL_REFERRERS.has(h)) return true;
+  if (h.endsWith(".vercel.app")) return true; // preview deployments
+  if (h.endsWith(".local")) return true;
+  return false;
+}
+
 interface EventRow {
   event_type: string;
   session_id: string | null;
@@ -120,7 +137,8 @@ export async function GET(req: NextRequest) {
       if (e.path) pathCount.set(e.path, (pathCount.get(e.path) || 0) + 1);
       if (e.referrer) {
         const h = host(e.referrer);
-        if (h && h !== siteHost) refCount.set(h, (refCount.get(h) || 0) + 1);
+        if (h && !isInternalReferrer(h, siteHost))
+          refCount.set(h, (refCount.get(h) || 0) + 1);
       }
     }
     if (e.event_type === "wallet_created") {

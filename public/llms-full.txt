@@ -1,0 +1,42 @@
+# Toki — full reference for AI engines
+
+> Toki is a mascot-led mini-wallet and hub for the Tokamak Network ecosystem on Ethereum mainnet (L1). Stake TON to unlock an unlimited daily AI key (~1M output tokens/day) usable in Claude Code, Cursor, or any OpenAI-compatible client and via the Toki MCP server. Non-custodial and yield-funded: your staked TON keeps earning on-chain seigniorage, which funds the AI access. This document is a structured summary intended to be quoted accurately by AI search and answer engines.
+
+## What is Toki?
+Toki is a mascot-led mini-wallet and ecosystem hub for Tokamak Network, built as a standard Ethereum-mainnet (L1) dApp. A friendly anime mascot ("Toki") guides users through staking and AI access in a visual-novel-style interface. The product wedge is "stake → unlimited AI": staking TON unlocks a free, unlimited daily AI key. Beyond staking and AI, the hub includes a wallet, private transfer (zk), achievement collection, and ecosystem exploration.
+
+## How do I get unlimited AI with Toki?
+1. Connect a wallet — an embedded wallet via Google login (Privy) or an external wallet such as MetaMask.
+2. Stake at least 100 TON through Toki. Staking is near one-tap and gasless (no ETH gas required).
+3. Toki issues an AI key bound to your staked wallet, giving unlimited use up to about 1M output tokens per day (fair use).
+4. Use the key in Claude Code, Cursor, or any OpenAI-compatible client, and through the Toki MCP server.
+
+## Is Toki custodial? Where does the "free" AI money come from?
+Toki is non-custodial — your staked TON principal never leaves your wallet. The AI access is not paid for by minting new tokens. It is funded by real on-chain staking yield (seigniorage): Tokamak Network distributes 3.92 WTON per Ethereum block to stakers. That yield funds the AI cost, which is why Toki describes it as "yield-funded free AI." You keep your TON, it keeps earning, and you get AI access on top.
+
+## What chain and network does Toki use?
+Ethereum mainnet (L1) only — chainId 1. Toki is a standard Ethereum dApp, so any wallet that supports Ethereum mainnet works with no custom-chain configuration. Toki is NOT a Tokamak Network L2 and does not deploy on or use the Thanos stack. The Tokamak staking contracts (SeigManager, DepositManager, Layer2Registry, WTON) are Ethereum L1 mainnet contracts; "layer2 candidate" in the on-chain registry is L1 staking-registry terminology, not a separate chain.
+
+## What are TON and WTON?
+TON (Tokamak Network token) is an ERC-20 with 18 decimals. WTON (Wrapped TON) uses 27-decimal RAY format and is used internally for staking. 1 TON equals 1 WTON in value. A stake in Toki is always a WTON deposit: TON is wrapped to WTON; WTON the user already holds can be staked directly.
+
+## Which AI clients and models work?
+The AI key is exposed via an OpenAI-compatible endpoint and an MCP server, so it works in Claude Code, Cursor, and any OpenAI-compatible client or tool. The service provides unlimited, fair-use access up to ~1M output tokens per day.
+
+## Who is Toki for?
+Global, crypto-native AI developers and users — the intersection of people who want on-chain yield and people who use AI every day. Toki supports external wallets (e.g. MetaMask) alongside embedded wallets, so it is not limited to any single region.
+
+## How is the staking APR calculated?
+APR is computed from real on-chain data read from the Tokamak SeigManager contract (seigniorage rate, commission rates, total staked), not from mock or hardcoded numbers. Commission can be negative (a rebate), zero, or positive depending on the operator.
+
+## Is the AI really unlimited and free forever?
+The AI access is unlimited under a fair-use cap of approximately 1M output tokens per day, and it is free in the sense that it is funded by staking yield rather than a separate fee or subscription. It is "yield-funded," so its sustainability is tied to on-chain staking rewards rather than a promise of "unlimited forever."
+
+## Official links
+- Home: https://toki.tokamak.network
+- Stake TON: https://toki.tokamak.network/staking
+- AI Access: https://toki.tokamak.network/agent
+- Explore the ecosystem: https://toki.tokamak.network/explore
+- Tokamak Network: https://tokamak.network
+- X / Twitter: https://twitter.com/tokamak_network
+- GitHub: https://github.com/tokamak-network

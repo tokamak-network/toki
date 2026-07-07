@@ -77,9 +77,26 @@ export function getSessionId(): string {
   }
 }
 
+/**
+ * True on local-dev hosts. We never want localhost browsing to land in the
+ * production analytics_events table (it pollutes visitor/referrer counts).
+ */
+function isLocalHost(): boolean {
+  if (typeof window === "undefined") return false;
+  const h = window.location.hostname;
+  return (
+    h === "localhost" ||
+    h === "127.0.0.1" ||
+    h === "0.0.0.0" ||
+    h === "[::1]" ||
+    h.endsWith(".local")
+  );
+}
+
 /** Fire-and-forget event. Uses sendBeacon so it survives page unload. */
 export function track(event: AnalyticsEvent, opts: TrackOptions = {}): void {
   if (typeof window === "undefined") return;
+  if (isLocalHost()) return; // don't pollute prod analytics with dev traffic
   const sessionId = getSessionId();
   if (!sessionId) return;
 
@@ -119,6 +136,7 @@ export function track(event: AnalyticsEvent, opts: TrackOptions = {}): void {
 /** Fire wallet_created at most once per wallet, ever (deduped in localStorage). */
 export function trackWalletCreated(address: string): void {
   if (typeof window === "undefined" || !address) return;
+  if (isLocalHost()) return; // skip dev traffic (mirrors the track() guard)
   const flag = `toki_wc_${address.toLowerCase()}`;
   try {
     if (localStorage.getItem(flag)) return;

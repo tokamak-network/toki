@@ -1,0 +1,25 @@
+# Toki
+
+> Toki is a mascot-led mini-wallet and hub for the Tokamak Network ecosystem on Ethereum mainnet (L1). Its headline feature: stake TON (100 or more) to unlock an unlimited daily AI key — about 1M output tokens per day — usable in Claude Code, Cursor, or any OpenAI-compatible client, plus the Toki MCP server. Toki is non-custodial: your staked TON never leaves your wallet and keeps earning real on-chain seigniorage yield, and that yield funds the AI access ("yield-funded free AI"). It supports both embedded wallets (Privy / Google login) and external wallets (MetaMask). Audience: global, crypto-native AI developers and users.
+
+## How "stake → unlimited AI" works
+- Stake at least 100 TON through Toki — near one-tap and gasless (no ETH gas required).
+- Toki issues an AI key bound to your staked wallet: unlimited use, fair-use up to ~1M output tokens per day.
+- Use the key in Claude Code, Cursor, or any OpenAI-compatible client, and via the Toki MCP server.
+- Your TON principal stays in your wallet (non-custodial) and keeps earning seigniorage; that on-chain yield funds the AI cost.
+
+## Key facts
+- Chain: Ethereum mainnet (L1) only — chainId 1. Toki is a standard Ethereum dApp. It is NOT a Tokamak L2 and does not use the Thanos stack.
+- Tokens: TON (ERC-20, 18 decimals). WTON (Wrapped TON, 27-decimal RAY format) is used internally for staking; 1 TON equals 1 WTON in value.
+- Seigniorage: 3.92 WTON per Ethereum block, distributed to stakers. APR is computed from real on-chain SeigManager data — no mock numbers.
+- AI access: unlimited, fair-use ~1M output tokens/day via an OpenAI-compatible endpoint and an MCP server.
+- Custody: non-custodial. Principal stays in the user's wallet. Embedded (Privy, Google login) and external (MetaMask) wallets are supported.
+- Trust anchors: Ethereum mainnet, real on-chain APR, yield-funded (not new-token emissions).
+
+## Links
+- Home: https://toki.tokamak.network
+- Stake TON: https://toki.tokamak.network/staking
+- AI Access: https://toki.tokamak.network/agent
+- Explore the ecosystem: https://toki.tokamak.network/explore
+- Tokamak Network: https://tokamak.network
+- Full details (for AI engines): https://toki.tokamak.network/llms-full.txt

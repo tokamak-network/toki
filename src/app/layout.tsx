@@ -40,21 +40,25 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Toki - TON 스테이킹을 쉽게 | 토카막 네트워크",
+    default: "Toki — Stake TON, Get Unlimited Daily AI",
     template: `%s | ${SITE_NAME}`,
   },
   description:
-    "원클릭으로 TON을 스테이킹하고 시뇨리지 보상을 받으세요. 20%+ APR, 가스비 무료, 복잡한 설정 없이.",
+    "Stake 100+ TON and get an unlimited ~1M-tokens/day AI key — works in Claude Code, Cursor & any OpenAI-compatible app. Non-custodial; your TON keeps earning on-chain yield.",
   keywords: [
-    "토카막 네트워크",
-    "스테이킹",
-    "시뇨리지",
-    "TON 스테이킹",
-    "TON",
+    "Toki",
+    "stake TON for AI",
+    "unlimited AI key",
+    "yield-funded AI",
+    "TON staking",
     "Tokamak Network",
-    "Staking",
-    "Seigniorage",
-    "DeFi",
+    "non-custodial staking",
+    "OpenAI-compatible AI",
+    "Claude Code AI key",
+    "MCP server",
+    "crypto AI access",
+    "TON 스테이킹",
+    "토카막 네트워크",
   ],
   manifest: "/manifest.webmanifest",
   alternates: { canonical: "/" },
@@ -63,7 +67,7 @@ export const metadata: Metadata = {
     description:
       "Toki's summer update: stake 100 TON and unlock AI Membership — unlimited use up to 1M output tokens a day on Qwen 3.6 and Gemma 4. No card, no fee.",
     type: "website",
-    locale: "ko_KR",
+    locale: "en_US",
     siteName: SITE_NAME,
     url: SITE_URL,
     images: [
@@ -99,7 +103,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Bubble display fonts for the cozy hero */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -115,8 +119,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&family=Jua&family=Anton&family=Black+Han+Sans&family=Archivo:wght@700;800;900&family=Permanent+Marker&family=Noto+Sans+KR:wght@500;700&display=swap"
           rel="stylesheet"
         />
-        {/* Google Analytics 4 */}
-        {process.env.NEXT_PUBLIC_GA_ID && (
+        {/* Google Analytics 4 — production only, so local-dev browsing
+            doesn't pollute GA4 (mirrors the first-party analytics guard). */}
+        {process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
@@ -132,8 +137,8 @@ export default function RootLayout({
             </Script>
           </>
         )}
-        {/* Microsoft Clarity */}
-        {process.env.NEXT_PUBLIC_CLARITY_ID && (
+        {/* Microsoft Clarity — production only (see GA4 note above). */}
+        {process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_CLARITY_ID && (
           <Script id="clarity-init" strategy="afterInteractive">
             {`
               (function(c,l,a,r,i,t,y){

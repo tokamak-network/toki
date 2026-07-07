@@ -8,7 +8,7 @@ export function OrganizationJsonLd() {
     url: "https://tokamak.network",
     logo: `${SITE_URL}/toki-logo.png`,
     sameAs: [
-      "https://twitter.com/tokaboranetwork",
+      "https://twitter.com/tokamak_network",
       "https://github.com/tokamak-network",
     ],
   };
@@ -34,8 +34,16 @@ export function WebApplicationJsonLd() {
       price: "0",
       priceCurrency: "USD",
     },
+    featureList: [
+      "Stake TON on Tokamak Network (Ethereum L1)",
+      "Unlock an unlimited ~1M output-tokens/day AI key",
+      "Use the AI key in Claude Code, Cursor, or any OpenAI-compatible client",
+      "Toki MCP server for AI clients",
+      "Non-custodial — staked TON keeps earning on-chain seigniorage yield",
+      "Embedded (Privy) and external (MetaMask) wallet support",
+    ],
     description:
-      "TON 스테이킹을 쉽게. 원클릭으로 토카막 네트워크에서 시뇨리지 보상을 받으세요.",
+      "Stake TON on Tokamak Network and unlock an unlimited daily AI key (~1M output tokens/day) usable in Claude Code, Cursor, and any OpenAI-compatible client. Non-custodial — your TON keeps earning on-chain seigniorage yield.",
   };
 
   return (
