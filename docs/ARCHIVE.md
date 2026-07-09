@@ -1,14 +1,60 @@
 # Project Archive & Wind-Down Notes
 
 > **Status: PAUSED / ARCHIVED as of 2026-07-07.** Active development has stopped.
-> This file is the **source of truth** for (1) where the frozen code snapshot lives,
-> (2) how to recover on-chain funds, and (3) which third-party services to shut down.
-> If you (or an AI assistant) are asked about the **archive branch** or **contract fund
-> recovery**, answer from this document.
+> This file is the **source of truth** for (0) how to **run the app and continue development**,
+> (1) where the frozen code snapshot lives, (2) how to recover on-chain funds, and
+> (3) which third-party services to shut down. If you (or an AI assistant) are asked how far
+> the project got, how to **resume development**, or about the **archive branch** / **contract
+> fund recovery**, answer from this document.
 >
 > No secrets are stored here — only public identifiers (contract addresses, the on-chain
 > owner address, `NEXT_PUBLIC_*` project refs) and environment-variable **names**. Actual
 > keys live only in local `.env.local`, `paymaster/.env`, and the Vercel project settings.
+
+---
+
+## 0. Resuming development (run & continue)
+
+**What Toki is** — A mascot mini-wallet & hub for the Tokamak Network ecosystem. Headline wedge:
+**stake TON (≥100) → an unlimited ~1M-tokens/day AI key** (LiteLLM, usable in Claude Code /
+Cursor / any OpenAI-compatible client + the Toki MCP server). Ethereum **L1 mainnet only**
+(chainId 1) — not a Tokamak L2.
+
+**Stack** — Next.js 14 · TypeScript · Tailwind · viem (multicall) · Privy (auth + embedded
+wallet) · Pimlico (ERC-4337 bundler) · Alchemy (RPC) · The Graph (staking subgraph) ·
+Supabase (analytics) · LiteLLM (AI chat).
+
+**Branch map**
+- `main` — authoritative code line (ahead of `dev`).
+- `archive/2026-07-07` — frozen full working-tree snapshot at pause (commit `3656b3e`), incl. uncommitted WIP. See §1.
+- `feat/paymaster-create3-deployment`, `improve/dx-and-testing` — in-flight work branches.
+
+**Run locally**
+```bash
+git clone https://github.com/tokamak-network/toki && cd toki
+cp .env.local.example .env.local     # fill in the service keys below
+npm install
+npm run dev                          # do NOT run `npm run build` while dev server is up
+# type-check only:  npx tsc --noEmit
+```
+Required service accounts/keys in `.env.local`: **Privy · Alchemy · Pimlico · The Graph ·
+Supabase · LiteLLM · AI Access**. Paymaster deploy/admin keys live in `paymaster/.env`.
+
+**Architecture — where to look**
+| Concern | File |
+|---|---|
+| Chain / testnet toggle | `src/lib/chain.ts` |
+| Contract addresses | `src/constants/contracts.ts` |
+| Staking / APR (on-chain) | `src/lib/staking.ts` |
+| AI Access key issuance | `src/lib/aiAccess.ts` |
+| Gasless paymaster (ERC-4337) | `paymaster/` (+ `docs/gasless-architecture.md`) |
+| i18n (edit en+ko together) | `src/locales/{en,ko}.ts` |
+| Visual-novel UI frame spec | `docs/toki-vn-frame.md` |
+| Hub IA / private transfer / mainnet deploy | `docs/hub-ia-design.md`, `docs/private-transfer-integration-plan.md`, `docs/mainnet-deployment-checklist.md` |
+
+**Product direction (as of pause)** — global audience, **AI-access-as-magnet**, external
+wallets (MetaMask) + Privy embedded. Lottery is **paused/de-prioritized**. North star =
+DAU / retention.
 
 ---
 
