@@ -56,6 +56,26 @@ Supabase · LiteLLM · AI Access**. Paymaster deploy/admin keys live in `paymast
 wallets (MetaMask) + Privy embedded. Lottery is **paused/de-prioritized**. North star =
 DAU / retention.
 
+### Supabase (data layer) — wiring & re-provisioning
+
+Analytics, AI-key issuance state, and lottery data live in a **Supabase Postgres**. Two clients:
+
+| Client | File | Auth (env) | Notes |
+|---|---|---|---|
+| Browser / anon | `src/lib/supabase.ts` | `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` | RLS-enforced |
+| Server / admin | `src/lib/supabase-admin.ts` | `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` | **bypasses RLS** — server routes only |
+
+- **Project ref:** `crtysxluxdfjpygiybhx` → `NEXT_PUBLIC_SUPABASE_URL = https://crtysxluxdfjpygiybhx.supabase.co`.
+- **Tables & schema** (in `supabase/`): `analytics_events` (`analytics_events.sql`) ·
+  `ai_access_keys` (`migrations/20260619000000_ai_access_keys.sql`) ·
+  `profile_scores` (`migrations/20260622000000_profile_scores.sql`).
+- **Used by:** `src/app/api/analytics/track`, `src/app/api/admin/analytics`, `src/app/api/lottery/*`.
+- **Re-provision (fresh project):** create a Supabase project → run the SQL in `supabase/*.sql`
+  + `supabase/migrations/*` → set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  (browser), `SUPABASE_SERVICE_ROLE_KEY` (server) in `.env.local` / Vercel env.
+  ⚠️ At pause, `.env.local` had the URL + service-role key but **not**
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` — the browser client (`supabase.ts`) needs it re-added.
+
 ---
 
 ## 1. Code snapshot — the archive branch
